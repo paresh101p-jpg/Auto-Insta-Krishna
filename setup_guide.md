@@ -69,8 +69,8 @@ Create a new GitHub Repository and add the following under **Settings > Secrets 
 *Setup completed and verified on September 25, 2026.*
 
 ## 5. Image Generation Rule (CRITICAL)
-When I (the AI) am tasked with generating new images for **Auto-Insta-Pooja** (Fashion) or **Auto-Insta-Post** (Devotional/Paresh), I **MUST** generate them in a **4:5 (Portrait)** aspect ratio.
-**Reason:** 4:5 aspect ratio perfectly supports Instagram Feed, Instagram Story, Facebook Feed, and avoids Facebook Story Graph API rejection errors. Do not generate 9:16 images as they will fail the IG Feed API and FB Story API constraints.
+When I (the AI) am tasked with generating new images for **Auto-Insta-Pooja** (Fashion) or **Auto-Insta-Post** (Devotional/Paresh), I **MUST** generate them in a **1:1 (Square)** aspect ratio.
+**Reason:** 1:1 aspect ratio perfectly supports Instagram Feed, Instagram Story, Facebook Feed, and avoids Facebook Story Graph API rejection errors. Do not generate 9:16 images as they will fail the IG Feed API and FB Story API constraints.
 
 ## 6. User Interaction Workflow (Strict Rules)
 1. **GitHub Uploads:** Do NOT automatically push/upload files to GitHub. Only push changes or upload images to GitHub when the user explicitly commands: "github par upload karo".
@@ -84,7 +84,6 @@ When I (the AI) am tasked with generating new images for **Auto-Insta-Pooja** (F
    - **Text (CRITICAL):** The Hindi quote must be painted directly and realistically onto the surface like a natural mural or mockup, perfectly integrated with the texture.
    - **Elements:** Always include exactly TWO peacock feathers (morpankh) and ONE wooden flute (bansuri) resting near the text.
    - **Watermark:** Below the main quote, write the text '@PareshPadsala_' in smaller letters.
-   - **No Repetition (CRITICAL):** Always check `Auto-Insta-Krishna/used_quotes.txt` before generating an image to ensure the quote has NEVER been used before. After generating a successful image, you MUST append the new Hindi quote to `used_quotes.txt` so it is never repeated.
 5. **Posting Schedule:** Both the Auto-Insta-Pooja and Auto-Insta-Post bots are configured to run 3 times a day strictly at **9:00 AM, 3:00 PM, and 9:00 PM (IST)**.
 
 ## 7. FB Story Posting Rule
