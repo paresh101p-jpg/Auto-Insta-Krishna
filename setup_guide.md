@@ -29,17 +29,31 @@ There are two completely independent bots running on separate GitHub repositorie
 
 ---
 
-## 3. Managing Images (Local PC vs GitHub)
+## 3. Managing Images (URL Queue System)
+The bots now use a highly efficient URL-based queue system instead of relying on the local `images/` directory on GitHub. This reduces GitHub repository bloat and allows seamless alternating between Image posts and Reel posts.
 
-**New Clean-PC Workflow (As requested by User):**
-1. **Local PC Freedom:** The user manages the local `images/` folder entirely on their own (adding or deleting files manually).
-2. **AI Restriction:** I (the AI) MUST NEVER check, modify, or run `git pull` on the user's local PC folders. I must only interact with the PC folder when the user explicitly commands me to "Upload to GitHub".
-3. **Uploading:** When commanded, I will simply run `git add .`, `git commit`, and `git push` to send the local files to GitHub.
-4. **Auto-Deletion on GitHub:** Once safely on GitHub, the bot will automatically delete them from the GitHub server **5 minutes after posting**. The user can delete them locally on their PC whenever they want.
+**New Workflow (How it works now):**
+1. **Local PC Generation:** The user generates images locally in the `images/` folder. If they want reels, they run `create_reels.ps1` to generate MP4 reels in `new_video/`.
+2. **Catbox Upload & Text Queue:** 
+   - All images are uploaded to a public image host (e.g. Catbox.moe) and their URLs are appended to `images_urls.txt`.
+   - All generated reels are uploaded to Catbox and their URLs are appended to `reels_urls.txt`.
+3. **Alternating AI Selection:** The bot uses `last_post_type.txt` to track what it posted last. It alternates (`IMAGE -> REEL -> IMAGE`) automatically.
+4. **Auto-Cleanup / Backup:** Once a URL is successfully posted to Meta (FB & IG), the bot removes that URL from `images_urls.txt` (or `reels_urls.txt`) and adds it to `used_urls.txt`. This ensures no duplicate posts.
+5. **No PC Deletions:** I (the AI) MUST NEVER delete the original media from the user's local PC. The PC acts as their permanent local backup.
+
+## 4. Reel (Video) Generation Workflow
+Aapke paas images se automatically Reels banane ka ek custom script (`create_reels.ps1`) majood hai:
+1. **Music Preparation:** Sabse pehle apni pasand ke Bhajans ya music (MP3/M4A) files ko `music/` folder mein daalein.
+2. **Reel Generation:** Terminal mein `./create_reels.ps1` run karein.
+   - Ye script `images/` folder ki saari photos uthayega.
+   - Har photo par randomly ek music add karega.
+   - Usme cinematic Zoom/Pan effects aur piche blurred background laga kar 1080x1920 (Reel size) ka video banayega.
+   - Banne ke baad saari MP4 videos `new_video/` folder mein aayengi.
+3. **Upload & Post:** Un videos ko script ke zariye Catbox par upload karein aur unke URLs `reels_urls.txt` me save karein. Taki bot unhe URL ke zariye pick karke post kar sake.
 
 ---
 
-## 4. Generating a Permanent Page Token (For Future Bots)
+## 5. Generating a Permanent Page Token (For Future Bots)
 If you ever need to create a 3rd bot for a new page, follow these exact steps:
 
 ### Step A: Graph API Explorer
@@ -69,8 +83,8 @@ Create a new GitHub Repository and add the following under **Settings > Secrets 
 *Setup completed and verified on September 25, 2026.*
 
 ## 5. Image Generation Rule (CRITICAL)
-When I (the AI) am tasked with generating new images for **Auto-Insta-Pooja** (Fashion) or **Auto-Insta-Post** (Devotional/Paresh), I **MUST** generate them in a **1:1 (Square)** aspect ratio.
-**Reason:** 1:1 aspect ratio perfectly supports Instagram Feed, Instagram Story, Facebook Feed, and avoids Facebook Story Graph API rejection errors. Do not generate 9:16 images as they will fail the IG Feed API and FB Story API constraints.
+When I (the AI) am tasked with generating new images for **Auto-Insta-Pooja** (Fashion) or **Auto-Insta-Post** (Devotional/Paresh), I **MUST** generate them in a **4:5 (Portrait)** aspect ratio.
+**Reason:** 4:5 aspect ratio perfectly supports Instagram Feed vertically, maximizing screen space without failing API constraints. Always use 4:5 moving forward.
 
 ## 6. User Interaction Workflow (Strict Rules)
 1. **GitHub Uploads:** Do NOT automatically push/upload files to GitHub. Only push changes or upload images to GitHub when the user explicitly commands: "github par upload karo".
@@ -80,7 +94,7 @@ When I (the AI) am tasked with generating new images for **Auto-Insta-Pooja** (F
    - **Clothing & Body:** Change the clothing color (e.g. bright red), make it a short dress, and show the waist (kamar).
    - **Pose & Setting:** Change the pose to a playful, dancing, or masti pose. Use a beautiful outdoor background (like a garden).
 4. **Paresh Image Reference (STRICT):** When generating images for Paresh, you MUST strictly follow the Real-Life Mockup style:
-   - **Background:** A hyper-realistic vintage/rustic background (e.g., old weathered wooden door, wooden block, boat, vintage book, stone wall).
+   - **Background:** A hyper-realistic background of ALMOST ANY surface! You can use: vintage book pages, old weathered wooden door, stone wall, boat wood, raste (roads), pani (water), glass, diwaar (walls), kapde (cloth/fabric), leaves, etc.
    - **Text (CRITICAL):** The Hindi quote must be painted directly and realistically onto the surface like a natural mural or mockup, perfectly integrated with the texture.
    - **Elements:** Always include exactly TWO peacock feathers (morpankh) and ONE wooden flute (bansuri) resting near the text.
    - **Watermark:** Below the main quote, write the text '@PareshPadsala_' in smaller letters.

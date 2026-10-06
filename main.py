@@ -27,7 +27,7 @@ if FB_PAGE_ID == "YAHAN_APNA_NAYA_PAGE_ID_DALNA_HAI":
 client = genai.Client(api_key=GEMINI_API_KEY)
 IMAGES_FOLDER = "images"
 GEMINI_MODELS = ["gemini-3.8-flash", "gemini-3.8-flash-001"]
-# Yahan naye repo ka naam aayega (e.g., Auto-Insta-Mojilo)
+# Yahan naye repo ka naam aayega (e.g., Auto-Insta-Krishna)
 GITHUB_REPO_RAW_URL = "https://raw.githubusercontent.com/paresh101p-jpg/Auto-Insta-Krishna/master/"
 
 HISTORY_FILE = "post_history.json"
@@ -73,9 +73,9 @@ def mark_url_as_used(url, is_video):
             git_commit_and_push(f"Used and removed URL from {filename}")
 
 def get_next_media():
-    if not os.path.exists(IMAGES_FOLDER):
-        os.makedirs(IMAGES_FOLDER)
-        
+    import random
+    import requests
+    
     last_type_file = "last_post_type.txt"
     last_type = "REEL"
     if os.path.exists(last_type_file):
@@ -84,94 +84,96 @@ def get_next_media():
             
     next_type = "REEL" if last_type == "IMAGE" else "IMAGE"
     print(f"Last post was {last_type}. Now attempting to post {next_type}...")
+    
 
-    def get_catbox_from_file(filename, is_video):
-        if not os.path.exists(filename): return None
-        with open(filename, "r") as f: urls = [line.strip() for line in f if line.strip()]
-        
-        used_urls = []
-        if os.path.exists("used_urls.txt"):
-            with open("used_urls.txt", "r") as f: used_urls = [line.strip() for line in f if line.strip()]
+    def get_from_file(filename, is_video):
+        if os.path.exists(filename):
+            with open(filename, "r") as f:
+                urls = [line.strip() for line in f.readlines() if line.strip()]
             
-        available_urls = [u for u in urls if u not in used_urls]
-        if not available_urls: return None
-        
-        chosen_url = available_urls[0]
-        print(f"Selected Catbox URL: {chosen_url}")
-        
-        import requests
-        temp_ext = ".mp4" if is_video else ".jpg"
-        temp_file = "temp_media" + temp_ext
-        
-        res_download = requests.get(chosen_url, headers={'User-Agent': 'Mozilla/5.0'})
-        with open(temp_file, "wb") as mf:
-            mf.write(res_download.content)
-            
-        return {
-            "type": "catbox",
-            "local_path": temp_file,
-            "media_url": chosen_url,
-            "is_video": is_video,
-            "original_path": None
-        }
-
-    def get_image_from_github_folder():
-        import random
-        from datetime import datetime
-        import urllib.parse
-        history = load_history()
-        now = datetime.now()
-        files = [f for f in os.listdir(IMAGES_FOLDER) if f.lower().endswith((".jpg", ".jpeg", ".png", ".webp"))]
-        random.shuffle(files)
-        
-        for f in files:
-            base_name = os.path.splitext(f)[0]
-            if base_name in history:
-                last_date_str = history[base_name]
-                try:
-                    last_post_date = datetime.fromisoformat(last_date_str)
-                    days_passed = (now - last_post_date).days
-                    if days_passed < 7: continue
-                except: pass
+            attempts = 0
+            while urls and attempts < 3:
+                chosen_url = random.choice(urls)
+                
+                temp_ext = ".mp4" if is_video else ".jpg"
+                temp_file = "temp_media" + temp_ext
+                print(f"Downloading from {chosen_url}...")
+                
+                import time
+                import requests
+                max_retries = 3
+                success_download = False
+                headers = {'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)'}
+                
+                proxies = [
+                    "",  # Direct
+                    "https://api.allorigins.win/raw?url=", # Proxy 1
+                    "https://corsproxy.io/?" # Proxy 2
+                ]
+                
+                for attempt in range(max_retries):
+                    try:
+                        target_url = proxies[attempt % len(proxies)] + chosen_url
+                        print(f"Attempt {attempt+1} downloading via: {target_url}")
+                        res = requests.get(target_url, headers=headers, timeout=25)
+                        if res.status_code == 200:
+                            with open(temp_file, "wb") as f:
+                                f.write(res.content)
+                            success_download = True
+                            break
+                        elif res.status_code == 404:
+                            print("URL returned 404. We will skip it.")
+                            break
+                        else:
+                            print(f"Attempt {attempt+1} failed to download: Status {res.status_code}")
+                    except Exception as e:
+                        print(f"Attempt {attempt+1} failed to download: {e}")
+                    time.sleep(2)
                     
-            chosen_local_path = os.path.join(IMAGES_FOLDER, f)
-            history[base_name] = now.isoformat()
-            save_history(history)
-            
-            if not os.path.exists(POSTED_FOLDER): os.makedirs(POSTED_FOLDER)
-            new_path = os.path.join(POSTED_FOLDER, f)
-            os.rename(chosen_local_path, new_path)
-            git_commit_and_push(f"Moved to posted: {f}")
-            
-            clean_path = new_path.replace("\\", "/")
-            encoded_path = "/".join([urllib.parse.quote(p) for p in clean_path.split("/")])
-            media_url = f"{GITHUB_REPO_RAW_URL}{encoded_path}"
-            
-            return {
-                "type": "local",
-                "local_path": new_path,
-                "media_url": media_url,
-                "is_video": False,
-                "original_path": chosen_local_path
-            }
+                if not success_download:
+                    print(f"Failed to download {chosen_url} entirely.")
+                    # Only remove if it was a 404 (file actually missing)
+                    if 'res' in locals() and res.status_code == 404:
+                        if chosen_url in urls:
+                            urls.remove(chosen_url)
+                            with open(filename, "w") as f:
+                                f.write("\n".join(urls))
+                    attempts += 1
+                    continue # Try next URL
+                    
+                # If we get here, download succeeded!
+                # DO NOT DELETE IT YET! Wait for Instagram post success!
+                return {
+                    "type": "catbox",
+                    "local_path": temp_file,
+                    "media_url": chosen_url,
+                    "is_video": is_video,
+                    "original_path": None
+                }
+            if attempts >= 3:
+                raise Exception("Failed to download media after trying 3 different URLs.")
         return None
-
     if next_type == "IMAGE":
-        res = get_image_from_github_folder()
+        res = get_from_file("images_urls.txt", False)
         if res:
             with open(last_type_file, "w") as f: f.write("IMAGE")
-            git_commit_and_push("Update last post type to IMAGE")
             return res
+        print("No images left, falling back to reel...")
+        next_type = "REEL"
 
     if next_type == "REEL":
-        res = get_catbox_from_file("reels_urls.txt", True)
+        res = get_from_file("reels_urls.txt", True)
         if res:
             with open(last_type_file, "w") as f: f.write("REEL")
-            git_commit_and_push("Update last post type to REEL")
             return res
-
-    print("Could not find media of the requested type.")
-    return None
+        
+        print("No reels left, falling back to image...")
+        res = get_from_file("images_urls.txt", False)
+        if res:
+            with open(last_type_file, "w") as f: f.write("IMAGE")
+            return res
+            
+    raise Exception("No media available at all! Please upload new media.")
 
 def generate_caption(media_path):
     is_video = media_path.lower().endswith('.mp4')
@@ -218,9 +220,12 @@ Do not include any extra text outside the caption itself."""
                     )
                     caption = response.text
                     if caption:
-                        print("Caption generated successfully!\n")
+                        print("Caption generated successfully!
+")
                         print(caption)
-                        print("\n" + "="*50 + "\n")
+                        print("
+" + "="*50 + "
+")
                         return caption
                 except Exception as e:
                     print(f"Gemini error on attempt {attempt} with {model_name}: {e}")
@@ -237,15 +242,15 @@ Do not include any extra text outside the caption itself."""
         import fallback_captions
         return fallback_captions.get_random_caption()
     except Exception as e:
-        return """DM us for Custom T-Shirt Printing and DTF Stickers in Surat! 👇🔥
+        return """Radhe Radhe! ✨ Zindagi mein chahe kitni bhi mushkilein aayein, Krishna par vishwas rakhna. Wo sab theek kar denge. Jai Shree Krishna! 🙏
 
-Follow for more amazing designs! 👇🔥
-Instagram: @MOJILOMART
-Facebook: @MojiloMart
+Aise hi aur amazing thoughts ke liye follow karein! 👇🔥
+Instagram: @pareshpadsala_
+Facebook: @KrishnaVibez
 
 Like 👍 💬 | Comment 💬 | Share 🚀 | Save 📌
 
-#mojilo #tshirtprinting #dtfsticker #suratfashion #customtshirts"""
+#krishna #radheradhe #harekrishna #bhagavadgita #vrindavan #suvichar #hindi #devotion #PareshPadsala_"""
 
 def get_ig_account_id():
     url = f"https://graph.facebook.com/v20.0/{FB_PAGE_ID}?fields=instagram_business_account&access_token={FB_ACCESS_TOKEN}"
@@ -299,7 +304,7 @@ def post_fb_video(caption, local_file):
 
 
 def post_fb_video_story(local_file):
-    print("Posting to Facebook Story (Video)...")
+    print("Posting to Facebook Story (Video) via 3-step upload...")
     url = f"https://graph.facebook.com/v20.0/{FB_PAGE_ID}/video_stories"
     
     try:
@@ -326,12 +331,14 @@ def post_fb_video_story(local_file):
             upload_payload = {
                 'access_token': FB_ACCESS_TOKEN,
                 'upload_phase': 'transfer',
-                'start_offset': '0',
-                'video_id': video_id
+                'start_offset': '0'
             }
-            headers = {'Authorization': f'OAuth {FB_ACCESS_TOKEN}'}
-            res_up = requests.post(upload_url, headers=headers, data=upload_payload, files=files).json()
-            # Some FB APIs return success in a weird format, let's just proceed
+            res_up = requests.post(upload_url, data=upload_payload, files=files)
+            
+        # Give Meta's servers time to process the uploaded chunk!
+        # This prevents the "Video Upload Is Missing" error in the finish phase.
+        print("Waiting 15 seconds for Meta to process the chunk...")
+        time.sleep(15)
             
         # Step 3: Finish
         finish_payload = {
@@ -462,16 +469,32 @@ def create_story_image(local_path):
     try:
         img = Image.open(local_path).convert("RGB")
         target_w, target_h = 1080, 1920
-        bg = img.resize((target_w, target_h), Image.Resampling.LANCZOS)
-        bg = bg.filter(ImageFilter.GaussianBlur(radius=30))
         w, h = img.size
+        
+        # Create a proportionally zoomed background to fill the canvas without stretching
+        bg_scale = max(target_w / w, target_h / h)
+        bg_w, bg_h = int(w * bg_scale), int(h * bg_scale)
+        bg = img.resize((bg_w, bg_h), Image.Resampling.LANCZOS)
+        bg = bg.filter(ImageFilter.GaussianBlur(radius=30))
+        
+        # Crop the center of the blurred background
+        left = (bg_w - target_w) // 2
+        top = (bg_h - target_h) // 2
+        bg = bg.crop((left, top, left + target_w, top + target_h))
+        
+        # Foreground: preserve aspect ratio, fit inside the canvas
         scale = min(target_w / w, target_h / h)
         new_w, new_h = int(w * scale), int(h * scale)
         fg = img.resize((new_w, new_h), Image.Resampling.LANCZOS)
+        
+        # Paste foreground into the exact center
         y_offset = (target_h - new_h) // 2
         x_offset = (target_w - new_w) // 2
         bg.paste(fg, (x_offset, y_offset))
-        story_path = "story_temp.jpg"
+        import os
+        base_name = os.path.basename(local_path)
+        dir_name = os.path.dirname(local_path)
+        story_path = os.path.join(dir_name, f"story_{base_name}") if dir_name else f"story_{base_name}"
         bg.save(story_path, quality=95)
         return story_path
     except Exception as e:
@@ -489,6 +512,18 @@ def upload_to_catbox(file_path):
     except Exception as e:
         print(f"Catbox upload failed: {e}")
     return None
+
+def retry_post(func, *args, **kwargs):
+    for attempt in range(1, 4):
+        try:
+            if func(*args, **kwargs):
+                return True
+        except Exception as e:
+            print(f"⚠️ Exception in attempt {attempt}: {e}")
+        if attempt < 3:
+            print(f"Retrying in 10 seconds (Attempt {attempt+1}/3)...")
+            time.sleep(10)
+    return False
 
 if __name__ == "__main__":
     try:
@@ -516,35 +551,42 @@ if __name__ == "__main__":
         if not media_info["is_video"]:
             story_local = create_story_image(media_info["local_path"])
             if story_local != media_info["local_path"]:
-                catbox_url = upload_to_catbox(story_local)
-                if catbox_url:
-                    story_url = catbox_url
-                    print(f"Using Catbox URL for story: {story_url}")
+                # Upload to GitHub to get a public URL for Instagram API (bypasses Catbox IP block)
+                import shutil
+                if not os.path.exists(POSTED_FOLDER):
+                    os.makedirs(POSTED_FOLDER)
+                dest_path = os.path.join(POSTED_FOLDER, "story_temp.jpg")
+                shutil.copy(story_local, dest_path)
+                git_commit_and_push("Upload temporary story image for IG API")
+                
+                # We must use jsdelivr or raw.githubusercontent. Let's use raw.githubusercontent
+                story_url = f"https://raw.githubusercontent.com/paresh101p-jpg/Auto-Insta-Krishna/master/{POSTED_FOLDER}/story_temp.jpg"
+                print(f"Using GitHub URL for story: {story_url}")
         
         # Post to Instagram Feed/Reel
-        if post_ig_media(ig_account_id, caption, media_info["media_url"], is_story=False, is_video=media_info["is_video"]):
+        if retry_post(post_ig_media, ig_account_id, caption, media_info["media_url"], is_story=False, is_video=media_info["is_video"]):
             success = True
             
         # Post to Instagram Story (using the story_url which has the blurred background for images)
-        post_ig_media(ig_account_id, caption, story_url, is_story=True, is_video=media_info["is_video"])
+        retry_post(post_ig_media, ig_account_id, caption, story_url, is_story=True, is_video=media_info["is_video"])
         
         # Post to Facebook
         if media_info["is_video"]:
             # Need to ensure post_fb_video exists or just use feed
             if "post_fb_video" in globals():
-                if post_fb_video(caption, media_info["local_path"]):
+                if retry_post(post_fb_video, caption, media_info["local_path"]):
                     success = True
             else:
-                if post_fb_feed(caption, media_info["media_url"]):
+                if retry_post(post_fb_feed, caption, media_info["media_url"]):
                     success = True
             
             if "post_fb_video_story" in globals():
-                post_fb_video_story(media_info["local_path"])
+                retry_post(post_fb_video_story, media_info["local_path"])
         else:
-            if post_fb_feed(caption, media_info["media_url"]):
+            if retry_post(post_fb_feed, caption, media_info["media_url"]):
                 success = True
             if "post_fb_story" in globals():
-                post_fb_story(story_url)
+                retry_post(post_fb_story, story_url)
         
         if success:
             print("Successfully posted!")

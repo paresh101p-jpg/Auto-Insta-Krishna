@@ -14,6 +14,19 @@ This rule is mandatory and must be strictly followed to keep the post backlog ba
 Whenever you generate AI images for Krishna that include text/quotes:
 1. NEVER use generic prompts for the text (e.g., "Add a nice quote").
 2. ALWAYS read the file `e:\Paresh\Auto Post\Auto-Insta-Krishna\used_quotes.txt` first to see which quotes have already been used in the past.
-3. Generate completely unique, fresh Hindi/Sanskrit spiritual thoughts that are NOT in that file.
-4. Explicitly pass the specific thought into the image generation prompt.
-5. AFTER generating the image, ALWAYS append the newly used quote(s) to `e:\Paresh\Auto Post\Auto-Insta-Krishna\used_quotes.txt` so they are never repeated in the future.
+3. Generate completely unique, fresh Hindi/Sanskrit thoughts that are NOT in that file. Include a wide variety of topics such as: motivational life lessons, Krishna bhakti, love, success, garibi (poverty), daya (kindness), paisa (money), riste (relationships), etc. **CRITICAL:** DO NOT append "- राधे कृष्ण" or any other signature at the end of the quotes. Only write the core quote.
+4. **Varied Backgrounds (Unlimited Creativity):** Do not always use a simple wooden board. You can write the text on almost ANY realistic surface! Rotate between hyper-realistic backgrounds like: vintage book pages, old weathered wooden door, stone wall, boat wood, raste (roads), pani (water surface), glass, diwaar (walls), kapde (cloth/fabric), leaves, etc. The text must look naturally integrated (painted, carved, or reflected) into whatever surface you choose.
+5. Explicitly pass the specific thought into the image generation prompt.
+6. AFTER generating the image, ALWAYS append the newly used quote(s) to `e:\Paresh\Auto Post\Auto-Insta-Krishna\used_quotes.txt` so they are never repeated in the future.
+
+# ?? NEW ARCHITECTURE: Catbox URL Queue System (Active)
+Auto-Insta-Krishna has been upgraded to match Auto-Insta-Pooja's robust URL-based queue system.
+- **Workflow:** 
+  1. User generates images in images/ locally.
+  2. Runs create_reels.ps1 to convert them into cinematic Reels with music and blurred backgrounds in new_video/.
+  3. Uploads both images and reels to Catbox.moe.
+  4. Appends the URLs to images_urls.txt and reels_urls.txt.
+- **Alternating Posts:** The bot automatically alternates between IMAGE and REEL every time it posts.
+- **Backup:** After posting, the bot removes the URL from the active text file and appends it to used_urls.txt for backup.
+- **NEVER** delete local files from the user's PC (they are the user's permanent backup).
+
