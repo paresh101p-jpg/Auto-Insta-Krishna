@@ -220,12 +220,9 @@ Do not include any extra text outside the caption itself."""
                     )
                     caption = response.text
                     if caption:
-                        print("Caption generated successfully!
-")
+                        print("Caption generated successfully!\n")
                         print(caption)
-                        print("
-" + "="*50 + "
-")
+                        print("\n" + "="*50 + "\n")
                         return caption
                 except Exception as e:
                     print(f"Gemini error on attempt {attempt} with {model_name}: {e}")
