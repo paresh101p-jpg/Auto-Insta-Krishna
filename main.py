@@ -331,11 +331,14 @@ def post_fb_video_story(local_file):
                 'start_offset': '0'
             }
             res_up = requests.post(upload_url, data=upload_payload, files=files)
+            if res_up.status_code != 200:
+                print(f"❌ Chunk upload failed: {res_up.text}")
+                return False
             
         # Give Meta's servers time to process the uploaded chunk!
-        # This prevents the "Video Upload Is Missing" error in the finish phase.
-        print("Waiting 15 seconds for Meta to process the chunk...")
-        time.sleep(15)
+        # Increased to 35 seconds to prevent the "Video Upload Is Missing" error.
+        print("Waiting 35 seconds for Meta to process the chunk...")
+        time.sleep(35)
             
         # Step 3: Finish
         finish_payload = {
