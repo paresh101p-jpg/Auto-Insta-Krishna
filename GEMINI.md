@@ -19,14 +19,28 @@ Whenever you generate AI images for Krishna that include text/quotes:
 5. Explicitly pass the specific thought into the image generation prompt.
 6. AFTER generating the image, ALWAYS append the newly used quote(s) to `e:\Paresh\Auto Post\Auto-Insta-Krishna\used_quotes.txt` so they are never repeated in the future.
 
-# ?? NEW ARCHITECTURE: Catbox URL Queue System (Active)
-Auto-Insta-Krishna has been upgraded to match Auto-Insta-Pooja's robust URL-based queue system.
-- **Workflow:** 
-  1. User generates images in images/ locally.
-  2. Runs create_reels.ps1 to convert them into cinematic Reels with music and blurred backgrounds in new_video/.
-  3. Uploads both images and reels to Catbox.moe.
-  4. Appends the URLs to images_urls.txt and reels_urls.txt.
-- **Alternating Posts:** The bot automatically alternates between IMAGE and REEL every time it posts.
-- **Backup:** After posting, the bot removes the URL from the active text file and appends it to used_urls.txt for backup.
-- **NEVER** delete local files from the user's PC (they are the user's permanent backup).
+# 🚀 NEW ARCHITECTURE: Catbox URL Queue System (Active & Mandatory)
+Auto-Insta-Krishna and Auto-Insta-Pooja both use a robust URL-based queue system for posting.
+
+### Rule 1: Post via URLs ONLY
+- The bots read strictly from `images_urls.txt` and `reels_urls.txt`.
+- They **do not** pull local files from the `images/` or `new_video/` folders to post.
+- This bypasses Catbox's IP blocking by passing direct raw links to Graph API.
+- After a successful post, the URL is removed from the active file and saved in `used_urls.txt`.
+
+### Rule 2: NEVER Delete User Files (Permanent Backup)
+- **CRITICAL:** Do NOT write scripts that delete local `.jpg`, `.png`, or `.mp4` files from the user's PC after they are uploaded or posted.
+- The `images/` and `new_video/` folders serve as the user's permanent local and GitHub backup.
+- Always use `-lt` filters (e.g. `(Get-Date).AddMinutes(-2)`) in PowerShell when uploading to ensure old files are skipped instead of deleted.
+
+### Rule 3: File Type Handling (.JPG vs .PNG)
+- When writing scripts to upload or process images, always check for BOTH `.jpg` and `.png` files.
+- Example: `Get-ChildItem -Path "images" -Include *.jpg, *.png`
+- If you forget `.png`, half the user's images (e.g. from older screenshot generations) will be skipped.
+
+### Rule 4: Amazon Affiliate Splitting (Pooja Bot)
+- Auto-Insta-Pooja uses a split logic for captions to comply with Amazon Affiliate rules.
+- **Instagram:** Appends `🛒 Check out the link in my Bio! #ad #CommissionsEarned` (No clickable links allowed).
+- **Facebook:** Appends `🛒 Buy my favorite product here: https://link.amazon/A02oaFqo9 #ad #CommissionsEarned` (Direct clickable link).
+- **Self-Referral Rule:** The user is aware that linking their own brand (Mojilo) via the same affiliate ID is a violation and has opted not to do it. Only promote products officially using this split-caption method.
 
