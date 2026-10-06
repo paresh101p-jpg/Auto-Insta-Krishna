@@ -44,3 +44,8 @@ Auto-Insta-Krishna and Auto-Insta-Pooja both use a robust URL-based queue system
 - **Facebook:** Appends `🛒 Buy my favorite product here: https://link.amazon/A02oaFqo9 #ad #CommissionsEarned` (Direct clickable link).
 - **Self-Referral Rule:** The user is aware that linking their own brand (Mojilo) via the same affiliate ID is a violation and has opted not to do it. Only promote products officially using this split-caption method.
 
+### Rule 5: Facebook Video Story Upload Fix (CRITICAL)
+- When uploading a Video Story to Facebook via the Graph API (`post_fb_video_story`), Meta's servers require time to process the video chunk in the `transfer` phase before the `finish` phase.
+- **NEVER** reduce the `time.sleep(35)` after the chunk upload. 
+- If reduced, Meta's API will return a false `Video Upload Is Missing` error, crashing the Facebook Story post. This has been permanently fixed and must remain exactly as is.
+
