@@ -547,6 +547,9 @@ if __name__ == "__main__":
         
         caption = generate_caption(media_info["local_path"])
         
+        ig_caption = caption + "\n\n✨ @sneha_padsala ✨"
+        fb_caption = caption
+        
         ig_account_id = get_ig_account_id()
         if not ig_account_id:
             raise Exception("No Instagram account linked to the page.")
@@ -576,26 +579,26 @@ if __name__ == "__main__":
                 print(f"Using GitHub URL for story: {story_url}")
         
         # Post to Instagram Feed/Reel
-        if retry_post(post_ig_media, ig_account_id, caption, media_info["media_url"], is_story=False, is_video=media_info["is_video"]):
+        if retry_post(post_ig_media, ig_account_id, ig_caption, media_info["media_url"], is_story=False, is_video=media_info["is_video"]):
             success = True
             
         # Post to Instagram Story (using the story_url which has the blurred background for images)
-        retry_post(post_ig_media, ig_account_id, caption, story_url, is_story=True, is_video=media_info["is_video"])
+        retry_post(post_ig_media, ig_account_id, ig_caption, story_url, is_story=True, is_video=media_info["is_video"])
         
         # Post to Facebook
         if media_info["is_video"]:
             # Need to ensure post_fb_video exists or just use feed
             if "post_fb_video" in globals():
-                if retry_post(post_fb_video, caption, media_info["local_path"]):
+                if retry_post(post_fb_video, fb_caption, media_info["local_path"]):
                     success = True
             else:
-                if retry_post(post_fb_feed, caption, media_info["media_url"]):
+                if retry_post(post_fb_feed, fb_caption, media_info["media_url"]):
                     success = True
             
             if "post_fb_video_story" in globals():
                 retry_post(post_fb_video_story, media_info["local_path"])
         else:
-            if retry_post(post_fb_feed, caption, media_info["media_url"]):
+            if retry_post(post_fb_feed, fb_caption, media_info["media_url"]):
                 success = True
             if "post_fb_story" in globals():
                 retry_post(post_fb_story, story_url)
