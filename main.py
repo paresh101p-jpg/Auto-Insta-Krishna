@@ -26,7 +26,7 @@ if FB_PAGE_ID == "YAHAN_APNA_NAYA_PAGE_ID_DALNA_HAI":
 
 client = genai.Client(api_key=GEMINI_API_KEY)
 IMAGES_FOLDER = "images"
-GEMINI_MODELS = ["gemini-3.8-flash", "gemini-3.8-flash-001"]
+GEMINI_MODELS = ["gemini-2.0-flash", "gemini-2.5-flash", "gemini-1.5-flash"]
 # Yahan naye repo ka naam aayega (e.g., Auto-Insta-Krishna)
 GITHUB_REPO_RAW_URL = "https://raw.githubusercontent.com/paresh101p-jpg/Auto-Insta-Krishna/master/"
 
@@ -178,23 +178,29 @@ def get_next_media():
 def generate_caption(media_path):
     is_video = media_path.lower().endswith('.mp4')
     print(f"Analyzing {'video' if is_video else 'image'} using Gemini Vision...")
-    prompt = """You are an expert Instagram Social Media Manager for a devotional page. Look at the content provided.
-If there is any Hindi text visible, extract it exactly.
-Then, write a long, engaging, and deep spiritual Instagram caption in a mix of Hindi and English (Hinglish) inspired by the content.
-Your response MUST be the final Instagram caption, formatted beautifully with standard emojis.
-Include the following elements in this exact order:
-1. The exact Hindi text from the image/video at the very top (if any).
-2. A 3-4 line beautiful and deep devotional explanation or thought in Hinglish.
-3. A call to action exactly like this:
-
-Aise hi aur amazing thoughts ke liye follow karein! 👇🔥
-Instagram: @pareshpadsala_
-Facebook: @KrishnaVibez
-
-Like 👍 💬 | Comment 💬 | Share 🚀 | Save 📌
-
-4. At least 15-20 highly relevant hashtags at the bottom (e.g., #hindi #thoughts #krishna #suvichar #PareshPadsala_ #vrindavan #radhe #spiritual etc.).
-Do not include any extra text outside the caption itself."""
+    prompt = (
+        "You are an expert Instagram Social Media Manager for a highly popular Hindu devotional page dedicated to Lord Krishna and spirituality. "
+        "Look very closely at the content provided. Analyze the mood, the emotions, the elements (like Krishna, Radha, nature, temple, text etc). "
+        "If there is any Hindi text visible, extract it exactly and place it at the very top. "
+        "Write a LONG, DEEP, and HIGHLY ENGAGING spiritual Instagram caption in a mix of Hindi and English (Hinglish). "
+        "The caption should evoke devotion (bhakti), peace, and emotional connection. "
+        "Structure it EXACTLY like this:\n\n"
+        "PART 1 — EXTRACTED TEXT: (Only if you see text in the image/video, write it here exactly as it is).\n\n"
+        "PART 2 — HOOK & OBSERVATION (3-4 lines): Start with a powerful devotional hook (like Radhe Radhe, Hare Krishna, or a deep thought). Describe what you see in the image/video beautifully. Talk about the aura, the peace, and the divine feeling it gives.\n\n"
+        "PART 3 — DEEP THOUGHT/LEARNING (5-7 lines): Connect the image to a deep spiritual lesson or life advice based on Bhagavad Gita or Krishna's teachings. Talk about trust in God, overcoming life's struggles, karma, or inner peace. Make it long, emotional, and comforting for the reader.\n\n"
+        "PART 4 — ENGAGEMENT (2-3 lines): Ask the audience a question to encourage comments. (e.g., 'Kiski kripa aapke jeevan mein sabse badi hai? Comment mein Radhe Radhe likhein!').\n\n"
+        "PART 5 — CALL TO ACTION (write EXACTLY this):\n"
+        "Aise hi aur amazing thoughts ke liye follow karein! 👇🔥\n"
+        "Instagram: @pareshpadsala_\n"
+        "Facebook: @KrishnaVibez\n\n"
+        "Like 👍 💬 | Comment 💬 | Share 🚀 | Save 📌\n\n"
+        "PART 6 — HASHTAGS: Generate 20 to 25 UNIQUE and HIGHLY SPECIFIC hashtags based on exactly what you see and the spiritual lesson discussed. ALWAYS include at the very end: #krishna #radheradhe #harekrishna #suvichar #PareshPadsala_ #vrindavan #bhakti.\n\n"
+        "IMPORTANT RULES:\n"
+        "- Total caption length should be 150-250 words minimum.\n"
+        "- Do NOT write generic captions. Be specific to what you actually see in the visual.\n"
+        "- Use a peaceful, devotional, and encouraging tone.\n"
+        "- Use emojis naturally to make it look visually beautiful."
+    )
     
     content_to_pass = None
     uploaded_file = None
@@ -315,6 +321,7 @@ def post_fb_video_story(local_file):
             'file_size': file_size
         }
         res_start = requests.post(url, data=start_payload).json()
+        print(f"FB Video Story Start response: {res_start}")
         if 'video_id' not in res_start:
             print(f"❌ FB Video Story Start Failed: {res_start}")
             return False
@@ -322,23 +329,22 @@ def post_fb_video_story(local_file):
         video_id = res_start['video_id']
         upload_url = res_start['upload_url']
         
-        # Step 2: Upload
+        # Step 2: Transfer - upload the actual video bytes
         with open(local_file, "rb") as vf:
-            files = {'video_file_chunk': (local_file, vf, 'video/mp4')}
-            upload_payload = {
-                'access_token': FB_ACCESS_TOKEN,
-                'upload_phase': 'transfer',
-                'start_offset': '0'
-            }
-            res_up = requests.post(upload_url, data=upload_payload, files=files)
-            if res_up.status_code != 200:
-                print(f"❌ Chunk upload failed: {res_up.text}")
-                return False
+            video_data = vf.read()
+            
+        upload_headers = {
+            'Authorization': f'OAuth {FB_ACCESS_TOKEN}',
+            'Content-Type': 'application/octet-stream',
+            'offset': '0',
+            'file_size': str(file_size)
+        }
+        res_up = requests.post(upload_url, data=video_data, headers=upload_headers)
+        print(f"FB Video Story Upload response: {res_up.status_code} - {res_up.text[:200]}")
             
         # Give Meta's servers time to process the uploaded chunk!
-        # Increased to 35 seconds to prevent the "Video Upload Is Missing" error.
-        print("Waiting 35 seconds for Meta to process the chunk...")
-        time.sleep(35)
+        print("Waiting 30 seconds for Meta to process the video chunk...")
+        time.sleep(30)
             
         # Step 3: Finish
         finish_payload = {
@@ -347,6 +353,7 @@ def post_fb_video_story(local_file):
             'video_id': video_id
         }
         res_finish = requests.post(url, data=finish_payload).json()
+        print(f"FB Video Story Finish response: {res_finish}")
         if res_finish.get('success'):
             print(f"✅ FB Video Story Success (ID: {video_id})")
             return True
@@ -553,14 +560,19 @@ if __name__ == "__main__":
             if story_local != media_info["local_path"]:
                 # Upload to GitHub to get a public URL for Instagram API (bypasses Catbox IP block)
                 import shutil
+                import time
                 if not os.path.exists(POSTED_FOLDER):
                     os.makedirs(POSTED_FOLDER)
-                dest_path = os.path.join(POSTED_FOLDER, "story_temp.jpg")
+                unique_filename = f"story_temp_{int(time.time())}.jpg"
+                dest_path = os.path.join(POSTED_FOLDER, unique_filename)
                 shutil.copy(story_local, dest_path)
                 git_commit_and_push("Upload temporary story image for IG API")
                 
+                print("Waiting 15 seconds for GitHub CDN to update...")
+                time.sleep(15)
+                
                 # We must use jsdelivr or raw.githubusercontent. Let's use raw.githubusercontent
-                story_url = f"https://raw.githubusercontent.com/paresh101p-jpg/Auto-Insta-Krishna/master/{POSTED_FOLDER}/story_temp.jpg"
+                story_url = f"https://raw.githubusercontent.com/paresh101p-jpg/Auto-Insta-Krishna/master/{POSTED_FOLDER}/{unique_filename}"
                 print(f"Using GitHub URL for story: {story_url}")
         
         # Post to Instagram Feed/Reel
