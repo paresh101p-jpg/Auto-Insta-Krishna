@@ -12,12 +12,12 @@ This rule is mandatory and must be strictly followed to keep the post backlog ba
 
 # Unique Quotes for Krishna Images
 Whenever you generate AI images for Krishna that include text/quotes:
-1. NEVER use generic prompts for the text (e.g., "Add a nice quote").
-2. ALWAYS read the file `e:\Paresh\Auto Post\Auto-Insta-Krishna\used_quotes.txt` first to see which quotes have already been used in the past.
-3. Generate completely unique, fresh Hindi/Sanskrit thoughts that are NOT in that file. Include a wide variety of topics such as: motivational life lessons, Krishna bhakti, love, success, garibi (poverty), daya (kindness), paisa (money), riste (relationships), etc. **CRITICAL:** DO NOT append "- राधे कृष्ण" or any other signature at the end of the quotes. Only write the core quote.
+1. ALWAYS read the file `e:\Paresh\Auto Post\Auto-Insta-Krishna\quotes.txt`.
+2. NEVER generate your own quotes. ONLY use the exact quotes provided in `quotes.txt`. Pick quotes from this file RANDOMLY (not sequentially) to use in the images.
+3. **CRITICAL:** DO NOT append Sandeep Maheshwari's name, "- राधे कृष्ण", or any other signature at the end of the quotes. Only write the core quote exactly as it is in the file.
 4. **Varied Backgrounds (Unlimited Creativity):** Do not always use a simple wooden board. You can write the text on almost ANY realistic surface! Rotate between hyper-realistic backgrounds like: vintage book pages, old weathered wooden door, stone wall, boat wood, raste (roads), pani (water surface), glass, diwaar (walls), kapde (cloth/fabric), leaves, etc. The text must look naturally integrated (painted, carved, or reflected) into whatever surface you choose.
 5. Explicitly pass the specific thought into the image generation prompt.
-6. AFTER generating the image, ALWAYS append the newly used quote(s) to `e:\Paresh\Auto Post\Auto-Insta-Krishna\used_quotes.txt` so they are never repeated in the future.
+6. AFTER generating the image successfully, ALWAYS MOVE the used quote(s) from `quotes.txt` to `e:\Paresh\Auto Post\Auto-Insta-Krishna\used_quotes.txt` (backup). This means you must delete the quote from `quotes.txt` and append it to `used_quotes.txt`. This ensures the quote is permanently preserved as a backup but never repeated, preventing duplicate images.
 
 # 🚀 NEW ARCHITECTURE: Catbox URL Queue System (Active & Mandatory)
 Auto-Insta-Krishna and Auto-Insta-Pooja both use a robust URL-based queue system for posting.
