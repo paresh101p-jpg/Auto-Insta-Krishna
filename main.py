@@ -175,31 +175,64 @@ def get_next_media():
             
     raise Exception("No media available at all! Please upload new media.")
 
+def clean_caption(text):
+    if not text:
+        return ""
+    import re
+    # Remove markdown horizontal rules (---, ***, ___)
+    cleaned = re.sub(r'^\s*[-*_]{3,}\s*$', '', text, flags=re.MULTILINE)
+    cleaned = re.sub(r'---\s*', '\n\n', cleaned)
+
+    # Remove labels like "**PART 1 — EXTRACTED TEXT:**", "PART 1: ...", "PART 2 — HOOK & OBSERVATION:", etc.
+    cleaned = re.sub(r'(?i)\*{0,2}(?:---\s*)?\*{0,2}PART\s*\d+\s*[—–\-:]+[^\n:]*:\*{0,2}', '', cleaned)
+    cleaned = re.sub(r'(?i)\*{0,2}(?:EXTRACTED TEXT|HOOK & OBSERVATION|HOOK|OBSERVATION|DEEP THOUGHT/LEARNING|DEEP THOUGHT|LEARNING|AUDIENCE ENGAGEMENT|ENGAGEMENT|CALL TO ACTION|HASHTAGS)\s*:\*{0,2}', '', cleaned)
+
+    # Remove square brackets around hashtags: [#tag] -> #tag
+    cleaned = re.sub(r'\[\s*(#[a-zA-Z0-9_\u0900-\u097F]+)\s*\]', r'\1', cleaned)
+    cleaned = re.sub(r'\[(#[^\]]+)\]', r'\1', cleaned)
+
+    # Clean up empty markdown bold tags like ****
+    cleaned = re.sub(r'\*\*\s*\*\*', '', cleaned)
+
+    # Normalize excessive newlines (max 2 consecutive newlines)
+    cleaned = re.sub(r'\n{3,}', '\n\n', cleaned)
+    return cleaned.strip()
+
 def generate_caption(media_path):
     is_video = media_path.lower().endswith('.mp4')
     print(f"Analyzing {'video' if is_video else 'image'} using Gemini Vision...")
     prompt = (
-        "You are an expert Instagram Social Media Manager for a highly popular Hindu devotional page dedicated to Lord Krishna and spirituality. "
-        "Look very closely at the content provided. Analyze the mood, the emotions, the elements (like Krishna, Radha, nature, temple, text etc). "
-        "If there is any Hindi text visible, extract it exactly and place it at the very top. "
-        "Write a LONG, DEEP, and HIGHLY ENGAGING spiritual Instagram caption in a mix of Hindi and English (Hinglish). "
-        "The caption should evoke devotion (bhakti), peace, and emotional connection. "
-        "Structure it EXACTLY like this:\n\n"
-        "PART 1 — EXTRACTED TEXT: (Only if you see text in the image/video, write it here exactly as it is).\n\n"
-        "PART 2 — HOOK & OBSERVATION (3-4 lines): Start with a powerful devotional hook (like Radhe Radhe, Hare Krishna, or a deep thought). Describe what you see in the image/video beautifully. Talk about the aura, the peace, and the divine feeling it gives.\n\n"
-        "PART 3 — DEEP THOUGHT/LEARNING (5-7 lines): Connect the image to a deep spiritual lesson or life advice based on Bhagavad Gita or Krishna's teachings. Talk about trust in God, overcoming life's struggles, karma, or inner peace. Make it long, emotional, and comforting for the reader.\n\n"
-        "PART 4 — ENGAGEMENT (2-3 lines): Ask the audience a question to encourage comments. (e.g., 'Kiski kripa aapke jeevan mein sabse badi hai? Comment mein Radhe Radhe likhein!').\n\n"
-        "PART 5 — CALL TO ACTION (write EXACTLY this):\n"
+        "You are an expert Instagram Social Media Manager for a highly popular Hindu devotional page dedicated to Lord Krishna and spirituality.\n"
+        "Look very closely and analyze the provided photo or video in rich detail:\n"
+        "- Observe the visual scene: divine aura, lighting, atmosphere (e.g. Himalayas, tranquil river, temple, forest, rustic texture, glowing lamps).\n"
+        "- Observe sacred symbols and elements: Lord Krishna, Radha Krishna, flute (bansuri), peacock feathers (morpankh), divine smile, posture, flowers, calm serenity.\n"
+        "- If any Hindi or spiritual quote/text is written/painted on the image or video, read and extract it with 100% exact spelling.\n\n"
+        "Write a LONG, POETIC, DEEPLY DEVOTIONAL, and HIGHLY ENGAGING Instagram caption in a natural blend of Hindi and Hinglish.\n\n"
+        "Follow this natural narrative flow (WITHOUT WRITING ANY SECTION TITLES OR PART LABELS):\n\n"
+        "1. EXTRACTED QUOTE (Only if text is visible in the visual):\n"
+        "Place the exact extracted quote at the very beginning, beautifully highlighted with quotation marks and sparkles, like:\n"
+        "✨ \"[Exact extracted quote]\" ✨\n\n"
+        "2. DEVOTIONAL GREETING & VIVID VISUAL OBSERVATION (3-4 lines):\n"
+        "Begin with a warm devotional greeting (e.g., 'हरे कृष्णा! राधे-राधे! 🙏🌸' or 'जय श्री कृष्णा! ✨').\n"
+        "Poetically describe what you see in the photo/video. Connect the setting (mountains, river, lighting, divine smile, bansuri, morpankh) to a feeling of inner peace, divine presence, and spiritual solace.\n\n"
+        "3. DEEP SPIRITUAL LESSON & BHAGAVAD GITA WISDOM (5-7 lines):\n"
+        "Connect the visual to profound spiritual wisdom from Bhagavad Gita and Lord Krishna. Talk about overcoming fear, trusting in God's plan, letting go of anxiety, the power of pure karma, and complete surrender to Shri Krishna. Make it comforting, emotional, and inspiring for the reader.\n\n"
+        "4. DEVOTIONAL ENGAGEMENT (2-3 lines):\n"
+        "Ask a heartfelt question to encourage comments from devotees, and warmly invite them to write 'राधे राधे' or 'जय श्री कृष्णा' in the comments.\n\n"
+        "5. CALL TO ACTION (Include EXACTLY this block):\n"
         "Aise hi aur amazing thoughts ke liye follow karein! 👇🔥\n"
         "Instagram: @pareshpadsala_\n"
         "Facebook: @KrishnaVibez\n\n"
         "Like 👍 💬 | Comment 💬 | Share 🚀 | Save 📌\n\n"
-        "PART 6 — HASHTAGS: Generate 20 to 25 UNIQUE and HIGHLY SPECIFIC hashtags based on exactly what you see and the spiritual lesson discussed. ALWAYS include at the very end: #krishna #radheradhe #harekrishna #suvichar #PareshPadsala_ #vrindavan #bhakti.\n\n"
-        "IMPORTANT RULES:\n"
+        "6. HASHTAGS:\n"
+        "Generate 20 to 25 UNIQUE and HIGHLY SPECIFIC hashtags based on what you actually see and discuss. Write them as plain space-separated hashtags (NO brackets). ALWAYS include at the very end: #krishna #radheradhe #harekrishna #suvichar #PareshPadsala_ #vrindavan #bhakti\n\n"
+        "CRITICAL FORMATTING INSTRUCTIONS (STRICTLY ENFORCED):\n"
+        "- NEVER output section numbers, labels, or headings like 'PART 1', 'PART 2', 'PART 3', 'PART 4', 'PART 5', 'PART 6', 'EXTRACTED TEXT:', 'HOOK:', 'OBSERVATION:', 'DEEP THOUGHT:', 'ENGAGEMENT:', 'CALL TO ACTION:', 'HASHTAGS:'.\n"
+        "- NEVER include markdown divider lines like '---' or '***'.\n"
+        "- NEVER put hashtags in square brackets like '[#tag]'.\n"
         "- Total caption length should be 150-250 words minimum.\n"
-        "- Do NOT write generic captions. Be specific to what you actually see in the visual.\n"
-        "- Use a peaceful, devotional, and encouraging tone.\n"
-        "- Use emojis naturally to make it look visually beautiful."
+        "- Use emojis naturally to make it visually beautiful.\n"
+        "- Output ONLY the final, seamless Instagram caption ready to post."
     )
     
     content_to_pass = None
@@ -226,6 +259,7 @@ def generate_caption(media_path):
                     )
                     caption = response.text
                     if caption:
+                        caption = clean_caption(caption)
                         print("Caption generated successfully!\n")
                         print(caption)
                         print("\n" + "="*50 + "\n")
@@ -243,9 +277,9 @@ def generate_caption(media_path):
                 
     try:
         import fallback_captions
-        return fallback_captions.get_random_caption()
+        return clean_caption(fallback_captions.get_random_caption())
     except Exception as e:
-        return """Radhe Radhe! ✨ Zindagi mein chahe kitni bhi mushkilein aayein, Krishna par vishwas rakhna. Wo sab theek kar denge. Jai Shree Krishna! 🙏
+        return clean_caption("""Radhe Radhe! ✨ Zindagi mein chahe kitni bhi mushkilein aayein, Krishna par vishwas rakhna. Wo sab theek kar denge. Jai Shree Krishna! 🙏
 
 Aise hi aur amazing thoughts ke liye follow karein! 👇🔥
 Instagram: @pareshpadsala_
@@ -253,7 +287,7 @@ Facebook: @KrishnaVibez
 
 Like 👍 💬 | Comment 💬 | Share 🚀 | Save 📌
 
-#krishna #radheradhe #harekrishna #bhagavadgita #vrindavan #suvichar #hindi #devotion #PareshPadsala_"""
+#krishna #radheradhe #harekrishna #bhagavadgita #vrindavan #suvichar #hindi #devotion #PareshPadsala_""")
 
 def get_ig_account_id():
     url = f"https://graph.facebook.com/v20.0/{FB_PAGE_ID}?fields=instagram_business_account&access_token={FB_ACCESS_TOKEN}"
@@ -546,6 +580,7 @@ if __name__ == "__main__":
         print(f"Media URL for Graph API: {media_info['media_url']}")
         
         caption = generate_caption(media_info["local_path"])
+        caption = clean_caption(caption)
         
         ig_caption = caption + "\n\n✨ @sneha_padsala ✨"
         fb_caption = caption
