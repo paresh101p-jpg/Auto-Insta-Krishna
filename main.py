@@ -26,7 +26,7 @@ if FB_PAGE_ID == "YAHAN_APNA_NAYA_PAGE_ID_DALNA_HAI":
 
 client = genai.Client(api_key=GEMINI_API_KEY)
 IMAGES_FOLDER = "images"
-GEMINI_MODELS = ["gemini-3.8-flash", "gemini-3.8-flash-001"]
+GEMINI_MODELS = ["gemini-2.5-flash", "gemini-2.0-flash", "gemini-1.5-flash", "gemini-1.5-pro"]
 # Yahan naye repo ka naam aayega (e.g., Auto-Insta-Krishna)
 GITHUB_REPO_RAW_URL = "https://raw.githubusercontent.com/paresh101p-jpg/Auto-Insta-Krishna/master/"
 
@@ -202,36 +202,37 @@ def generate_caption(media_path):
     is_video = media_path.lower().endswith('.mp4')
     print(f"Analyzing {'video' if is_video else 'image'} using Gemini Vision...")
     prompt = (
-        "You are an expert Instagram Social Media Manager for a highly popular Hindu devotional page dedicated to Lord Krishna and spirituality.\n"
-        "Look very closely and analyze the provided photo or video in rich detail:\n"
-        "- Observe the visual scene: divine aura, lighting, atmosphere (e.g. Himalayas, tranquil river, temple, forest, rustic texture, glowing lamps).\n"
-        "- Observe sacred symbols and elements: Lord Krishna, Radha Krishna, flute (bansuri), peacock feathers (morpankh), divine smile, posture, flowers, calm serenity.\n"
-        "- If any Hindi or spiritual quote/text is written/painted on the image or video, read and extract it with 100% exact spelling.\n\n"
+        "You are an expert Instagram Social Media Creator and Visual Analyst for a popular Hindu devotional page dedicated to Lord Krishna and spirituality.\n\n"
+        "Look very carefully at the attached media (photo/video) and base your caption ENTIRELY on what is ACTUALLY visible:\n"
+        "- IF THERE IS HINDI/SANSKRIT TEXT OR A QUOTE ON THE IMAGE/VIDEO: Read it with 100% exact spelling, extract it word-for-word, and place it at the very top.\n"
+        "- IF THERE IS A REAL-WORLD OBJECT (like a rock/cliff in the mountains, an ancient wooden door, a vintage diary, a temple pillar, a rustic wall, glowing deepams): Poetically describe that physical object, its texture, and the scenic environment (e.g. Himalayas, tranquil valley, river).\n"
+        "- IF LORD KRISHNA, RADHA-KRISHNA, OR SACRED SYMBOLS ARE SHOWN: Describe the divine aura, joyful smile, flute (bansuri), peacock feathers (morpankh), sacred cows, or holy temple.\n"
+        "- IF SCENERY OR NATURE IS SHOWN: Describe the peaceful ambiance, lighting, colors, and divine serenity it conveys.\n\n"
         "Write a LONG, POETIC, DEEPLY DEVOTIONAL, and HIGHLY ENGAGING Instagram caption in a natural blend of Hindi and Hinglish.\n\n"
         "Follow this natural narrative flow (WITHOUT WRITING ANY SECTION TITLES OR PART LABELS):\n\n"
-        "1. EXTRACTED QUOTE (Only if text is visible in the visual):\n"
-        "Place the exact extracted quote at the very beginning, beautifully highlighted with quotation marks and sparkles, like:\n"
-        "✨ \"[Exact extracted quote]\" ✨\n\n"
+        "1. EXTRACTED QUOTE (Only if text/quote is visible on the image/video):\n"
+        "Place the exact extracted quote at the very beginning inside decorative quotation marks, e.g.:\n"
+        "✨ \"[Exact extracted quote from the visual]\" ✨\n\n"
         "2. DEVOTIONAL GREETING & VIVID VISUAL OBSERVATION (3-4 lines):\n"
         "Begin with a warm devotional greeting (e.g., 'हरे कृष्णा! राधे-राधे! 🙏🌸' or 'जय श्री कृष्णा! ✨').\n"
-        "Poetically describe what you see in the photo/video. Connect the setting (mountains, river, lighting, divine smile, bansuri, morpankh) to a feeling of inner peace, divine presence, and spiritual solace.\n\n"
+        "Describe specifically and poetically what you see in this photo/video (the exact scene, colors, elements, mood) and how it brings spiritual peace (shanti) to the heart.\n\n"
         "3. DEEP SPIRITUAL LESSON & BHAGAVAD GITA WISDOM (5-7 lines):\n"
-        "Connect the visual to profound spiritual wisdom from Bhagavad Gita and Lord Krishna. Talk about overcoming fear, trusting in God's plan, letting go of anxiety, the power of pure karma, and complete surrender to Shri Krishna. Make it comforting, emotional, and inspiring for the reader.\n\n"
+        "Connect the visual and the thought to life lessons from Shrimad Bhagavad Gita and Lord Krishna. Talk about overcoming fear, trusting in God's divine plan, performing selfless karma, and finding inner strength through surrender to Shri Krishna. Make it comforting, emotional, and inspiring.\n\n"
         "4. DEVOTIONAL ENGAGEMENT (2-3 lines):\n"
-        "Ask a heartfelt question to encourage comments from devotees, and warmly invite them to write 'राधे राधे' or 'जय श्री कृष्णा' in the comments.\n\n"
+        "Ask a heartfelt question connecting the thought to the devotees' daily life, and invite them warmly to write 'राधे राधे' or 'जय श्री कृष्णा' in the comments.\n\n"
         "5. CALL TO ACTION (Include EXACTLY this block):\n"
         "Aise hi aur amazing thoughts ke liye follow karein! 👇🔥\n"
         "Instagram: @pareshpadsala_\n"
         "Facebook: @KrishnaVibez\n\n"
         "Like 👍 💬 | Comment 💬 | Share 🚀 | Save 📌\n\n"
         "6. HASHTAGS:\n"
-        "Generate 20 to 25 UNIQUE and HIGHLY SPECIFIC hashtags based on what you actually see and discuss. Write them as plain space-separated hashtags (NO brackets). ALWAYS include at the very end: #krishna #radheradhe #harekrishna #suvichar #PareshPadsala_ #vrindavan #bhakti\n\n"
+        "Generate 20 to 25 UNIQUE and HIGHLY SPECIFIC hashtags based on what you actually see in the visual and the spiritual lesson discussed. Write them as plain space-separated hashtags (NO brackets, NO commas). ALWAYS include at the very end: #krishna #radheradhe #harekrishna #suvichar #PareshPadsala_ #vrindavan #bhakti\n\n"
         "CRITICAL FORMATTING INSTRUCTIONS (STRICTLY ENFORCED):\n"
         "- NEVER output section numbers, labels, or headings like 'PART 1', 'PART 2', 'PART 3', 'PART 4', 'PART 5', 'PART 6', 'EXTRACTED TEXT:', 'HOOK:', 'OBSERVATION:', 'DEEP THOUGHT:', 'ENGAGEMENT:', 'CALL TO ACTION:', 'HASHTAGS:'.\n"
         "- NEVER include markdown divider lines like '---' or '***'.\n"
         "- NEVER put hashtags in square brackets like '[#tag]'.\n"
         "- Total caption length should be 150-250 words minimum.\n"
-        "- Use emojis naturally to make it visually beautiful.\n"
+        "- Use emojis naturally to make it visually attractive.\n"
         "- Output ONLY the final, seamless Instagram caption ready to post."
     )
     
@@ -242,12 +243,20 @@ def generate_caption(media_path):
         if is_video:
             print("Uploading video to Gemini...")
             uploaded_file = client.files.upload(file=media_path)
-            while uploaded_file.state.name == "PROCESSING":
+            wait_attempts = 0
+            while uploaded_file.state.name != "ACTIVE" and wait_attempts < 20:
+                if uploaded_file.state.name == "FAILED":
+                    raise Exception("Gemini video processing failed.")
+                print(f"Waiting for video processing in Gemini... Status: {uploaded_file.state.name}")
                 time.sleep(3)
+                wait_attempts += 1
                 uploaded_file = client.files.get(name=uploaded_file.name)
             content_to_pass = uploaded_file
         else:
-            content_to_pass = Image.open(media_path)
+            from PIL import Image
+            img = Image.open(media_path).convert("RGB")
+            img.load()
+            content_to_pass = img
             
         for model_name in GEMINI_MODELS:
             for attempt in range(1, 4):
@@ -260,7 +269,7 @@ def generate_caption(media_path):
                     caption = response.text
                     if caption:
                         caption = clean_caption(caption)
-                        print("Caption generated successfully!\n")
+                        print("Caption generated successfully from visual!\n")
                         print(caption)
                         print("\n" + "="*50 + "\n")
                         return caption
@@ -274,6 +283,8 @@ def generate_caption(media_path):
                 print("Cleaned up video from Gemini storage.")
             except:
                 pass
+                
+    print("⚠️ WARNING: All Gemini Vision attempts failed, using fallback caption!")
                 
     try:
         import fallback_captions
