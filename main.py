@@ -26,7 +26,7 @@ if FB_PAGE_ID == "YAHAN_APNA_NAYA_PAGE_ID_DALNA_HAI":
 
 client = genai.Client(api_key=GEMINI_API_KEY)
 IMAGES_FOLDER = "images"
-GEMINI_MODELS = ["gemini-2.5-flash", "gemini-2.0-flash", "gemini-1.5-flash", "gemini-1.5-pro"]
+GEMINI_MODELS = ["gemini-3.8-flash", "gemini-3.8-pro", "gemini-3.7-flash"]
 # Yahan naye repo ka naam aayega (e.g., Auto-Insta-Krishna)
 GITHUB_REPO_RAW_URL = "https://raw.githubusercontent.com/paresh101p-jpg/Auto-Insta-Krishna/master/"
 
@@ -194,6 +194,9 @@ def clean_caption(text):
     # Clean up empty markdown bold tags like ****
     cleaned = re.sub(r'\*\*\s*\*\*', '', cleaned)
 
+    # Remove any unwanted mentions like @sneha_padsala if present
+    cleaned = re.sub(r'(?i)[✨* ]*@sneh?s?a_padsala[✨* ]*', '', cleaned)
+
     # Normalize excessive newlines (max 2 consecutive newlines)
     cleaned = re.sub(r'\n{3,}', '\n\n', cleaned)
     return cleaned.strip()
@@ -276,6 +279,35 @@ def generate_caption(media_path):
                 except Exception as e:
                     print(f"Gemini error on attempt {attempt} with {model_name}: {e}")
                     time.sleep(3)
+
+        # Fallback: Dynamically discover working models if predefined ones fail
+        try:
+            print("Attempting dynamic model discovery via client.models.list()...")
+            discovered_models = []
+            for m in client.models.list():
+                m_name = m.name.replace("models/", "") if hasattr(m, "name") and m.name else ""
+                supported = getattr(m, "supported_actions", []) or getattr(m, "supported_generation_methods", []) or []
+                if m_name and ("generateContent" in supported or not supported) and m_name not in GEMINI_MODELS:
+                    discovered_models.append(m_name)
+            
+            print(f"Discovered available models: {discovered_models[:5]}")
+            for m_name in discovered_models:
+                try:
+                    print(f"Attempting with dynamically discovered model {m_name}...")
+                    response = client.models.generate_content(
+                        model=m_name,
+                        contents=[content_to_pass, prompt]
+                    )
+                    if response.text:
+                        caption = clean_caption(response.text)
+                        print(f"Caption generated successfully using dynamic model {m_name}!\n")
+                        print(caption)
+                        print("\n" + "="*50 + "\n")
+                        return caption
+                except Exception as dyn_e:
+                    print(f"Gemini error with dynamic model {m_name}: {dyn_e}")
+        except Exception as list_e:
+            print(f"Could not list models: {list_e}")
     finally:
         if uploaded_file:
             try:
@@ -593,7 +625,7 @@ if __name__ == "__main__":
         caption = generate_caption(media_info["local_path"])
         caption = clean_caption(caption)
         
-        ig_caption = caption + "\n\n✨ @sneha_padsala ✨"
+        ig_caption = caption
         fb_caption = caption
         
         ig_account_id = get_ig_account_id()
