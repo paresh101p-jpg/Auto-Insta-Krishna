@@ -1,13 +1,15 @@
-name: Auto Instagram Post
+name: Auto Post to Instagram, Facebook & Krishna Vibez Website
 
 on:
+  schedule:
+    - cron: '0 10 * * *' # Daily at 3:30 PM IST (10:00 AM UTC)
   workflow_dispatch: # Allows manual trigger from GitHub UI and cron-job.org
 
 jobs:
-  post-to-instagram:
+  post-and-publish:
     runs-on: ubuntu-latest
     permissions:
-      contents: write  # Ye permission deni zaroori hai image delete (commit) karne ke liye
+      contents: write  # Permission to commit updated posts-data.js and media
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
@@ -17,12 +19,34 @@ jobs:
         with:
           python-version: '3.10'
 
-      - name: Install dependencies
+      - name: Set up Node.js for Firebase
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+
+      - name: Install Python dependencies
         run: pip install -r requirements.txt
 
-      - name: Run Auto Post Script
+      - name: Run Auto Post Script (Insta + FB + Website Content)
         env:
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
           FB_PAGE_ID: ${{ secrets.FB_PAGE_ID }}
           FB_ACCESS_TOKEN: ${{ secrets.FB_ACCESS_TOKEN }}
         run: python -u main.py
+
+      - name: Commit Updated Website Data & URLs to Git
+        run: |
+          git config user.name "Krishna Vibez Cloud Bot"
+          git config user.email "bot@krishnavibez.in"
+          git add website/ used_urls.txt images_urls.txt reels_urls.txt last_post_type.txt || true
+          git diff --staged --quiet || git commit -m "Auto-published new post to Krishna Vibez website [skip ci]"
+          git push origin master || git push origin main || true
+
+      - name: Deploy to Firebase Hosting
+        env:
+          FIREBASE_TOKEN: ${{ secrets.FIREBASE_TOKEN }}
+        if: env.FIREBASE_TOKEN != ''
+        run: |
+          npm install -g firebase-tools
+          firebase deploy --only hosting --token "$FIREBASE_TOKEN"
+        working-directory: website

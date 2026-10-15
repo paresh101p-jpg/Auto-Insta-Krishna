@@ -727,6 +727,17 @@ if __name__ == "__main__":
             # Now we mark it as used!
             if media_info["type"] == "catbox":
                 mark_url_as_used(media_info["media_url"], media_info["is_video"])
+            
+            # Automatically publish new post to Krishna Vibez Website!
+            try:
+                import website_publisher
+                website_publisher.publish_to_website(
+                    media_url=media_info["media_url"],
+                    caption=caption,
+                    is_video=media_info["is_video"]
+                )
+            except Exception as web_err:
+                print(f"Warning: Website auto-publish error: {web_err}")
         else:
             if "handle_failure" in globals():
                 handle_failure(media_info)

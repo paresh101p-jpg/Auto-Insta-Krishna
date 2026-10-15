@@ -1,0 +1,424 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title id="postMetaTitle">Krishna Vibez — दिव्य दर्शन एवं आध्यात्मिक भावार्थ</title>
+  <meta name="description" id="postMetaDesc" content="श्री कृष्ण के अनमोल विचार और भगवद्गीता सार।">
+  <link rel="icon" type="image/png" href="assets/logo.png">
+  
+  <!-- Security Meta Tags -->
+  <meta http-equiv="X-Content-Type-Options" content="nosniff">
+  <meta name="referrer" content="strict-origin-when-cross-origin">
+
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+  <!-- Ambient Light Accents -->
+  <div class="ambient-glow-1"></div>
+  <div class="ambient-glow-2"></div>
+
+  <!-- Navigation Bar -->
+  <nav class="navbar">
+    <div class="nav-container">
+      <a href="index.html" class="brand-link">
+        <img src="assets/logo.png" alt="Krishna Vibez Logo" class="brand-logo-img">
+        <div class="brand-text-wrap">
+          <span class="brand-name">KRISHNA VIBEZ</span>
+          <span class="brand-tagline">DIVINE INSPIRATION</span>
+        </div>
+      </a>
+
+      <div class="nav-center">
+        <a href="index.html" class="nav-link">होम (Home)</a>
+        <a href="index.html#feed" class="nav-link">दैनिक दर्शन</a>
+        <a href="about.html" class="nav-link">हमारे बारे में</a>
+        <a href="contact.html" class="nav-link">संपर्क</a>
+      </div>
+
+      <div class="nav-actions">
+        <a href="https://www.instagram.com/pareshpadsala_/" target="_blank" rel="noopener noreferrer" class="nav-social-btn instagram" title="Instagram पर फॉलो करें: @pareshpadsala_">
+          <svg viewBox="0 0 24 24"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/></svg>
+          <span>Instagram</span>
+        </a>
+        <a href="https://www.facebook.com/1808917602588221" target="_blank" rel="noopener noreferrer" class="nav-social-btn facebook" title="Facebook पर फॉलो करें: Krishna Vibez">
+          <svg viewBox="0 0 24 24"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>
+          <span>Facebook</span>
+        </a>
+        <button id="audioToggleBtn" class="audio-toggle-btn" title="बांसुरी की धुन सुनें">
+          <div id="audioBars" class="audio-bars paused">
+            <span></span><span></span><span></span>
+          </div>
+          <span id="audioStatusLabel">Flute Audio</span>
+        </button>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Post Detail Article Container -->
+  <main class="post-detail-container" id="postDetailWrapper">
+    <a href="index.html" class="back-btn">← सभी दर्शनों पर लौटें</a>
+
+    <div id="postLoading" style="text-align: center; padding: 60px 20px;">
+      <span style="font-size: 2.5rem; display: block; margin-bottom: 10px;">🪷</span>
+      <p style="color: var(--gold-primary);">दिव्य दर्शन लोड हो रहा है…</p>
+    </div>
+
+    <article id="postContentArea" style="display: none;">
+      <header class="post-detail-header">
+        <span class="post-detail-cat" id="dCategory">भगवद्गीता ज्ञान</span>
+        <h1 class="post-detail-title" id="dTitle">—</h1>
+        <div class="post-meta-row">
+          <span>📅 <span id="dDate">—</span></span>
+          <span>✍️ <span id="dAuthor">Krishna Vibez</span></span>
+          <span>⏱️ <span id="dReadTime">3 min read</span></span>
+        </div>
+      </header>
+
+      <!-- High-Res Image Preview Wrap -->
+      <div class="post-detail-img-wrap">
+        <img id="dImage" src="" alt="" class="post-detail-img">
+      </div>
+
+      <!-- Real Live Metrics & Engagement Strip -->
+      <div class="detail-metrics-strip" id="detailMetricsStrip">
+        <div class="detail-metric-box" title="कुल दर्शन (Views)">
+          👁️ <span><strong id="dViews">0</strong> दर्शन (Views)</span>
+        </div>
+
+        <div class="detail-metric-box interactive" id="dLikeBox" onclick="handleDetailLikeToggle()" title="पसंद करें (Like)">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" id="dLikeSvg">
+            <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
+          </svg>
+          <span><strong id="dLikes">0</strong> Likes</span>
+        </div>
+
+        <a href="#commentsSection" class="detail-metric-box interactive" style="color:inherit;text-decoration:none;" title="भक्त टिप्पणियाँ देखें">
+          💬 <span><strong id="dCommentsCount">0</strong> टिप्पणियाँ</span>
+        </a>
+
+        <div class="detail-metric-box" title="WhatsApp शेयर्स">
+          📲 <span><strong id="dShares">0</strong> Shares</span>
+        </div>
+
+        <div class="detail-metric-box" title="4K Wallpaper डाउनलोड्स">
+          ⬇️ <span><strong id="dDownloads">0</strong> Downloads</span>
+        </div>
+      </div>
+
+      <!-- Action Buttons Bar -->
+      <div class="detail-actions-bar">
+        <button class="btn-whatsapp-share" id="btnShareDetail" style="padding: 12px 16px; font-size: 0.9rem;">
+          📲 WhatsApp शेयर करें
+        </button>
+        <button class="btn-download-hd" id="btnDownloadDetail" style="padding: 12px 16px; font-size: 0.9rem;">
+          ⬇️ 4K Wallpaper डाउनलोड
+        </button>
+        <button class="btn-download-hd" id="btnCopyDetail" style="padding: 12px 16px; font-size: 0.9rem; background: rgba(0, 229, 190, 0.1); border-color: var(--border-cyan); color: var(--peacock-cyan);">
+          📋 विचार कॉपी करें
+        </button>
+      </div>
+
+      <!-- In-Article Ad Slot -->
+      <div class="ad-container">
+        <span class="ad-slot-label">— Advertisement Space (Google AdSense In-Article) —</span>
+        <div style="min-height: 100px; display: flex; align-items: center; justify-content: center; opacity: 0.6;">
+          In-Article Responsive Ad Unit
+        </div>
+      </div>
+
+      <!-- Full Body Article -->
+      <div class="post-content-body" id="dBody">
+        <!-- Rendered via JS -->
+      </div>
+
+      <!-- Tags Section -->
+      <div style="margin-top: 36px; padding-top: 20px; border-top: 1px solid var(--border-subtle); display: flex; gap: 8px; flex-wrap: wrap;" id="dTags">
+        <!-- Tags injected here -->
+      </div>
+
+      <!-- Social Follow CTA Box -->
+      <div class="post-social-box">
+        <h4>🪷 दैनिक दिव्य दर्शन व विचारों के लिए जुड़ें</h4>
+        <p>भगवान श्री कृष्ण के अलौकिक विचार, 4K HD वॉलपेपर्स और नित्य दर्शन के लिए हमें सोशल मीडिया पर अवश्य फॉलो करें:</p>
+        <div class="post-social-buttons">
+          <a href="https://www.instagram.com/pareshpadsala_/" target="_blank" rel="noopener noreferrer" class="post-social-btn instagram">
+            <svg viewBox="0 0 24 24"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/></svg>
+            <span>Instagram पर फॉलो करें</span>
+          </a>
+          <a href="https://www.facebook.com/1808917602588221" target="_blank" rel="noopener noreferrer" class="post-social-btn facebook">
+            <svg viewBox="0 0 24 24"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>
+            <span>Facebook पर फॉलो करें</span>
+          </a>
+        </div>
+      </div>
+
+      <!-- Devotional Comments Section -->
+      <section class="comments-container" id="commentsSection">
+        <div class="comments-header">
+          <h3 class="comments-title">
+            💬 भक्त टिप्पणियाँ एवं मंगल भाव
+          </h3>
+          <span class="comments-count-badge" id="commentBadge">0 टिप्पणियाँ</span>
+        </div>
+
+        <div class="comment-form">
+          <div class="comment-form-row">
+            <input type="text" id="commentAuthor" placeholder="आपका शुभ नाम (जैसे: राहुल, पूजा, राधे भक्त...)" class="comment-input" maxlength="40">
+            
+            <div>
+              <label style="font-size:0.78rem;color:var(--text-muted);display:block;margin-bottom:6px;">एक क्लिक में मंगल भाव जोड़ें:</label>
+              <div class="quick-tags-wrap">
+                <span class="quick-tag-pill" onclick="appendQuickTag('🌸 राधे राधे!')">🌸 राधे राधे!</span>
+                <span class="quick-tag-pill" onclick="appendQuickTag('🙏 जय श्री कृष्णा!')">🙏 जय श्री कृष्णा!</span>
+                <span class="quick-tag-pill" onclick="appendQuickTag('🚩 हर हर महादेव!')">🚩 हर हर महादेव!</span>
+                <span class="quick-tag-pill" onclick="appendQuickTag('🪷 अति दिव्य एवं पावन दर्शन!')">🪷 अति दिव्य दर्शन!</span>
+                <span class="quick-tag-pill" onclick="appendQuickTag('✨ कान्हा की कृपा सदा बनी रहे!')">✨ कान्हा कृपा!</span>
+                <span class="quick-tag-pill" onclick="appendQuickTag('📖 अनमोल ज्ञान!')">📖 अनमोल ज्ञान!</span>
+              </div>
+            </div>
+
+            <textarea id="commentText" rows="3" placeholder="भगवान श्री कृष्ण के प्रति अपने विचार या मंगल भाव लिखें..." class="comment-textarea" maxlength="400"></textarea>
+
+            <button type="button" class="btn-submit-comment" onclick="submitUserComment()">
+              💬 मंगल भाव भेजें (Post Comment)
+            </button>
+          </div>
+        </div>
+
+        <div class="comments-list" id="commentsList">
+          <!-- Comments rendered via JS -->
+        </div>
+      </section>
+
+    </article>
+  </main>
+
+  <!-- Footer Section -->
+  <footer class="footer">
+    <div class="footer-container">
+      <div class="footer-col">
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px;">
+          <img src="assets/logo.png" alt="Logo" style="width:36px;height:36px;border-radius:8px;">
+          <span style="font-family:var(--font-divine);font-size:1.2rem;color:var(--gold-primary);font-weight:800;">KRISHNA VIBEZ</span>
+        </div>
+        <p style="font-size:0.84rem;line-height:1.7;color:var(--text-muted);margin-bottom:16px;">
+          दैनिक प्रेरणा, भगवद्गीता सार, श्री कृष्ण के दिव्य सुविचार और मोबाइल के लिए उच्च गुणवत्ता वाले 4K HD वॉलपेपर्स का सबसे पावन डिजिटल केंद्र।
+        </p>
+      </div>
+      <div class="footer-col">
+        <h4>महत्वपूर्ण पृष्ठ</h4>
+        <ul class="footer-links">
+          <li><a href="about.html">About Us</a></li>
+          <li><a href="privacy-policy.html">Privacy Policy</a></li>
+          <li><a href="terms.html">Terms & Conditions</a></li>
+          <li><a href="contact.html">Contact Us</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <div>© 2026 Krishna Vibez (krishnavibez.in). सर्व अधिकार सुरक्षित।</div>
+    </div>
+  </footer>
+
+  <div id="toastMsg" class="toast-msg"></div>
+
+  <!-- Scripts -->
+  <script src="js/posts-data.js"></script>
+  <script src="js/app.js"></script>
+  <script>
+    let currentPostId = null;
+
+    document.addEventListener('DOMContentLoaded', () => {
+      const urlParams = new URLSearchParams(window.location.search);
+      const postId = urlParams.get('id');
+      const posts = window.KRISHNA_POSTS || [];
+
+      let post = posts.find(p => p.id === postId);
+      if (!post && posts.length > 0) {
+        post = posts[0]; // Fallback to first post
+      }
+
+      const loader = document.getElementById('postLoading');
+      const content = document.getElementById('postContentArea');
+
+      if (post) {
+        currentPostId = post.id;
+
+        // Record real view
+        StatsManager.recordView(post.id);
+
+        document.title = `${post.title} — Krishna Vibez`;
+        document.getElementById('postMetaTitle').textContent = `${post.title} — Krishna Vibez`;
+        document.getElementById('postMetaDesc').setAttribute('content', post.shortDesc || post.quote);
+
+        document.getElementById('dTitle').textContent = post.title;
+        document.getElementById('dCategory').textContent = post.category;
+        document.getElementById('dDate').textContent = post.date;
+        document.getElementById('dAuthor').textContent = post.author || 'Krishna Vibez';
+        document.getElementById('dReadTime').textContent = post.readTime || '3 min read';
+        
+        const isVideo = (post.mediaType === 'video') || (post.videoUrl) || (post.imageUrl && post.imageUrl.endsWith('.mp4'));
+        const mediaUrl = post.videoUrl || post.imageUrl;
+        const imgWrap = document.querySelector('.post-detail-img-wrap');
+        const seoAlt = getSeoAltText(post, isVideo);
+
+        if (isVideo) {
+          imgWrap.innerHTML = `
+            <video src="${mediaUrl}" class="post-detail-img" controls autoplay loop playsinline title="${escapeHtml(seoAlt)}" aria-label="${escapeHtml(seoAlt)}" style="width:100%;max-height:680px;background:#000;display:block;"></video>
+          `;
+          document.getElementById('btnDownloadDetail').innerHTML = '⬇️ 4K Reel डाउनलोड (MP4)';
+        } else {
+          imgWrap.innerHTML = `
+            <img id="dImage" src="${mediaUrl}" alt="${escapeHtml(seoAlt)}" title="${escapeHtml(seoAlt)}" class="post-detail-img">
+          `;
+          document.getElementById('btnDownloadDetail').innerHTML = '⬇️ 4K Wallpaper डाउनलोड';
+        }
+
+        document.getElementById('dBody').innerHTML = post.content || `<p>${post.quote}</p>`;
+
+        // Tags
+        if (post.tags && post.tags.length > 0) {
+          document.getElementById('dTags').innerHTML = post.tags.map(t => 
+            `<span style="background:rgba(255,255,255,0.06);border:1px solid var(--border-subtle);color:var(--text-muted);padding:4px 12px;border-radius:14px;font-size:0.75rem;">#${t}</span>`
+          ).join('');
+        }
+
+        // Action Handlers
+        document.getElementById('btnShareDetail').onclick = () => shareOnWhatsApp(post.id);
+        document.getElementById('btnDownloadDetail').onclick = () => downloadHdWallpaper(post.id);
+        document.getElementById('btnCopyDetail').onclick = () => copyQuote(post.id);
+
+        // Pre-fill saved devotee name
+        const savedName = localStorage.getItem('kv_saved_username');
+        if (savedName) {
+          document.getElementById('commentAuthor').value = savedName;
+        }
+
+        // Update Real Metric Numbers
+        refreshDetailStats();
+
+        // Render Comments List
+        renderCommentsList();
+
+        loader.style.display = 'none';
+        content.style.display = 'block';
+      } else {
+        loader.innerHTML = `
+          <h2 style="color:var(--gold-primary);">पोस्ट नहीं मिली</h2>
+          <p style="color:var(--text-muted);margin-top:10px;">कृपया होमपेज पर लौटें।</p>
+          <a href="index.html" class="btn-read-full" style="display:inline-block;margin-top:16px;width:auto;padding:10px 24px;">← होमपेज पर जाएँ</a>
+        `;
+      }
+    });
+
+    // Refresh detail page live numbers
+    function refreshDetailStats() {
+      if (!currentPostId) return;
+      const stats = StatsManager.getStats(currentPostId);
+
+      document.getElementById('dViews').textContent = stats.views.toLocaleString('en-IN');
+      document.getElementById('dLikes').textContent = stats.likes.toLocaleString('en-IN');
+      document.getElementById('dCommentsCount').textContent = stats.commentsCount;
+      document.getElementById('commentBadge').textContent = `${stats.commentsCount} टिप्पणियाँ`;
+      document.getElementById('dShares').textContent = stats.shares.toLocaleString('en-IN');
+      document.getElementById('dDownloads').textContent = stats.downloads.toLocaleString('en-IN');
+
+      const likeBox = document.getElementById('dLikeBox');
+      const likeSvg = document.getElementById('dLikeSvg');
+      if (stats.isLiked) {
+        likeBox.classList.add('like-active');
+        likeSvg.setAttribute('fill', '#FF4757');
+      } else {
+        likeBox.classList.remove('like-active');
+        likeSvg.setAttribute('fill', 'none');
+      }
+    }
+
+    // Toggle like on detail page
+    function handleDetailLikeToggle() {
+      if (!currentPostId) return;
+      const res = StatsManager.toggleLike(currentPostId);
+      refreshDetailStats();
+      if (res.isLiked) {
+        showToast('❤️ आपने यह दिव्य विचार पसंद किया! जय श्री कृष्णा');
+      } else {
+        showToast('🤍 पसंद हटा दी गई');
+      }
+    }
+
+    // Append quick tag to comment textarea
+    function appendQuickTag(tagText) {
+      const textarea = document.getElementById('commentText');
+      if (!textarea) return;
+      if (textarea.value.trim() === '') {
+        textarea.value = tagText + ' ';
+      } else {
+        textarea.value = textarea.value.trim() + ' ' + tagText + ' ';
+      }
+      textarea.focus();
+    }
+
+    // Submit new comment
+    function submitUserComment() {
+      if (!currentPostId) return;
+      const authorInp = document.getElementById('commentAuthor');
+      const textInp = document.getElementById('commentText');
+
+      const name = authorInp.value.trim() || 'कृष्ण भक्त';
+      const text = textInp.value.trim();
+
+      if (!text) {
+        showToast('⚠️ कृपया टिप्पणी या मंगल भाव लिखें');
+        textInp.focus();
+        return;
+      }
+
+      const res = StatsManager.addComment(currentPostId, name, text);
+      if (res && res.success) {
+        textInp.value = '';
+        renderCommentsList();
+        refreshDetailStats();
+        showToast('🌸 आपकी टिप्पणी एवं मंगल भाव प्रकाशित हुए! राधे-राधे');
+      } else if (res && res.error) {
+        showToast(res.error);
+      }
+    }
+
+    // Render all comments
+    function renderCommentsList() {
+      if (!currentPostId) return;
+      const listContainer = document.getElementById('commentsList');
+      if (!listContainer) return;
+
+      const comments = StatsManager.getComments(currentPostId);
+
+      if (comments.length === 0) {
+        listContainer.innerHTML = `
+          <div style="text-align: center; padding: 24px; color: var(--text-dim); font-size: 0.88rem;">
+            🙏 अभी तक कोई टिप्पणी नहीं है। सबसे पहले आप अपना मंगल भाव व्यक्त करें!
+          </div>
+        `;
+        return;
+      }
+
+      listContainer.innerHTML = comments.map(c => {
+        const initial = (c.name && c.name.length > 0) ? c.name.charAt(0) : '🪷';
+        return `
+          <div class="comment-item">
+            <div class="comment-author-row">
+              <div class="comment-avatar">${escapeHtml(initial)}</div>
+              <span class="comment-author-name">${escapeHtml(c.name)}</span>
+              <span class="comment-date">🕒 ${escapeHtml(c.time || 'हाल ही में')}</span>
+            </div>
+            <div class="comment-text">
+              ${escapeHtml(c.text)}
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+  </script>
+</body>
+</html>

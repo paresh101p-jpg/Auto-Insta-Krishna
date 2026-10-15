@@ -1,0 +1,4 @@
+# Google AdSense ads.txt for krishnavibez.in
+# Official Authorized Digital Sellers List
+# Note: Once Google AdSense approves your account, replace pub-XXXXXXXXXXXXXXXX with your actual Publisher ID:
+# google.com, pub-XXXXXXXXXXXXXXXX, DIRECT, f08c47fec0942fa0
