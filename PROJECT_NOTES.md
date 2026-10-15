@@ -37,15 +37,23 @@ Auto-Insta-Post/
 ---
 
 ## GitHub Secrets (Settings > Secrets > Actions)
-Aapko bas ye secrets set rakhne hain:
+Aapko bas ye 4 secrets set rakhne hain:
 
-| Secret Name | Value |
-|-------------|-------|
-| `FB_PAGE_ID` | `1808917602588221` |
-| `FB_ACCESS_TOKEN` | (fb_permanent_token.txt me jo bada sa token hai wo dale) |
-| `GEMINI_API_KEY` | (Google Gemini API key) |
+| Secret Name | Value | Kaam |
+|-------------|-------|------|
+| `FB_PAGE_ID` | `1808917602588221` | Facebook Page (Krishna Vibez) ka ID |
+| `FB_ACCESS_TOKEN` | (fb_permanent_token.txt me jo bada sa token hai wo) | Meta Graph API permanent access |
+| `GEMINI_API_KEY` | (Google Gemini API key) | AI Vision se thought aur 400-word article banana |
+| `FIREBASE_TOKEN` | (Firebase CI Deploy Token: `1//0g5XBoxo...`) | Website ko Firebase Hosting pe cloud se live deploy karna |
 
-> ⚠️ `IG_USERNAME`, `IG_SESSION`, aur `IG_PASSWORD` ab zarurat nahi hain, inko delete kar sakte hain.
+---
+
+## 🌟 3-in-1 Cloud Auto-Post Architecture (Instagram + Facebook + Website)
+Jab bhi GitHub Actions chalega (chahe PC band ho ya aap so rahe hon):
+1. **Instagram & Facebook:** `main.py` Meta Graph API se Feed aur Story dono jagah post karega.
+2. **Website Article (`website_publisher.py`):** AI thought se 400-shabdon ka AdSense-compliant Hindi spiritual article banayega aur `website/public/js/posts-data.js` aur `sitemap.xml` ko update karega.
+3. **Firebase Hosting Deploy:** `schedule.yml` automatically website ko `krishnavibez.in` par deploy kar dega.
+4. **Git Commit:** Nayi post ka data apne aap GitHub pe commit aur push ho jayega.
 
 ---
 
