@@ -60,14 +60,19 @@ def publish_to_telegram(media_url, caption, post_url, is_video=False):
         share_text = urllib.parse.quote(f"✨ श्री कृष्ण अमृत विचार: \"{quote_text}\" 🌸 4K वॉलपेपर दर्शन:")
         share_url = f"https://t.me/share/url?url={urllib.parse.quote(post_url)}&text={share_text}"
 
+        channel_user = chat_id if str(chat_id).startswith("@") else "@krishnavibezz"
+        clean_channel = str(channel_user).lstrip("@")
+        channel_link = f"https://t.me/{clean_channel}"
+
         formatted_caption = (
             f"<b>✨ श्री कृष्ण पावन अमृत विचार ✨</b>\n\n"
             f"<i>\"{quote_text}\"</i>\n\n"
             f"📖 <b>पावन भावार्थ व जीवन सीख:</b>\n"
             f"{reflection[:380]}\n\n"
-            f"🔗 <b>वेबसाइट पोस्ट लिंक:</b>\n"
+            f"🔗 <b>वेबसाइट 4K पोस्ट लिंक:</b>\n"
             f"<a href=\"{post_url}\">{post_url}</a>\n\n"
-            f"🙏 <i>भगवान श्री कृष्ण की कृपा आप और आपके परिवार पर सदा बनी रहे।</i>\n\n"
+            f"🙏 <i>भगवान श्री कृष्ण की कृपा आप और आपके परिवार पर सदा बनी रहे।</i>\n"
+            f"💫 <b>अपनी प्रतिक्रिया दें:</b> नीचे दिए गए 👍 लाइक या 👎 डिसलाइक पर टैप करें!\n\n"
             f"🏷️ #ShreeKrishna #RadhaKrishna #BhagavadGita #KrishnaQuotes #RadheRadhe #KrishnaStatus #4KWallpaper #KrishnaVibez"
         )
 
@@ -82,7 +87,8 @@ def publish_to_telegram(media_url, caption, post_url, is_video=False):
                     {"text": "📤 मित्रों को शेयर करें", "url": share_url}
                 ],
                 [
-                    {"text": "🌐 Visit KrishnaVibez.in", "url": "https://krishnavibez.in/"}
+                    {"text": "🌐 Visit KrishnaVibez.in", "url": "https://krishnavibez.in/"},
+                    {"text": "🔔 चैनल जॉइन करें", "url": channel_link}
                 ]
             ]
         }
@@ -103,7 +109,22 @@ def publish_to_telegram(media_url, caption, post_url, is_video=False):
         res_data = response.json()
 
         if res_data.get("ok"):
-            print(f"[Telegram] ✅ Successfully published to Telegram Channel ({chat_id})!")
+            message_id = res_data.get("result", {}).get("message_id")
+            print(f"[Telegram] ✅ Successfully published to Telegram Channel ({chat_id})! Message ID: {message_id}")
+
+            # Automatically activate reactions on post so live reaction bar is ready
+            if message_id:
+                try:
+                    react_url = f"https://api.telegram.org/bot{bot_token}/setMessageReaction"
+                    react_payload = {
+                        "chat_id": chat_id,
+                        "message_id": message_id,
+                        "reaction": json.dumps([{"type": "emoji", "emoji": "🙏"}])
+                    }
+                    requests.post(react_url, data=react_payload, timeout=10)
+                except Exception:
+                    pass
+
             return True
         else:
             print(f"[Telegram] ⚠️ API response error: {res_data.get('description')}")
