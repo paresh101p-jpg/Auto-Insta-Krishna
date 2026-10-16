@@ -666,8 +666,16 @@ if __name__ == "__main__":
         caption = generate_caption(media_info["local_path"])
         caption = clean_caption(caption)
         
-        ig_caption = caption
-        fb_caption = caption
+        # Growth Hack & Discover Velocity: Prepare unique post ID and direct website link
+        import website_publisher
+        planned_post_id = website_publisher.generate_unique_post_id()
+        website_post_url = f"https://krishnavibez.in/post.html?id={planned_post_id}"
+
+        # Instagram: Compliant creator CTA pointing to Bio link
+        ig_caption = f"{caption}\n\n✨ 4K HD वॉलपेपर व संपूर्ण भावार्थ पढ़ने के लिए बायो में दिए लिंक (krishnavibez.in) पर जाएँ।\n\n🙏 जय श्री राधे कृष्ण!"
+        
+        # Facebook: 100% Policy-compliant direct clickable article link driving organic referrals
+        fb_caption = f"{caption}\n\n📖 4K HD दिव्य दर्शन एवं वॉलपेपर फ्री डाउनलोड करें:\n👉 {website_post_url}\n\n🙏 जय श्री राधे कृष्ण! अधिक पावन विचारों के लिए पेज को फॉलो करें।"
         
         ig_account_id = get_ig_account_id()
         if not ig_account_id:
@@ -734,7 +742,8 @@ if __name__ == "__main__":
                 website_publisher.publish_to_website(
                     media_url=media_info["media_url"],
                     caption=caption,
-                    is_video=media_info["is_video"]
+                    is_video=media_info["is_video"],
+                    custom_post_id=planned_post_id
                 )
             except Exception as web_err:
                 print(f"Warning: Website auto-publish error: {web_err}")
