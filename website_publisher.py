@@ -126,23 +126,33 @@ def ping_search_engines(post_id):
     except Exception as e:
         print(f"[SearchPing] Google WebSub notice: {e}")
 
-    # 2. Google Sitemap Ping
+    # 2. Microsoft Bing & IndexNow API (Instant Indexing for Bing, Yandex, Seznam, Naver)
     try:
-        g_url = f"https://www.google.com/ping?sitemap={urllib.parse.quote(sitemap_url, safe='')}"
-        req = urllib.request.Request(g_url, headers={"User-Agent": "Mozilla/5.0 (compatible; KrishnaVibezBot/2.0)"})
-        with urllib.request.urlopen(req, timeout=10) as resp:
-            print(f"[SearchPing] [OK] Google Sitemap Ping successful (Status {resp.status}).")
+        indexnow_url = "https://api.indexnow.org/indexnow"
+        indexnow_payload = json.dumps({
+            "host": "krishnavibez.in",
+            "key": "c8d1979b9a674e2d83b0f51276a71e3d",
+            "keyLocation": "https://krishnavibez.in/c8d1979b9a674e2d83b0f51276a71e3d.txt",
+            "urlList": [f"https://krishnavibez.in/post.html?id={post_id}", "https://krishnavibez.in/"]
+        }).encode("utf-8")
+        in_req = urllib.request.Request(
+            indexnow_url,
+            data=indexnow_payload,
+            headers={"Content-Type": "application/json; charset=utf-8", "User-Agent": "KrishnaVibezIndexNow/1.0"}
+        )
+        with urllib.request.urlopen(in_req, timeout=10) as in_resp:
+            print(f"[SearchPing] [OK] IndexNow (Bing/Yandex) notified (Status {in_resp.status}).")
     except Exception as e:
-        print(f"[SearchPing] Google sitemap notice: {e}")
+        print(f"[SearchPing] IndexNow notice: {e}")
 
-    # 3. Bing Sitemap Ping
+    # 3. Internet Archive Wayback Machine (DA 99 Permanent Snapshot)
     try:
-        b_url = f"https://www.bing.com/ping?sitemap={urllib.parse.quote(sitemap_url, safe='')}"
-        req = urllib.request.Request(b_url, headers={"User-Agent": "Mozilla/5.0 (compatible; KrishnaVibezBot/2.0)"})
-        with urllib.request.urlopen(req, timeout=10) as resp:
-            print(f"[SearchPing] [OK] Bing Search notified (Status {resp.status}).")
+        wb_url = f"https://web.archive.org/save/https://krishnavibez.in/post.html?id={post_id}"
+        wb_req = urllib.request.Request(wb_url, headers={"User-Agent": "KrishnaVibezBot/2.0"})
+        urllib.request.urlopen(wb_req, timeout=8)
+        print(f"[SearchPing] [OK] Internet Archive (Wayback Machine DA 99) snapshot requested.")
     except Exception as e:
-        print(f"[SearchPing] Bing sitemap notice: {e}")
+        print(f"[SearchPing] Internet Archive notice: {e}")
 
 def send_push_notification(title, quote, media_url, post_id):
     """
