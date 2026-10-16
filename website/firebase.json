@@ -74,6 +74,15 @@
         ]
       },
       {
+        "source": "js/posts-data.js",
+        "headers": [
+          {
+            "key": "Cache-Control",
+            "value": "public, max-age=180, must-revalidate"
+          }
+        ]
+      },
+      {
         "source": "**/*.@(js|css)",
         "headers": [
           {
