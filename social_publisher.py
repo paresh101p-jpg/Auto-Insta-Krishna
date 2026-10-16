@@ -153,6 +153,19 @@ def publish_to_threads(media_url, caption, post_url, is_video=False):
     user_id = os.environ.get("THREADS_USER_ID")
 
     if not access_token or not user_id:
+        token_file = os.path.join(os.path.dirname(os.path.abspath(__file__)), "threads_token.txt")
+        if os.path.exists(token_file):
+            try:
+                with open(token_file, "r", encoding="utf-8") as tf:
+                    for line in tf:
+                        if line.startswith("THREADS_ACCESS_TOKEN="):
+                            access_token = line.split("=", 1)[1].strip()
+                        elif line.startswith("THREADS_USER_ID="):
+                            user_id = line.split("=", 1)[1].strip()
+            except Exception:
+                pass
+
+    if not access_token or not user_id:
         print("[Threads] ℹ️ Skipped: THREADS_ACCESS_TOKEN or THREADS_USER_ID not configured.")
         return False
 
