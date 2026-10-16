@@ -47,29 +47,43 @@ def publish_to_telegram(media_url, caption, post_url, is_video=False):
         return False
 
     try:
-        # Format a rich, long FB/Insta style devotional caption (under 1000 chars)
+        # Format a rich, long FB/Insta style devotional caption (strictly under 1000 chars for Telegram)
         clean_lines = [l.strip() for l in caption.split("\n") if l.strip() and not l.strip().startswith("#") and not l.strip().startswith("http")]
         quote_text = clean_lines[0] if clean_lines else "कर्मण्येवाधिकारस्ते मा फलेषु कदाचन।"
 
         if len(clean_lines) > 1:
-            reflection = "\n\n".join(clean_lines[1:4])
+            reflection = "\n".join(clean_lines[1:4])
         else:
-            reflection = "भगवान श्री कृष्ण का प्रत्येक वचन समस्त मानव जाति के कल्याण और अंतरात्मा की शुद्धि के लिए अमृत धारा है। विपरीत परिस्थितियों में मन को विचलित न होने दें, अपने कर्तव्यों का निष्ठा से पालन करें और परिणाम प्रभु के चरणों में समर्पित कर दें।"
+            reflection = "भगवान श्री कृष्ण का प्रत्येक वचन समस्त मानव जाति के कल्याण और अंतरात्मा की शुद्धि के लिए अमृत धारा है। जीवन के हर मोड़ पर जब चिंता या संशय घेरे, तब गोविंद के इन पावन वचनों को अपने हृदय में धारण करें। निष्काम कर्म ही ईश्वर की सच्ची पूजा है।"
+
+        import urllib.parse
+        share_text = urllib.parse.quote(f"✨ श्री कृष्ण अमृत विचार: \"{quote_text}\" 🌸 4K वॉलपेपर दर्शन:")
+        share_url = f"https://t.me/share/url?url={urllib.parse.quote(post_url)}&text={share_text}"
 
         formatted_caption = (
-            f"<b>✨ श्री कृष्ण अमृत विचार ✨</b>\n\n"
+            f"<b>✨ श्री कृष्ण पावन अमृत विचार ✨</b>\n\n"
             f"<i>\"{quote_text}\"</i>\n\n"
-            f"{reflection[:450]}\n\n"
-            f"🌸 <b>4K वॉलपेपर एवं संपूर्ण दर्शन:</b>\n"
+            f"📖 <b>पावन भावार्थ व जीवन सीख:</b>\n"
+            f"{reflection[:380]}\n\n"
+            f"🔗 <b>वेबसाइट पोस्ट लिंक:</b>\n"
             f"<a href=\"{post_url}\">{post_url}</a>\n\n"
-            f"<i>हर दिन पावन दर्शन के लिए चैनल से जुड़े रहें। 🙏</i>\n\n"
-            f"#RadhaKrishna #KrishnaVibez #BhagavadGita"
+            f"🙏 <i>भगवान श्री कृष्ण की कृपा आप और आपके परिवार पर सदा बनी रहे।</i>\n\n"
+            f"🏷️ #ShreeKrishna #RadhaKrishna #BhagavadGita #KrishnaQuotes #RadheRadhe #KrishnaStatus #4KWallpaper #KrishnaVibez"
         )
 
-        # Inline button that opens the post directly on krishnavibez.in
+        # Multi-row interactive buttons for maximum engagement, direct download, and sharing
         reply_markup = {
             "inline_keyboard": [
-                [{"text": "🌸 दर्शन एवं 4K वॉलपेपर डाउनलोड", "url": post_url}]
+                [
+                    {"text": "🌸 4K दर्शन व वॉलपेपर डाउनलोड", "url": post_url}
+                ],
+                [
+                    {"text": "📖 संपूर्ण गीता उपदेश पढ़ें", "url": post_url},
+                    {"text": "📤 मित्रों को शेयर करें", "url": share_url}
+                ],
+                [
+                    {"text": "🌐 Visit KrishnaVibez.in", "url": "https://krishnavibez.in/"}
+                ]
             ]
         }
 
