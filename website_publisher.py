@@ -122,7 +122,7 @@ def ping_search_engines(post_id):
         }).encode("utf-8")
         req = urllib.request.Request(hub_url, data=hub_data, headers={"User-Agent": "KrishnaVibezPublisher/2.0"})
         with urllib.request.urlopen(req, timeout=10) as resp:
-            print(f"[SearchPing] ✅ Google WebSub Hub notified for Discover (Status {resp.status}).")
+            print(f"[SearchPing] [OK] Google WebSub Hub notified for Discover (Status {resp.status}).")
     except Exception as e:
         print(f"[SearchPing] Google WebSub notice: {e}")
 
@@ -131,7 +131,7 @@ def ping_search_engines(post_id):
         g_url = f"https://www.google.com/ping?sitemap={urllib.parse.quote(sitemap_url, safe='')}"
         req = urllib.request.Request(g_url, headers={"User-Agent": "Mozilla/5.0 (compatible; KrishnaVibezBot/2.0)"})
         with urllib.request.urlopen(req, timeout=10) as resp:
-            print(f"[SearchPing] ✅ Google Sitemap Ping successful (Status {resp.status}).")
+            print(f"[SearchPing] [OK] Google Sitemap Ping successful (Status {resp.status}).")
     except Exception as e:
         print(f"[SearchPing] Google sitemap notice: {e}")
 
@@ -140,9 +140,69 @@ def ping_search_engines(post_id):
         b_url = f"https://www.bing.com/ping?sitemap={urllib.parse.quote(sitemap_url, safe='')}"
         req = urllib.request.Request(b_url, headers={"User-Agent": "Mozilla/5.0 (compatible; KrishnaVibezBot/2.0)"})
         with urllib.request.urlopen(req, timeout=10) as resp:
-            print(f"[SearchPing] ✅ Bing Search notified (Status {resp.status}).")
+            print(f"[SearchPing] [OK] Bing Search notified (Status {resp.status}).")
     except Exception as e:
         print(f"[SearchPing] Bing sitemap notice: {e}")
+
+def send_push_notification(title, quote, media_url, post_id):
+    """
+    Growth Hack: Automatically dispatches a Web Push notification to all subscribers
+    via OneSignal REST API within seconds of post publishing.
+    """
+    onesignal_key = os.environ.get("ONESIGNAL_REST_API_KEY")
+    if not onesignal_key:
+        local_key_path = os.path.join(BASE_DIR, "onesignal_key.txt")
+        if os.path.exists(local_key_path):
+            with open(local_key_path, "r", encoding="utf-8") as f:
+                onesignal_key = f.read().strip()
+
+    if not onesignal_key:
+        print("[OneSignalPush] Notice: ONESIGNAL_REST_API_KEY not found. Skipping push notification.")
+        return False
+
+    app_id = "e0fe57c1-475c-4a59-95ae-9ade9008342c"
+    post_url = f"https://krishnavibez.in/post.html?id={post_id}"
+    clean_quote = (quote or "श्री कृष्ण का पावन दिव्य दर्शन").strip().replace("\n", " ")
+    if len(clean_quote) > 110:
+        clean_quote = clean_quote[:107] + "…"
+
+    payload = {
+        "app_id": app_id,
+        "included_segments": ["Subscribed Users"],
+        "headings": {
+            "en": "🪷 आज का दिव्य दर्शन — Krishna Vibez",
+            "hi": "🪷 आज का दिव्य दर्शन — Krishna Vibez"
+        },
+        "contents": {
+            "en": f'"{clean_quote}" — टैप करके 4K दर्शन करें',
+            "hi": f'"{clean_quote}" — टैप करके 4K दर्शन करें'
+        },
+        "url": post_url,
+        "chrome_web_icon": "https://krishnavibez.in/assets/logo.png",
+        "chrome_web_image": media_url,
+        "big_picture": media_url
+    }
+
+    try:
+        import urllib.request
+        req = urllib.request.Request(
+            "https://onesignal.com/api/v1/notifications",
+            data=json.dumps(payload).encode("utf-8"),
+            headers={
+                "Content-Type": "application/json; charset=utf-8",
+                "Authorization": f"Key {onesignal_key}",
+                "User-Agent": "KrishnaVibezPublisher/2.0"
+            }
+        )
+        with urllib.request.urlopen(req, timeout=12) as resp:
+            resp_data = json.loads(resp.read().decode("utf-8"))
+            notif_id = resp_data.get("id", "sent")
+            recipients = resp_data.get("recipients", 0)
+            print(f"[OneSignalPush] [OK] Push notification dispatched! (ID: {notif_id}, Recipients: {recipients})")
+            return True
+    except Exception as e:
+        print(f"[OneSignalPush] Push notification notice: {e}")
+        return False
 
 def publish_to_website(media_url, caption, is_video=False, custom_post_id=None):
     """
@@ -292,14 +352,22 @@ def publish_to_website(media_url, caption, is_video=False, custom_post_id=None):
                     f.write(rss_content)
                 print(f"[WebsitePublisher] ✅ Updated rss.xml for Google Discover.")
             except Exception as rss_err:
+                print(f"[WebsitePublisher] Warning updating rss.xml: {rss_err}")
+
         # 4. Growth Hack: Instant Search Engine Ping for Fast Discover Crawling
         try:
             ping_search_engines(post_id)
         except Exception as ping_err:
             print(f"[WebsitePublisher] Search engine ping notice: {ping_err}")
 
-        return True
+        # 5. Growth Hack: Auto-send Web Push Notification to mobile devices
+        try:
+            send_push_notification(title, quote, media_url, post_id)
+        except Exception as push_err:
+            print(f"[WebsitePublisher] Push notification notice: {push_err}")
+
+        return True, post_id
 
     except Exception as e:
         print(f"[WebsitePublisher] Error updating website: {e}")
-        return False
+        return False, None
