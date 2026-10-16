@@ -238,12 +238,27 @@ function handleSortChange(sortKey) {
   });
   const posts = window.KRISHNA_POSTS || [];
   renderFilteredPosts(posts);
+
+  const sortNames = {
+    'latest': '🆕 ताज़ा दिव्य दर्शन (Latest Posts)',
+    'views': '👁️ सर्वाधिक देखे गए दर्शन (Top Views)',
+    'likes': '❤️ सबसे अधिक पसंद किए गए दर्शन (Top Likes)',
+    'downloads': '⬇️ सबसे अधिक डाउनलोड किए गए वॉलपेपर्स (Top Downloads)',
+    'shares': '📲 सबसे अधिक शेयर किए गए दर्शन (Top Shares)',
+    'reels': '🎬 केवल अलौकिक 4K रील्स (4K Reels Only)'
+  };
+  if (sortNames[sortKey]) {
+    showToast(sortNames[sortKey]);
+  }
 }
 
 function initSortButtons() {
   document.querySelectorAll('.sort-btn').forEach(btn => {
     btn.onclick = function(e) {
-      if (e) e.preventDefault();
+      if (e) {
+        e.preventDefault();
+        e.stopPropagation();
+      }
       const sortKey = this.getAttribute('data-sort');
       if (sortKey) handleSortChange(sortKey);
     };
@@ -488,11 +503,14 @@ function initCategoryFilters() {
   // Attach event listeners to all newly created pills
   const pills = container.querySelectorAll('.cat-pill');
   pills.forEach(pill => {
-    pill.addEventListener('click', () => {
+    pill.addEventListener('click', (e) => {
+      if (e) e.preventDefault();
       pills.forEach(p => p.classList.remove('active'));
       pill.classList.add('active');
       activeCategory = pill.getAttribute('data-cat') || 'all';
       renderFilteredPosts(window.KRISHNA_POSTS || []);
+      const label = pill.textContent.trim().replace(/\(\d+\)/, '').trim();
+      showToast(`✨ श्रेणी: ${label}`);
     });
   });
 }
