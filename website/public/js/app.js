@@ -5,6 +5,7 @@
    ========================================================= */
 
 let activeCategory = 'all';
+let currentSort = 'latest';
 let searchQuery = '';
 let audioCtx = null;
 let isAudioPlaying = false;
@@ -224,18 +225,49 @@ function initFeed() {
   renderFilteredPosts(posts);
 }
 
+// Handler for Feed Sort Buttons (Latest, Views, Likes, Downloads, Shares, Reels)
+function handleSortChange(sortKey) {
+  currentSort = sortKey;
+  document.querySelectorAll('.sort-btn').forEach(btn => {
+    if (btn.getAttribute('data-sort') === sortKey) {
+      btn.classList.add('active');
+    } else {
+      btn.classList.remove('active');
+    }
+  });
+  const posts = window.KRISHNA_POSTS || [];
+  renderFilteredPosts(posts);
+}
+
+// Hover video preview helpers for cards
+function previewCardVideo(wrap) {
+  const video = wrap.querySelector('.video-hover-element');
+  if (video) {
+    video.style.display = 'block';
+    video.play().catch(() => {});
+  }
+}
+
+function stopCardVideo(wrap) {
+  const video = wrap.querySelector('.video-hover-element');
+  if (video) {
+    video.pause();
+    video.style.display = 'none';
+  }
+}
+
 function renderFilteredPosts(allPosts) {
   const grid = document.getElementById('postsGrid');
   if (!grid) return;
 
-  let filtered = allPosts;
+  let filtered = [...allPosts];
 
-  // Filter by category
+  // 1. Filter by category
   if (activeCategory !== 'all') {
     filtered = filtered.filter(p => p.categorySlug === activeCategory || p.category === activeCategory);
   }
 
-  // Filter by search query
+  // 2. Filter by search query
   if (searchQuery.trim() !== '') {
     const q = searchQuery.toLowerCase();
     filtered = filtered.filter(p => 
@@ -245,12 +277,25 @@ function renderFilteredPosts(allPosts) {
     );
   }
 
+  // 3. Filter / Sort by currentSort
+  if (currentSort === 'reels') {
+    filtered = filtered.filter(p => p.mediaType === 'video' || p.videoUrl || (p.imageUrl && p.imageUrl.endsWith('.mp4')));
+  } else if (currentSort === 'views') {
+    filtered.sort((a, b) => StatsManager.getStats(b.id).views - StatsManager.getStats(a.id).views);
+  } else if (currentSort === 'likes') {
+    filtered.sort((a, b) => StatsManager.getStats(b.id).likes - StatsManager.getStats(a.id).likes);
+  } else if (currentSort === 'downloads') {
+    filtered.sort((a, b) => StatsManager.getStats(b.id).downloads - StatsManager.getStats(a.id).downloads);
+  } else if (currentSort === 'shares') {
+    filtered.sort((a, b) => StatsManager.getStats(b.id).shares - StatsManager.getStats(a.id).shares);
+  } // 'latest' maintains default order
+
   if (filtered.length === 0) {
     grid.innerHTML = `
       <div style="grid-column: 1 / -1; text-align: center; padding: 60px 20px; color: var(--text-muted);">
         <span style="font-size: 3rem; display: block; margin-bottom: 12px;">🪷</span>
         <h3 style="color: var(--gold-primary); font-size: 1.3rem; margin-bottom: 8px;">कोई परिणाम नहीं मिला</h3>
-        <p style="font-size: 0.9rem;">कृपया किसी अन्य श्रेणी या शब्द से खोजें।</p>
+        <p style="font-size: 0.9rem;">कृपया किसी अन्य श्रेणी या फिल्टर से देखें।</p>
       </div>
     `;
     return;
@@ -259,14 +304,19 @@ function renderFilteredPosts(allPosts) {
   grid.innerHTML = filtered.map(post => {
     const stats = StatsManager.getStats(post.id);
     const isVideo = (post.mediaType === 'video') || (post.videoUrl) || (post.imageUrl && post.imageUrl.endsWith('.mp4'));
-    const mediaUrl = post.videoUrl || post.imageUrl;
+    const videoUrl = post.videoUrl || (post.imageUrl && post.imageUrl.endsWith('.mp4') ? post.imageUrl : null);
+    const posterImg = (post.imageUrl && !post.imageUrl.endsWith('.mp4')) ? post.imageUrl : 'https://files.catbox.moe/yt84ra.jpg';
     const seoAlt = getSeoAltText(post, isVideo);
 
     const mediaHtml = isVideo ? `
-      <video class="card-img" src="${mediaUrl}" title="${escapeHtml(seoAlt)}" aria-label="${escapeHtml(seoAlt)}" preload="metadata" muted playsinline loop onmouseenter="this.play()" onmouseleave="this.pause()"></video>
-      <div class="video-play-overlay">▶</div>
+      <div class="video-card-thumb-wrap" onmouseenter="previewCardVideo(this)" onmouseleave="stopCardVideo(this)">
+        <img class="card-img video-poster-img" src="${posterImg}" alt="${escapeHtml(seoAlt)}" title="${escapeHtml(seoAlt)}" loading="lazy">
+        <video class="card-img video-hover-element" src="${videoUrl || ''}" preload="none" muted playsinline loop style="display:none;position:absolute;top:0;left:0;width:100%;height:100%;object-fit:cover;z-index:1;"></video>
+        <div class="video-play-overlay">▶</div>
+        <span class="video-reel-pill">4K REEL</span>
+      </div>
     ` : `
-      <img class="card-img" src="${mediaUrl}" alt="${escapeHtml(seoAlt)}" title="${escapeHtml(seoAlt)}" loading="lazy">
+      <img class="card-img" src="${post.imageUrl}" alt="${escapeHtml(seoAlt)}" title="${escapeHtml(seoAlt)}" loading="lazy">
     `;
 
     return `

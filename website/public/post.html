@@ -47,6 +47,22 @@
   <!-- Favicon -->
   <link rel="icon" type="image/png" href="assets/logo.png">
   
+  <!-- Google AdSense Account & Auto Ads -->
+  <meta name="google-adsense-account" content="ca-pub-4064462736581300">
+  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-4064462736581300" crossorigin="anonymous"></script>
+
+  <!-- Google Search Console Verification -->
+  <meta name="google-site-verification" content="google-site-verification-code">
+
+  <!-- Google tag (gtag.js) - Google Analytics 4 -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-KRISHNAVIBEZ"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'G-KRISHNAVIBEZ');
+  </script>
+
   <!-- Security Meta Tags -->
   <meta http-equiv="X-Content-Type-Options" content="nosniff">
   <meta name="referrer" content="strict-origin-when-cross-origin">
@@ -82,14 +98,18 @@
           "width": 1080,
           "height": 1440
         },
-        "aggregateRating": {
-          "@type": "AggregateRating",
-          "ratingValue": "4.9",
-          "bestRating": "5",
-          "worstRating": "1",
-          "ratingCount": "1250",
-          "reviewCount": "14"
-        }
+        "interactionStatistic": [
+          {
+            "@type": "InteractionCounter",
+            "interactionType": "https://schema.org/LikeAction",
+            "userInteractionCount": 1250
+          },
+          {
+            "@type": "InteractionCounter",
+            "interactionType": "https://schema.org/CommentAction",
+            "userInteractionCount": 14
+          }
+        ]
       }
     ]
   }
@@ -538,15 +558,18 @@
               "width": 1200,
               "height": 1600
             },
-            "aggregateRating": {
-              "@type": "AggregateRating",
-              "ratingValue": "4.9",
-              "bestRating": "5",
-              "worstRating": "1",
-              "ratingCount": ratingCountNum,
-              "reviewCount": reviewCountNum
-            },
-            "review": reviewsList
+            "interactionStatistic": [
+              {
+                "@type": "InteractionCounter",
+                "interactionType": "https://schema.org/LikeAction",
+                "userInteractionCount": ratingCountNum
+              },
+              {
+                "@type": "InteractionCounter",
+                "interactionType": "https://schema.org/CommentAction",
+                "userInteractionCount": reviewCountNum
+              }
+            ]
           },
           {
             "@type": "BreadcrumbList",
