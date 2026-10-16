@@ -1026,29 +1026,52 @@ body {
 }
 
 @media (max-width: 640px) {
-  .navbar { padding: 10px 16px; }
-  .brand-name { font-size: 1.15rem; }
+  .navbar { padding: 8px 12px; }
+  .brand-logo-img { width: 36px; height: 36px; border-radius: 10px; }
+  .brand-name { font-size: 1.05rem; }
+  .brand-tagline { font-size: 0.58rem; letter-spacing: 1.5px; }
   .nav-center { display: none; }
-  .hero-section { padding: 32px 16px 24px; }
-  .category-filter-wrap { gap: 8px; margin-bottom: 28px; }
-  .cat-pill { padding: 8px 14px; font-size: 0.8rem; }
+  .nav-actions { gap: 6px; }
+  .nav-social-btn { padding: 5px 9px; font-size: 0.7rem; border-radius: 16px; }
+  .audio-toggle-btn { padding: 5px 10px; font-size: 0.72rem; }
+
+  /* Compact Hero Section for Instant Viewport Access */
+  .hero-section { padding: 18px 14px 12px; }
+  .hero-pill { padding: 4px 12px; font-size: 0.72rem; margin-bottom: 10px; }
+  .hero-title { font-size: 1.55rem; line-height: 1.25; margin-bottom: 8px; }
+  .hero-subtitle { font-size: 0.85rem; line-height: 1.5; margin-bottom: 14px; }
+  .search-wrapper { margin-bottom: 14px; }
+  .search-input { padding: 10px 16px 10px 42px; font-size: 0.84rem; }
+  .search-icon { left: 14px; font-size: 0.9rem; }
+
+  /* Hide duplicate social strip on mobile since navbar has Instagram & Facebook */
+  .hero-social-strip { display: none !important; }
+
+  /* Compact Category Filter Wrap */
+  .category-filter-wrap { gap: 6px; margin-bottom: 14px; }
+  .cat-pill { padding: 6px 12px; font-size: 0.76rem; border-radius: 18px; }
+
+  /* Compact 3-Column Sort Grid */
   .feed-sort-bar {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
     gap: 6px;
-    padding: 8px;
-    border-radius: 20px;
-    margin: 14px 0 24px;
+    padding: 6px;
+    border-radius: 16px;
+    margin: 10px 0 18px;
   }
   .sort-btn {
-    padding: 8px 4px;
-    font-size: 0.78rem;
-    gap: 4px;
-    border-radius: 14px;
+    padding: 7px 3px;
+    font-size: 0.74rem;
+    gap: 3px;
+    border-radius: 12px;
     white-space: normal;
   }
-  .sort-btn .sort-icon { font-size: 0.95rem; }
-  .posts-grid { grid-template-columns: 1fr; }
+  .section-header { margin-bottom: 12px; }
+  .section-title { font-size: 1.25rem; }
+  .ad-container { margin: 16px auto; padding: 10px; }
+  .main-container { padding: 0 14px 40px; }
+  .posts-grid { grid-template-columns: 1fr; gap: 18px; }
   .footer-container { grid-template-columns: 1fr; gap: 24px; }
   .detail-actions-bar { grid-template-columns: 1fr; }
   .legal-card { padding: 24px 18px; }
@@ -1057,7 +1080,7 @@ body {
 @media (max-width: 380px) {
   .feed-sort-bar {
     grid-template-columns: repeat(2, 1fr);
-    gap: 6px;
+    gap: 5px;
   }
 }
 

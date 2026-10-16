@@ -19,7 +19,44 @@ document.addEventListener('DOMContentLoaded', () => {
   initSearch();
   initCategoryFilters();
   initAudioPlayer();
+  initNotificationPrompt();
 });
+
+// Native Browser Notification Prompt Trigger (User Gesture Compliant)
+function initNotificationPrompt() {
+  const triggerNativePrompt = async () => {
+    if (typeof Notification !== 'undefined' && Notification.permission === 'default') {
+      try {
+        if (window.OneSignal && window.OneSignal.Notifications && window.OneSignal.Notifications.requestPermission) {
+          await window.OneSignal.Notifications.requestPermission();
+        } else {
+          await Notification.requestPermission();
+        }
+      } catch (e) {
+        console.warn('Push permission error:', e);
+      }
+    }
+  };
+
+  // Attempt right away (desktop or permissive browsers)
+  if (typeof Notification !== 'undefined' && Notification.permission === 'default') {
+    window.OneSignalDeferred = window.OneSignalDeferred || [];
+    window.OneSignalDeferred.push(function(OneSignal) {
+      if (OneSignal.Notifications && OneSignal.Notifications.requestPermission) {
+        OneSignal.Notifications.requestPermission().catch(() => {});
+      }
+    });
+  }
+
+  // Trigger on first click / tap (ensures Chrome Android user-gesture requirement is satisfied)
+  const onFirstInteraction = () => {
+    triggerNativePrompt();
+    document.removeEventListener('click', onFirstInteraction);
+    document.removeEventListener('touchstart', onFirstInteraction);
+  };
+  document.addEventListener('click', onFirstInteraction, { once: true, passive: true });
+  document.addEventListener('touchstart', onFirstInteraction, { once: true, passive: true });
+}
 
 /* =========================================================
    SECURITY GUARD MODULE (Anti-Hacking, Anti-XSS, Anti-Spam)
