@@ -186,7 +186,8 @@ def publish_to_threads(media_url, caption, post_url, is_video=False):
             "access_token": access_token
         }
 
-        res_create = requests.post(container_url, data=create_payload, timeout=20)
+        headers = {"Content-Type": "application/x-www-form-urlencoded; charset=utf-8"}
+        res_create = requests.post(container_url, data=create_payload, headers=headers, timeout=20)
         create_data = res_create.json()
         creation_id = create_data.get("id")
 
@@ -205,7 +206,7 @@ def publish_to_threads(media_url, caption, post_url, is_video=False):
             "access_token": access_token
         }
 
-        res_pub = requests.post(publish_url, data=publish_payload, timeout=20)
+        res_pub = requests.post(publish_url, data=publish_payload, headers=headers, timeout=20)
         pub_data = res_pub.json()
 
         if pub_data.get("id"):
