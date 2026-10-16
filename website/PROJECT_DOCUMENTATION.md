@@ -255,5 +255,25 @@ graph TD
 4. **ऑटो-पुश एपीआई:** नई पोस्ट पब्लिश होते ही `website_publisher.py` OneSignal REST API के ज़रिए सभी सब्सक्राइबर्स को तुरंत पुश नोटिफिकेशन भेजता है।
 
 ---
+
+## 🚀 12. मल्टी-चैनल सोशल ऑटो-पब्लिशिंग इंजन (Multi-Channel Social Broadcast)
+
+वेबसाइट पर ज़्यादा से ज़्यादा ऑर्गैनिक ट्रैफ़िक लाने के लिए `social_publisher.py` मॉड्यूल तैयार किया गया है, जो नई पोस्ट पब्लिश होते ही Facebook और Instagram के अलावा अन्य सभी बड़े प्लेटफ़ॉर्म्स पर भी फ़ोटो और वेबसाइट लिंक ऑटोमैटिक शेयर करता है:
+
+### A. समर्थित प्लेटफ़ॉर्म्स और फ़ीचर्स:
+
+| प्लेटफ़ॉर्म | ऑटो-पोस्ट विधि | आवश्यक सीक्रेट्स / क्रेडेंशियल्स | ट्रैफ़िक फ़ायदा |
+|---|---|---|---|
+| **📌 Pinterest (सबसे असरदार)** | **1. RSS Auto-Publish** (बिना API के)<br>**2. Pinterest API v5** | `https://krishnavibez.in/rss.xml`<br>`PINTEREST_ACCESS_TOKEN`, `PINTEREST_BOARD_ID` | हर इमेज पर सीधे वेबसाइट का लिंक होता है। इमेज पर क्लिक करते ही यूज़र सीधे पोस्ट पर आता है। |
+| **✈️ Telegram Channel** | Telegram Bot API (`sendPhoto` / `sendVideo`) | `TELEGRAM_BOT_TOKEN`, `TELEGRAM_CHAT_ID` | 100% फ़्री, कभी एक्सपायर नहीं होता। डायरेक्ट सब्सक्राइबर्स को फ़ोटो + कोट्स + "🌸 दर्शन एवं 4K वॉलपेपर डाउनलोड" बटन जाता है। |
+| **🧵 Meta Threads** | Meta Threads Graph API | `THREADS_ACCESS_TOKEN`, `THREADS_USER_ID` | Instagram फॉलोअर्स के साथ Threads फ़ीड में इमेज + वेबसाइट लिंक ऑटो-शेयर। |
+| **🌐 Reddit** | Reddit OAuth API | `REDDIT_CLIENT_ID`, `REDDIT_CLIENT_SECRET`, `REDDIT_USERNAME`, `REDDIT_PASSWORD`, `REDDIT_SUBREDDIT` | सबरेडिट पर फ़ोटो + लिंक शेयर करके Google के लिए मज़बूत बैकलिंक तैयार करता है। |
+
+### B. 100% ज़ीरो-एरर गारंटी (Fault-Tolerant Architecture):
+1. **आइसोलेटेड एक्ज़ीक्यूशन (Isolated Execution):** हर सोशल प्लेटफ़ॉर्म अपनी खुद की स्वतंत्र `try...except` ब्लॉक में चलता है।
+2. **नो-क्रैश पॉलिसी (No Crash Guarantee):** अगर किसी प्लेटफ़ॉर्म का टोकन नहीं डाला गया है या एक्सपायर हो गया है, तो सिस्टम एरर देकर रुकेगा नहीं, बल्कि साफ़ नोटिस लॉग करेगा (`Skipped: credentials not set`) और Facebook/Instagram/Website का मुख्य रन बिना किसी रुकावट के 100% सफल रहेगा।
+3. **Pinterest RSS ऑटो-पब्लिश (Zero Token Expiry):** Pinterest Business अकाउंट में `https://krishnavibez.in/rss.xml` जोड़ने पर बिना किसी API टोकन के लाइफ़टाइम ऑटो-पिन बनते रहते हैं।
+
+---
 *अंतिम अद्यतन: 16 अक्टूबर 2026 · निर्मित: Antigravity AI Engine · Krishna Vibez Devotional Network*
 

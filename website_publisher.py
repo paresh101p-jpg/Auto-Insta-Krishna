@@ -366,6 +366,20 @@ def publish_to_website(media_url, caption, is_video=False, custom_post_id=None):
         except Exception as push_err:
             print(f"[WebsitePublisher] Push notification notice: {push_err}")
 
+        # 6. Multi-Channel Social Broadcast (Telegram, Pinterest, Threads, Reddit)
+        try:
+            import social_publisher
+            canonical_post_url = f"https://krishnavibez.in/post.html?id={post_id}"
+            social_publisher.publish_all_channels(
+                media_url=media_url,
+                caption=quote,
+                title=title,
+                post_url=canonical_post_url,
+                is_video=is_video
+            )
+        except Exception as soc_err:
+            print(f"[WebsitePublisher] Social broadcast notice: {soc_err}")
+
         return True, post_id
 
     except Exception as e:
