@@ -57,6 +57,38 @@
     gtag('config', 'G-M7W6128K1Z');
   </script>
 
+  <!-- OneSignal Web Push Notifications for Instant Spiritual Darshan Alerts -->
+  <script src="https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js" defer></script>
+  <script>
+    window.OneSignalDeferred = window.OneSignalDeferred || [];
+    OneSignalDeferred.push(async function(OneSignal) {
+      await OneSignal.init({
+        appId: "e0fe57c1-475c-4a59-95ae-9ade9008342c",
+        serviceWorkerParam: { scope: "/" },
+        serviceWorkerPath: "/OneSignalSDKWorker.js",
+        promptOptions: {
+          slidedown: {
+            prompts: [
+              {
+                type: "push",
+                autoPrompt: true,
+                text: {
+                  actionMessage: "🪷 दैनिक दिव्य दर्शन, भगवद्गीता सार एवं 4K HD वॉलपेपर्स की पावन सूचनाएं (Notifications) प्राप्त करें।",
+                  acceptButton: "स्वीकार करें (Allow)",
+                  cancelButton: "बाद में"
+                },
+                delay: {
+                  pageViews: 1,
+                  timeDelay: 3
+                }
+              }
+            ]
+          }
+        }
+      });
+    });
+  </script>
+
   <!-- Security Meta Tags -->
   <meta http-equiv="X-Content-Type-Options" content="nosniff">
   <meta name="referrer" content="strict-origin-when-cross-origin">
