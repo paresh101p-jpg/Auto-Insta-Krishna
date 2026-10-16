@@ -65,27 +65,10 @@
       await OneSignal.init({
         appId: "e0fe57c1-475c-4a59-95ae-9ade9008342c",
         serviceWorkerParam: { scope: "/" },
-        serviceWorkerPath: "/OneSignalSDKWorker.js",
-        promptOptions: {
-          slidedown: {
-            prompts: [
-              {
-                type: "push",
-                autoPrompt: true,
-                text: {
-                  actionMessage: "🪷 दैनिक दिव्य दर्शन, भगवद्गीता सार एवं 4K HD वॉलपेपर्स की पावन सूचनाएं (Notifications) प्राप्त करें।",
-                  acceptButton: "स्वीकार करें (Allow)",
-                  cancelButton: "बाद में"
-                },
-                delay: {
-                  pageViews: 1,
-                  timeDelay: 3
-                }
-              }
-            ]
-          }
-        }
+        serviceWorkerPath: "/OneSignalSDKWorker.js"
       });
+      // Show slidedown prompt on page load
+      OneSignal.Slidedown.promptPush();
     });
   </script>
 
@@ -423,7 +406,7 @@
   <div id="toastMsg" class="toast-msg"></div>
 
   <!-- Scripts -->
-  <script src="js/posts-data.js?v=2.6"></script>
-  <script src="js/app.js?v=2.6"></script>
+  <script src="js/posts-data.js?v=2.7"></script>
+  <script src="js/app.js?v=2.7"></script>
 </body>
 </html>
