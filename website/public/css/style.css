@@ -389,42 +389,34 @@ body {
   font-weight: 600;
 }
 
-/* Feed Sort & Quick Filter Bar - Ultra-Luxury Design */
+/* Feed Sort & Quick Filter Bar - Ultra-Luxury Responsive Dock (Zero Side Scroll) */
 .feed-sort-bar {
   display: flex;
   align-items: center;
-  gap: 12px;
-  margin: 18px 0 32px;
-  overflow-x: auto;
-  padding: 12px 16px;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin: 18px 0 28px;
+  padding: 10px 14px;
   background: rgba(14, 19, 31, 0.75);
   border: 1.5px solid rgba(245, 197, 66, 0.28);
-  border-radius: 36px;
-  scrollbar-width: thin;
-  scrollbar-color: var(--gold-primary) transparent;
-  -webkit-overflow-scrolling: touch;
+  border-radius: 30px;
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.08);
 }
-.feed-sort-bar::-webkit-scrollbar {
-  height: 4px;
-}
-.feed-sort-bar::-webkit-scrollbar-thumb {
-  background: var(--gold-primary);
-  border-radius: 4px;
-}
 .sort-btn {
   display: inline-flex;
   align-items: center;
-  gap: 8px;
-  padding: 11px 22px;
+  justify-content: center;
+  gap: 6px;
+  padding: 9px 18px;
   background: rgba(22, 30, 46, 0.9);
   border: 1.5px solid rgba(255, 255, 255, 0.12);
-  border-radius: 26px;
+  border-radius: 22px;
   color: var(--text-main);
   font-family: var(--font-ui);
-  font-size: 0.94rem;
+  font-size: 0.9rem;
   font-weight: 600;
   cursor: pointer;
   white-space: nowrap;
@@ -1038,10 +1030,35 @@ body {
   .brand-name { font-size: 1.15rem; }
   .nav-center { display: none; }
   .hero-section { padding: 32px 16px 24px; }
+  .category-filter-wrap { gap: 8px; margin-bottom: 28px; }
+  .cat-pill { padding: 8px 14px; font-size: 0.8rem; }
+  .feed-sort-bar {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 6px;
+    padding: 8px;
+    border-radius: 20px;
+    margin: 14px 0 24px;
+  }
+  .sort-btn {
+    padding: 8px 4px;
+    font-size: 0.78rem;
+    gap: 4px;
+    border-radius: 14px;
+    white-space: normal;
+  }
+  .sort-btn .sort-icon { font-size: 0.95rem; }
   .posts-grid { grid-template-columns: 1fr; }
   .footer-container { grid-template-columns: 1fr; gap: 24px; }
   .detail-actions-bar { grid-template-columns: 1fr; }
   .legal-card { padding: 24px 18px; }
+}
+
+@media (max-width: 380px) {
+  .feed-sort-bar {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 6px;
+  }
 }
 
 /* =========================================================
@@ -1485,5 +1502,119 @@ body {
   flex-wrap: wrap;
 }
 
-
-
+/* =========================================================
+   ANTI-ADBLOCKER WALL (Respectful Luxury Modal)
+   ========================================================= */
+body.adblock-active {
+  overflow: hidden !important;
+}
+body.adblock-active main,
+body.adblock-active header,
+body.adblock-active nav,
+body.adblock-active footer {
+  filter: blur(14px) !important;
+  pointer-events: none !important;
+  user-select: none !important;
+}
+.adblock-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(7, 9, 14, 0.94);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  z-index: 9999999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  animation: fadeIn 0.35s ease;
+}
+.adblock-card {
+  max-width: 520px;
+  width: 100%;
+  background: linear-gradient(145deg, rgba(20, 27, 43, 0.98) 0%, rgba(10, 14, 22, 0.98) 100%);
+  border: 1.5px solid var(--border-gold);
+  border-radius: 28px;
+  padding: 36px 28px;
+  text-align: center;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.85), 0 0 35px var(--gold-glow);
+  position: relative;
+  animation: modalPop 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+}
+@keyframes modalPop {
+  0% { transform: scale(0.9); opacity: 0; }
+  100% { transform: scale(1); opacity: 1; }
+}
+.adblock-icon-wrap {
+  width: 72px;
+  height: 72px;
+  margin: 0 auto 18px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(245, 197, 66, 0.2) 0%, rgba(245, 197, 66, 0.05) 70%);
+  border: 2px solid var(--gold-primary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 2rem;
+  box-shadow: 0 0 25px var(--gold-glow);
+}
+.adblock-title {
+  font-family: var(--font-hindi);
+  color: var(--gold-primary);
+  font-size: 1.45rem;
+  font-weight: 700;
+  margin-bottom: 6px;
+}
+.adblock-subtitle {
+  color: var(--peacock-cyan);
+  font-size: 0.84rem;
+  font-weight: 600;
+  margin-bottom: 16px;
+  letter-spacing: 0.5px;
+}
+.adblock-desc {
+  color: var(--text-muted);
+  font-size: 0.9rem;
+  line-height: 1.65;
+  margin-bottom: 20px;
+}
+.adblock-notice-box {
+  background: rgba(245, 197, 66, 0.08);
+  border: 1px dashed var(--border-gold);
+  border-radius: 14px;
+  padding: 12px 16px;
+  margin-bottom: 22px;
+  font-size: 0.86rem;
+  color: #fff;
+  text-align: left;
+  line-height: 1.6;
+}
+.adblock-btn-reload {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  width: 100%;
+  padding: 14px 24px;
+  background: var(--gold-gradient);
+  color: #07090e;
+  border: none;
+  border-radius: 30px;
+  font-family: var(--font-ui);
+  font-size: 0.98rem;
+  font-weight: 800;
+  cursor: pointer;
+  box-shadow: 0 6px 25px rgba(245, 197, 66, 0.5);
+  transition: all 0.25s ease;
+  touch-action: manipulation;
+}
+.adblock-btn-reload:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 32px rgba(245, 197, 66, 0.7);
+}
+.adblock-steps-hint {
+  font-size: 0.78rem;
+  color: var(--text-muted);
+  margin-top: 16px;
+  line-height: 1.5;
+}

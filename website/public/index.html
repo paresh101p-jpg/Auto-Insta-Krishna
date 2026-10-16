@@ -163,7 +163,7 @@
   </script>
 
   <!-- Stylesheet -->
-  <link rel="stylesheet" href="css/style.css?v=2.5">
+  <link rel="stylesheet" href="css/style.css?v=2.6">
 </head>
 <body>
 
@@ -263,25 +263,25 @@
       </h2>
     </div>
 
-    <!-- Feed Sort & Quick Filter Buttons Bar -->
+    <!-- Feed Sort & Quick Filter Buttons Bar (Zero Side Scroll) -->
     <div class="feed-sort-bar" id="feedSortBar">
-      <button class="sort-btn active" data-sort="latest" onclick="handleSortChange('latest')">
-        <span class="sort-icon">🆕</span> ताज़ा पोस्ट्स (Latest)
+      <button class="sort-btn active" data-sort="latest" onclick="handleSortChange('latest')" title="ताज़ा दर्शन">
+        <span class="sort-icon">🆕</span> ताज़ा (Latest)
       </button>
-      <button class="sort-btn" data-sort="views" onclick="handleSortChange('views')">
-        <span class="sort-icon">👁️</span> टॉप व्यूज (Top Views)
+      <button class="sort-btn" data-sort="views" onclick="handleSortChange('views')" title="सर्वाधिक देखे गए दर्शन">
+        <span class="sort-icon">👁️</span> टॉप व्यूज
       </button>
-      <button class="sort-btn" data-sort="likes" onclick="handleSortChange('likes')">
-        <span class="sort-icon">❤️</span> टॉप लाइक्स (Top Likes)
+      <button class="sort-btn" data-sort="likes" onclick="handleSortChange('likes')" title="सर्वाधिक पसंद किए गए दर्शन">
+        <span class="sort-icon">❤️</span> टॉप लाइक्स
       </button>
-      <button class="sort-btn" data-sort="downloads" onclick="handleSortChange('downloads')">
-        <span class="sort-icon">⬇️</span> टॉप डाउनलोड (Downloads)
+      <button class="sort-btn" data-sort="downloads" onclick="handleSortChange('downloads')" title="सर्वाधिक डाउनलोड किए गए दर्शन">
+        <span class="sort-icon">⬇️</span> डाउनलोड
       </button>
-      <button class="sort-btn" data-sort="shares" onclick="handleSortChange('shares')">
-        <span class="sort-icon">📲</span> टॉप शेयर (Shares)
+      <button class="sort-btn" data-sort="shares" onclick="handleSortChange('shares')" title="सर्वाधिक शेयर किए गए दर्शन">
+        <span class="sort-icon">📲</span> टॉप शेयर
       </button>
-      <button class="sort-btn" data-sort="reels" onclick="handleSortChange('reels')">
-        <span class="sort-icon">🎬</span> केवल रील्स (4K Reels)
+      <button class="sort-btn" data-sort="reels" onclick="handleSortChange('reels')" title="केवल अलौकic 4K रील्स">
+        <span class="sort-icon">🎬</span> 4K रील्स
       </button>
     </div>
 
@@ -391,7 +391,7 @@
   <div id="toastMsg" class="toast-msg"></div>
 
   <!-- Scripts -->
-  <script src="js/posts-data.js?v=2.5"></script>
-  <script src="js/app.js?v=2.5"></script>
+  <script src="js/posts-data.js?v=2.6"></script>
+  <script src="js/app.js?v=2.6"></script>
 </body>
 </html>

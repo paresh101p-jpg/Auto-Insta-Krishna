@@ -775,3 +775,97 @@ function getSeoAltText(post, isVideo) {
   return `श्री कृष्ण 4K HD वॉलपेपर — ${post.title} — "${cleanQuote}" | Krishna Vibez Wallpaper`;
 }
 
+/* =========================================================
+   10. ANTI-ADBLOCK DETECTOR & ROYAL OVERLAY WALL
+   ========================================================= */
+const AdBlockDetector = {
+  isDetected: false,
+
+  init() {
+    if (document.readyState === 'complete') {
+      setTimeout(() => this.runCheck(), 1500);
+    } else {
+      window.addEventListener('load', () => {
+        setTimeout(() => this.runCheck(), 1500);
+      });
+    }
+  },
+
+  async runCheck() {
+    if (this.isDetected) return;
+
+    // 1. Bait element test (Checks CSS hide rules)
+    const bait = document.createElement('div');
+    bait.className = 'adsbox adsbygoogle ad-placement pub_300x250';
+    bait.style.cssText = 'position:fixed;left:-9999px;top:-9999px;width:10px;height:10px;';
+    document.body.appendChild(bait);
+
+    let baitBlocked = false;
+    try {
+      const computed = window.getComputedStyle(bait);
+      if (computed.display === 'none' || computed.visibility === 'hidden' || bait.offsetHeight === 0) {
+        baitBlocked = true;
+      }
+    } catch (e) {
+      baitBlocked = true;
+    }
+    bait.remove();
+
+    if (baitBlocked) {
+      this.triggerWall('bait-blocked');
+      return;
+    }
+
+    // 2. Network probe test (Checks DNS / request blocking of AdSense JS)
+    try {
+      const req = new Request('https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js', {
+        method: 'HEAD',
+        mode: 'no-cors',
+        cache: 'no-store'
+      });
+      await fetch(req);
+    } catch (err) {
+      this.triggerWall('network-blocked');
+    }
+  },
+
+  triggerWall(reason) {
+    if (this.isDetected) return;
+    this.isDetected = true;
+    console.warn(`[AdBlockDetector] Ad blocker active (${reason}). Displaying compliance wall.`);
+
+    document.body.classList.add('adblock-active');
+
+    const existing = document.getElementById('adblockBackdrop');
+    if (existing) existing.remove();
+
+    const backdrop = document.createElement('div');
+    backdrop.id = 'adblockBackdrop';
+    backdrop.className = 'adblock-backdrop';
+    backdrop.innerHTML = `
+      <div class="adblock-card" role="dialog" aria-modal="true" aria-labelledby="adbTitle">
+        <div class="adblock-icon-wrap">🛡️</div>
+        <h2 id="adbTitle" class="adblock-title">विज्ञापन अवरोधक (AdBlocker) का पता चला</h2>
+        <div class="adblock-subtitle">KRISHNA VIBEZ — दिव्य सेवा हेतु पावन सहयोग</div>
+        <p class="adblock-desc">
+          सम्मानित भक्तजन, <strong>Krishna Vibez</strong> पूर्णतः निःशुल्क आध्यात्मिक मंच है। इस सेवा को अनवरत चलाने, हाई-स्पीड सर्वर और अलौकिक 4K HD दर्शन को आप तक पहुँचाने का खर्च केवल विज्ञापनों से निकलता है।
+        </p>
+        <div class="adblock-notice-box">
+          ✨ <strong>कृपया हमारी सेवा देखने के लिए AdBlocker बंद करें:</strong><br>
+          1. अपने ब्राउज़र के <strong>AdBlock / uBlock / Brave Shield</strong> आइकन पर क्लिक करें।<br>
+          2. <strong>"Pause on this site"</strong> या <strong>"इस साइट पर बंद करें"</strong> चुनें।<br>
+          3. नीचे दिए गए रीलोड बटन पर क्लिक करें।
+        </div>
+        <button class="adblock-btn-reload" onclick="window.location.reload()">
+          🔄 मैंने AdBlocker बंद कर दिया (पेज रीलोड करें)
+        </button>
+        <div class="adblock-steps-hint">
+          जय श्री कृष्णा · आपके सहयोग और प्रेम के लिए हार्दिक आभार!
+        </div>
+      </div>
+    `;
+    document.body.appendChild(backdrop);
+  }
+};
+
+AdBlockDetector.init();
