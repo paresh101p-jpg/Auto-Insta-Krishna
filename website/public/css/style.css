@@ -1026,14 +1026,18 @@ body {
 }
 
 @media (max-width: 640px) {
-  .navbar { padding: 8px 12px; }
-  .brand-logo-img { width: 36px; height: 36px; border-radius: 10px; }
-  .brand-name { font-size: 1.05rem; }
-  .brand-tagline { font-size: 0.58rem; letter-spacing: 1.5px; }
+  .navbar { padding: 8px 10px; }
+  .nav-container { gap: 6px; }
+  .brand-logo-img { width: 32px; height: 32px; border-radius: 8px; }
+  .brand-text-wrap { display: none; } /* On mobile, logo icon is enough so full navbar fits with 0 overflow */
+  .brand-name { font-size: 0.95rem; }
+  .brand-tagline { display: none; }
   .nav-center { display: none; }
-  .nav-actions { gap: 6px; }
-  .nav-social-btn { padding: 5px 9px; font-size: 0.7rem; border-radius: 16px; }
-  .audio-toggle-btn { padding: 5px 10px; font-size: 0.72rem; }
+  .nav-actions { gap: 5px; flex-shrink: 0; }
+  .nav-social-btn { padding: 6px 8px; font-size: 0.72rem; border-radius: 14px; gap: 4px; }
+  .nav-social-btn span { display: none; } /* Show only Instagram & Facebook icons on mobile */
+  .nav-social-btn svg { width: 16px; height: 16px; }
+  .audio-toggle-btn { padding: 6px 10px; font-size: 0.72rem; border-radius: 16px; gap: 5px; }
 
   /* Ultra-Compact Mobile Hero (Zero Waste Viewport) */
   .hero-section { padding: 12px 12px 6px; }
