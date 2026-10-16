@@ -15,6 +15,7 @@ let audioOscillators = [];
 document.addEventListener('DOMContentLoaded', () => {
   SecurityGuard.enforceFrameSecurity();
   initFeed();
+  initSortButtons();
   initSearch();
   initCategoryFilters();
   initAudioPlayer();
@@ -238,6 +239,19 @@ function handleSortChange(sortKey) {
   const posts = window.KRISHNA_POSTS || [];
   renderFilteredPosts(posts);
 }
+
+function initSortButtons() {
+  document.querySelectorAll('.sort-btn').forEach(btn => {
+    btn.onclick = function(e) {
+      if (e) e.preventDefault();
+      const sortKey = this.getAttribute('data-sort');
+      if (sortKey) handleSortChange(sortKey);
+    };
+  });
+}
+
+window.handleSortChange = handleSortChange;
+window.initSortButtons = initSortButtons;
 
 // Hover video preview helpers for cards
 function previewCardVideo(wrap) {
