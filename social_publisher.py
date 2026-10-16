@@ -30,6 +30,19 @@ def publish_to_telegram(media_url, caption, post_url, is_video=False):
     chat_id = os.environ.get("TELEGRAM_CHAT_ID")
 
     if not bot_token or not chat_id:
+        token_file = os.path.join(os.path.dirname(os.path.abspath(__file__)), "telegram_token.txt")
+        if os.path.exists(token_file):
+            try:
+                with open(token_file, "r", encoding="utf-8") as tf:
+                    for line in tf:
+                        if line.startswith("TELEGRAM_BOT_TOKEN="):
+                            bot_token = line.split("=", 1)[1].strip()
+                        elif line.startswith("TELEGRAM_CHAT_ID="):
+                            chat_id = line.split("=", 1)[1].strip()
+            except Exception:
+                pass
+
+    if not bot_token or not chat_id:
         print("[Telegram] ℹ️ Skipped: TELEGRAM_BOT_TOKEN or TELEGRAM_CHAT_ID not configured.")
         return False
 
