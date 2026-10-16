@@ -16,6 +16,7 @@ WEBSITE_DIR = os.path.join(BASE_DIR, "website")
 PUBLIC_DIR = os.path.join(WEBSITE_DIR, "public")
 POSTS_DATA_PATH = os.path.join(PUBLIC_DIR, "js", "posts-data.js")
 SITEMAP_PATH = os.path.join(PUBLIC_DIR, "sitemap.xml")
+RSS_PATH = os.path.join(PUBLIC_DIR, "rss.xml")
 
 MONTHS_HI = {
     1: "जनवरी", 2: "फरवरी", 3: "मार्च", 4: "अप्रैल",
@@ -193,7 +194,7 @@ def publish_to_website(media_url, caption, is_video=False):
             new_url_entry = f"""  <url>
     <loc>https://krishnavibez.in/post.html?id={post_id}</loc>
     <lastmod>{iso_date}</lastmod>
-    <changefreq>weekly</changefreq>
+    <changefreq>daily</changefreq>
     <priority>0.9</priority>
   </url>
 </urlset>"""
@@ -203,6 +204,46 @@ def publish_to_website(media_url, caption, is_video=False):
                 with open(SITEMAP_PATH, "w", encoding="utf-8") as f:
                     f.write(sitemap_content)
                 print(f"[WebsitePublisher] ✅ Updated sitemap.xml with canonical post URL.")
+
+        # 3. Update rss.xml for Google Discover
+        if os.path.exists(RSS_PATH):
+            try:
+                with open(RSS_PATH, "r", encoding="utf-8") as f:
+                    rss_content = f.read()
+
+                rfc_date = now.strftime("%a, %d %b %Y %H:%M:%S +0530")
+                rss_content = re.sub(r'<lastBuildDate>.*?</lastBuildDate>', f'<lastBuildDate>{rfc_date}</lastBuildDate>', rss_content)
+
+                post_link = f"https://krishnavibez.in/post.html?id={post_id}"
+                media_type = "video/mp4" if is_video else "image/jpeg"
+                medium = "video" if is_video else "image"
+                length = "1048576" if is_video else "524288"
+                dims = "" if is_video else ' width="1200" height="1600"'
+                clean_desc = f"भगवान श्री कृष्ण का पावन विचार: {quote[:120]}… 4K दर्शन एवं डाउनलोड।"
+
+                new_item = f"""    <item>
+      <title>{title}</title>
+      <link>{post_link}</link>
+      <guid isPermaLink="true">{post_link}</guid>
+      <pubDate>{rfc_date}</pubDate>
+      <dc:creator>Paresh Padsala (Krishna Vibez)</dc:creator>
+      <category>{category}</category>
+      <description><![CDATA[{clean_desc}]]></description>
+      <enclosure url="{media_url}" type="{media_type}" length="{length}"/>
+      <media:content url="{media_url}" medium="{medium}"{dims}/>
+    </item>\n\n"""
+
+                if "<item>" in rss_content:
+                    idx = rss_content.find("<item>")
+                    rss_content = rss_content[:idx] + new_item + rss_content[idx:]
+                elif "</channel>" in rss_content:
+                    rss_content = rss_content.replace("</channel>", new_item + "  </channel>")
+
+                with open(RSS_PATH, "w", encoding="utf-8") as f:
+                    f.write(rss_content)
+                print(f"[WebsitePublisher] ✅ Updated rss.xml for Google Discover.")
+            except Exception as rss_err:
+                print(f"[WebsitePublisher] Warning updating rss.xml: {rss_err}")
 
         return True
 

@@ -1,13 +1,20 @@
 User-agent: *
 Allow: /
 
-User-agent: Mediapartners-Google
-Allow: /
-
 User-agent: Googlebot
 Allow: /
 
 User-agent: Googlebot-Image
 Allow: /
 
+User-agent: Googlebot-News
+Allow: /
+
+User-agent: Google-InspectionTool
+Allow: /
+
+User-agent: Mediapartners-Google
+Allow: /
+
+# Canonical XML Sitemap & RSS Feed for Google Discover & Fast Indexing
 Sitemap: https://krishnavibez.in/sitemap.xml

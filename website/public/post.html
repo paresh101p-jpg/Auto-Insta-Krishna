@@ -30,6 +30,20 @@
   <!-- Image Thumbnail Meta for Google Search & Discover -->
   <meta name="thumbnail" id="metaThumbnail" content="https://krishnavibez.in/assets/logo.png">
 
+  <!-- Google Discover & Search Engine Directives (Large High-Res Image Preview) -->
+  <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1">
+  <meta name="googlebot" content="index, follow, max-image-preview:large">
+
+  <!-- RSS Feed for Google Discover & Fast Content Crawling -->
+  <link rel="alternate" type="application/rss+xml" title="Krishna Vibez — दैनिक दिव्य दर्शन RSS Feed" href="https://krishnavibez.in/rss.xml">
+
+  <!-- Article Open Graph Meta for Google Discover & Social Feeds -->
+  <meta property="article:published_time" id="articlePubTime" content="2026-10-16T06:00:00+05:30">
+  <meta property="article:modified_time" id="articleModTime" content="2026-10-16T10:00:00+05:30">
+  <meta property="article:author" content="https://www.instagram.com/pareshpadsala_/">
+  <meta property="article:section" id="articleSection" content="दैनिक दर्शन">
+  <meta property="article:publisher" content="https://krishnavibez.in/">
+
   <!-- Favicon -->
   <link rel="icon" type="image/png" href="assets/logo.png">
   
@@ -431,7 +445,15 @@
       const metaThumb = document.getElementById('metaThumbnail');
       if (metaThumb) metaThumb.setAttribute('content', post.imageUrl);
 
-      // 5. Build Live Devotee Reviews for Google Rich Snippets
+      // 5. Update Article Open Graph for Google Discover
+      const artPub = document.getElementById('articlePubTime');
+      if (artPub) artPub.setAttribute('content', post.isoDate ? `${post.isoDate}T06:00:00+05:30` : '2026-10-16T06:00:00+05:30');
+      const artMod = document.getElementById('articleModTime');
+      if (artMod) artMod.setAttribute('content', post.isoDate ? `${post.isoDate}T10:00:00+05:30` : '2026-10-16T10:00:00+05:30');
+      const artSec = document.getElementById('articleSection');
+      if (artSec) artSec.setAttribute('content', post.category || 'दैनिक दर्शन');
+
+      // 6. Build Live Devotee Reviews for Google Rich Snippets
       const reviewsList = (comments && comments.length > 0 ? comments : (post.comments || [])).map(c => ({
         "@type": "Review",
         "author": {
@@ -461,12 +483,12 @@
       const ratingCountNum = Math.max(stats.likes || 1250, 25);
       const reviewCountNum = Math.max(stats.commentsCount || reviewsList.length, 1);
 
-      // 6. Master Schema.org JSON-LD Graph for Google Search, Thumbnail & Reviews
+      // 7. Master Schema.org JSON-LD Graph for Google Discover & Search
       const schemaData = {
         "@context": "https://schema.org",
         "@graph": [
           {
-            "@type": ["Article", "CreativeWork"],
+            "@type": ["Article", "NewsArticle", "CreativeWork"],
             "@id": `${postUrl}#article`,
             "isPartOf": {
               "@type": "WebPage",
@@ -480,12 +502,16 @@
             "inLanguage": "hi-IN",
             "datePublished": post.isoDate ? `${post.isoDate}T06:00:00+05:30` : "2026-10-15T06:00:00+05:30",
             "dateModified": post.isoDate ? `${post.isoDate}T10:00:00+05:30` : "2026-10-15T10:00:00+05:30",
-            "mainEntityOfPage": postUrl,
+            "mainEntityOfPage": {
+              "@type": "WebPage",
+              "@id": postUrl
+            },
             "keywords": (post.tags || []).join(", "),
             "articleSection": post.category || "दैनिक दर्शन",
             "author": {
               "@type": "Person",
               "name": "Paresh Padsala",
+              "jobTitle": "Spiritual Creator & Editor",
               "url": "https://www.instagram.com/pareshpadsala_/"
             },
             "publisher": {
@@ -499,21 +525,18 @@
                 "height": 512
               }
             },
-            "image": {
-              "@type": "ImageObject",
-              "url": post.imageUrl,
-              "contentUrl": post.imageUrl,
-              "thumbnailUrl": post.imageUrl,
-              "caption": seoAlt,
-              "width": 1080,
-              "height": 1440
-            },
+            "image": [
+              post.imageUrl,
+              "https://krishnavibez.in/assets/logo.png"
+            ],
             "thumbnailUrl": post.imageUrl,
             "primaryImageOfPage": {
               "@type": "ImageObject",
               "url": post.imageUrl,
-              "width": 1080,
-              "height": 1440
+              "contentUrl": post.imageUrl,
+              "caption": seoAlt,
+              "width": 1200,
+              "height": 1600
             },
             "aggregateRating": {
               "@type": "AggregateRating",
