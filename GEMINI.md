@@ -49,3 +49,69 @@ Auto-Insta-Krishna and Auto-Insta-Pooja both use a robust URL-based queue system
 - **NEVER** reduce the `time.sleep(35)` after the chunk upload. 
 - If reduced, Meta's API will return a false `Video Upload Is Missing` error, crashing the Facebook Story post. This has been permanently fixed and must remain exactly as is.
 
+# YouTube Shorts & Video Reel Generation Rules
+
+Whenever you are generating video reels or YouTube Shorts from images (whether batch processing 2000+ images or single reels), you MUST ALWAYS strictly follow these rules:
+
+### 1. Anti-Cropping & Aspect Ratio Rule (Blurred Ambient Background)
+- Input images may be 4:5, 3:4, or other ratios.
+- **NEVER crop or stretch the main image** when converting to 9:16 vertical (1080x1920). All text, quotes, signatures, and borders MUST be 100% visible.
+- **ALWAYS use the Blurred Ambient Background method**:
+  - Background: The original image scaled to fill 1080x1920 with heavy box blur (`boxblur=25:5`) and slight darkening (`eq=brightness=-0.09:saturation=1.15`).
+  - Foreground: The uncropped main image fitted nicely in the center (`scale=1040:1750:force_original_aspect_ratio=decrease`) with a subtle elegant border/shadow (`pad=w=1044:h=ih+4:x=2:y=2:color=black@0.4`).
+
+### 2. Dynamic Unblur Hook (Focus-Reveal Transition)
+- Every reel MUST start with the foreground image blurred at Second 0.
+- Between **Second 0 and Second 3.5 - 4.0**, the foreground MUST smoothly dissolve/transition from blurred to 100% crystal clear sharp focus (`blend=all_expr='if(lte(T,3.5), A*(1-T/3.5) + B*(T/3.5), B)'`).
+- From Second 4 onwards until the end, it stays completely sharp.
+- This creates an irresistible viewer retention hook that stops viewers from swiping away on YouTube Shorts & Instagram Reels.
+
+### 3. Voiceover & Human Soul (Emotion-Adaptive Delivery)
+- **Voice Gender**: ALWAYS use a **Male / Boy voice**. Never use female voice for Krishna quotes.
+- **Voice Model**: Microsoft Madhur Neural (`hi-IN-MadhurNeural`).
+- **Dynamic Emotion Adaptation (विचार के भाव के अनुसार आवाज़ बदलना)**:
+  Every quote is unique, so the script MUST automatically detect the mood/emotion of the thought and adapt its vocal parameters:
+  1. **संघर्ष से सफलता / सीख (Struggle to Victory - e.g., बदलाव, शुरुआत, कठिन, अंत):**
+     - Phase 1 (कठिन शुरुआत): Slower, deeper empathetic tone (`rate="-12%", pitch="-2Hz"`).
+     - Phase 2 (उलझन/मंथन): Thoughtful pause and steady pace (`rate="-10%", pitch="-1Hz"`).
+     - Phase 3 (सुखद अंत/जीत): Uplifting, joyful, serene tone (`rate="-6%", pitch="+1Hz"`).
+  2. **गंभीर / कर्म / कर्तव्य (Karma / Duty / Strength - e.g., कर्म, साहस, लक्ष्य, समय):**
+     - Firm, confident, grounded guru delivery (`rate="-9%", pitch="-1Hz"`).
+  3. **शांत / मौन / आत्मा / ध्यान (Peace / Meditation - e.g., शांति, मौन, क्रोध, आत्मा, ईश्वर):**
+     - Ultra-calm, meditative, whisper-gentle cadence (`rate="-13%", pitch="-2Hz"`).
+  4. **प्रेम / भक्ति / विश्वास (Devotion / Love / Faith - e.g., प्रेम, विश्वास, भक्ति, समर्पण):**
+     - Warm, gentle, affectionate, soulful cadence (`rate="-8%", pitch="0Hz"`).
+- **Human Emotion & Pauses (No Robotic AI Feel)**:
+  - DO NOT read raw plain text in a single rush.
+  - MUST split into natural breathing clauses at conjunctions (`जब... तब...`, `लेकिन...`, `क्योंकि...`, `और...`, commas) with `...` and 350ms–500ms pauses between thoughts.
+  - Audio Mastering: Apply studio warmth (`bass=g=3:f=160,treble=g=2:f=3200`) and subtle divine room ambiance (`aecho=0.8:0.7:30:0.10`).
+
+### 4. Background Music (Flute / Bansuri)
+- ALWAYS use Lord Krishna devotional flute/bansuri tracks from the project's music library (`Auto-Insta-Krishna/music/`).
+- Flute volume MUST be softly balanced at **14% - 15%** so the voice is crystal clear and prominent (voice at 115% volume).
+- BGM MUST have a smooth **1.2 to 1.5-second fade-out** at the end.
+- Voice delay: Start the voice 0.6 to 0.7 seconds after video begins, allowing the viewer to first hear the flute music and experience the unblur transition.
+
+### 5. Video Technical Specifications
+- Resolution: **1080 × 1920 (9:16 Full HD Vertical)**.
+- Frame Rate: **25 fps**, Codec: **libx264** (CRF 18), Audio: **AAC 192k**.
+- Total Duration: Matches voice length + ~2 seconds padding (typically 15 to 20 seconds).
+
+### 6. YouTube Partner Program (YPP) Monetization & Metadata Rules
+Whenever uploading or generating metadata for YouTube Shorts:
+1. **Meaningful Title Structure (Never post bare hashtags):**
+   - Title MUST have the core wisdom/hook followed by hashtags.
+   - Pattern: `[विचार का मुख्य सार/सीख] | श्री कृष्ण अमृत वचन #Shorts #Krishna #RadheKrishna`
+   - Example: `बदलाव से कभी मत घबराओ | श्री कृष्ण अमृत वचन #Shorts #Krishna #RadheKrishna`
+2. **Transparent AI Content Disclosure (Mandatory for Fast Approval):**
+   - ALWAYS enable the `Altered or Synthetic Content` declaration in upload settings/API parameters (`hasCustomThumbnail=False`, `selfDeclaredMadeForKids=False`, synthetic media disclosure = true).
+   - This complies with YouTube's 2024-2026 AI transparency policy and prevents any demonetization flags.
+3. **Original Value Addition Guarantee:**
+   - Every reel must incorporate the 4-layer signature: (a) Emotion-Adaptive Voiceover with pauses, (b) 0 to 3.5s Focus-Reveal Unblur Hook, (c) Studio-mastered Flute BGM, and (d) Visible creator brand watermark (`@PareshPadsala_` / `Krishna Vibez`).
+4. **Description & Cross-Promotion:**
+   - Include a concise 2-3 line spiritual summary of the thought.
+   - Include direct links to the website (`https://krishnavibez.in/`), WhatsApp Channel (`https://whatsapp.com/channel/0029VbDxJHk30LKNtj4Er62J`), and Telegram (`https://t.me/krishnavibezz`).
+   - Relevant hashtags: `#KrishnaVibez #BhagavadGita #DailySuvichar #SpiritualShorts #KrishnaQuotes`.
+
+
+
