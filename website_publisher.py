@@ -153,10 +153,22 @@ def publish_to_website(media_url, caption, is_video=False):
             raw_js = f.read()
 
         match = re.search(r'window\.KRISHNA_POSTS\s*=\s*(\[[\s\S]*?\]);', raw_js)
+        existing_posts = []
         if match:
-            existing_posts = json.loads(match.group(1))
-        else:
-            existing_posts = []
+            raw_array = match.group(1)
+            try:
+                existing_posts = json.loads(raw_array)
+            except Exception as e:
+                # Robust fallback for unquoted JS keys and backtick template literals
+                try:
+                    clean = re.sub(r'`([\s\S]*?)`', lambda m: json.dumps(m.group(1).strip()), raw_array)
+                    clean = re.sub(r'([\{,]\s*)([a-zA-Z_][a-zA-Z0-9_]*)\s*:', r'\1"\2":', clean)
+                    clean = re.sub(r',\s*([\}\]])', r'\1', clean)
+                    existing_posts = json.loads(clean)
+                    print(f"[WebsitePublisher] Recovered {len(existing_posts)} posts using fallback parser.")
+                except Exception as parse_err:
+                    print(f"[WebsitePublisher] Fallback parser warning: {parse_err}")
+                    existing_posts = []
 
         # Insert new post at top (index 0)
         existing_posts.insert(0, new_post)
