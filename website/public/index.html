@@ -196,7 +196,20 @@
   </script>
 
   <!-- Stylesheet -->
-  <link rel="stylesheet" href="css/style.css?v=3.1">
+  <link rel="stylesheet" href="css/style.css?v=3.5">
+  <script>
+    // 100% Kill any adblocker popup or backdrop immediately
+    try {
+      const killAdblock = () => {
+        document.querySelectorAll('.adblock-backdrop, .adblock-card').forEach(el => el.remove());
+        if (document.body) document.body.classList.remove('adblock-active');
+      };
+      killAdblock();
+      document.addEventListener('DOMContentLoaded', killAdblock);
+      window.addEventListener('load', killAdblock);
+      setInterval(killAdblock, 500);
+    } catch(e) {}
+  </script>
 </head>
 <body>
 
@@ -429,7 +442,7 @@
   <div id="toastMsg" class="toast-msg"></div>
 
   <!-- Scripts -->
-  <script src="js/posts-data.js?v=2.8"></script>
-  <script src="js/app.js?v=2.8"></script>
+  <script src="js/posts-data.js?v=3.5"></script>
+  <script src="js/app.js?v=3.5"></script>
 </body>
 </html>

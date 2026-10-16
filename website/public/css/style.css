@@ -1532,118 +1532,138 @@ body {
 }
 
 /* =========================================================
-   ANTI-ADBLOCKER WALL (Respectful Luxury Modal)
+   COMPREHENSIVE ZERO-OVERFLOW & NO-SIDE-SCROLL SAFEGUARDS
    ========================================================= */
-body.adblock-active {
-  overflow: hidden !important;
-}
-body.adblock-active main,
-body.adblock-active header,
-body.adblock-active nav,
-body.adblock-active footer {
-  filter: blur(14px) !important;
-  pointer-events: none !important;
-  user-select: none !important;
-}
-.adblock-backdrop {
-  position: fixed;
-  inset: 0;
-  background: rgba(7, 9, 14, 0.94);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
-  z-index: 9999999;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 20px;
-  animation: fadeIn 0.35s ease;
-}
-.adblock-card {
-  max-width: 520px;
-  width: 100%;
-  background: linear-gradient(145deg, rgba(20, 27, 43, 0.98) 0%, rgba(10, 14, 22, 0.98) 100%);
-  border: 1.5px solid var(--border-gold);
-  border-radius: 28px;
-  padding: 36px 28px;
-  text-align: center;
-  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.85), 0 0 35px var(--gold-glow);
+html, body {
+  overflow-x: hidden !important;
+  max-width: 100vw !important;
+  width: 100% !important;
   position: relative;
-  animation: modalPop 0.35s cubic-bezier(0.16, 1, 0.3, 1);
 }
-@keyframes modalPop {
-  0% { transform: scale(0.9); opacity: 0; }
-  100% { transform: scale(1); opacity: 1; }
+
+/* Post Detail Responsive Polish - 0 Horizontal Overflow */
+.post-detail-container {
+  max-width: 860px;
+  width: 100%;
+  margin: 0 auto;
+  padding: 24px 16px 80px;
+  overflow-x: hidden;
+  box-sizing: border-box;
 }
-.adblock-icon-wrap {
-  width: 72px;
-  height: 72px;
-  margin: 0 auto 18px;
-  border-radius: 50%;
-  background: radial-gradient(circle, rgba(245, 197, 66, 0.2) 0%, rgba(245, 197, 66, 0.05) 70%);
-  border: 2px solid var(--gold-primary);
+
+.post-detail-title {
+  overflow-wrap: break-word;
+  word-break: break-word;
+  max-width: 100%;
+}
+
+.post-content-body {
+  overflow-wrap: break-word;
+  word-break: break-word;
+  max-width: 100%;
+}
+
+.post-content-body a,
+.post-content-body p,
+.post-content-body blockquote,
+.post-content-body li {
+  overflow-wrap: anywhere;
+  word-break: break-word;
+  max-width: 100%;
+}
+
+.detail-metrics-strip {
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 2rem;
-  box-shadow: 0 0 25px var(--gold-glow);
+  flex-wrap: wrap;
+  gap: 8px;
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
+  padding: 10px 12px;
 }
-.adblock-title {
-  font-family: var(--font-hindi);
-  color: var(--gold-primary);
-  font-size: 1.45rem;
-  font-weight: 700;
-  margin-bottom: 6px;
+
+.detail-metric-box {
+  font-size: 0.8rem;
+  padding: 4px 10px;
+  max-width: 100%;
+  white-space: normal;
+  text-align: center;
 }
-.adblock-subtitle {
-  color: var(--peacock-cyan);
-  font-size: 0.84rem;
-  font-weight: 600;
-  margin-bottom: 16px;
-  letter-spacing: 0.5px;
-}
-.adblock-desc {
-  color: var(--text-muted);
-  font-size: 0.9rem;
-  line-height: 1.65;
-  margin-bottom: 20px;
-}
-.adblock-notice-box {
-  background: rgba(245, 197, 66, 0.08);
-  border: 1px dashed var(--border-gold);
-  border-radius: 14px;
-  padding: 12px 16px;
-  margin-bottom: 22px;
-  font-size: 0.86rem;
-  color: #fff;
-  text-align: left;
-  line-height: 1.6;
-}
-.adblock-btn-reload {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
+
+.detail-actions-bar {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
   gap: 10px;
   width: 100%;
-  padding: 14px 24px;
-  background: var(--gold-gradient);
-  color: #07090e;
-  border: none;
-  border-radius: 30px;
-  font-family: var(--font-ui);
-  font-size: 0.98rem;
-  font-weight: 800;
-  cursor: pointer;
-  box-shadow: 0 6px 25px rgba(245, 197, 66, 0.5);
-  transition: all 0.25s ease;
-  touch-action: manipulation;
+  max-width: 100%;
+  box-sizing: border-box;
+  margin: 20px 0 32px;
 }
-.adblock-btn-reload:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 10px 32px rgba(245, 197, 66, 0.7);
+
+.detail-actions-bar button {
+  width: 100%;
+  min-width: 0;
+  white-space: normal;
+  word-break: break-word;
+  padding: 10px 12px;
+  font-size: 0.84rem;
+  box-sizing: border-box;
 }
-.adblock-steps-hint {
-  font-size: 0.78rem;
-  color: var(--text-muted);
-  margin-top: 16px;
-  line-height: 1.5;
+
+.post-social-box {
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
+  padding: 20px 14px;
+}
+
+.post-social-buttons {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  width: 100%;
+}
+
+.post-social-btn {
+  padding: 8px 14px;
+  font-size: 0.82rem;
+  white-space: normal;
+  text-align: center;
+  max-width: 100%;
+}
+
+.quick-tags-wrap {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  width: 100%;
+}
+
+.quick-tag-pill {
+  white-space: normal;
+}
+
+.comments-container {
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
+  padding: 24px 16px;
+}
+
+.comment-input, .comment-textarea {
+  width: 100%;
+  box-sizing: border-box;
+}
+
+@media (max-width: 600px) {
+  .detail-actions-bar {
+    grid-template-columns: 1fr;
+  }
+  .post-detail-container {
+    padding: 16px 12px 60px;
+  }
 }
