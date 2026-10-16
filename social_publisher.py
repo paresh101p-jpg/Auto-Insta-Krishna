@@ -47,17 +47,23 @@ def publish_to_telegram(media_url, caption, post_url, is_video=False):
         return False
 
     try:
-        # Format a clean, devotional caption with HTML formatting
-        clean_text = caption.strip()
-        lines = [l.strip() for l in clean_text.split("\n") if l.strip() and not l.strip().startswith("#")]
-        quote_text = lines[0] if lines else "जय श्री राधे कृष्ण"
+        # Format a rich, long FB/Insta style devotional caption (under 1000 chars)
+        clean_lines = [l.strip() for l in caption.split("\n") if l.strip() and not l.strip().startswith("#") and not l.strip().startswith("http")]
+        quote_text = clean_lines[0] if clean_lines else "कर्मण्येवाधिकारस्ते मा फलेषु कदाचन।"
+
+        if len(clean_lines) > 1:
+            reflection = "\n\n".join(clean_lines[1:4])
+        else:
+            reflection = "भगवान श्री कृष्ण का प्रत्येक वचन समस्त मानव जाति के कल्याण और अंतरात्मा की शुद्धि के लिए अमृत धारा है। विपरीत परिस्थितियों में मन को विचलित न होने दें, अपने कर्तव्यों का निष्ठा से पालन करें और परिणाम प्रभु के चरणों में समर्पित कर दें।"
 
         formatted_caption = (
             f"<b>✨ श्री कृष्ण अमृत विचार ✨</b>\n\n"
             f"<i>\"{quote_text}\"</i>\n\n"
+            f"{reflection[:450]}\n\n"
             f"🌸 <b>4K वॉलपेपर एवं संपूर्ण दर्शन:</b>\n"
             f"<a href=\"{post_url}\">{post_url}</a>\n\n"
-            f"<i>हर दिन पावन दर्शन के लिए चैनल से जुड़े रहें। 🙏</i>"
+            f"<i>हर दिन पावन दर्शन के लिए चैनल से जुड़े रहें। 🙏</i>\n\n"
+            f"#RadhaKrishna #KrishnaVibez #BhagavadGita"
         )
 
         # Inline button that opens the post directly on krishnavibez.in
@@ -170,10 +176,29 @@ def publish_to_threads(media_url, caption, post_url, is_video=False):
         return False
 
     try:
-        # Step 1: Create Media Container
-        lines = [l.strip() for l in caption.split("\n") if l.strip() and not l.strip().startswith("#")]
-        quote_text = lines[0] if lines else "जय श्री राधे कृष्ण"
-        thread_text = f"✨ {quote_text}\n\n🌸 4K दर्शन एवं वॉलपेपर पढ़ें: {post_url}\n\n#Krishna #RadhaKrishna #GitaQuotes"
+        # Step 1: Create Rich Devotional Caption (FB/Insta style, strictly under 490 chars)
+        clean_lines = [l.strip() for l in caption.split("\n") if l.strip() and not l.strip().startswith("#") and not l.strip().startswith("http")]
+        quote_text = clean_lines[0] if clean_lines else "कर्मण्येवाधिकारस्ते मा फलेषु कदाचन।"
+
+        if len(clean_lines) > 1:
+            reflection = " ".join(clean_lines[1:])
+        else:
+            reflection = "जब जीवन में चिंता या संशय घेरे, तब गोविंद के इन वचनों को हृदय में धारण करें। निष्काम कर्म ही ईश्वर की सच्ची पूजा है।"
+
+        header = "✨ श्री कृष्ण अमृत विचार ✨\n\n"
+        cta = f"\n\n🌸 4K दर्शन व संपूर्ण उपदेश यहाँ पढ़ें:\n👉 {post_url}\n\n#RadhaKrishna #KrishnaVibez #BhagavadGita"
+
+        max_allowed_body = 485 - len(header) - len(cta)
+        body = f'"{quote_text}"\n\n{reflection}'
+        if len(body) > max_allowed_body:
+            allowed_ref = max_allowed_body - len(quote_text) - 8
+            if allowed_ref > 30:
+                reflection_cut = reflection[:allowed_ref].rsplit(" ", 1)[0] + "…"
+                body = f'"{quote_text}"\n\n{reflection_cut}'
+            else:
+                body = f'"{quote_text[:max_allowed_body]}"'
+
+        thread_text = f"{header}{body}{cta}"
 
         container_url = f"https://graph.threads.net/v1.0/{user_id}/threads"
         media_type = "VIDEO" if is_video else "IMAGE"

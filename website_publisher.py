@@ -372,7 +372,7 @@ def publish_to_website(media_url, caption, is_video=False, custom_post_id=None):
             canonical_post_url = f"https://krishnavibez.in/post.html?id={post_id}"
             social_publisher.publish_all_channels(
                 media_url=media_url,
-                caption=quote,
+                caption=caption,
                 title=title,
                 post_url=canonical_post_url,
                 is_video=is_video
