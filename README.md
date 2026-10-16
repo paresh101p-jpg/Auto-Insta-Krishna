@@ -1,6 +1,7 @@
 # 🪷 Krishna Vibez — Official Devotional Platform & Automation Engine
 
 [![Website Status](https://img.shields.io/website?url=https%3A%2F%2Fkrishnavibez.in&label=krishnavibez.in&logo=googlechrome&logoColor=white)](https://krishnavibez.in/)
+[![WhatsApp Channel](https://img.shields.io/badge/WhatsApp-Krishna%20Vibez-25D366?logo=whatsapp&logoColor=white)](https://whatsapp.com/channel/0029VbDxJHk30LKNtj4Er62J)
 [![Telegram Channel](https://img.shields.io/badge/Telegram-@krishnavibezz-2CA5E0?logo=telegram&logoColor=white)](https://t.me/krishnavibezz)
 [![Meta Threads](https://img.shields.io/badge/Threads-@pareshpadsala__-000000?logo=threads&logoColor=white)](https://www.threads.net/@pareshpadsala_/)
 [![Pinterest](https://img.shields.io/badge/Pinterest-KrishnaVibez-BD081C?logo=pinterest&logoColor=white)](https://krishnavibez.in/rss.xml)
@@ -13,6 +14,8 @@
 ## 🌐 Official Web Portals & Verified Endpoints
 
 * **Official Website:** [https://krishnavibez.in](https://krishnavibez.in/)
+* **Official WhatsApp Channel:** [Krishna Vibez WhatsApp Channel](https://whatsapp.com/channel/0029VbDxJHk30LKNtj4Er62J)
+* **Telegram Channel:** [https://t.me/krishnavibezz](https://t.me/krishnavibezz)
 * **Daily 4K Darshan & Wallpapers:** [https://krishnavibez.in/](https://krishnavibez.in/)
 * **Bhagavad Gita Wisdom & Life Lessons:** [https://krishnavibez.in/](https://krishnavibez.in/)
 * **Google Discover RSS Feed:** [https://krishnavibez.in/rss.xml](https://krishnavibez.in/rss.xml)

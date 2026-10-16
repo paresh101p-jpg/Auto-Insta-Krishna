@@ -94,6 +94,13 @@ def generate_article(quote, category, is_video=False):
 
       <h3>🙏 आज का संकल्प एवं मंगल प्रार्थना</h3>
       <p>हे गोविंद, हे गोपाल! हमें ऐसी सद्बुद्धि और कृपा प्रदान कीजिए कि हम हर परिस्थिति में सत्य, धर्म और प्रेम के पथ पर अग्रसर रह सकें। समस्त जीवों का कल्याण हो और हर हृदय में आपकी भक्ति का वास हो। <strong>जय श्री राधे कृष्ण!</strong></p>
+
+      <div style="margin: 28px 0; padding: 18px 20px; background: linear-gradient(135deg, rgba(37, 211, 102, 0.12), rgba(18, 140, 126, 0.08)); border: 1px solid rgba(37, 211, 102, 0.35); border-radius: 12px; text-align: center;">
+        <p style="margin: 0 0 12px 0; font-size: 1rem; color: #fff; font-weight: 600;">🌸 प्रतिदिन प्रातः श्री कृष्ण दिव्य विचार और 4K दर्शन अपने WhatsApp पर प्राप्त करें:</p>
+        <a href="https://whatsapp.com/channel/0029VbDxJHk30LKNtj4Er62J" target="_blank" rel="noopener noreferrer" style="display: inline-flex; align-items: center; gap: 8px; background: #25D366; color: #fff; padding: 10px 22px; border-radius: 25px; text-decoration: none; font-weight: 700; font-size: 0.95rem; box-shadow: 0 4px 15px rgba(37, 211, 102, 0.3);">
+          🟢 आधिकारिक WhatsApp चैनल जॉइन करें
+        </a>
+      </div>
     """
     return title, content
 

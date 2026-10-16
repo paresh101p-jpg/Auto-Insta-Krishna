@@ -265,12 +265,10 @@ def generate_caption(media_path):
         "4. DEVOTIONAL ENGAGEMENT (2-3 lines):\n"
         "Ask a heartfelt question connecting the thought to the devotees' daily life, and invite them warmly to write 'राधे राधे' or 'जय श्री कृष्णा' in the comments.\n\n"
         "5. CALL TO ACTION (Include EXACTLY this block):\n"
-        "Aise hi aur amazing thoughts ke liye follow karein! 👇🔥\n"
-        "Instagram: @pareshpadsala_\n"
-        "Facebook: @KrishnaVibez\n\n"
-        "Like 👍 💬 | Comment 💬 | Share 🚀 | Save 📌\n\n"
+        "Aise hi divya darshan aur suvichar ke liye jude rahein! 🙏🌸\n"
+        "Like 👍 | Comment 💬 | Share 🚀 | Save 📌\n\n"
         "6. HASHTAGS:\n"
-        "Generate 20 to 25 UNIQUE and HIGHLY SPECIFIC hashtags based on what you actually see in the visual and the spiritual lesson discussed. Write them as plain space-separated hashtags (NO brackets, NO commas). ALWAYS include at the very end: #krishna #radheradhe #harekrishna #suvichar #PareshPadsala_ #vrindavan #bhakti\n\n"
+        "Generate 6 to 8 UNIQUE, HIGHLY RELEVANT and NATURAL hashtags based strictly on what is in the visual and the spiritual lesson (NO brackets, NO commas). Keep it clean and natural to comply with Instagram Community Standards.\n\n"
         "CRITICAL FORMATTING INSTRUCTIONS (STRICTLY ENFORCED):\n"
         "- NEVER output section numbers, labels, or headings like 'PART 1', 'PART 2', 'PART 3', 'PART 4', 'PART 5', 'PART 6', 'EXTRACTED TEXT:', 'HOOK:', 'OBSERVATION:', 'DEEP THOUGHT:', 'ENGAGEMENT:', 'CALL TO ACTION:', 'HASHTAGS:'.\n"
         "- NEVER include markdown divider lines like '---' or '***'.\n"
@@ -336,7 +334,7 @@ def generate_caption(media_path):
                 try:
                     print(f"Attempting with dynamically discovered model {m_name}...")
                     response = client.models.generate_content(
-                        model=m_name,
+                        model=model_name,
                         contents=[content_to_pass, prompt]
                     )
                     if response.text:
@@ -365,13 +363,10 @@ def generate_caption(media_path):
     except Exception as e:
         return clean_caption("""Radhe Radhe! ✨ Zindagi mein chahe kitni bhi mushkilein aayein, Krishna par vishwas rakhna. Wo sab theek kar denge. Jai Shree Krishna! 🙏
 
-Aise hi aur amazing thoughts ke liye follow karein! 👇🔥
-Instagram: @pareshpadsala_
-Facebook: @KrishnaVibez
+Aise hi divya darshan aur suvichar ke liye jude rahein! 🙏🌸
+Like 👍 | Comment 💬 | Share 🚀 | Save 📌
 
-Like 👍 💬 | Comment 💬 | Share 🚀 | Save 📌
-
-#krishna #radheradhe #harekrishna #bhagavadgita #vrindavan #suvichar #hindi #devotion #PareshPadsala_""")
+#krishna #radheradhe #harekrishna #bhagavadgita #vrindavan #suvichar #PareshPadsala_""")
 
 def get_ig_account_id():
     url = f"https://graph.facebook.com/v20.0/{FB_PAGE_ID}?fields=instagram_business_account&access_token={FB_ACCESS_TOKEN}"

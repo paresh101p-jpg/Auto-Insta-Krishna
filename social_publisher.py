@@ -63,14 +63,16 @@ def publish_to_telegram(media_url, caption, post_url, is_video=False):
         channel_user = chat_id if str(chat_id).startswith("@") else "@krishnavibezz"
         clean_channel = str(channel_user).lstrip("@")
         channel_link = f"https://t.me/{clean_channel}"
+        whatsapp_channel = "https://whatsapp.com/channel/0029VbDxJHk30LKNtj4Er62J"
 
         formatted_caption = (
             f"<b>✨ श्री कृष्ण पावन अमृत विचार ✨</b>\n\n"
             f"<i>\"{quote_text}\"</i>\n\n"
             f"📖 <b>पावन भावार्थ व जीवन सीख:</b>\n"
-            f"{reflection[:380]}\n\n"
+            f"{reflection[:350]}\n\n"
             f"🔗 <b>वेबसाइट 4K पोस्ट लिंक:</b>\n"
             f"<a href=\"{post_url}\">{post_url}</a>\n\n"
+            f"🟢 <b>WhatsApp चैनल:</b> <a href=\"{whatsapp_channel}\">Krishna Vibez Channel</a>\n\n"
             f"🙏 <i>भगवान श्री कृष्ण की कृपा आप और आपके परिवार पर सदा बनी रहे।</i>\n"
             f"💫 <b>अपनी प्रतिक्रिया दें:</b> नीचे दिए गए 👍 लाइक या 👎 डिसलाइक पर टैप करें!\n\n"
             f"🏷️ #ShreeKrishna #RadhaKrishna #BhagavadGita #KrishnaQuotes #RadheRadhe #KrishnaStatus #4KWallpaper #KrishnaVibez"
@@ -83,12 +85,12 @@ def publish_to_telegram(media_url, caption, post_url, is_video=False):
                     {"text": "🌸 4K दर्शन व वॉलपेपर डाउनलोड", "url": post_url}
                 ],
                 [
-                    {"text": "📖 संपूर्ण गीता उपदेश पढ़ें", "url": post_url},
+                    {"text": "🟢 WhatsApp चैनल जॉइन करें", "url": whatsapp_channel},
                     {"text": "📤 मित्रों को शेयर करें", "url": share_url}
                 ],
                 [
                     {"text": "🌐 Visit KrishnaVibez.in", "url": "https://krishnavibez.in/"},
-                    {"text": "🔔 चैनल जॉइन करें", "url": channel_link}
+                    {"text": "🔔 Telegram चैनल", "url": channel_link}
                 ]
             ]
         }
@@ -156,8 +158,12 @@ def publish_to_pinterest(media_url, title, description, post_url, is_video=False
             "Content-Type": "application/json"
         }
 
+        wa_link = "https://whatsapp.com/channel/0029VbDxJHk30LKNtj4Er62J"
         clean_title = (title[:95] + "…") if len(title) > 95 else title
-        clean_desc = (description[:490] + "…") if len(description) > 490 else description
+        base_desc = description[:380].strip()
+        clean_desc = f"{base_desc}\n\n🟢 WhatsApp Channel: {wa_link}"
+        if len(clean_desc) > 495:
+            clean_desc = clean_desc[:490] + "…"
 
         payload = {
             "link": post_url,
@@ -220,8 +226,9 @@ def publish_to_threads(media_url, caption, post_url, is_video=False):
         else:
             reflection = "जब जीवन में चिंता या संशय घेरे, तब गोविंद के इन वचनों को हृदय में धारण करें। निष्काम कर्म ही ईश्वर की सच्ची पूजा है।"
 
+        wa_channel = "https://whatsapp.com/channel/0029VbDxJHk30LKNtj4Er62J"
         header = "✨ श्री कृष्ण अमृत विचार ✨\n\n"
-        cta = f"\n\n🌸 4K दर्शन व संपूर्ण उपदेश यहाँ पढ़ें:\n👉 {post_url}\n\n#RadhaKrishna #KrishnaVibez #BhagavadGita"
+        cta = f"\n\n🌸 4K दर्शन: {post_url}\n🟢 WhatsApp Channel:\n👉 {wa_channel}\n\n#RadhaKrishna #KrishnaVibez"
 
         max_allowed_body = 485 - len(header) - len(cta)
         body = f'"{quote_text}"\n\n{reflection}'
