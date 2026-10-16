@@ -211,5 +211,49 @@ graph TD
 3. **ऑटो-कमिट बैकअप:** वेबसाइट का हर बदलाव अपने आप Git में कमिट होकर सुरक्षित रहता है।
 
 ---
-*अंतिम अद्यतन: 15 अक्टूबर 2026 · निर्मित: Antigravity AI Engine · Krishna Vibez Devotional Network*
+
+## 💰 9. Google AdSense एवं Google AdMob अनुमोदन समाधान (Monetization & Approval Guide)
+
+### A. 6 महीने से पेंडिंग रिजेक्शन लूप का विश्लेषण (Root Cause Analysis):
+1. **Google Payments Profile पर पेंडिंग अलर्ट:**
+   - [pay.google.com](https://pay.google.com/) पर Google Cloud अकाउंट (`015F12-D58F99-C13671`) पर ₹1,000 की प्री-पेमेंट का लाल क्रिटिकल अलर्ट लगा हुआ था।
+   - चूँकि AdSense और AdMob दोनों Google Payments Profile साझा करते हैं, इसलिए Google का स्वचालित सिस्टम हर 15 दिन में ऑनबोर्डिंग रिजेक्ट कर देता था।
+   - **समाधान:** बिलिंग अकाउंट `015F12-D58F99-C13671` पहले से ही बंद (Closed, ₹0.00 बैलेंस) था, जिससे Google Payments स्थिति क्लियर हो गई और अकाउंट दोबारा एक्टिव वेरिफिकेशन में चला गया।
+
+2. **AdSense Compliance & Site Readiness:**
+   - **ads.txt:** रूट पर `https://krishnavibez.in/ads.txt` लाइव है (`pub-4064462736581300`, DIRECT)।
+   - **अनिवार्य लीगल पेजेस:** Privacy Policy, Terms, Disclaimer, About Us और Contact Us पेजेस फुटर में सक्रिय हैं।
+   - **AdBlocker Wall हटाई गई:** क्रॉलर बॉट्स को ब्लॉक करने वाली फ़ॉल्स-पॉज़िटिव AdBlocker दीवार हटा दी गई ताकि `Mediapartners-Google` बिना रुकावट पूरा कंटेंट स्कैन कर सके।
+
+---
+
+## 📱 10. Google AdMob `app-ads.txt` आर्किटेक्चर (Android Apps Monetization)
+
+### A. हर 10-15 दिन में AdMob री-सबमिट लूप की समस्या:
+- **समस्या:** `Bharat Flow` (`com.BharatFlow`) और `Name Art` (`com.nameartlet...`) ऐप्स के लिए पहले `github.io` और `web.app` सबडोमेन पर `app-ads.txt` डाला गया था।
+- **Google AdMob नियम:** AdMob का ऑटोमेटेड क्रॉलर शेयर्ड सबडोमेन (`github.io`) को आधिकारिक डेवलपर डोमेन नहीं मानता। क्रॉलर हमेशा डेवलपर की **कस्टम रूट डोमेन (Custom Root Domain)** पर `app-ads.txt` खोजता है। जब 14 दिन तक फ़ाइल नहीं मिलती, तो Google विज्ञापनों को सीमित (Limited Ad Serving / Review Loop) कर देता है।
+
+### B. स्थायी समाधान (Permanent Implementation):
+1. **रूट डोमेन पर `app-ads.txt` लाइव:**
+   - URL: `https://krishnavibez.in/app-ads.txt`
+   - स्टेटस: `HTTP 200 OK` (Firebase Hosting CDN)
+   - हेडर: `Content-Type: text/plain; charset=utf-8`, `Cache-Control: public, max-age=3600`
+   - सामग्री: `google.com, pub-4064462736581300, DIRECT, f08c47fec0942fa0` एवं 90+ अधिकृत ऐड नेटवर्क रिसेलर्स।
+
+2. **Google Play Console में डेवलपर वेबसाइट सेटअप:**
+   - Google Play Console में **Store presence > Store settings > Developer contact details** के अंतर्गत:
+   - **Website URL:** `https://krishnavibez.in`
+   - अब AdMob क्रॉलर सीधे Google Play Store लिस्टिंग से `krishnavibez.in/app-ads.txt` को क्रॉल करके अधिकृत (Authorized) मार्क कर देगा।
+
+---
+
+## 🔔 11. OneSignal Web Push नोटिफिकेशन सिस्टम
+
+1. **OneSignal App ID:** `e0fe57c1-475c-4a59-95ae-9ade9008342c`
+2. **सर्विस वर्कर:** `OneSignalSDKWorker.js` रूट पर लाइव है (`Service-Worker-Allowed: /`, `no-cache`).
+3. **डायरेक्ट प्रॉम्प्ट ट्रिगर:** `OneSignal.Slidedown.promptPush()` पेज लोड होते ही यूज़र को दिव्य दर्शन अलर्ट्स की अनुमति देने के लिए सक्रिय होता है।
+4. **ऑटो-पुश एपीआई:** नई पोस्ट पब्लिश होते ही `website_publisher.py` OneSignal REST API के ज़रिए सभी सब्सक्राइबर्स को तुरंत पुश नोटिफिकेशन भेजता है।
+
+---
+*अंतिम अद्यतन: 16 अक्टूबर 2026 · निर्मित: Antigravity AI Engine · Krishna Vibez Devotional Network*
 
