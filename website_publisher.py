@@ -248,7 +248,7 @@ def publish_to_website(media_url, caption, is_video=False, custom_post_id=None):
         if is_video:
             alt_text = f"श्री कृष्ण 4K दिव्य रील वीडियो — {quote[:75]} — Krishna Vibez Reels WhatsApp Status"
             read_time = "देखने का समय: 2 मिनट (Reel)"
-            thumbnail_url = "https://files.catbox.moe/yt84ra.jpg"
+            thumbnail_url = media_url
         else:
             alt_text = f"श्री कृष्ण 4K HD वॉलपेपर — {quote[:75]} — Krishna Vibez Wallpaper"
             read_time = "पढ़ने का समय: 3 मिनट"

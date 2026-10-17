@@ -309,7 +309,6 @@ window.initSortButtons = initSortButtons;
 function previewCardVideo(wrap) {
   const video = wrap.querySelector('.video-hover-element');
   if (video) {
-    video.style.display = 'block';
     video.play().catch(() => {});
   }
 }
@@ -318,7 +317,7 @@ function stopCardVideo(wrap) {
   const video = wrap.querySelector('.video-hover-element');
   if (video) {
     video.pause();
-    video.style.display = 'none';
+    try { video.currentTime = 4.0; } catch (e) {}
   }
 }
 
@@ -376,8 +375,7 @@ function renderFilteredPosts(allPosts) {
 
     const mediaHtml = isVideo ? `
       <div class="video-card-thumb-wrap" onmouseenter="previewCardVideo(this)" onmouseleave="stopCardVideo(this)">
-        <img class="card-img video-poster-img" src="${posterImg}" alt="${escapeHtml(seoAlt)}" title="${escapeHtml(seoAlt)}" loading="lazy">
-        <video class="card-img video-hover-element" src="${videoUrl || ''}" preload="none" muted playsinline loop style="display:none;position:absolute;top:0;left:0;width:100%;height:100%;object-fit:cover;z-index:1;"></video>
+        <video class="card-img video-poster-img video-hover-element" src="${videoUrl}#t=4.0" preload="metadata" muted playsinline loop style="width:100%;height:100%;object-fit:cover;display:block;"></video>
         <div class="video-play-overlay">▶</div>
         <span class="video-reel-pill">4K REEL</span>
       </div>
