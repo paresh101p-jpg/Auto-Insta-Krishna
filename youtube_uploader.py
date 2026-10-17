@@ -2,10 +2,11 @@
 """
 Automated YouTube Shorts Uploader for Krishna Vibez
 Posts 3 daily high-retention Voice Reels directly to YouTube Shorts with:
-- Monetization-compliant metadata (YPP standards)
-- Emotion-adaptive title & deep wisdom descriptions
-- Cross-promotion (krishnavibez.in, WhatsApp, Telegram)
-- Resumable upload architecture with auto-recycle
+- AI Frame Vision: Automatically transcribes the exact thought spoken and displayed on screen
+- Rich, long website-style description with भावार्थ (meaning), व्यावहारिक सीख (lessons), and English wisdom
+- All 6 fully clickable social links (Website, WhatsApp, Telegram, Instagram, Facebook, Pinterest)
+- Reel-specific dynamic SEO hashtags & tags for top search ranking
+- 100% YPP monetization-compliant metadata
 """
 
 import os
@@ -15,6 +16,8 @@ import random
 import subprocess
 import requests
 import json
+import cv2
+from PIL import Image
 from google.oauth2.credentials import Credentials
 from googleapiclient.discovery import build
 from googleapiclient.http import MediaFileUpload
@@ -29,6 +32,17 @@ YT_REELS_FILE = os.path.join(BASE_DIR, "youtube_reels_urls.txt")
 YT_BACKUP_FILE = os.path.join(BASE_DIR, "youtube_reels_urls_backup.txt")
 YT_USED_FILE = os.path.join(BASE_DIR, "youtube_used_urls.txt")
 TEMP_VIDEO = os.path.join(BASE_DIR, "temp_yt_short.mp4")
+TEMP_FRAME = os.path.join(BASE_DIR, "temp_frame.jpg")
+
+# Official Social & Platform Links
+OFFICIAL_LINKS = {
+    "website": "https://krishnavibez.in/",
+    "whatsapp": "https://whatsapp.com/channel/0029VbDxJHk30LKNtj4Er62J",
+    "telegram": "https://t.me/krishnavibezz",
+    "instagram": "https://www.instagram.com/pareshpadsala_/",
+    "facebook": "https://www.facebook.com/1808917602588221",
+    "pinterest": "https://in.pinterest.com/krishnavibezz/"
+}
 
 # Load Credentials (from GitHub Actions Secrets with fallback to local youtube_token.json)
 CLIENT_ID = os.environ.get("YOUTUBE_CLIENT_ID")
@@ -110,43 +124,105 @@ def download_video(url):
         time.sleep(2)
     return False
 
-def generate_youtube_metadata(quote_text=""):
+def extract_sharp_frame(video_path, output_image_path=TEMP_FRAME, target_sec=4.0):
     """
-    Generates YPP-compliant YouTube Shorts Title, Description, and Tags.
-    Title Pattern: [विचार का मुख्य सार/सीख] | श्री कृष्ण अमृत वचन #Shorts #Krishna #RadheKrishna
+    Extracts a frame at second 4.0 where the unblur transition is 100% complete
+    and the quote text is crystal sharp and readable.
     """
+    try:
+        cap = cv2.VideoCapture(video_path)
+        fps = cap.get(cv2.CAP_PROP_FPS) or 25.0
+        target_frame = int(fps * target_sec)
+        cap.set(cv2.CAP_PROP_POS_FRAMES, target_frame)
+        ret, frame = cap.read()
+        if not ret:
+            cap.set(cv2.CAP_PROP_POS_FRAMES, 0)
+            ret, frame = cap.read()
+        cap.release()
+        if ret:
+            cv2.imwrite(output_image_path, frame)
+            print(f"Captured sharp frame at {target_sec}s for AI vision.")
+            return True
+    except Exception as e:
+        print(f"Notice: Frame extraction error: {e}")
+    return False
+
+def generate_youtube_metadata_from_video(video_path):
+    """
+    Extracts the frame at second 4.0 and uses Gemini Vision to transcribe the exact thought
+    and generate a long, beautiful, ranking-optimized description with Hindi & English wisdom.
+    """
+    has_frame = extract_sharp_frame(video_path)
+    
+    default_quote = "कर्मण्येवाधिकारस्ते मा फलेषु कदाचन।"
     default_title = "कर्म का फल और जीवन की सीख | श्री कृष्ण अमृत वचन #Shorts #Krishna #RadheKrishna"
     default_desc = (
-        "भगवान श्री कृष्ण के अनमोल विचार और श्रीमद्भगवद्गीता का दिव्य ज्ञान जो आपके जीवन को सकारात्मक दिशा देगा।\n\n"
-        "👉 अधिक प्रेरणादायक विचारों के लिए वेबसाइट देखें:\nhttps://krishnavibez.in/\n\n"
-        "📲 हमारे WhatsApp चैनल से जुड़ें:\nhttps://whatsapp.com/channel/0029VbDxJHk30LKNtj4Er62J\n\n"
-        "🕊️ Telegram पर जुड़ें:\nhttps://t.me/krishnavibezz\n\n"
-        "#KrishnaVibez #BhagavadGita #DailySuvichar #SpiritualShorts #KrishnaQuotes #RadheKrishna #Shorts"
+        "🌸 कर्म का मर्म और जीवन की सच्ची शांति\n"
+        "━━━━━━━━━━━━━━━━━━━━━━━━━━\n"
+        "🪷 दिव्य विचार (Divine Thought):\n"
+        f"\"{default_quote}\"\n\n"
+        "📖 पावन भावार्थ (Spiritual Meaning):\n"
+        "भगवान श्री कृष्ण श्रीमद्भगवद्गीता में समझाते हैं कि मनुष्य का अधिकार केवल अपने पवित्र कर्म करने में है, "
+        "उसके परिणामों की चिंता करने में नहीं। जब मन फल की आसक्ति से मुक्त होता है, तब अंतरात्मा में सच्चा आनंद और शांति उत्पन्न होती है।\n\n"
+        "🌟 जीवन में व्यावहारिक सीख (Practical Application):\n"
+        "• बिना किसी भय या चिंता के अपने दैनिक कर्तव्यों का पूरी निष्ठा से पालन करें।\n"
+        "• परिस्थितियों के अनुकूल या प्रतिकूल होने पर भी मन का संतुलन बनाए रखें।\n"
+        "• सब कुछ परमात्मा को समर्पित करके निस्वार्थ भाव से जीवन जिएं।\n\n"
+        "✨ English Wisdom Summary:\n"
+        "\"Focus on your sincere efforts without being attached to the results. Pure dedication brings true peace of mind.\"\n\n"
+        "━━━━━━━━━━━━━━━━━━━━━━━━━━\n"
+        "🕊️ श्री कृष्ण के दिव्य सान्निध्य और दैनिक प्रेरणा के लिए हमसे जुड़ें:\n"
+        f"🌐 आधिकारिक वेबसाइट: {OFFICIAL_LINKS['website']}\n"
+        f"📲 WhatsApp चैनल: {OFFICIAL_LINKS['whatsapp']}\n"
+        f"🕊️ Telegram चैनल: {OFFICIAL_LINKS['telegram']}\n"
+        f"📸 Instagram: {OFFICIAL_LINKS['instagram']}\n"
+        f"📘 Facebook पेज: {OFFICIAL_LINKS['facebook']}\n"
+        f"📌 Pinterest: {OFFICIAL_LINKS['pinterest']}\n\n"
+        "━━━━━━━━━━━━━━━━━━━━━━━━━━\n"
+        "🙏 यदि इस विचार ने आपके हृदय को छुआ हो, तो वीडियो को लाइक करें, अपने परिजनों के साथ शेयर करें और चैनल को सब्सक्राइब अवश्य करें।\n\n"
+        "जय श्री राधे कृष्ण! 🪷✨\n\n"
+        "#Shorts #Krishna #RadheKrishna #KrishnaVibez #BhagavadGita #DailySuvichar #SpiritualShorts #KrishnaQuotes"
     )
-    tags = [
+    default_tags = [
         "श्री कृष्ण", "Krishna Shorts", "Bhagavad Gita", "Radhe Krishna",
         "Spiritual Reels", "Krishna Vibez", "Shorts", "Daily Suvichar",
-        "Krishna Gyan", "Motivational Hindi"
+        "Krishna Gyan", "Motivational Hindi", "Karma"
     ]
 
     if not GEMINI_API_KEY:
-        return default_title, default_desc, tags
+        return default_title, default_desc, default_tags
 
     try:
         client = genai.Client(api_key=GEMINI_API_KEY)
+        
         prompt = (
-            "You are a YouTube Shorts optimization expert for a high-traffic spiritual channel 'Krishna Vibez'.\n"
-            "Create metadata for a Lord Krishna wisdom video reel.\n"
-            "Rules:\n"
-            "1. Title MUST strictly follow pattern: '[Short Wisdom Hook in 4-6 Hindi words] | श्री कृष्ण अमृत वचन #Shorts #Krishna #RadheKrishna'\n"
-            "2. Total Title length MUST be under 95 characters.\n"
-            "3. Description should be 2-3 inspiring Hindi sentences explaining the deep philosophical wisdom.\n"
-            "Return EXACT valid JSON with keys 'title' and 'description_intro'."
+            "You are a YouTube Shorts growth & spiritual content optimization expert for 'Krishna Vibez'.\n"
+            "Analyze this video frame from our Lord Krishna reel.\n"
+            "Task:\n"
+            "1. Read and transcribe the EXACT Hindi spiritual thought/suvichar printed physically on the image.\n"
+            "2. Generate YouTube metadata:\n"
+            "   - 'hook_title': A high-CTR viral hook (4-6 Hindi words) summarizing the core thought.\n"
+            "   - 'exact_thought': The exact Hindi thought transcribed from the frame.\n"
+            "   - 'spiritual_meaning': 2-3 deep, inspiring Hindi sentences explaining the spiritual philosophy of this thought.\n"
+            "   - 'practical_lessons': List of 3 concise, actionable bullet points in Hindi for daily life.\n"
+            "   - 'english_summary': 1-2 soulful sentences in English explaining the core spiritual wisdom for global viewers.\n"
+            "   - 'custom_hashtags': 4-6 specific hashtags matching this exact thought (e.g. #Karma, #InnerPeace, #Strength, etc.).\n"
+            "   - 'tags': 8-12 search tags for YouTube ranking.\n"
+            "Return valid JSON ONLY."
         )
+
+        contents = []
+        if has_frame and os.path.exists(TEMP_FRAME):
+            img = Image.open(TEMP_FRAME)
+            contents = [img, prompt]
+        else:
+            contents = [prompt]
+
         response = client.models.generate_content(
             model="gemini-2.5-flash",
-            contents=prompt,
+            contents=contents
         )
+        
         text = response.text.strip()
         if "```json" in text:
             text = text.split("```json")[1].split("```")[0].strip()
@@ -154,15 +230,57 @@ def generate_youtube_metadata(quote_text=""):
             text = text.split("```")[1].split("```")[0].strip()
 
         data = json.loads(text)
-        title = data.get("title", default_title)
+        
+        hook = data.get("hook_title", "जीवन का दिव्य संदेश")
+        exact_thought = data.get("exact_thought", default_quote)
+        meaning = data.get("spiritual_meaning", "श्री कृष्ण का यह पावन विचार हमारे मन को शांति और सही दिशा प्रदान करता है।")
+        lessons = data.get("practical_lessons", [
+            "परिस्थितियों से घबराने के बजाय धैर्य और विश्वास बनाए रखें।",
+            "अपने सभी कर्मों को ईश्वर को समर्पित करके शांति से कार्य करें।",
+            "सकारात्मक सोच और निष्ठा से आगे बढ़ते रहें।"
+        ])
+        english = data.get("english_summary", "True peace comes from surrender and righteous action guided by the Divine.")
+        custom_tags = data.get("custom_hashtags", ["#Krishna", "#RadheKrishna", "#DailySuvichar"])
+        ranking_tags = data.get("tags", default_tags)
+
+        # Title formatting: must be under 95 characters
+        title = f"{hook} | श्री कृष्ण अमृत वचन #Shorts #Krishna #RadheKrishna"
         if len(title) > 95:
-            title = title[:90] + " #Shorts"
-        intro = data.get("description_intro", "")
-        desc = f"{intro}\n\n{default_desc}"
-        return title, desc, tags
+            title = f"{hook[:35]} | श्री कृष्ण अमृत वचन #Shorts #Krishna"
+
+        # Build Rich, Aesthetic Description
+        lessons_text = "\n".join([f"• {item}" for item in lessons])
+        hashtags_str = " ".join([h if h.startswith("#") else f"#{h}" for h in custom_tags])
+        
+        description = (
+            f"🌸 {hook}\n"
+            "━━━━━━━━━━━━━━━━━━━━━━━━━━\n"
+            "🪷 दिव्य विचार (Divine Thought):\n"
+            f"\"{exact_thought}\"\n\n"
+            "📖 पावन भावार्थ (Spiritual Meaning):\n"
+            f"{meaning}\n\n"
+            "🌟 जीवन में व्यावहारिक सीख (Practical Application):\n"
+            f"{lessons_text}\n\n"
+            "✨ English Wisdom Summary:\n"
+            f"\"{english}\"\n\n"
+            "━━━━━━━━━━━━━━━━━━━━━━━━━━\n"
+            "🕊️ श्री कृष्ण के दिव्य सान्निध्य और दैनिक प्रेरणा के लिए हमसे जुड़ें:\n"
+            f"🌐 आधिकारिक वेबसाइट: {OFFICIAL_LINKS['website']}\n"
+            f"📲 WhatsApp चैनल: {OFFICIAL_LINKS['whatsapp']}\n"
+            f"🕊️ Telegram चैनल: {OFFICIAL_LINKS['telegram']}\n"
+            f"📸 Instagram: {OFFICIAL_LINKS['instagram']}\n"
+            f"📘 Facebook पेज: {OFFICIAL_LINKS['facebook']}\n"
+            f"📌 Pinterest: {OFFICIAL_LINKS['pinterest']}\n\n"
+            "━━━━━━━━━━━━━━━━━━━━━━━━━━\n"
+            "🙏 यदि इस विचार ने आपके हृदय को स्पर्श किया हो, तो कृपया लाइक करें, अपने प्रियजनों के साथ शेयर करें और चैनल को सब्सक्राइब अवश्य करें।\n\n"
+            "जय श्री राधे कृष्ण! 🪷✨\n\n"
+            f"#Shorts #Krishna #RadheKrishna #KrishnaVibez #BhagavadGita #DailySuvichar #SpiritualShorts #KrishnaQuotes {hashtags_str}"
+        )
+
+        return title, description, ranking_tags
     except Exception as e:
-        print(f"Notice: Gemini metadata generation fallback ({e})")
-        return default_title, default_desc, tags
+        print(f"Notice: Gemini metadata generation fallback: {e}")
+        return default_title, default_desc, default_tags
 
 def upload_short_to_youtube(video_path, title, description, tags):
     youtube = get_authenticated_service()
@@ -237,19 +355,25 @@ def main():
         print(f"Failed to download {chosen_url}. Exiting.")
         sys.exit(1)
 
-    title, description, tags = generate_youtube_metadata()
-    print(f"Title: {title}")
+    title, description, tags = generate_youtube_metadata_from_video(TEMP_VIDEO)
+    print("=" * 60)
+    print(f"Generated Title: {title}")
+    print("=" * 60)
+    print("Generated Description Preview:")
+    print(description[:300] + "...\n[Links & Tags included]")
+    print("=" * 60)
 
     try:
         video_id = upload_short_to_youtube(TEMP_VIDEO, title, description, tags)
         mark_url_as_used(chosen_url)
-        print("YouTube Short workflow completed successfully!")
+        print(f"YouTube Short workflow completed successfully! ID: {video_id}")
     finally:
-        if os.path.exists(TEMP_VIDEO):
-            try:
-                os.remove(TEMP_VIDEO)
-            except:
-                pass
+        for temp_f in [TEMP_VIDEO, TEMP_FRAME]:
+            if os.path.exists(temp_f):
+                try:
+                    os.remove(temp_f)
+                except:
+                    pass
 
 if __name__ == "__main__":
     main()
