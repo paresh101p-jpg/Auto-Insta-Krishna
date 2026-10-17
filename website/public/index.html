@@ -196,7 +196,7 @@
   </script>
 
   <!-- Stylesheet -->
-  <link rel="stylesheet" href="css/style.css?v=4.5">
+  <link rel="stylesheet" href="css/style.css?v=4.6">
   <script>
     // 100% Kill any adblocker popup or backdrop immediately
     try {
@@ -264,12 +264,20 @@
   <header class="hero-section">
     <div class="hero-pill">
       <span>🪷</span>
-      <span>आज का दिव्य चिंतन एवं दर्शन</span>
+      <span id="heroPillLabel">आज का दिव्य चिंतन</span>
+      <button class="hero-refresh-btn" onclick="shuffleHeroThought(event)" title="नया विचार देखें (Shuffle Thought)">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <polyline points="23 4 23 10 17 10"></polyline>
+          <polyline points="1 20 1 14 7 14"></polyline>
+          <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path>
+        </svg>
+        <span>नया विचार</span>
+      </button>
     </div>
-    <h1 class="hero-title">
+    <h1 class="hero-title" id="heroThoughtTitle">
       सत्य, शांति और <span class="gold">श्री कृष्ण</span> का पावन सान्निध्य
     </h1>
-    <p class="hero-subtitle">
+    <p class="hero-subtitle" id="heroThoughtDesc">
       दैनिक जीवन में सकारात्मक ऊर्जा, भगवद्गीता के अमर सूत्र और अलौकिक 4K HD दर्शन। जीवन के हर मोड़ पर मुरलीधर का मार्गदर्शन।
     </p>
 
@@ -467,6 +475,6 @@
 
   <!-- Scripts -->
   <script src="js/posts-data.js?v=2026101709"></script>
-  <script src="js/app.js?v=2026101709"></script>
+  <script src="js/app.js?v=2026101710"></script>
 </body>
 </html>

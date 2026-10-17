@@ -39,7 +39,7 @@
     gtag('config', 'G-M7W6128K1Z');
   </script>
 
-  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="css/style.css?v=4.6">
   <style>
     .contact-grid {
       display: grid;
@@ -101,6 +101,18 @@
       color: var(--gold-primary);
       font-weight: 600;
       margin-top: 2px;
+      word-break: break-word;
+    }
+    .info-val a.contact-link {
+      color: var(--gold-primary);
+      text-decoration: none;
+      transition: var(--transition-smooth);
+      display: inline-block;
+    }
+    .info-val a.contact-link:hover {
+      color: #ffffff;
+      text-decoration: underline;
+      text-shadow: 0 0 10px rgba(245, 197, 66, 0.6);
     }
     @media (max-width: 768px) {
       .contact-grid { grid-template-columns: 1fr; }
@@ -156,25 +168,25 @@
 
       <div class="contact-grid">
         <!-- Contact Form -->
-        <form onsubmit="handleContactSubmit(event)">
+        <form onsubmit="handleContactSubmit(event)" id="contactForm">
           <div class="form-group">
             <label>आपका नाम (Full Name) *</label>
-            <input type="text" class="form-control" required placeholder="उदा. राहुल शर्मा">
+            <input type="text" id="contactName" class="form-control" required placeholder="उदा. राहुल शर्मा">
           </div>
           <div class="form-group">
             <label>ईमेल आईडी (Email Address) *</label>
-            <input type="email" class="form-control" required placeholder="you@example.com">
+            <input type="email" id="contactEmail" class="form-control" required placeholder="you@example.com">
           </div>
           <div class="form-group">
             <label>विषय (Subject) *</label>
-            <input type="text" class="form-control" required placeholder="सुझाव, प्रतिक्रिया या प्रश्न">
+            <input type="text" id="contactSubject" class="form-control" required placeholder="सुझाव, प्रतिक्रिया या प्रश्न">
           </div>
           <div class="form-group">
             <label>आपका संदेश (Message) *</label>
-            <textarea class="form-control" rows="5" required placeholder="अपना संदेश यहाँ लिखें…"></textarea>
+            <textarea id="contactMessage" class="form-control" rows="5" required placeholder="अपना संदेश यहाँ लिखें…"></textarea>
           </div>
-          <button type="submit" class="btn-download-hd" style="width: 100%; padding: 12px; font-size: 0.95rem; background: var(--gold-gradient); color: #0c0f17; border: none;">
-            📨 संदेश भेजें (Send Message)
+          <button type="submit" id="contactSubmitBtn" class="btn-download-hd" style="width: 100%; padding: 14px; font-size: 0.95rem; background: var(--gold-gradient); color: #0c0f17; border: none; font-weight: 700; cursor: pointer; border-radius: 12px; display: flex; align-items: center; justify-content: center; gap: 8px;">
+            📨 <span>संदेश भेजें (Send Message)</span>
           </button>
         </form>
 
@@ -189,7 +201,9 @@
             <span class="info-icon">✉️</span>
             <div>
               <div class="info-title">आधिकारिक ईमेल</div>
-              <div class="info-val">support@krishnavibez.in</div>
+              <div class="info-val">
+                <a href="mailto:support@krishnavibez.in" class="contact-link" title="हमें ईमेल भेजें">support@krishnavibez.in</a>
+              </div>
             </div>
           </div>
 
@@ -197,7 +211,9 @@
             <span class="info-icon">🌐</span>
             <div>
               <div class="info-title">वेबसाइट</div>
-              <div class="info-val">https://krishnavibez.in</div>
+              <div class="info-val">
+                <a href="https://krishnavibez.in" target="_blank" rel="noopener noreferrer" class="contact-link" title="Krishna Vibez आधिकारिक वेबसाइट">https://krishnavibez.in</a>
+              </div>
             </div>
           </div>
 
@@ -205,7 +221,11 @@
             <span class="info-icon">📲</span>
             <div>
               <div class="info-title">सोशल मीडिया कम्युनिटी</div>
-              <div class="info-val">Instagram @pareshpadsala_ · FB: Krishna Vibez</div>
+              <div class="info-val">
+                <a href="https://www.instagram.com/pareshpadsala_/" target="_blank" rel="noopener noreferrer" class="contact-link" title="Instagram पर फॉलो करें">Instagram: @pareshpadsala_</a>
+                <span style="opacity:0.4;margin:0 4px;">·</span>
+                <a href="https://www.facebook.com/1808917602588221" target="_blank" rel="noopener noreferrer" class="contact-link" title="Facebook पर फॉलो करें">FB: Krishna Vibez</a>
+              </div>
             </div>
           </div>
 
@@ -225,12 +245,60 @@
 
   <div id="toastMsg" class="toast-msg"></div>
 
-  <script src="js/app.js"></script>
+  <script src="js/app.js?v=2026101710"></script>
   <script>
-    function handleContactSubmit(e) {
+    async function handleContactSubmit(e) {
       e.preventDefault();
-      showToast('✅ आपका संदेश सफलतापूर्वक प्राप्त हुआ! हम शीघ्र संपर्क करेंगे।');
-      e.target.reset();
+      const submitBtn = document.getElementById('contactSubmitBtn');
+      const name = document.getElementById('contactName').value.trim();
+      const email = document.getElementById('contactEmail').value.trim();
+      const subject = document.getElementById('contactSubject').value.trim();
+      const message = document.getElementById('contactMessage').value.trim();
+
+      if (!name || !email || !message) {
+        showToast('⚠️ कृपया सभी आवश्यक फ़ील्ड भरें।');
+        return;
+      }
+
+      const origHtml = submitBtn.innerHTML;
+      submitBtn.disabled = true;
+      submitBtn.innerHTML = '⏳ <span>संदेश भेजा जा रहा है...</span>';
+
+      try {
+        const response = await fetch('https://formsubmit.co/ajax/paresh101p@gmail.com', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json'
+          },
+          body: JSON.stringify({
+            name: name,
+            email: email,
+            subject: subject || 'Website Contact Form',
+            message: message,
+            _subject: `🙏 [Krishna Vibez] नई इंक्वायरी: ${subject || name}`,
+            _template: 'table',
+            _captcha: 'false'
+          })
+        });
+
+        const data = await response.json();
+        if (response.ok || data.success === 'true' || data.success === true) {
+          showToast('✅ आपका संदेश सफलतापूर्वक भेज दिया गया है! हम 24–48 घंटे में संपर्क करेंगे।');
+          e.target.reset();
+        } else {
+          throw new Error(data.message || 'Submission error');
+        }
+      } catch (err) {
+        console.warn('Direct fetch error, fallback to mailto:', err);
+        // Fallback: If ad-blocker or network blocked FormSubmit AJAX, open user mailto client
+        const mailtoUrl = `mailto:support@krishnavibez.in?cc=paresh101p@gmail.com&subject=${encodeURIComponent('[Krishna Vibez] ' + (subject || 'संपर्क संदेश'))}&body=${encodeURIComponent('नाम: ' + name + '\nईमेल: ' + email + '\n\nसंदेश:\n' + message)}`;
+        window.location.href = mailtoUrl;
+        showToast('✉️ संदेश ईमेल क्लाइंट में तैयार है, कृपया सेंड पर क्लिक करें।');
+      } finally {
+        submitBtn.disabled = false;
+        submitBtn.innerHTML = origHtml;
+      }
     }
   </script>
 </body>

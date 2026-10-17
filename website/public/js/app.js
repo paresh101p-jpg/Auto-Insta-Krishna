@@ -32,6 +32,7 @@ window.formatMetricNumber = formatMetricNumber;
 
 document.addEventListener('DOMContentLoaded', () => {
   SecurityGuard.enforceFrameSecurity();
+  initDailyHeroThought();
   initFeed();
   initSortButtons();
   initSearch();
@@ -1172,4 +1173,115 @@ function getSeoAltText(post, isVideo) {
   }
   return `श्री कृष्ण 4K HD वॉलपेपर — ${post.title} — "${cleanQuote}" | Krishna Vibez Wallpaper`;
 }
+
+// 10. Daily Rotating Divine Spiritual Thoughts (हर दिन नया चिंतन + रैंडम शफ़ल)
+const DAILY_DIVINE_THOUGHTS = [
+  {
+    title: 'सत्य, शांति और <span class="gold">श्री कृष्ण</span> का पावन सान्निध्य',
+    desc: 'दैनिक जीवन में सकारात्मक ऊर्जा, भगवद्गीता के अमर सूत्र और अलौकिक 4K HD दर्शन। जीवन के हर मोड़ पर मुरलीधर का मार्गदर्शन।'
+  },
+  {
+    title: 'कर्म ही पूजा है, <span class="gold">फल की चिंता</span> छोड़ दो',
+    desc: 'जब आपका कर्म निष्काम और उद्देश्य लोक-कल्याण होगा, तब सफलता और शांति स्वतः आपकी छाया बनकर चलेगी।'
+  },
+  {
+    title: 'मन के जीते जीत है, <span class="gold">मन के हारे हार</span>',
+    desc: 'जिसने अपने चंचल मन को वश में कर लिया, उसके लिए संसार की कोई भी परिस्थिति कठिन या असंभव नहीं।'
+  },
+  {
+    title: 'सब कुछ ईश्वर पर छोड़ो, <span class="gold">सच्चा विश्वास</span> रखो',
+    desc: 'चिंता करने से परिणाम नहीं बदलते, केवल मन की शांति छिन जाती है। विश्वास रखो, जो होगा कल्याणकारी होगा।'
+  },
+  {
+    title: 'बदलाव से मत डरो, <span class="gold">परिवर्तन ही संसार</span> का नियम है',
+    desc: 'जो आज तुम्हारा है, कल किसी और का था और परसों किसी अन्य का होगा। हर क्षण में केवल वर्तमान को जियो।'
+  },
+  {
+    title: 'शांत चित्त में ही <span class="gold">परमात्मा का वास</span> होता है',
+    desc: 'क्रोध बुद्धि का नाश करता है और मौन आत्मा को बल देता है। जब भी विचलित हो, श्री कृष्ण के चरणों का ध्यान धरो।'
+  },
+  {
+    title: 'मुस्कुराहट और धैर्य, <span class="gold">श्री कृष्ण</span> के अनमोल उपहार',
+    desc: 'कठिन से कठिन समय भी बीत जाता है, यदि आपके चेहरे पर मुस्कान और हृदय में प्रभु के प्रति सच्चा प्रेम हो।'
+  },
+  {
+    title: 'समय से पूर्व और भाग्य से अधिक, <span class="gold">कभी कुछ नहीं</span> मिलता',
+    desc: 'प्रभु की योजना सदैव हमारी समझ से कई गुना सुंदर और पूर्ण होती है। बस अपने कर्म पर अटल रहो।'
+  },
+  {
+    title: 'अहंकार का त्याग करो, <span class="gold">प्रेम का दीपक</span> जलाओ',
+    desc: 'नम्रता व्यक्ति का सबसे बड़ा आभूषण है। जो झुकना जानता है, वही पूरे संसार का प्रेम और आदर पाता है।'
+  },
+  {
+    title: 'तू करता वही है जो तू चाहता है, <span class="gold">पर होता वही है</span> जो मैं चाहता हूँ',
+    desc: 'तू वही कर जो मैं चाहता हूँ, फिर वही होगा जो तू चाहता है — यही मुरलीधर का सनातन वचन है।'
+  },
+  {
+    title: 'संसार में सब कुछ नश्वर है, <span class="gold">केवल आत्मा</span> अमर है',
+    desc: 'सुख और दुख जीवन के दो पहिए हैं। जो दोनों में समान रहता है, वही सच्चा योगी और ज्ञानी कहलाता है।'
+  },
+  {
+    title: 'जब तक मन में लोभ है, <span class="gold">तब तक संतोष</span> असंभव है',
+    desc: 'इच्छाओं का कोई अंत नहीं। जो प्राप्त है, उसमें प्रभु का धन्यवाद करना ही सबसे बड़ा आध्यात्मिक सुख है।'
+  }
+];
+
+let currentHeroThoughtIndex = 0;
+
+function initDailyHeroThought() {
+  const titleEl = document.getElementById('heroThoughtTitle');
+  const descEl = document.getElementById('heroThoughtDesc');
+  if (!titleEl || !descEl) return;
+
+  // Deterministic daily thought based on day of the year
+  const now = new Date();
+  const start = new Date(now.getFullYear(), 0, 0);
+  const diff = now - start;
+  const oneDay = 1000 * 60 * 60 * 24;
+  const dayOfYear = Math.floor(diff / oneDay);
+
+  currentHeroThoughtIndex = dayOfYear % DAILY_DIVINE_THOUGHTS.length;
+  applyHeroThought(currentHeroThoughtIndex, false);
+}
+
+function applyHeroThought(index, animate) {
+  const titleEl = document.getElementById('heroThoughtTitle');
+  const descEl = document.getElementById('heroThoughtDesc');
+  if (!titleEl || !descEl) return;
+
+  const item = DAILY_DIVINE_THOUGHTS[index];
+  if (!item) return;
+
+  if (animate) {
+    titleEl.classList.add('thought-fade-out');
+    descEl.classList.add('thought-fade-out');
+    setTimeout(() => {
+      titleEl.innerHTML = item.title;
+      descEl.textContent = item.desc;
+      titleEl.classList.remove('thought-fade-out');
+      descEl.classList.remove('thought-fade-out');
+      titleEl.classList.add('thought-fade-in');
+      descEl.classList.add('thought-fade-in');
+      setTimeout(() => {
+        titleEl.classList.remove('thought-fade-in');
+        descEl.classList.remove('thought-fade-in');
+      }, 350);
+    }, 200);
+  } else {
+    titleEl.innerHTML = item.title;
+    descEl.textContent = item.desc;
+  }
+}
+
+function shuffleHeroThought(event) {
+  if (event) {
+    event.stopPropagation();
+    event.preventDefault();
+  }
+  currentHeroThoughtIndex = (currentHeroThoughtIndex + 1) % DAILY_DIVINE_THOUGHTS.length;
+  applyHeroThought(currentHeroThoughtIndex, true);
+  showToast('✨ नया दिव्य चिंतन लोड हुआ!');
+}
+window.shuffleHeroThought = shuffleHeroThought;
+
 

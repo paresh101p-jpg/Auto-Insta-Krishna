@@ -213,6 +213,47 @@ body {
   margin-bottom: 18px;
   animation: fadeInDown 0.6s ease;
 }
+.hero-refresh-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  background: rgba(245, 197, 66, 0.18);
+  border: 1px solid var(--border-gold);
+  color: var(--gold-primary);
+  padding: 3px 10px;
+  border-radius: 14px;
+  font-size: 0.72rem;
+  font-weight: 600;
+  cursor: pointer;
+  margin-left: 6px;
+  transition: all 0.25s ease;
+  font-family: var(--font-hindi);
+}
+.hero-refresh-btn:hover {
+  background: var(--gold-primary);
+  color: #0d1117;
+  transform: scale(1.05);
+  box-shadow: 0 0 12px var(--gold-glow);
+}
+.hero-refresh-btn svg {
+  transition: transform 0.4s ease;
+}
+.hero-refresh-btn:hover svg {
+  transform: rotate(180deg);
+}
+.hero-refresh-btn:active svg {
+  transform: rotate(360deg);
+}
+.thought-fade-out {
+  opacity: 0;
+  transform: translateY(-4px);
+  transition: opacity 0.25s ease, transform 0.25s ease;
+}
+.thought-fade-in {
+  opacity: 1;
+  transform: translateY(0);
+  transition: opacity 0.35s ease, transform 0.35s ease;
+}
 .hero-title {
   font-family: var(--font-title);
   font-size: clamp(2rem, 5vw, 3.4rem);
@@ -220,6 +261,7 @@ body {
   line-height: 1.2;
   margin-bottom: 16px;
   letter-spacing: -0.5px;
+  transition: opacity 0.25s ease, transform 0.25s ease;
 }
 .hero-title span.gold {
   background: var(--gold-gradient);
@@ -233,6 +275,18 @@ body {
   max-width: 680px;
   margin: 0 auto 28px;
   line-height: 1.7;
+  transition: opacity 0.25s ease, transform 0.25s ease;
+}
+.info-val a.contact-link {
+  color: var(--gold-primary);
+  text-decoration: none;
+  transition: var(--transition-smooth);
+  display: inline-block;
+}
+.info-val a.contact-link:hover {
+  color: #ffffff;
+  text-decoration: underline;
+  text-shadow: 0 0 10px rgba(245, 197, 66, 0.6);
 }
 
 /* Quick Search & Search Bar */
