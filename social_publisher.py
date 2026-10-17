@@ -295,9 +295,21 @@ def publish_to_threads(media_url, caption, post_url, is_video=False):
             print(f"[Threads] ⚠️ Failed to create container: {create_data}")
             return False
 
-        # Wait 5 seconds for media processing if video
+        # For video: poll container status until Meta Threads finishes transcoding
         if is_video:
-            time.sleep(5)
+            status_url = f"https://graph.threads.net/v1.0/{creation_id}?fields=status,error_message&access_token={access_token}"
+            for _ in range(12):  # Poll up to 60s
+                time.sleep(5)
+                try:
+                    s_res = requests.get(status_url, timeout=10).json()
+                    st = s_res.get("status")
+                    if st == "FINISHED":
+                        break
+                    elif st == "ERROR":
+                        print(f"[Threads] Video processing failed: {s_res}")
+                        return False
+                except Exception:
+                    pass
 
         # Step 2: Publish Container
         publish_url = f"https://graph.threads.net/v1.0/{user_id}/threads_publish"
