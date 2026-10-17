@@ -464,13 +464,15 @@ body {
 .post-card:hover .card-img {
   transform: scale(1.04);
 }
-.video-play-overlay {
+.video-play-overlay,
+.reel-center-play-btn {
   position: absolute;
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
   background: rgba(7, 9, 14, 0.75);
   backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
   border: 2px solid var(--gold-primary);
   color: var(--gold-primary);
   width: 54px;
@@ -479,17 +481,68 @@ body {
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 1.4rem;
+  font-size: 1.3rem;
   box-shadow: 0 0 25px rgba(245, 197, 66, 0.45);
-  pointer-events: none;
-  transition: transform 0.3s ease, background 0.3s ease, color 0.3s ease;
-  z-index: 2;
+  cursor: pointer;
+  z-index: 5;
+  transition: all 0.28s cubic-bezier(0.175, 0.885, 0.32, 1.275);
 }
-.post-card:hover .video-play-overlay {
+.post-card:hover .video-play-overlay,
+.reel-center-play-btn:hover {
   transform: translate(-50%, -50%) scale(1.15);
   background: var(--gold-gradient);
   color: #0c0f17;
   border-color: #fff;
+  box-shadow: 0 0 35px rgba(245, 197, 66, 0.7);
+}
+.reel-center-play-btn.is-playing {
+  opacity: 0;
+  pointer-events: auto;
+}
+.video-card-thumb-wrap:hover .reel-center-play-btn.is-playing {
+  opacity: 0.85;
+  background: rgba(7, 9, 14, 0.65);
+}
+.video-card-thumb-wrap:hover .reel-center-play-btn.is-playing:hover {
+  opacity: 1;
+  background: var(--gold-gradient);
+}
+
+/* Sound Mute/Unmute Floating Button */
+.reel-sound-btn {
+  position: absolute;
+  top: 48px;
+  right: 14px;
+  background: rgba(7, 9, 14, 0.85);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  color: #ffffff;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  z-index: 5;
+  transition: all 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+.reel-sound-btn:hover {
+  background: rgba(18, 22, 34, 0.95);
+  border-color: var(--peacock-cyan);
+  color: var(--peacock-cyan);
+  transform: scale(1.1);
+  box-shadow: 0 0 15px rgba(0, 229, 190, 0.4);
+}
+.reel-sound-btn:active {
+  transform: scale(0.95);
+}
+.reel-sound-btn.is-unmuted {
+  background: rgba(0, 229, 190, 0.2);
+  border-color: var(--peacock-cyan);
+  color: var(--peacock-cyan);
+  box-shadow: 0 0 12px rgba(0, 229, 190, 0.35);
 }
 .video-card-thumb-wrap {
   position: relative;
@@ -589,6 +642,37 @@ body {
 .card-media-like-btn:hover .heart-icon,
 .card-media-like-btn.liked .heart-icon {
   transform: scale(1.18);
+}
+
+/* Divine Floating Petals, Flowers & Peacock Feathers (Like Burst Effect) */
+@keyframes divineFloatPetal {
+  0% {
+    opacity: 0;
+    transform: translate(0, 0) scale(0.3) rotate(0deg);
+  }
+  15% {
+    opacity: 1;
+    transform: translate(var(--dx1), -50px) scale(1.15) rotate(var(--rot1));
+  }
+  65% {
+    opacity: 0.95;
+    transform: translate(var(--dx2), -220px) scale(1.05) rotate(var(--rot2));
+  }
+  100% {
+    opacity: 0;
+    transform: translate(var(--dx3), -360px) scale(0.5) rotate(var(--rot3));
+  }
+}
+
+.divine-petal-particle {
+  position: absolute;
+  pointer-events: none;
+  user-select: none;
+  z-index: 15;
+  will-change: transform, opacity;
+  animation: divineFloatPetal 2.6s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+  filter: drop-shadow(0 4px 10px rgba(0, 0, 0, 0.45));
+  line-height: 1;
 }
 
 .card-body {

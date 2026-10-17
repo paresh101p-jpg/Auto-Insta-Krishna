@@ -392,9 +392,40 @@ function renderFilteredPosts(allPosts) {
     const seoAlt = getSeoAltText(post, isVideo);
 
     const mediaHtml = isVideo ? `
-      <div class="video-card-thumb-wrap" onmouseenter="previewCardVideo(this)" onmouseleave="stopCardVideo(this)">
-        <video class="card-img video-poster-img video-hover-element" src="${videoUrl}#t=4.0" preload="metadata" muted playsinline loop style="width:100%;height:100%;object-fit:cover;display:block;"></video>
-        <div class="video-play-overlay">▶</div>
+      <div class="video-card-thumb-wrap" 
+           onmouseenter="onReelMouseEnter('${post.id}')" 
+           onmouseleave="onReelMouseLeave('${post.id}')">
+        <video id="video-${post.id}" 
+               class="card-img video-poster-img video-hover-element" 
+               src="${videoUrl}#t=4.0" 
+               preload="metadata" 
+               muted 
+               playsinline 
+               loop 
+               style="width:100%;height:100%;object-fit:cover;display:block;">
+        </video>
+        <button class="reel-center-play-btn" 
+                id="play-btn-${post.id}" 
+                onclick="toggleReelPlay('${post.id}', event)" 
+                title="प्ले / पॉज़ करें" 
+                aria-label="Play or pause reel">
+          <span class="play-icon">▶</span>
+        </button>
+        <button class="reel-sound-btn" 
+                id="sound-btn-${post.id}" 
+                onclick="toggleReelSound('${post.id}', event)" 
+                title="आवाज़ चालू करें (Unmute)" 
+                aria-label="Mute or unmute reel sound">
+          <svg class="sound-icon-muted" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
+            <line x1="23" y1="9" x2="17" y2="15"></line>
+            <line x1="17" y1="9" x2="23" y2="15"></line>
+          </svg>
+          <svg class="sound-icon-unmuted" style="display:none;" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
+            <path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"></path>
+          </svg>
+        </button>
       </div>
     ` : `
       <img class="card-img" src="${post.imageUrl}" alt="${escapeHtml(seoAlt)}" title="${escapeHtml(seoAlt)}" loading="lazy">
@@ -544,11 +575,171 @@ function toggleFeedLike(postId, event) {
   }
 
   if (result.isLiked) {
+    triggerDivineLikeAnimation(postId);
     showToast('❤️ आपने यह दिव्य विचार पसंद किया! जय श्री कृष्णा');
   } else {
     showToast('🤍 पसंद हटा दी गई');
   }
 }
+
+// Divine Floating Petals, Flowers & Peacock Feathers Burst on Like
+function triggerDivineLikeAnimation(postId) {
+  const card = document.getElementById(`card-${postId}`);
+  if (!card) return;
+  const imgWrap = card.querySelector('.card-img-wrap');
+  if (!imgWrap) return;
+
+  // Divine symbols: Lord Krishna Lotus, Pink Rose Petals, Peacock Feather, Sparkles, Flowers
+  const symbols = ['🪶', '🌸', '🪷', '✨', '🌺', '🪶', '🌸', '✨'];
+  const particleCount = 14;
+
+  for (let i = 0; i < particleCount; i++) {
+    const el = document.createElement('span');
+    el.className = 'divine-petal-particle';
+    el.textContent = symbols[Math.floor(Math.random() * symbols.length)];
+
+    // Origin: scattered across bottom area of image
+    const startX = (15 + Math.random() * 70).toFixed(1);
+    const startY = (70 + Math.random() * 20).toFixed(1);
+
+    const dx1 = ((Math.random() - 0.5) * 80).toFixed(1) + 'px';
+    const dx2 = ((Math.random() - 0.5) * 140).toFixed(1) + 'px';
+    const dx3 = ((Math.random() - 0.5) * 200).toFixed(1) + 'px';
+    const rot1 = (Math.random() * 60 - 30).toFixed(1) + 'deg';
+    const rot2 = (Math.random() * 180 - 90).toFixed(1) + 'deg';
+    const rot3 = (Math.random() * 360 - 180).toFixed(1) + 'deg';
+    const delay = (i * 0.07).toFixed(2) + 's';
+    const size = (1.2 + Math.random() * 0.8).toFixed(2) + 'rem';
+
+    el.style.left = `${startX}%`;
+    el.style.top = `${startY}%`;
+    el.style.fontSize = size;
+    el.style.animationDelay = delay;
+    el.style.setProperty('--dx1', dx1);
+    el.style.setProperty('--dx2', dx2);
+    el.style.setProperty('--dx3', dx3);
+    el.style.setProperty('--rot1', rot1);
+    el.style.setProperty('--rot2', rot2);
+    el.style.setProperty('--rot3', rot3);
+
+    imgWrap.appendChild(el);
+
+    // Auto cleanup after 2.8s
+    setTimeout(() => {
+      el.remove();
+    }, 2800);
+  }
+}
+
+// ==========================================
+// REEL INTERACTIVE VIDEO & AUDIO CONTROLS
+// ==========================================
+function onReelMouseEnter(postId) {
+  const video = document.getElementById(`video-${postId}`);
+  if (!video) return;
+
+  const playPromise = video.play();
+  if (playPromise !== undefined) {
+    playPromise.then(() => {
+      updatePlayBtnState(postId, true);
+    }).catch(err => {
+      console.warn('Autoplay error on hover:', err);
+    });
+  }
+}
+
+function onReelMouseLeave(postId) {
+  const video = document.getElementById(`video-${postId}`);
+  if (!video) return;
+
+  video.pause();
+  updatePlayBtnState(postId, false);
+}
+
+function toggleReelPlay(postId, event) {
+  if (event) {
+    if (typeof event.stopPropagation === 'function') event.stopPropagation();
+    if (typeof event.preventDefault === 'function') event.preventDefault();
+  }
+  const video = document.getElementById(`video-${postId}`);
+  if (!video) return;
+
+  if (video.paused) {
+    document.querySelectorAll('.video-hover-element').forEach(v => {
+      if (v !== video) {
+        v.pause();
+        const otherId = v.id.replace('video-', '');
+        updatePlayBtnState(otherId, false);
+      }
+    });
+
+    video.play().then(() => {
+      updatePlayBtnState(postId, true);
+      showToast('▶️ रील प्ले हो रही है');
+    }).catch(err => {
+      console.warn('Play error:', err);
+    });
+  } else {
+    video.pause();
+    updatePlayBtnState(postId, false);
+    showToast('⏸️ रील पॉज़ हुई');
+  }
+}
+
+function updatePlayBtnState(postId, isPlaying) {
+  const btn = document.getElementById(`play-btn-${postId}`);
+  if (!btn) return;
+  const icon = btn.querySelector('.play-icon');
+  if (isPlaying) {
+    btn.classList.add('is-playing');
+    if (icon) icon.textContent = '⏸';
+  } else {
+    btn.classList.remove('is-playing');
+    if (icon) icon.textContent = '▶';
+  }
+}
+
+function toggleReelSound(postId, event) {
+  if (event) {
+    if (typeof event.stopPropagation === 'function') event.stopPropagation();
+    if (typeof event.preventDefault === 'function') event.preventDefault();
+  }
+  const video = document.getElementById(`video-${postId}`);
+  const btn = document.getElementById(`sound-btn-${postId}`);
+  if (!video || !btn) return;
+
+  const newMuted = !video.muted;
+  video.muted = newMuted;
+
+  const mutedIcon = btn.querySelector('.sound-icon-muted');
+  const unmutedIcon = btn.querySelector('.sound-icon-unmuted');
+
+  if (newMuted) {
+    btn.classList.remove('is-unmuted');
+    btn.title = "आवाज़ चालू करें (Unmute)";
+    if (mutedIcon) mutedIcon.style.display = 'block';
+    if (unmutedIcon) unmutedIcon.style.display = 'none';
+    showToast('🔇 ऑडियो म्यूट हुआ');
+  } else {
+    document.querySelectorAll('.video-hover-element').forEach(v => {
+      if (v !== video) v.muted = true;
+    });
+    if (video.paused) {
+      video.play().then(() => updatePlayBtnState(postId, true)).catch(() => {});
+    }
+    btn.classList.add('is-unmuted');
+    btn.title = "आवाज़ बंद करें (Mute)";
+    if (mutedIcon) mutedIcon.style.display = 'none';
+    if (unmutedIcon) unmutedIcon.style.display = 'block';
+    showToast('🔊 दिव्य वाणी व मधुर बांसुरी आवाज़ चालू!');
+  }
+}
+
+window.toggleReelPlay = toggleReelPlay;
+window.toggleReelSound = toggleReelSound;
+window.onReelMouseEnter = onReelMouseEnter;
+window.onReelMouseLeave = onReelMouseLeave;
+
 
 // Category Icons Mapping
 const CATEGORY_ICONS = {
