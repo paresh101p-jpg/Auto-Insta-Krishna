@@ -549,6 +549,48 @@ body {
   gap: 5px;
 }
 
+.card-media-like-btn {
+  position: absolute;
+  bottom: 12px;
+  left: 14px;
+  background: rgba(7, 9, 14, 0.85);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  color: #ffffff;
+  font-size: 0.72rem;
+  font-weight: 700;
+  padding: 4px 10px;
+  border-radius: 14px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+  z-index: 3;
+  transition: all 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+.card-media-like-btn:hover {
+  background: rgba(18, 22, 34, 0.95);
+  border-color: #FF4757;
+  transform: translateY(-2px) scale(1.05);
+  box-shadow: 0 4px 14px rgba(255, 71, 87, 0.35);
+}
+.card-media-like-btn:active {
+  transform: translateY(0) scale(0.95);
+}
+.card-media-like-btn.liked {
+  border-color: rgba(255, 71, 87, 0.6);
+  background: rgba(255, 71, 87, 0.2);
+  color: #FF4757;
+}
+.card-media-like-btn .heart-icon {
+  transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+.card-media-like-btn:hover .heart-icon,
+.card-media-like-btn.liked .heart-icon {
+  transform: scale(1.18);
+}
+
 .card-body {
   padding: 20px;
   display: flex;

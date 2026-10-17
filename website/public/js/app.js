@@ -395,7 +395,6 @@ function renderFilteredPosts(allPosts) {
       <div class="video-card-thumb-wrap" onmouseenter="previewCardVideo(this)" onmouseleave="stopCardVideo(this)">
         <video class="card-img video-poster-img video-hover-element" src="${videoUrl}#t=4.0" preload="metadata" muted playsinline loop style="width:100%;height:100%;object-fit:cover;display:block;"></video>
         <div class="video-play-overlay">▶</div>
-        <span class="video-reel-pill">4K REEL</span>
       </div>
     ` : `
       <img class="card-img" src="${post.imageUrl}" alt="${escapeHtml(seoAlt)}" title="${escapeHtml(seoAlt)}" loading="lazy">
@@ -409,6 +408,17 @@ function renderFilteredPosts(allPosts) {
           </a>
           <span class="card-overlay-badge">${isVideo ? '🎬' : '🪷'} ${escapeHtml(post.category)}</span>
           <span class="card-stats-badge">👁️ <span class="view-num-${post.id}">${formatMetricNumber(stats.views)}</span></span>
+          <button class="card-media-like-btn ${stats.isLiked ? 'liked' : ''}" 
+                  id="media-like-${post.id}" 
+                  onclick="toggleFeedLike('${post.id}', event)" 
+                  title="${stats.isLiked ? 'पसंद हटाएँ (Unlike)' : 'पसंद करें (Like)'}"
+                  aria-label="Like post">
+            <svg class="heart-icon" width="15" height="15" viewBox="0 0 24 24" fill="${stats.isLiked ? '#FF4757' : 'none'}" stroke="${stats.isLiked ? '#FF4757' : '#ffffff'}" stroke-width="2">
+              <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
+            </svg>
+            <span class="like-num-${post.id} media-like-count">${formatMetricNumber(stats.likes)}</span>
+          </button>
+          <span class="video-reel-pill">${isVideo ? '4K REEL' : '4K IMAGE'}</span>
         </div>
         <div class="card-body">
           <div class="card-date-row">
@@ -505,13 +515,38 @@ function toggleFeedLike(postId, event) {
   if (cardBtn) {
     if (result.isLiked) {
       cardBtn.classList.add('like-active');
-      cardBtn.querySelector('svg').setAttribute('fill', '#FF4757');
-      showToast('❤️ आपने यह दिव्य विचार पसंद किया! जय श्री कृष्णा');
+      const svg = cardBtn.querySelector('svg');
+      if (svg) svg.setAttribute('fill', '#FF4757');
     } else {
       cardBtn.classList.remove('like-active');
-      cardBtn.querySelector('svg').setAttribute('fill', 'none');
-      showToast('🤍 पसंद हटा दी गई');
+      const svg = cardBtn.querySelector('svg');
+      if (svg) svg.setAttribute('fill', 'none');
     }
+  }
+
+  // 2. Update media overlay like button
+  const mediaBtn = document.getElementById(`media-like-${postId}`);
+  if (mediaBtn) {
+    const heartSvg = mediaBtn.querySelector('svg');
+    if (result.isLiked) {
+      mediaBtn.classList.add('liked');
+      if (heartSvg) {
+        heartSvg.setAttribute('fill', '#FF4757');
+        heartSvg.setAttribute('stroke', '#FF4757');
+      }
+    } else {
+      mediaBtn.classList.remove('liked');
+      if (heartSvg) {
+        heartSvg.setAttribute('fill', 'none');
+        heartSvg.setAttribute('stroke', '#ffffff');
+      }
+    }
+  }
+
+  if (result.isLiked) {
+    showToast('❤️ आपने यह दिव्य विचार पसंद किया! जय श्री कृष्णा');
+  } else {
+    showToast('🤍 पसंद हटा दी गई');
   }
 }
 
