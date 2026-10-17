@@ -147,7 +147,7 @@ Whenever power cuts, system reboots, or execution stops, the entire pipeline is 
    - Creator Profile: `Krishna Vibez` / Paresh Padsala (`paresh101p@gmail.com`).
    - Public Profile Link: `https://m.dailyhunt.in/profile/KrishnaVibez`
    - DH Creator Dashboard: `https://dhcreator.dailyhunt.in/app/profile`
-   - Current Status: Step 6 (`bank-details-approval-pending`) — replied to Support Ticket `#36815474` with handle, email, and RSS feed.
+   - Current Status: On Hold by Dailyhunt Support (Ticket `#36815474`, 17 Oct 2026: "Bank approval and RSS Feed process is now on hold, will reach out once requirements arise"). Creator account `@KrishnaVibez` remains active and safe.
    - KYC & Banking: Axis Bank (A/C `915010046668776`, IFSC `UTIB0002083`, PAN `AVKPP7401M`), Signature & KYC documents uploaded.
    - Automated Content Ingestion: Syndicated via Media RSS (MRSS) feed at `https://krishnavibez.in/rss.xml`.
    - Both 4K Images (`type="image/jpeg"`) and Video Reels (`type="video/mp4"`) are automatically generated and looped continuously from the master 2,000+ backlog.
