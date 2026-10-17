@@ -2,17 +2,20 @@
 """
 Automated YouTube Shorts Uploader for Krishna Vibez
 Posts 3 daily high-retention Voice Reels directly to YouTube Shorts with:
-- AI Frame Vision: Automatically transcribes the exact thought spoken and displayed on screen
+- Smart Anti-Duplicate Engine: Automatically applies subtle video/audio fingerprint variations on every cycle
+- AI Vision: Automatically transcribes the exact thought spoken and displayed on screen
 - Rich, long website-style description with भावार्थ (meaning), व्यावहारिक सीख (lessons), and English wisdom
 - All 6 fully clickable social links (Website, WhatsApp, Telegram, Instagram, Facebook, Pinterest)
 - Reel-specific dynamic SEO hashtags & tags for top search ranking
 - 100% YPP monetization-compliant metadata
+- Resumable upload architecture with infinite auto-recycling
 """
 
 import os
 import sys
 import time
 import random
+import shutil
 import subprocess
 import requests
 import json
@@ -31,10 +34,12 @@ TOKEN_FILE = os.path.join(BASE_DIR, "youtube_token.json")
 YT_REELS_FILE = os.path.join(BASE_DIR, "youtube_reels_urls.txt")
 YT_BACKUP_FILE = os.path.join(BASE_DIR, "youtube_reels_urls_backup.txt")
 YT_USED_FILE = os.path.join(BASE_DIR, "youtube_used_urls.txt")
+CYCLE_TRACKER_FILE = os.path.join(BASE_DIR, "youtube_cycle_tracker.txt")
 TEMP_VIDEO = os.path.join(BASE_DIR, "temp_yt_short.mp4")
+TEMP_ENHANCED = os.path.join(BASE_DIR, "temp_enhanced_short.mp4")
 TEMP_FRAME = os.path.join(BASE_DIR, "temp_frame.jpg")
 
-# Official Social & Platform Links
+# Official Social & Platform Links (Clickable in YouTube description)
 OFFICIAL_LINKS = {
     "website": "https://krishnavibez.in/",
     "whatsapp": "https://whatsapp.com/channel/0029VbDxJHk30LKNtj4Er62J",
@@ -79,6 +84,23 @@ def get_authenticated_service():
     )
     return build("youtube", "v3", credentials=creds)
 
+def get_current_cycle():
+    if os.path.exists(CYCLE_TRACKER_FILE):
+        try:
+            with open(CYCLE_TRACKER_FILE, "r", encoding="utf-8") as f:
+                val = f.read().strip()
+                return int(val) if val.isdigit() else 1
+        except:
+            pass
+    return 1
+
+def save_current_cycle(cycle_num):
+    try:
+        with open(CYCLE_TRACKER_FILE, "w", encoding="utf-8") as f:
+            f.write(str(cycle_num) + "\n")
+    except Exception as e:
+        print(f"Notice saving cycle: {e}")
+
 def reload_reels_from_backup_if_needed():
     urls = []
     if os.path.exists(YT_REELS_FILE):
@@ -89,7 +111,11 @@ def reload_reels_from_backup_if_needed():
         return urls
 
     if os.path.exists(YT_BACKUP_FILE):
-        print(f"⚠️ {YT_REELS_FILE} is empty! Auto-recycling from master backup {YT_BACKUP_FILE}...")
+        curr_cycle = get_current_cycle()
+        next_cycle = curr_cycle + 1
+        save_current_cycle(next_cycle)
+        print(f"🔄 All reels in active queue completed! Initiating Auto-Recycle Cycle {next_cycle}...")
+        
         with open(YT_BACKUP_FILE, "r", encoding="utf-8", errors="ignore") as f:
             backup_urls = [line.strip() for line in f if line.strip()]
 
@@ -98,7 +124,7 @@ def reload_reels_from_backup_if_needed():
             random.shuffle(unique_urls)
             with open(YT_REELS_FILE, "w", encoding="utf-8") as f:
                 f.write("\n".join(unique_urls) + "\n")
-            print(f"✅ Successfully reloaded {len(unique_urls)} reels into {YT_REELS_FILE}!")
+            print(f"✅ Successfully reloaded & shuffled {len(unique_urls)} reels into {YT_REELS_FILE} for Cycle {next_cycle}!")
             return unique_urls
     return []
 
@@ -123,6 +149,63 @@ def download_video(url):
             print(f"Download attempt {attempt+1} failed: {e}")
         time.sleep(2)
     return False
+
+def find_ffmpeg():
+    if shutil.which("ffmpeg"):
+        return "ffmpeg"
+    candidates = [
+        r"C:\Users\Admin\.antigravity-ide\extensions\kilocode.kilo-code-7.8.12-win32-x64\bin\ffmpeg.exe",
+        r"E:\Paresh\Auto Post\ffmpeg-master-latest-win64-gpl\ffmpeg-master-latest-win64-gpl\bin\ffmpeg.exe",
+        r"C:\ffmpeg\bin\ffmpeg.exe"
+    ]
+    for c in candidates:
+        if os.path.exists(c):
+            return c
+    return None
+
+def apply_smart_video_fingerprint(input_path, output_path=TEMP_ENHANCED):
+    """
+    Applies subtle dynamic audio-visual variations so that every cycle/upload
+    has a 100% unique cryptographic file hash, audio waveform, and pixel matrix.
+    Prevents YouTube's Content ID duplicate video detection while preserving pristine quality.
+    """
+    ffmpeg_bin = find_ffmpeg()
+    if not ffmpeg_bin:
+        print("Notice: FFmpeg not detected, using original video stream.")
+        return input_path
+
+    try:
+        # Micro-speed variation: 0.985x to 1.015x (imperceptible to ear, changes audio waveform & duration)
+        speed = random.choice([0.985, 0.992, 1.008, 1.015])
+        
+        # Micro-color grading: subtle contrast & saturation shift (alters every single pixel checksum)
+        sat = random.choice([1.02, 1.03, 1.04])
+        contrast = random.choice([1.01, 1.02])
+        bright = random.choice([0.005, 0.01])
+
+        vf = f"setpts={(1.0 / speed):.4f}*PTS,eq=saturation={sat:.2f}:contrast={contrast:.2f}:brightness={bright:.3f}"
+        af = f"atempo={speed:.4f},bass=g=1.5:f=150,treble=g=1.2:f=3500"
+
+        cmd = [
+            ffmpeg_bin, "-y",
+            "-i", input_path,
+            "-filter_complex", f"[0:v]{vf}[v];[0:a]{af}[a]",
+            "-map", "[v]", "-map", "[a]",
+            "-c:v", "libx264", "-crf", "18", "-preset", "veryfast",
+            "-c:a", "aac", "-b:a", "192k",
+            "-metadata", "title=Krishna Vibez Daily Shorts",
+            "-metadata", f"comment=Cycle Unique Fingerprint {time.time()}",
+            output_path
+        ]
+        res = subprocess.run(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, timeout=45)
+        if res.returncode == 0 and os.path.exists(output_path) and os.path.getsize(output_path) > 100000:
+            print(f"✅ Smart Anti-Duplicate Fingerprint applied successfully! (Speed: {speed:.3f}x, Saturation: {sat:.2f})")
+            return output_path
+        else:
+            print(f"Notice: FFmpeg fingerprint returned code {res.returncode}. Using original video.")
+    except Exception as e:
+        print(f"Notice: Video fingerprinting fallback: {e}")
+    return input_path
 
 def extract_sharp_frame(video_path, output_image_path=TEMP_FRAME, target_sec=4.0):
     """
@@ -320,7 +403,7 @@ def git_commit_and_push(commit_msg):
     try:
         subprocess.run(["git", "config", "user.email", "actions@github.com"], check=False)
         subprocess.run(["git", "config", "user.name", "Auto Insta Bot"], check=False)
-        subprocess.run(["git", "add", "youtube_reels_urls.txt", "youtube_used_urls.txt"], check=False)
+        subprocess.run(["git", "add", "youtube_reels_urls.txt", "youtube_used_urls.txt", "youtube_cycle_tracker.txt"], check=False)
         subprocess.run(["git", "commit", "-m", commit_msg], check=False)
         subprocess.run(["git", "push"], check=False)
         print("Git commit and push completed.")
@@ -355,7 +438,19 @@ def main():
         print(f"Failed to download {chosen_url}. Exiting.")
         sys.exit(1)
 
-    title, description, tags = generate_youtube_metadata_from_video(TEMP_VIDEO)
+    # Check current cycle:
+    # Cycle 1 (First 2000+ original reels): Post pristine original video without any changes!
+    # Cycle 2+ (When URLs run out and reload from backup): Automatically apply smart fingerprint & transformations!
+    curr_cycle = get_current_cycle()
+    if curr_cycle > 1:
+        print(f"🔄 Loop Cycle {curr_cycle} Active: Applying Smart Video Fingerprint & Variations for YouTube...")
+        upload_video_path = apply_smart_video_fingerprint(TEMP_VIDEO, TEMP_ENHANCED)
+    else:
+        print("✨ Cycle 1 (Original Run): Uploading pristine original voice reel without modifications.")
+        upload_video_path = TEMP_VIDEO
+
+    # 2. Extract crystal-clear frame & generate rich AI metadata
+    title, description, tags = generate_youtube_metadata_from_video(upload_video_path)
     print("=" * 60)
     print(f"Generated Title: {title}")
     print("=" * 60)
@@ -364,11 +459,11 @@ def main():
     print("=" * 60)
 
     try:
-        video_id = upload_short_to_youtube(TEMP_VIDEO, title, description, tags)
+        video_id = upload_short_to_youtube(upload_video_path, title, description, tags)
         mark_url_as_used(chosen_url)
         print(f"YouTube Short workflow completed successfully! ID: {video_id}")
     finally:
-        for temp_f in [TEMP_VIDEO, TEMP_FRAME]:
+        for temp_f in [TEMP_VIDEO, TEMP_ENHANCED, TEMP_FRAME]:
             if os.path.exists(temp_f):
                 try:
                     os.remove(temp_f)
