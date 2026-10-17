@@ -128,6 +128,18 @@ def reload_reels_from_backup_if_needed():
             return unique_urls
     return []
 
+def verify_video_integrity(file_path):
+    try:
+        cap = cv2.VideoCapture(file_path)
+        if not cap.isOpened():
+            return False
+        frames = cap.get(cv2.CAP_PROP_FRAME_COUNT)
+        fps = cap.get(cv2.CAP_PROP_FPS) or 25.0
+        cap.release()
+        return frames > (fps * 3.0)  # Must have at least 3 seconds of valid readable frames
+    except Exception:
+        return os.path.exists(file_path) and os.path.getsize(file_path) > 3000000
+
 def download_video(url):
     print(f"Downloading reel for YouTube upload: {url}...")
     headers = {"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64)"}
@@ -136,18 +148,25 @@ def download_video(url):
         "https://api.allorigins.win/raw?url=",
         "https://corsproxy.io/?"
     ]
-    for attempt in range(3):
+    for attempt in range(4):
         try:
             target_url = proxies[attempt % len(proxies)] + url
-            res = requests.get(target_url, headers=headers, timeout=40)
-            if res.status_code == 200 and len(res.content) > 100000:
+            print(f"Attempt {attempt+1} downloading via: {target_url[:65]}...")
+            res = requests.get(target_url, headers=headers, timeout=60, stream=True)
+            if res.status_code == 200:
                 with open(TEMP_VIDEO, "wb") as f:
-                    f.write(res.content)
-                print(f"Video downloaded successfully ({len(res.content) / (1024*1024):.2f} MB)")
-                return True
+                    for chunk in res.iter_content(chunk_size=1024*1024):
+                        if chunk:
+                            f.write(chunk)
+                file_size = os.path.getsize(TEMP_VIDEO)
+                if file_size > 500000 and verify_video_integrity(TEMP_VIDEO):
+                    print(f"✅ Video downloaded & verified successfully ({file_size / (1024*1024):.2f} MB)")
+                    return True
+                else:
+                    print(f"Warning: Downloaded video failed integrity check (size: {file_size} bytes). Retrying...")
         except Exception as e:
-            print(f"Download attempt {attempt+1} failed: {e}")
-        time.sleep(2)
+            print(f"Download attempt {attempt+1} error: {e}")
+        time.sleep(3)
     return False
 
 def find_ffmpeg():
@@ -301,10 +320,18 @@ def generate_youtube_metadata_from_video(video_path):
         else:
             contents = [prompt]
 
-        response = client.models.generate_content(
-            model="gemini-2.5-flash",
-            contents=contents
-        )
+        models_to_try = ["gemini-3.8-flash", "gemini-2.0-flash", "gemini-1.5-flash"]
+        response = None
+        for m in models_to_try:
+            try:
+                response = client.models.generate_content(
+                    model=m,
+                    contents=contents
+                )
+                if response and response.text:
+                    break
+            except Exception as me:
+                print(f"Notice: Model {m} failed: {me}")
         
         text = response.text.strip()
         if "```json" in text:

@@ -204,6 +204,7 @@ def build_reel(image_path, quote_text, output_video_path, bgm_path=None):
         "-pix_fmt", "yuv420p",
         "-c:a", "aac",
         "-b:a", "192k",
+        "-movflags", "+faststart",
         output_video_path
     ]
     
