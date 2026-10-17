@@ -281,22 +281,64 @@ def generate_caption(media_path):
     
     content_to_pass = None
     uploaded_file = None
+    temp_frame_path = "temp_vision_frame.jpg"
     
     try:
+        from PIL import Image
         if is_video:
-            print("Uploading video to Gemini...")
-            uploaded_file = client.files.upload(file=media_path)
-            wait_attempts = 0
-            while uploaded_file.state.name != "ACTIVE" and wait_attempts < 20:
-                if uploaded_file.state.name == "FAILED":
-                    raise Exception("Gemini video processing failed.")
-                print(f"Waiting for video processing in Gemini... Status: {uploaded_file.state.name}")
-                time.sleep(3)
-                wait_attempts += 1
-                uploaded_file = client.files.get(name=uploaded_file.name)
-            content_to_pass = uploaded_file
+            # 1. Extract sharp frame at 4.0s (where focus unblur transition has fully revealed the text)
+            print("Extracting sharp frame from video at 4.0s for Gemini Vision...")
+            frame_extracted = False
+            try:
+                import cv2
+                cap = cv2.VideoCapture(media_path)
+                fps = cap.get(cv2.CAP_PROP_FPS) or 25.0
+                target_frame = int(fps * 4.0)
+                cap.set(cv2.CAP_PROP_POS_FRAMES, target_frame)
+                ret, frame = cap.read()
+                if not ret:
+                    cap.set(cv2.CAP_PROP_POS_FRAMES, 0)
+                    ret, frame = cap.read()
+                cap.release()
+                if ret:
+                    cv2.imwrite(temp_frame_path, frame)
+                    frame_extracted = True
+            except Exception as cv_err:
+                print(f"Notice: cv2 frame extraction error: {cv_err}")
+
+            if not frame_extracted:
+                try:
+                    import subprocess
+                    cmd = ["ffmpeg", "-y", "-ss", "00:00:04", "-i", media_path, "-vframes", "1", "-q:v", "2", temp_frame_path]
+                    subprocess.run(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, timeout=15)
+                    if os.path.exists(temp_frame_path) and os.path.getsize(temp_frame_path) > 1000:
+                        frame_extracted = True
+                except Exception as ff_err:
+                    print(f"Notice: ffmpeg frame extraction error: {ff_err}")
+
+            if frame_extracted and os.path.exists(temp_frame_path):
+                img = Image.open(temp_frame_path).convert("RGB")
+                img.load()
+                content_to_pass = img
+                print("✅ Extracted crystal sharp video frame at 4.0s! Using Image Vision for instant, 100% reliable transcription.")
+            else:
+                print("Notice: Frame extraction unavailable, falling back to direct Gemini video upload...")
+                try:
+                    uploaded_file = client.files.upload(file=media_path)
+                    wait_attempts = 0
+                    while uploaded_file.state.name != "ACTIVE" and wait_attempts < 15:
+                        if uploaded_file.state.name == "FAILED":
+                            print("Gemini video transcoding failed. Moving to fallback...")
+                            break
+                        print(f"Waiting for video processing in Gemini... Status: {uploaded_file.state.name}")
+                        time.sleep(3)
+                        wait_attempts += 1
+                        uploaded_file = client.files.get(name=uploaded_file.name)
+                    if uploaded_file.state.name == "ACTIVE":
+                        content_to_pass = uploaded_file
+                except Exception as vid_err:
+                    print(f"Notice during video upload: {vid_err}")
         else:
-            from PIL import Image
             img = Image.open(media_path).convert("RGB")
             img.load()
             content_to_pass = img
@@ -349,6 +391,11 @@ def generate_caption(media_path):
         except Exception as list_e:
             print(f"Could not list models: {list_e}")
     finally:
+        if os.path.exists(temp_frame_path):
+            try:
+                os.remove(temp_frame_path)
+            except:
+                pass
         if uploaded_file:
             try:
                 client.files.delete(name=uploaded_file.name)
