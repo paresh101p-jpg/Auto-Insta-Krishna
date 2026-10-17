@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Krishna Vibez — WhatsApp शेयर</title>
+  
+  <!-- Open Graph for Rich Card Preview -->
+  <meta property="og:site_name" content="Krishna Vibez">
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="✨ श्री कृष्ण पावन अमृत विचार ✨">
+  <meta property="og:description" content="श्री कृष्ण के अनमोल विचार और भगवद्गीता सार। 4K HD वॉलपेपर एवं दर्शन।">
+  <meta property="og:image" content="https://krishnavibez.in/assets/krishna-og.jpg">
+  <meta property="og:image:secure_url" content="https://krishnavibez.in/assets/krishna-og.jpg">
+  <meta property="og:image:type" content="image/jpeg">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+
+  <link rel="icon" type="image/png" href="/assets/logo.png">
+  
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background: radial-gradient(circle at center, #1b261d 0%, #0d130f 100%);
+      color: #fff;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+      text-align: center;
+    }
+    .card {
+      background: rgba(255, 255, 255, 0.05);
+      backdrop-filter: blur(15px);
+      border: 1px solid rgba(212, 175, 55, 0.3);
+      border-radius: 20px;
+      padding: 30px 24px;
+      max-width: 460px;
+      width: 100%;
+      box-shadow: 0 10px 40px rgba(0,0,0,0.6);
+    }
+    .lotus {
+      font-size: 3rem;
+      animation: pulse 2s infinite ease-in-out;
+      margin-bottom: 12px;
+    }
+    @keyframes pulse {
+      0%, 100% { transform: scale(1); }
+      50% { transform: scale(1.1); }
+    }
+    h1 {
+      font-size: 1.35rem;
+      color: #ffd700;
+      margin-bottom: 8px;
+    }
+    p {
+      color: #d1d5db;
+      font-size: 0.95rem;
+      margin-bottom: 20px;
+      line-height: 1.5;
+    }
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      background: linear-gradient(135deg, #25D366 0%, #128C7E 100%);
+      color: #fff;
+      font-size: 1.05rem;
+      font-weight: 700;
+      padding: 14px 28px;
+      border-radius: 30px;
+      text-decoration: none;
+      box-shadow: 0 6px 20px rgba(37, 211, 102, 0.4);
+      transition: transform 0.2s;
+      width: 100%;
+    }
+    .btn:hover {
+      transform: translateY(-2px);
+    }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <div class="lotus">🪷</div>
+    <h1>श्री कृष्ण पावन विचार</h1>
+    <p>WhatsApp खोला जा रहा है... यदि 2 सेकंड में WhatsApp न खुले तो नीचे हरे बटन पर टैप करें।</p>
+    <a id="waBtn" href="#" class="btn">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+        <path d="M12.031 6.172c-3.181 0-5.767 2.586-5.768 5.766-.001 1.298.38 2.27 1.019 3.287l-.582 2.128 2.182-.573c.978.58 1.911.928 3.145.929 3.178 0 5.767-2.587 5.768-5.766.001-3.187-2.575-5.771-5.764-5.771zm3.392 8.244c-.144.405-.837.774-1.17.824-.299.045-.677.063-1.092-.069-.252-.08-.575-.187-.988-.365-1.739-.751-2.874-2.502-2.961-2.617-.087-.116-.708-.94-.708-1.793s.448-1.273.607-1.446c.159-.173.346-.217.462-.217l.332.006c.106.005.249-.04.39.298.144.347.491 1.2.534 1.287.043.087.072.188.014.304-.058.116-.087.188-.173.289l-.26.304c-.087.086-.177.18-.076.354.101.174.449.741.964 1.201.662.591 1.221.774 1.394.86.173.086.275.071.376-.043.101-.115.433-.506.549-.68.116-.173.231-.145.39-.086s1.011.477 1.184.564.289.13.332.202c.045.072.045.419-.099.824z"/>
+      </svg>
+      🟢 WhatsApp में खोलें
+    </a>
+  </div>
+
+  <script src="/posts-data.js"></script>
+  <script>
+    (function() {
+      const urlParams = new URLSearchParams(window.location.search);
+      const postId = urlParams.get('id') || 'today';
+      let postQuote = urlParams.get('q') || "कर्मण्येवाधिकारस्ते मा फलेषु कदाचन।";
+      
+      // Look up quote from posts-data.js if not in url
+      if (!urlParams.get('q') && window.postsData && Array.isArray(window.postsData)) {
+        const found = window.postsData.find(p => p.id === postId);
+        if (found && found.quote) {
+          postQuote = found.quote;
+        } else if (window.postsData.length > 0) {
+          postQuote = window.postsData[0].quote;
+        }
+      }
+
+      const postUrl = "https://krishnavibez.in/post.html?id=" + encodeURIComponent(postId);
+      const waChannel = "https://whatsapp.com/channel/0029VbDxJHk30LKNtj4Er62J";
+      
+      const shareText = 
+        "🪷 ✨ श्री कृष्ण पावन अमृत विचार ✨ 🪷\n\n" +
+        "\"" + postQuote + "\"\n\n" +
+        "🌸 4K दर्शन व दिव्य रील देखें:\n" +
+        postUrl + "\n\n" +
+        "🕊️ हमारे आधिकारिक परिवार से जुड़ें:\n" +
+        "🟢 WhatsApp: " + waChannel + "\n" +
+        "▶️ YouTube: https://youtube.com/@krishnavibezofficial\n" +
+        "📸 Insta: https://www.instagram.com/pareshpadsala_/\n" +
+        "📘 FB: https://www.facebook.com/1808917602588221\n\n" +
+        "जय श्री राधे कृष्ण! हे गोविंद, कल्याण करें। 🙏✨\n\n" +
+        "#Krishna #RadheKrishna #BhagavadGita #KrishnaQuotes #KrishnaVibez";
+
+      const waApiUrl = "https://api.whatsapp.com/send?text=" + encodeURIComponent(shareText);
+      const waAppUrl = "whatsapp://send?text=" + encodeURIComponent(shareText);
+
+      const btn = document.getElementById('waBtn');
+      btn.href = waApiUrl;
+
+      // Try app protocol first for native mobile launch, fallback to web
+      try {
+        if (/Android|iPhone|iPad|iPod/i.test(navigator.userAgent)) {
+          window.location.href = waAppUrl;
+          setTimeout(() => { window.location.href = waApiUrl; }, 1200);
+        } else {
+          window.location.href = waApiUrl;
+        }
+      } catch (e) {
+        window.location.href = waApiUrl;
+      }
+    })();
+  </script>
+</body>
+</html>

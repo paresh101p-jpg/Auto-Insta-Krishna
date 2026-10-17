@@ -86,6 +86,11 @@ def publish_to_telegram(media_url, caption, post_url, is_video=False):
         )
         wa_share_url = f"https://api.whatsapp.com/send?text={wa_share_text}"
 
+        # Smart Share Bridge URL: Prevents Telegram 512-byte button limit truncation
+        # and forwards the full text with all social links seamlessly into WhatsApp!
+        quote_snippet = urllib.parse.quote(quote_text[:90])
+        share_bridge_url = f"{post_url.replace('post.html', 'share.html')}&q={quote_snippet}"
+
         channel_user = chat_id if str(chat_id).startswith("@") else "@krishnavibezz"
         clean_channel = str(channel_user).lstrip("@")
         channel_link = f"https://t.me/{clean_channel}"
@@ -110,7 +115,7 @@ def publish_to_telegram(media_url, caption, post_url, is_video=False):
                     {"text": "🌸 4K दर्शन व वॉलपेपर डाउनलोड", "url": post_url}
                 ],
                 [
-                    {"text": "📲 WhatsApp पर शेयर करें", "url": wa_share_url},
+                    {"text": "📲 WhatsApp पर शेयर करें", "url": share_bridge_url},
                     {"text": "🌐 Visit Website", "url": "https://krishnavibez.in/"}
                 ],
                 [

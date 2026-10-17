@@ -319,14 +319,18 @@ def publish_to_website(media_url, caption, is_video=False, custom_post_id=None):
                 with open(post_html_path, "r", encoding="utf-8") as pf:
                     phtml = pf.read()
 
-                thumb_to_use = image_url if image_url else media_url
-                if thumb_to_use:
-                    phtml = re.sub(r'<meta property="og:title"[^>]*content="[^"]*"', f'<meta property="og:title" id="ogTitle" content="{title}"', phtml)
-                    phtml = re.sub(r'<meta property="og:description"[^>]*content="[^"]*"', f'<meta property="og:description" id="ogDesc" content="{quote[:140]}"', phtml)
-                    phtml = re.sub(r'<meta property="og:image"[^>]*content="[^"]*"', f'<meta property="og:image" id="ogImage" content="{thumb_to_use}"', phtml)
-                    phtml = re.sub(r'<meta property="og:image:secure_url"[^>]*content="[^"]*"', f'<meta property="og:image:secure_url" id="ogImageSecure" content="{thumb_to_use}"', phtml)
-                    phtml = re.sub(r'<meta name="twitter:image"[^>]*content="[^"]*"', f'<meta name="twitter:image" id="twImage" content="{thumb_to_use}"', phtml)
-                    phtml = re.sub(r'<meta name="thumbnail"[^>]*content="[^"]*"', f'<meta name="thumbnail" id="metaThumbnail" content="{thumb_to_use}"', phtml)
+                thumb_to_use = image_url if (image_url and not image_url.endswith(".mp4")) else None
+                if not thumb_to_use and media_url and not media_url.endswith(".mp4"):
+                    thumb_to_use = media_url
+                if not thumb_to_use:
+                    thumb_to_use = "https://krishnavibez.in/assets/krishna-og.jpg"
+
+                phtml = re.sub(r'<meta property="og:title"[^>]*content="[^"]*"', f'<meta property="og:title" id="ogTitle" content="{title}"', phtml)
+                phtml = re.sub(r'<meta property="og:description"[^>]*content="[^"]*"', f'<meta property="og:description" id="ogDesc" content="{quote[:140]}"', phtml)
+                phtml = re.sub(r'<meta property="og:image"[^>]*content="[^"]*"', f'<meta property="og:image" id="ogImage" content="{thumb_to_use}"', phtml)
+                phtml = re.sub(r'<meta property="og:image:secure_url"[^>]*content="[^"]*"', f'<meta property="og:image:secure_url" id="ogImageSecure" content="{thumb_to_use}"', phtml)
+                phtml = re.sub(r'<meta name="twitter:image"[^>]*content="[^"]*"', f'<meta name="twitter:image" id="twImage" content="{thumb_to_use}"', phtml)
+                phtml = re.sub(r'<meta name="thumbnail"[^>]*content="[^"]*"', f'<meta name="thumbnail" id="metaThumbnail" content="{thumb_to_use}"', phtml)
 
                     with open(post_html_path, "w", encoding="utf-8") as pf:
                         pf.write(phtml)
