@@ -67,7 +67,20 @@ def publish_to_telegram(media_url, caption, post_url, is_video=False):
         share_url = f"https://t.me/share/url?url={urllib.parse.quote(post_url)}&text={share_text}"
 
         whatsapp_channel = "https://whatsapp.com/channel/0029VbDxJHk30LKNtj4Er62J"
-        wa_share_text = urllib.parse.quote(f"✨ श्री कृष्ण अमृत विचार ✨\n\"{quote_text}\"\n\n🌸 4K वॉलपेपर व दर्शन:\n{post_url}\n\n📲 हमारे WhatsApp चैनल से जुड़ें:\n{whatsapp_channel}")
+        wa_share_text = urllib.parse.quote(
+            f"🪷 ✨ श्री कृष्ण पावन अमृत विचार ✨ 🪷\n\n"
+            f"\"{quote_text}\"\n\n"
+            f"📖 पावन भावार्थ व जीवन सीख:\n"
+            f"{reflection[:320]}\n\n"
+            f"🌸 4K HD दर्शन एवं रील देखें:\n"
+            f"{post_url}\n\n"
+            f"🟢 हमारे आधिकारिक WhatsApp चैनल से जुड़ें:\n"
+            f"{whatsapp_channel}\n\n"
+            f"▶️ YouTube पर सब्सक्राइब करें:\n"
+            f"https://youtube.com/@krishnavibezofficial\n\n"
+            f"🙏 जय श्री राधे कृष्ण! हे गोविंद, समस्त जीवों का कल्याण करें। ✨\n\n"
+            f"#ShreeKrishna #RadheKrishna #BhagavadGita #KrishnaQuotes #DailySuvichar #KrishnaVibez"
+        )
         wa_share_url = f"https://api.whatsapp.com/send?text={wa_share_text}"
 
         channel_user = chat_id if str(chat_id).startswith("@") else "@krishnavibezz"

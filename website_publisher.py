@@ -312,6 +312,28 @@ def publish_to_website(media_url, caption, is_video=False, custom_post_id=None):
 
         print(f"[WebsitePublisher] ✅ Successfully added new post to website: {title}")
 
+        # Update post.html Open Graph meta tags so WhatsApp, Telegram & social previews show the real 4K artwork
+        post_html_path = os.path.join(PUBLIC_DIR, "post.html")
+        if os.path.exists(post_html_path):
+            try:
+                with open(post_html_path, "r", encoding="utf-8") as pf:
+                    phtml = pf.read()
+
+                thumb_to_use = image_url if image_url else media_url
+                if thumb_to_use:
+                    phtml = re.sub(r'<meta property="og:title"[^>]*content="[^"]*"', f'<meta property="og:title" id="ogTitle" content="{title}"', phtml)
+                    phtml = re.sub(r'<meta property="og:description"[^>]*content="[^"]*"', f'<meta property="og:description" id="ogDesc" content="{quote[:140]}"', phtml)
+                    phtml = re.sub(r'<meta property="og:image"[^>]*content="[^"]*"', f'<meta property="og:image" id="ogImage" content="{thumb_to_use}"', phtml)
+                    phtml = re.sub(r'<meta property="og:image:secure_url"[^>]*content="[^"]*"', f'<meta property="og:image:secure_url" id="ogImageSecure" content="{thumb_to_use}"', phtml)
+                    phtml = re.sub(r'<meta name="twitter:image"[^>]*content="[^"]*"', f'<meta name="twitter:image" id="twImage" content="{thumb_to_use}"', phtml)
+                    phtml = re.sub(r'<meta name="thumbnail"[^>]*content="[^"]*"', f'<meta name="thumbnail" id="metaThumbnail" content="{thumb_to_use}"', phtml)
+
+                    with open(post_html_path, "w", encoding="utf-8") as pf:
+                        pf.write(phtml)
+                    print(f"[WebsitePublisher] ✅ Updated post.html Open Graph preview tags with 4K artwork.")
+            except Exception as ph_err:
+                print(f"[WebsitePublisher] Notice updating post.html meta: {ph_err}")
+
         # 2. Update sitemap.xml
         if os.path.exists(SITEMAP_PATH):
             with open(SITEMAP_PATH, "r", encoding="utf-8") as f:
