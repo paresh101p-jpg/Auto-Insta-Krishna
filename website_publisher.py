@@ -312,7 +312,18 @@ def publish_to_website(media_url, caption, is_video=False, custom_post_id=None):
 
         print(f"[WebsitePublisher] ✅ Successfully added new post to website: {title}")
 
-        # Update post.html Open Graph meta tags so WhatsApp, Telegram & social previews show the real 4K artwork
+        # Update index.html cache-buster timestamp for posts-data.js so visitors always see new posts instantly
+        index_html_path = os.path.join(PUBLIC_DIR, "index.html")
+        if os.path.exists(index_html_path):
+            try:
+                with open(index_html_path, "r", encoding="utf-8") as idxf:
+                    idx_html = idxf.read()
+                idx_html = re.sub(r'posts-data\.js\?v=[^"]*', f'posts-data.js?v={int(now.timestamp())}', idx_html)
+                with open(index_html_path, "w", encoding="utf-8") as idxf:
+                    idxf.write(idx_html)
+                print(f"[WebsitePublisher] ✅ Updated index.html cache buster to timestamp {int(now.timestamp())}")
+            except Exception as ie:
+                print(f"Notice updating index.html cache buster: {ie}")
         post_html_path = os.path.join(PUBLIC_DIR, "post.html")
         if os.path.exists(post_html_path):
             try:
