@@ -130,5 +130,68 @@ Whenever power cuts, system reboots, or execution stops, the entire pipeline is 
    - Scheduled posting runs in GitHub Actions cloud.
    - All git sync scripts use `git pull --rebase origin master` so that cloud posts and local uploads never create merge conflicts.
 
+### 8. Multi-Channel Social Syndication & Dailyhunt Ecosystem Rules
 
+1. **WhatsApp Share & Telegram Button 512-Byte Bypass**:
+   - **Pinterest Exclusion**: Pinterest links MUST NEVER be included in WhatsApp share text. Keep Pinterest only on the website and YouTube descriptions.
+   - **Share Bridge**: Telegram `InlineKeyboardButton.url` strictly truncates links at 512 bytes. To prevent truncation of Devanagari Hindi thoughts and social links, ALWAYS use the smart website bridge URL: `https://krishnavibez.in/share.html?id=[POST_ID]&q=[ENCODED_QUOTE]`. This forwards the 100% complete, unclipped text with all official social links directly into WhatsApp.
+   - **Open Graph (OG) Thumbnail Card**: WhatsApp crawler strictly rejects `og:image` files > 300 KB or non-image formats. ALWAYS use the optimized JPEG `https://krishnavibez.in/assets/krishna-og.jpg` (1200x630, ~100 KB) in `post.html` and `share.html`. Never set `og:image` to `.mp4` video files.
 
+2. **Meta Threads Automated Broadcasting**:
+   - Meta Threads API is 100% active and integrated under `@pareshpadsala_` (Threads User ID: `29921796124076935`).
+   - Every daily scheduled post and reel automatically broadcasts simultaneously to Meta Threads via GitHub Actions (`schedule.yml`) without manual intervention.
+
+3. **Dailyhunt (DH Creator) Syndication & Monetization**:
+   - Account: Approved Creator with 18,600+ followers.
+   - Creator Handle: `@KrishnaVibez`
+   - Creator Profile: `Krishna Vibez` / Paresh Padsala (`paresh101p@gmail.com`).
+   - Public Profile Link: `https://m.dailyhunt.in/profile/KrishnaVibez`
+   - DH Creator Dashboard: `https://dhcreator.dailyhunt.in/app/profile`
+   - Current Status: Step 6 (`bank-details-approval-pending`) — replied to Support Ticket `#36815474` with handle, email, and RSS feed.
+   - KYC & Banking: Axis Bank (A/C `915010046668776`, IFSC `UTIB0002083`, PAN `AVKPP7401M`), Signature & KYC documents uploaded.
+   - Automated Content Ingestion: Syndicated via Media RSS (MRSS) feed at `https://krishnavibez.in/rss.xml`.
+   - Both 4K Images (`type="image/jpeg"`) and Video Reels (`type="video/mp4"`) are automatically generated and looped continuously from the master 2,000+ backlog.
+
+### 9. Website UI/UX, SEO & Engagement Engine Rules (`krishnavibez.in`)
+
+1. **Floating Like Button & Divine Petal Burst (`🪶`, `🌸`, `🪷`, `✨`)**:
+   - **Locations**: Present on both Homepage feed cards (`.card-img-wrap`) and Post Detail page (`.post-detail-img-wrap`) at `bottom: 12px; left: 14px;`.
+   - **Interaction**: Real-time counter toggle, saved to `localStorage` via `StatsManager`.
+   - **Divine Burst Animation**: Clicking like triggers 14 animated particles (pink rose petals, lotus petals, peacock feathers, and divine sparkles) that float upward across the media for 2.6 seconds.
+   - **Post Detail Sync**: Floating media like button and metrics strip like button (`#dLikeBox`) stay 100% in sync.
+
+2. **Dedicated Quote Copy Buttons**:
+   - **Feed Cards**: Sleek `[📋 कॉपी]` button inside `.card-quote-box`.
+   - **Post Detail Page Quote Callouts**: Any `<blockquote>` inside `.post-content-body` automatically receives a `[📋 कॉपी]` button at the right end.
+   - **Behavior**: Copies clean Hindi quote formatted as `"[QUOTE]" — श्री कृष्ण (via krishnavibez.in)`, turns button green with `✓ कॉपीड` for 2 seconds, and displays toast feedback.
+
+3. **Instagram-Style Reels Engine (Global Sync & Audio Isolation)**:
+   - **Hover Auto-Play**: Mouse enter starts reel; mouse leave pauses and resets.
+   - **Global Pause Lock**: If user clicks center pause on any reel, auto-play is locked off globally until explicitly re-enabled.
+   - **Global Sound Synchronization**: Unmuting/muting one reel updates the sound state across all reels. Only the hovered/active reel outputs audio.
+
+4. **Hero Daily Divine Thought Rotation & Shuffle**:
+   - **Automatic Daily Rotation**: Deterministic day-of-year calculation (`dayOfYear % DAILY_DIVINE_THOUGHTS.length`) ensures every single calendar day displays a fresh divine thought without manual updates.
+   - **Instant Shuffle**: `[🔄 नया विचार]` button in the hero pill allows visitors to shuffle thoughts with a smooth fade-in/fade-out transition.
+
+5. **SEO & Clean Typography Compliance**:
+   - **Feed Card Titles**: Semantic `<h2>` preserved in DOM for Googlebot / JSON-LD schema crawling, visually hidden with `clip: rect(0,0,0,0)` to avoid duplicating the quote display on feed cards.
+   - **Metric Numbers**: Universal compact formatting (`>= 1000 -> 1K, 1.2K, 1.5K, 3.4K, 1M`).
+   - **4K Badges**: Every card displays `4K IMAGE` or `4K REEL` pill in bottom-right corner.
+
+### 10. Contact Form & Delivery Architecture
+
+1. **FormSubmit.co AJAX Integration**:
+   - Form endpoint: `https://formsubmit.co/ajax/paresh101p@gmail.com`.
+   - Permanently activated and whitelisted for `https://krishnavibez.in`.
+   - Content-Security-Policy (CSP) in `website/firebase.json` explicitly whitelists `https://formsubmit.co` in `connect-src`.
+   - Honeypot and custom subject configured (`🙏 [Krishna Vibez] नई इंक्वायरी: ...`).
+   - Submissions show loading state (`⏳ संदेश भेजा जा रहा है...`) and return green success toast without page reloads.
+   - Fail-safe fallback: If network blocks AJAX or ad-blocker interferes, automatically triggers pre-filled `mailto:support@krishnavibez.in` link.
+
+2. **Clickable Contact Details**:
+   - Support Email: `mailto:support@krishnavibez.in` (opens mail client).
+   - Website: `https://krishnavibez.in` (opens in new tab).
+   - Instagram: direct link to `https://www.instagram.com/pareshpadsala_/`.
+   - Facebook: direct link to `https://www.facebook.com/1808917602588221`.
+   - Styled with gold hover highlights and smooth transitions.
