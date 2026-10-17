@@ -46,7 +46,7 @@ OFFICIAL_LINKS = {
     "telegram": "https://t.me/krishnavibezz",
     "instagram": "https://www.instagram.com/pareshpadsala_/",
     "facebook": "https://www.facebook.com/1808917602588221",
-    "pinterest": "https://in.pinterest.com/krishnavibezz/"
+    "pinterest": "https://in.pinterest.com/MojiloMart/"
 }
 
 # Load Credentials (from GitHub Actions Secrets with fallback to local youtube_token.json)
