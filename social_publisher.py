@@ -66,23 +66,24 @@ def publish_to_telegram(media_url, caption, post_url, is_video=False):
         share_text = urllib.parse.quote(f"✨ श्री कृष्ण अमृत विचार: \"{quote_text}\" 🌸 4K वॉलपेपर दर्शन:")
         share_url = f"https://t.me/share/url?url={urllib.parse.quote(post_url)}&text={share_text}"
 
+        # Ensure fresh preview by adding cache-buster so WhatsApp never uses old cached logo
+        sep = "&" if "?" in post_url else "?"
+        fresh_post_url = f"{post_url}{sep}v={int(time.time())}"
+
         whatsapp_channel = "https://whatsapp.com/channel/0029VbDxJHk30LKNtj4Er62J"
         wa_share_text = urllib.parse.quote(
             f"🪷 ✨ श्री कृष्ण पावन अमृत विचार ✨ 🪷\n\n"
             f"\"{quote_text}\"\n\n"
-            f"📖 पावन भावार्थ व जीवन सीख:\n"
-            f"{reflection[:320]}\n\n"
-            f"🌸 4K HD दर्शन एवं रील देखें:\n"
-            f"{post_url}\n\n"
-            f"🕊️ हमारे आधिकारिक दिव्य परिवार से जुड़ें:\n"
-            f"🌐 वेबसाइट: https://krishnavibez.in/\n"
-            f"🟢 WhatsApp चैनल: {whatsapp_channel}\n"
-            f"▶️ YouTube चैनल: https://youtube.com/@krishnavibezofficial\n"
-            f"📸 Instagram: https://www.instagram.com/pareshpadsala_/\n"
-            f"📘 Facebook: https://www.facebook.com/1808917602588221\n"
+            f"🌸 4K दर्शन व दिव्य रील देखें:\n"
+            f"{fresh_post_url}\n\n"
+            f"🕊️ हमारे आधिकारिक परिवार से जुड़ें:\n"
+            f"🟢 WhatsApp: {whatsapp_channel}\n"
+            f"▶️ YouTube: https://youtube.com/@krishnavibezofficial\n"
+            f"📸 Insta: https://www.instagram.com/pareshpadsala_/\n"
+            f"📘 FB: https://www.facebook.com/1808917602588221\n"
             f"📌 Pinterest: https://in.pinterest.com/MojiloMart/\n\n"
-            f"🙏 जय श्री राधे कृष्ण! हे गोविंद, समस्त जीवों का कल्याण करें। ✨\n\n"
-            f"#ShreeKrishna #RadheKrishna #BhagavadGita #KrishnaQuotes #DailySuvichar #KrishnaVibez"
+            f"जय श्री राधे कृष्ण! हे गोविंद, कल्याण करें। 🙏✨\n\n"
+            f"#Krishna #RadheKrishna #BhagavadGita #KrishnaQuotes #KrishnaVibez"
         )
         wa_share_url = f"https://api.whatsapp.com/send?text={wa_share_text}"
 
