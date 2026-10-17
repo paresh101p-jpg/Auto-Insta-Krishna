@@ -1,0 +1,47 @@
+name: Auto Post YouTube Shorts (Krishna Vibez)
+
+on:
+  schedule:
+    # 3 times daily (Times in UTC):
+    # 03:00 UTC = 08:30 AM IST (Morning)
+    # 08:00 UTC = 01:30 PM IST (Afternoon)
+    # 14:00 UTC = 07:30 PM IST (Evening Peak)
+    - cron: '0 3,8,14 * * *'
+  workflow_dispatch: # Allows manual trigger from GitHub UI anytime
+
+concurrency:
+  group: youtube-shorts-upload
+  cancel-in-progress: false
+
+jobs:
+  upload-youtube-short:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write # Permission to update youtube_reels_urls.txt
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.10'
+
+      - name: Install Python dependencies
+        run: pip install -r requirements.txt
+
+      - name: Upload Reel to YouTube Shorts
+        env:
+          YOUTUBE_CLIENT_ID: ${{ secrets.YOUTUBE_CLIENT_ID }}
+          YOUTUBE_CLIENT_SECRET: ${{ secrets.YOUTUBE_CLIENT_SECRET }}
+          YOUTUBE_REFRESH_TOKEN: ${{ secrets.YOUTUBE_REFRESH_TOKEN }}
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+        run: python -u youtube_uploader.py
+
+      - name: Commit Updated YouTube Queue to Git
+        run: |
+          git config user.name "Krishna Vibez YouTube Bot"
+          git config user.email "bot@krishnavibez.in"
+          git add youtube_reels_urls.txt youtube_used_urls.txt || true
+          git diff --staged --quiet || git commit -m "Auto-posted YouTube Short and updated queue [skip ci]"
+          git push origin master || git push origin main || true

@@ -4,4 +4,7 @@ generate_fb_token.py
 onesignal_key.txt
 telegram_token.txt
 threads_token.txt
-
+client_secret.json
+youtube_token.json
+__pycache__/
+*.pyc
