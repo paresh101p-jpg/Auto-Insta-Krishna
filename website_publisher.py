@@ -332,9 +332,9 @@ def publish_to_website(media_url, caption, is_video=False, custom_post_id=None):
                 phtml = re.sub(r'<meta name="twitter:image"[^>]*content="[^"]*"', f'<meta name="twitter:image" id="twImage" content="{thumb_to_use}"', phtml)
                 phtml = re.sub(r'<meta name="thumbnail"[^>]*content="[^"]*"', f'<meta name="thumbnail" id="metaThumbnail" content="{thumb_to_use}"', phtml)
 
-                    with open(post_html_path, "w", encoding="utf-8") as pf:
-                        pf.write(phtml)
-                    print(f"[WebsitePublisher] ✅ Updated post.html Open Graph preview tags with 4K artwork.")
+                with open(post_html_path, "w", encoding="utf-8") as pf:
+                    pf.write(phtml)
+                print(f"[WebsitePublisher] ✅ Updated post.html Open Graph preview tags with 4K artwork.")
             except Exception as ph_err:
                 print(f"[WebsitePublisher] Notice updating post.html meta: {ph_err}")
 
