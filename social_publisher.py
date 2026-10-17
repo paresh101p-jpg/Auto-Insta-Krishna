@@ -80,8 +80,7 @@ def publish_to_telegram(media_url, caption, post_url, is_video=False):
             f"🟢 WhatsApp: {whatsapp_channel}\n"
             f"▶️ YouTube: https://youtube.com/@krishnavibezofficial\n"
             f"📸 Insta: https://www.instagram.com/pareshpadsala_/\n"
-            f"📘 FB: https://www.facebook.com/1808917602588221\n"
-            f"📌 Pinterest: https://in.pinterest.com/MojiloMart/\n\n"
+            f"📘 FB: https://www.facebook.com/1808917602588221\n\n"
             f"जय श्री राधे कृष्ण! हे गोविंद, कल्याण करें। 🙏✨\n\n"
             f"#Krishna #RadheKrishna #BhagavadGita #KrishnaQuotes #KrishnaVibez"
         )
