@@ -18,6 +18,12 @@ import json
 import time
 import requests
 
+if sys.platform == "win32":
+    try:
+        sys.stdout.reconfigure(encoding="utf-8")
+    except Exception:
+        pass
+
 def publish_to_telegram(media_url, caption, post_url, is_video=False):
     """
     Publishes the image or reel with title and direct website link to a Telegram Channel.
@@ -89,11 +95,14 @@ def publish_to_telegram(media_url, caption, post_url, is_video=False):
                 ],
                 [
                     {"text": "📲 WhatsApp पर शेयर करें", "url": wa_share_url},
-                    {"text": "📤 Telegram शेयर", "url": share_url}
+                    {"text": "🌐 Visit Website", "url": "https://krishnavibez.in/"}
                 ],
                 [
-                    {"text": "🟢 WhatsApp चैनल जॉइन करें", "url": whatsapp_channel},
-                    {"text": "🌐 Visit Website", "url": "https://krishnavibez.in/"}
+                    {"text": "📸 Follow Instagram", "url": "https://www.instagram.com/pareshpadsala_/"},
+                    {"text": "📘 Follow Facebook", "url": "https://www.facebook.com/1808917602588221"}
+                ],
+                [
+                    {"text": "▶️ Follow YouTube", "url": "https://youtube.com/@krishnavibezofficial"}
                 ]
             ]
         }
