@@ -632,23 +632,73 @@ function triggerDivineLikeAnimation(postId) {
 }
 
 // ==========================================
-// REEL INTERACTIVE VIDEO & AUDIO CONTROLS
+// INSTAGRAM-STYLE GLOBAL REELS SYNCHRONIZER
 // ==========================================
+let isGlobalAutoplayPaused = false; // When true: hovering won't autoplay until user clicks play
+let isGlobalMuted = true;            // Instagram model: one muted = all muted, one unmuted = all unmuted
+let currentlyActiveReelId = null;    // Strictly track which reel currently has the mouse / is active
+
+// Sync all sound icons and video muted properties across the entire feed
+function syncGlobalSoundState(muted) {
+  isGlobalMuted = muted;
+
+  // Update all video elements
+  document.querySelectorAll('.video-hover-element').forEach(v => {
+    v.muted = muted;
+  });
+
+  // Update all sound buttons
+  document.querySelectorAll('.reel-sound-btn').forEach(btn => {
+    const mutedIcon = btn.querySelector('.sound-icon-muted');
+    const unmutedIcon = btn.querySelector('.sound-icon-unmuted');
+    if (muted) {
+      btn.classList.remove('is-unmuted');
+      btn.title = "आवाज़ चालू करें (Unmute)";
+      if (mutedIcon) mutedIcon.style.display = 'block';
+      if (unmutedIcon) unmutedIcon.style.display = 'none';
+    } else {
+      btn.classList.add('is-unmuted');
+      btn.title = "आवाज़ बंद करें (Mute)";
+      if (mutedIcon) mutedIcon.style.display = 'none';
+      if (unmutedIcon) unmutedIcon.style.display = 'block';
+    }
+  });
+}
+
+// Hover Enter: Autoplay active reel (if not globally paused)
 function onReelMouseEnter(postId) {
+  currentlyActiveReelId = postId;
+
+  // If user explicitly paused a reel, don't auto-play on hover
+  if (isGlobalAutoplayPaused) {
+    return;
+  }
+
+  // Ensure ALL other reels are paused and silent
+  pauseAllOtherReels(postId);
+
   const video = document.getElementById(`video-${postId}`);
   if (!video) return;
+
+  // Apply global mute state
+  video.muted = isGlobalMuted;
 
   const playPromise = video.play();
   if (playPromise !== undefined) {
     playPromise.then(() => {
       updatePlayBtnState(postId, true);
     }).catch(err => {
-      console.warn('Autoplay error on hover:', err);
+      console.warn('Hover autoplay prevented by browser:', err);
     });
   }
 }
 
+// Hover Leave: strictly stop the reel and its audio immediately
 function onReelMouseLeave(postId) {
+  if (currentlyActiveReelId === postId) {
+    currentlyActiveReelId = null;
+  }
+
   const video = document.getElementById(`video-${postId}`);
   if (!video) return;
 
@@ -656,6 +706,18 @@ function onReelMouseLeave(postId) {
   updatePlayBtnState(postId, false);
 }
 
+// Helper: Pause all other reels
+function pauseAllOtherReels(exceptPostId) {
+  document.querySelectorAll('.video-hover-element').forEach(v => {
+    const otherId = v.id.replace('video-', '');
+    if (otherId !== exceptPostId) {
+      v.pause();
+      updatePlayBtnState(otherId, false);
+    }
+  });
+}
+
+// Play / Pause manual toggle
 function toggleReelPlay(postId, event) {
   if (event) {
     if (typeof event.stopPropagation === 'function') event.stopPropagation();
@@ -665,24 +727,30 @@ function toggleReelPlay(postId, event) {
   if (!video) return;
 
   if (video.paused) {
-    document.querySelectorAll('.video-hover-element').forEach(v => {
-      if (v !== video) {
-        v.pause();
-        const otherId = v.id.replace('video-', '');
-        updatePlayBtnState(otherId, false);
-      }
-    });
+    // User explicitly wants to PLAY:
+    // Re-enable global autoplay!
+    isGlobalAutoplayPaused = false;
+    currentlyActiveReelId = postId;
+
+    // Pause all other reels
+    pauseAllOtherReels(postId);
+
+    // Apply current global mute state
+    video.muted = isGlobalMuted;
 
     video.play().then(() => {
       updatePlayBtnState(postId, true);
-      showToast('▶️ रील प्ले हो रही है');
+      showToast('▶️ रील प्ले हो रही है (ऑटो-प्ले सक्रिय)');
     }).catch(err => {
       console.warn('Play error:', err);
     });
   } else {
+    // User explicitly PAUSES this reel:
+    // "agar koi ek reel pause kare to koi bhi reel auto play naa ho"
     video.pause();
+    isGlobalAutoplayPaused = true;
     updatePlayBtnState(postId, false);
-    showToast('⏸️ रील पॉज़ हुई');
+    showToast('⏸️ रील पॉज़ हुई (ऑटो-प्ले रोका गया)');
   }
 }
 
@@ -699,39 +767,29 @@ function updatePlayBtnState(postId, isPlaying) {
   }
 }
 
+// Global Mute / Unmute Synchronizer
 function toggleReelSound(postId, event) {
   if (event) {
     if (typeof event.stopPropagation === 'function') event.stopPropagation();
     if (typeof event.preventDefault === 'function') event.preventDefault();
   }
   const video = document.getElementById(`video-${postId}`);
-  const btn = document.getElementById(`sound-btn-${postId}`);
-  if (!video || !btn) return;
+  if (!video) return;
 
-  const newMuted = !video.muted;
-  video.muted = newMuted;
-
-  const mutedIcon = btn.querySelector('.sound-icon-muted');
-  const unmutedIcon = btn.querySelector('.sound-icon-unmuted');
+  // Toggle global mute state
+  const newMuted = !isGlobalMuted;
+  syncGlobalSoundState(newMuted);
 
   if (newMuted) {
-    btn.classList.remove('is-unmuted');
-    btn.title = "आवाज़ चालू करें (Unmute)";
-    if (mutedIcon) mutedIcon.style.display = 'block';
-    if (unmutedIcon) unmutedIcon.style.display = 'none';
-    showToast('🔇 ऑडियो म्यूट हुआ');
+    showToast('🔇 सभी रील्स म्यूट हुईं');
   } else {
-    document.querySelectorAll('.video-hover-element').forEach(v => {
-      if (v !== video) v.muted = true;
-    });
+    // Unmuted! Make sure this active reel is playing so audio is heard
+    isGlobalAutoplayPaused = false;
+    currentlyActiveReelId = postId;
     if (video.paused) {
       video.play().then(() => updatePlayBtnState(postId, true)).catch(() => {});
     }
-    btn.classList.add('is-unmuted');
-    btn.title = "आवाज़ बंद करें (Mute)";
-    if (mutedIcon) mutedIcon.style.display = 'none';
-    if (unmutedIcon) unmutedIcon.style.display = 'block';
-    showToast('🔊 दिव्य वाणी व मधुर बांसुरी आवाज़ चालू!');
+    showToast('🔊 सभी रील्स अनम्यूट हुईं (दिव्य आवाज़ चालू)!');
   }
 }
 
