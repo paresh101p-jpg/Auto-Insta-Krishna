@@ -60,10 +60,13 @@ def publish_to_telegram(media_url, caption, post_url, is_video=False):
         share_text = urllib.parse.quote(f"✨ श्री कृष्ण अमृत विचार: \"{quote_text}\" 🌸 4K वॉलपेपर दर्शन:")
         share_url = f"https://t.me/share/url?url={urllib.parse.quote(post_url)}&text={share_text}"
 
+        whatsapp_channel = "https://whatsapp.com/channel/0029VbDxJHk30LKNtj4Er62J"
+        wa_share_text = urllib.parse.quote(f"✨ श्री कृष्ण अमृत विचार ✨\n\"{quote_text}\"\n\n🌸 4K वॉलपेपर व दर्शन:\n{post_url}\n\n📲 हमारे WhatsApp चैनल से जुड़ें:\n{whatsapp_channel}")
+        wa_share_url = f"https://api.whatsapp.com/send?text={wa_share_text}"
+
         channel_user = chat_id if str(chat_id).startswith("@") else "@krishnavibezz"
         clean_channel = str(channel_user).lstrip("@")
         channel_link = f"https://t.me/{clean_channel}"
-        whatsapp_channel = "https://whatsapp.com/channel/0029VbDxJHk30LKNtj4Er62J"
 
         formatted_caption = (
             f"<b>✨ श्री कृष्ण पावन अमृत विचार ✨</b>\n\n"
@@ -85,12 +88,12 @@ def publish_to_telegram(media_url, caption, post_url, is_video=False):
                     {"text": "🌸 4K दर्शन व वॉलपेपर डाउनलोड", "url": post_url}
                 ],
                 [
-                    {"text": "🟢 WhatsApp चैनल जॉइन करें", "url": whatsapp_channel},
-                    {"text": "📤 मित्रों को शेयर करें", "url": share_url}
+                    {"text": "📲 WhatsApp पर शेयर करें", "url": wa_share_url},
+                    {"text": "📤 Telegram शेयर", "url": share_url}
                 ],
                 [
-                    {"text": "🌐 Visit KrishnaVibez.in", "url": "https://krishnavibez.in/"},
-                    {"text": "🔔 Telegram चैनल", "url": channel_link}
+                    {"text": "🟢 WhatsApp चैनल जॉइन करें", "url": whatsapp_channel},
+                    {"text": "🌐 Visit Website", "url": "https://krishnavibez.in/"}
                 ]
             ]
         }
