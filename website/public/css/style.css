@@ -1106,6 +1106,7 @@ body {
   margin-bottom: 24px;
 }
 .post-detail-img-wrap {
+  position: relative;
   width: 100%;
   max-width: 580px;
   margin: 0 auto 36px;
@@ -1141,6 +1142,7 @@ body {
   padding-bottom: 8px;
 }
 .post-content-body blockquote {
+  position: relative;
   background: rgba(245, 197, 66, 0.08);
   border-left: 4px solid var(--gold-primary);
   padding: 16px 20px;
@@ -1149,6 +1151,52 @@ body {
   font-size: 1.15rem;
   color: #FFF;
   font-weight: 600;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  box-shadow: inset 0 0 20px rgba(245, 197, 66, 0.03);
+}
+.blockquote-copy-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: rgba(245, 197, 66, 0.15);
+  border: 1px solid var(--border-gold);
+  color: var(--gold-primary);
+  padding: 6px 14px;
+  border-radius: 20px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+  flex-shrink: 0;
+  transition: all 0.25s ease;
+  font-family: var(--font-hindi);
+}
+.blockquote-copy-btn:hover {
+  background: var(--gold-primary);
+  color: #0c0f17;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px var(--gold-glow);
+}
+.blockquote-copy-btn:active {
+  transform: translateY(0);
+}
+.blockquote-copy-btn.copied {
+  background: #25D366 !important;
+  border-color: #25D366 !important;
+  color: #fff !important;
+}
+@media (max-width: 600px) {
+  .post-content-body blockquote {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+  }
+  .blockquote-copy-btn {
+    align-self: flex-end;
+  }
 }
 .post-content-body p {
   margin-bottom: 18px;

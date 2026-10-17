@@ -145,7 +145,7 @@
   }
   </script>
 
-  <link rel="stylesheet" href="css/style.css?v=4.5">
+  <link rel="stylesheet" href="css/style.css?v=4.6">
   <script>
     // 100% Kill any adblocker popup or backdrop immediately
     try {
@@ -421,7 +421,7 @@
 
   <!-- Scripts -->
   <script src="js/posts-data.js?v=2026101709"></script>
-  <script src="js/app.js?v=2026101709"></script>
+  <script src="js/app.js?v=2026101710"></script>
   <script>
     let currentPostId = null;
     let currentPostObj = null;
@@ -458,19 +458,63 @@
         const imgWrap = document.querySelector('.post-detail-img-wrap');
         const seoAlt = getSeoAltText(post, isVideo);
 
+        const stats = StatsManager.getStats(post.id);
+        const fmt = (typeof formatMetricNumber === 'function') ? formatMetricNumber : (n => n);
+
+        const overlayHtml = `
+          <button class="card-media-like-btn ${stats.isLiked ? 'liked' : ''}" 
+                  id="detailMediaLikeBtn" 
+                  onclick="handleDetailLikeToggle(event)" 
+                  title="${stats.isLiked ? 'पसंद हटाएँ (Unlike)' : 'पसंद करें (Like)'}"
+                  aria-label="Like post">
+            <svg class="heart-icon" width="16" height="16" viewBox="0 0 24 24" fill="${stats.isLiked ? '#FF4757' : 'none'}" stroke="${stats.isLiked ? '#FF4757' : '#ffffff'}" stroke-width="2">
+              <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
+            </svg>
+            <span class="media-like-count" id="detailMediaLikeCount">${fmt(stats.likes)}</span>
+          </button>
+          <span class="video-reel-pill">${isVideo ? '4K REEL' : '4K IMAGE'}</span>
+        `;
+
         if (isVideo) {
           imgWrap.innerHTML = `
             <video src="${mediaUrl}" class="post-detail-img" controls autoplay loop playsinline title="${escapeHtml(seoAlt)}" aria-label="${escapeHtml(seoAlt)}" style="width:100%;max-height:680px;background:#000;display:block;"></video>
+            ${overlayHtml}
           `;
           document.getElementById('btnDownloadDetail').innerHTML = '⬇️ 4K Reel डाउनलोड (MP4)';
         } else {
           imgWrap.innerHTML = `
             <img id="dImage" src="${mediaUrl}" alt="${escapeHtml(seoAlt)}" title="${escapeHtml(seoAlt)}" class="post-detail-img">
+            ${overlayHtml}
           `;
           document.getElementById('btnDownloadDetail').innerHTML = '⬇️ 4K Wallpaper डाउनलोड';
         }
 
         document.getElementById('dBody').innerHTML = post.content || `<p>${post.quote}</p>`;
+
+        // Add sleek copy button to quote callout blockquotes inside dBody
+        document.querySelectorAll('#dBody blockquote').forEach(bq => {
+          const rawText = bq.textContent.replace(/^["'“]|["'”]$/g, '').trim();
+          const copyBtn = document.createElement('button');
+          copyBtn.type = 'button';
+          copyBtn.className = 'blockquote-copy-btn';
+          copyBtn.title = 'सुविचार कॉपी करें (Copy Thought)';
+          copyBtn.innerHTML = `
+            <svg class="copy-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+              <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+            </svg>
+            <span class="copy-btn-label">कॉपी</span>
+          `;
+          copyBtn.onclick = (e) => {
+            e.stopPropagation();
+            if (typeof copyTextToClipboard === 'function') {
+              copyTextToClipboard(rawText || post.quote, copyBtn);
+            } else if (typeof copyQuote === 'function') {
+              copyQuote(post.id, e);
+            }
+          };
+          bq.appendChild(copyBtn);
+        });
 
         // Tags
         if (post.tags && post.tags.length > 0) {
@@ -734,10 +778,34 @@
         likeBox.classList.remove('like-active');
         likeSvg.setAttribute('fill', 'none');
       }
+
+      // Sync floating media overlay like button inside post-detail-img-wrap
+      const detailMediaBtn = document.getElementById('detailMediaLikeBtn');
+      const detailMediaCount = document.getElementById('detailMediaLikeCount');
+      if (detailMediaCount) detailMediaCount.textContent = fmt(stats.likes);
+      if (detailMediaBtn) {
+        const heartSvg = detailMediaBtn.querySelector('svg');
+        if (stats.isLiked) {
+          detailMediaBtn.classList.add('liked');
+          if (heartSvg) {
+            heartSvg.setAttribute('fill', '#FF4757');
+            heartSvg.setAttribute('stroke', '#FF4757');
+          }
+        } else {
+          detailMediaBtn.classList.remove('liked');
+          if (heartSvg) {
+            heartSvg.setAttribute('fill', 'none');
+            heartSvg.setAttribute('stroke', '#ffffff');
+          }
+        }
+      }
     }
 
     // Toggle like on detail page
-    function handleDetailLikeToggle() {
+    function handleDetailLikeToggle(event) {
+      if (event && typeof event.stopPropagation === 'function') {
+        event.stopPropagation();
+      }
       if (!currentPostId) return;
       const res = StatsManager.toggleLike(currentPostId);
       refreshDetailStats();
@@ -745,6 +813,9 @@
         updatePostSeoAndSchema(currentPostObj);
       }
       if (res.isLiked) {
+        if (typeof triggerDivineLikeAnimation === 'function') {
+          triggerDivineLikeAnimation('detail');
+        }
         showToast('❤️ आपने यह दिव्य विचार पसंद किया! जय श्री कृष्णा');
       } else {
         showToast('🤍 पसंद हटा दी गई');

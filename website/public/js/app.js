@@ -584,10 +584,16 @@ function toggleFeedLike(postId, event) {
 }
 
 // Divine Floating Petals, Flowers & Peacock Feathers Burst on Like
-function triggerDivineLikeAnimation(postId) {
-  const card = document.getElementById(`card-${postId}`);
-  if (!card) return;
-  const imgWrap = card.querySelector('.card-img-wrap');
+function triggerDivineLikeAnimation(target) {
+  let imgWrap = null;
+  if (typeof target === 'string') {
+    const card = document.getElementById(`card-${target}`);
+    if (card) imgWrap = card.querySelector('.card-img-wrap');
+    if (!imgWrap) imgWrap = document.querySelector('.post-detail-img-wrap');
+  } else if (target && target.nodeType) {
+    imgWrap = target;
+  }
+  if (!imgWrap) imgWrap = document.querySelector('.post-detail-img-wrap');
   if (!imgWrap) return;
 
   // Divine symbols: Lord Krishna Lotus, Pink Rose Petals, Peacock Feather, Sparkles, Flowers
@@ -631,6 +637,7 @@ function triggerDivineLikeAnimation(postId) {
     }, 2800);
   }
 }
+window.triggerDivineLikeAnimation = triggerDivineLikeAnimation;
 
 // ==========================================
 // INSTAGRAM-STYLE GLOBAL REELS SYNCHRONIZER
@@ -1050,6 +1057,34 @@ function fallbackCopyText(text, onSuccess) {
   }
 }
 window.copyQuote = copyQuote;
+
+function copyTextToClipboard(text, btnElement) {
+  const onCopySuccess = () => {
+    showToast('✨ सुविचार कॉपी हो गया!');
+    if (btnElement) {
+      btnElement.classList.add('copied');
+      const textSpan = btnElement.querySelector('.copy-btn-label') || btnElement.querySelector('span');
+      const orig = textSpan ? textSpan.textContent : 'कॉपी';
+      if (textSpan) textSpan.textContent = '✓ कॉपीड';
+      setTimeout(() => {
+        btnElement.classList.remove('copied');
+        if (textSpan) textSpan.textContent = orig;
+      }, 2000);
+    }
+  };
+
+  const raw = text.replace(/^["'“]|["'”]$/g, '').trim();
+  const formatted = text.includes('krishnavibez.in') ? text : `"${raw}" — श्री कृष्ण (via krishnavibez.in)`;
+
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(formatted).then(onCopySuccess).catch(() => {
+      fallbackCopyText(formatted, onCopySuccess);
+    });
+  } else {
+    fallbackCopyText(formatted, onCopySuccess);
+  }
+}
+window.copyTextToClipboard = copyTextToClipboard;
 
 // 7. Ambient Flute Sound Generator (Web Audio API - Zero MP3 dependency)
 function initAudioPlayer() {
