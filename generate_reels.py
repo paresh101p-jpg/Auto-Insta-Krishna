@@ -103,7 +103,7 @@ async def synthesize_adaptive_voice(text, output_mp3_path):
         pitch = "-2Hz"
     elif emotion == "devotion_love":
         rate = "-8%"
-        pitch = "0Hz"
+        pitch = "+0Hz"
     else:  # deep_wisdom
         rate = "-10%"
         pitch = "-1Hz"
@@ -113,8 +113,13 @@ async def synthesize_adaptive_voice(text, output_mp3_path):
     if not formatted_text.endswith("..."):
         formatted_text += "..."
         
-    c = edge_tts.Communicate(formatted_text, voice="hi-IN-MadhurNeural", rate=rate, pitch=pitch)
-    await c.save(output_mp3_path)
+    try:
+        c = edge_tts.Communicate(formatted_text, voice="hi-IN-MadhurNeural", rate=rate, pitch=pitch)
+        await c.save(output_mp3_path)
+    except Exception as ex:
+        print(f"Warning: edge_tts ({ex}), retrying with default params...", flush=True)
+        c = edge_tts.Communicate(formatted_text, voice="hi-IN-MadhurNeural")
+        await c.save(output_mp3_path)
 
 def get_audio_duration(file_path):
     cmd = [FFMPEG_PATH, "-i", file_path]

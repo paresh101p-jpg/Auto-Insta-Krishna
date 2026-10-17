@@ -113,5 +113,22 @@ Whenever uploading or generating metadata for YouTube Shorts:
    - Include direct links to the website (`https://krishnavibez.in/`), WhatsApp Channel (`https://whatsapp.com/channel/0029VbDxJHk30LKNtj4Er62J`), and Telegram (`https://t.me/krishnavibezz`).
    - Relevant hashtags: `#KrishnaVibez #BhagavadGita #DailySuvichar #SpiritualShorts #KrishnaQuotes`.
 
+### 7. Power Cut & System Restart Auto-Recovery Architecture (Crash-Proof)
+Whenever power cuts, system reboots, or execution stops, the entire pipeline is designed to resume seamlessly without any data loss or duplicate work:
+1. **Image Upload Auto-Resume**:
+   - `uploaded_images_tracker.txt` permanently records every uploaded filename.
+   - Upon restart, `catbox_uploader.py` reads this file, skips all completed images, and resumes immediately with the next pending image.
+2. **Reel Generation Auto-Resume**:
+   - Each reel `.mp4` is verified (>500 KB) before the corresponding source image in `new_video/` is deleted.
+   - Upon restart, `batch_create_reels.py` only processes images that still exist in `new_video/`. Completed reels are untouched, ensuring zero wasted computation.
+3. **Reel Upload Auto-Resume**:
+   - `uploaded_reels_tracker.txt` tracks all uploaded reels.
+   - `watch_and_upload_reels.py` automatically detects when `Images/` upload finishes and uploads pending reels.
+4. **Single-Click Master Launch Script**:
+   - Run `START_ALL_AUTOMATION.bat` from `Auto-Insta-Krishna/` to restart all workers in a single click after any reboot.
+5. **Zero Interference with Scheduled Posts**:
+   - Scheduled posting runs in GitHub Actions cloud.
+   - All git sync scripts use `git pull --rebase origin master` so that cloud posts and local uploads never create merge conflicts.
+
 
 

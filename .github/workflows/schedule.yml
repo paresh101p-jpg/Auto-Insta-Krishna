@@ -1,9 +1,11 @@
 name: Auto Post to Instagram, Facebook & Krishna Vibez Website
 
 on:
-  schedule:
-    - cron: '0 10 * * *' # Daily at 3:30 PM IST (10:00 AM UTC)
   workflow_dispatch: # Allows manual trigger from GitHub UI and cron-job.org
+
+concurrency:
+  group: auto-post-krishna
+  cancel-in-progress: false
 
 jobs:
   post-and-publish:
@@ -50,7 +52,7 @@ jobs:
         run: |
           git config user.name "Krishna Vibez Cloud Bot"
           git config user.email "bot@krishnavibez.in"
-          git add website/ used_urls.txt images_urls.txt reels_urls.txt last_post_type.txt || true
+          git add website/ used_urls.txt images_urls.txt reels_urls.txt last_post_type.txt last_posted_timestamp.txt || true
           git diff --staged --quiet || git commit -m "Auto-published new post to Krishna Vibez website [skip ci]"
           git push origin master || git push origin main || true
 
