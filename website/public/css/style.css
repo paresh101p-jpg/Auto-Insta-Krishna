@@ -562,8 +562,11 @@ body {
   font-size: 0.75rem;
   color: var(--text-dim);
   margin-bottom: 10px;
+}
+
 /* SEO-Safe Accessible Hiding for Feed Post Card Titles (100% Googlebot, Indexing & Semantic Intact) */
-.card-title {
+.card-title,
+.post-card .card-title {
   position: absolute !important;
   width: 1px !important;
   height: 1px !important;
@@ -573,6 +576,8 @@ body {
   clip: rect(0, 0, 0, 0) !important;
   white-space: nowrap !important;
   border: 0 !important;
+  opacity: 0 !important;
+  pointer-events: none !important;
 }
 
 .card-quote-box {
