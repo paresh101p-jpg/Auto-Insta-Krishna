@@ -432,8 +432,13 @@ def git_commit_and_push(commit_msg):
         subprocess.run(["git", "config", "user.name", "Auto Insta Bot"], check=False)
         subprocess.run(["git", "add", "youtube_reels_urls.txt", "youtube_used_urls.txt", "youtube_cycle_tracker.txt"], check=False)
         subprocess.run(["git", "commit", "-m", commit_msg], check=False)
-        subprocess.run(["git", "push"], check=False)
-        print("Git commit and push completed.")
+        for _ in range(3):
+            subprocess.run(["git", "pull", "--rebase", "origin", "master"], check=False)
+            res = subprocess.run(["git", "push"], check=False)
+            if res.returncode == 0:
+                print("Git commit and push completed.")
+                return
+            time.sleep(2)
     except Exception as e:
         print(f"Git push notice: {e}")
 

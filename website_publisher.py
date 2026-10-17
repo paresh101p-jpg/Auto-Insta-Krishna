@@ -11,6 +11,11 @@ import json
 import re
 from datetime import datetime
 
+if sys.stdout and hasattr(sys.stdout, "reconfigure"):
+    sys.stdout.reconfigure(encoding="utf-8", errors="replace")
+if sys.stderr and hasattr(sys.stderr, "reconfigure"):
+    sys.stderr.reconfigure(encoding="utf-8", errors="replace")
+
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 WEBSITE_DIR = os.path.join(BASE_DIR, "website")
 PUBLIC_DIR = os.path.join(WEBSITE_DIR, "public")

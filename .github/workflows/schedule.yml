@@ -54,7 +54,10 @@ jobs:
           git config user.email "bot@krishnavibez.in"
           git add website/ used_urls.txt images_urls.txt reels_urls.txt last_post_type.txt last_posted_timestamp.txt || true
           git diff --staged --quiet || git commit -m "Auto-published new post to Krishna Vibez website [skip ci]"
-          git push origin master || git push origin main || true
+          for i in 1 2 3 4 5; do
+            git pull --rebase origin master || true
+            git push origin master && break || sleep 3
+          done
 
       - name: Deploy to Firebase Hosting
         env:

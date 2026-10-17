@@ -51,12 +51,17 @@ def save_history(history):
 
 def git_commit_and_push(commit_message):
     try:
-        subprocess.run(["git", "config", "user.email", "actions@github.com"], check=True)
-        subprocess.run(["git", "config", "user.name", "Auto Insta Bot"], check=True)
-        subprocess.run(["git", "add", "-A"], check=True)
-        subprocess.run(["git", "commit", "-m", commit_message], check=True)
-        subprocess.run(["git", "push"], check=True)
-        print(f"Git Push Success: {commit_message}")
+        subprocess.run(["git", "config", "user.email", "actions@github.com"], check=False)
+        subprocess.run(["git", "config", "user.name", "Auto Insta Bot"], check=False)
+        subprocess.run(["git", "add", "-A"], check=False)
+        subprocess.run(["git", "commit", "-m", commit_message], check=False)
+        for _ in range(3):
+            subprocess.run(["git", "pull", "--rebase", "origin", "master"], check=False)
+            res = subprocess.run(["git", "push"], check=False)
+            if res.returncode == 0:
+                print(f"Git Push Success: {commit_message}")
+                return
+            time.sleep(2)
     except Exception as e:
         print(f"Git push warning: {e}")
 
