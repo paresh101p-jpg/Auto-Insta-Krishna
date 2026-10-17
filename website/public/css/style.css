@@ -562,34 +562,76 @@ body {
   font-size: 0.75rem;
   color: var(--text-dim);
   margin-bottom: 10px;
-}
+/* SEO-Safe Accessible Hiding for Feed Post Card Titles (100% Googlebot, Indexing & Semantic Intact) */
 .card-title {
-  font-family: var(--font-hindi);
-  font-size: 1.15rem;
-  font-weight: 700;
-  color: var(--text-main);
-  line-height: 1.45;
-  margin-bottom: 12px;
-  display: -webkit-box;
-  -webkit-line-clamp: 2;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
-  transition: color 0.2s ease;
+  position: absolute !important;
+  width: 1px !important;
+  height: 1px !important;
+  padding: 0 !important;
+  margin: -1px !important;
+  overflow: hidden !important;
+  clip: rect(0, 0, 0, 0) !important;
+  white-space: nowrap !important;
+  border: 0 !important;
 }
-.card-title:hover {
-  color: var(--gold-primary);
-}
+
 .card-quote-box {
   background: rgba(245, 197, 66, 0.05);
   border-left: 3px solid var(--gold-primary);
-  padding: 10px 14px;
+  padding: 10px 12px;
   border-radius: 0 10px 10px 0;
-  margin-bottom: 16px;
+  margin-bottom: 14px;
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 10px;
+  position: relative;
+  transition: background 0.25s ease, border-color 0.25s ease;
+}
+.card-quote-box:hover {
+  background: rgba(245, 197, 66, 0.08);
+}
+.card-quote-content {
+  flex: 1;
   font-family: var(--font-hindi);
   font-size: 0.88rem;
   color: #E2E8F0;
   font-style: italic;
-  line-height: 1.5;
+  line-height: 1.55;
+  word-break: break-word;
+}
+.quote-copy-btn {
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  background: rgba(245, 197, 66, 0.12);
+  border: 1px solid rgba(245, 197, 66, 0.35);
+  color: var(--gold-primary);
+  padding: 5px 10px;
+  border-radius: 8px;
+  font-size: 0.76rem;
+  font-weight: 700;
+  font-family: var(--font-hindi);
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  white-space: nowrap;
+  user-select: none;
+}
+.quote-copy-btn:hover {
+  background: rgba(245, 197, 66, 0.25);
+  border-color: var(--gold-primary);
+  transform: translateY(-1px);
+  box-shadow: 0 3px 10px rgba(245, 197, 66, 0.25);
+}
+.quote-copy-btn:active {
+  transform: translateY(0);
+}
+.quote-copy-btn.copied {
+  background: rgba(37, 211, 102, 0.2) !important;
+  border-color: #25D366 !important;
+  color: #25D366 !important;
+  box-shadow: 0 0 10px rgba(37, 211, 102, 0.3) !important;
 }
 .card-desc {
   font-family: var(--font-hindi);

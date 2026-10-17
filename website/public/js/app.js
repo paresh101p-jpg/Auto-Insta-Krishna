@@ -12,6 +12,24 @@ let isAudioPlaying = false;
 let audioGain = null;
 let audioOscillators = [];
 
+// Compact Universal Metric Formatter (e.g. 999 -> 999, 1000 -> 1K, 1500 -> 1.5K, 3400 -> 3.4K, 1000000 -> 1M)
+function formatMetricNumber(num) {
+  const n = Number(num);
+  if (isNaN(n) || n <= 0) return '0';
+  if (n < 1000) return n.toString();
+
+  if (n < 1000000) {
+    const k = n / 1000;
+    const formatted = k >= 100 ? Math.round(k) : parseFloat(k.toFixed(1));
+    return `${formatted}K`;
+  }
+
+  const m = n / 1000000;
+  const formatted = m >= 100 ? Math.round(m) : parseFloat(m.toFixed(1));
+  return `${formatted}M`;
+}
+window.formatMetricNumber = formatMetricNumber;
+
 document.addEventListener('DOMContentLoaded', () => {
   SecurityGuard.enforceFrameSecurity();
   initFeed();
@@ -386,9 +404,11 @@ function renderFilteredPosts(allPosts) {
     return `
       <article class="post-card" id="card-${post.id}">
         <div class="card-img-wrap">
-          ${mediaHtml}
+          <a href="post.html?id=${post.id}" class="card-media-link" style="display:block;width:100%;height:100%;text-decoration:none;color:inherit;">
+            ${mediaHtml}
+          </a>
           <span class="card-overlay-badge">${isVideo ? '🎬' : '🪷'} ${escapeHtml(post.category)}</span>
-          <span class="card-stats-badge">👁️ <span class="view-num-${post.id}">${stats.views.toLocaleString('en-IN')}</span></span>
+          <span class="card-stats-badge">👁️ <span class="view-num-${post.id}">${formatMetricNumber(stats.views)}</span></span>
         </div>
         <div class="card-body">
           <div class="card-date-row">
@@ -399,20 +419,30 @@ function renderFilteredPosts(allPosts) {
               return isVideo ? `देखने का समय: ${rt}` : `पढ़ने का समय: ${rt}`;
             })()}</span>
           </div>
+          <!-- Accessible SEO Title: 100% Googlebot & Semantic Schema Intact (Visually hidden on feed cards) -->
           <h2 class="card-title">
             <a href="post.html?id=${post.id}" style="color:inherit;text-decoration:none;">
               ${escapeHtml(post.title)}
             </a>
           </h2>
           <div class="card-quote-box">
-            "${escapeHtml(post.quote)}"
+            <div class="card-quote-content">
+              "${escapeHtml(post.quote)}"
+            </div>
+            <button class="quote-copy-btn" id="copy-btn-${post.id}" onclick="copyQuote('${post.id}', event)" title="सुविचार कॉपी करें (Copy Thought)">
+              <svg class="copy-icon" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+              </svg>
+              <span class="copy-text">कॉपी</span>
+            </button>
           </div>
           <p class="card-desc">${escapeHtml(post.shortDesc || '')}</p>
 
-          <!-- Interactive Real Metrics Strip -->
+          <!-- Interactive Real Metrics Strip (Formatted: 1K, 1.5K, 3.4K, 1M) -->
           <div class="card-metrics-strip">
             <span class="metric-item" title="कुल दर्शन (Views)">
-              👁️ <strong class="view-num-${post.id}">${stats.views.toLocaleString('en-IN')}</strong>
+              👁️ <strong class="view-num-${post.id}">${formatMetricNumber(stats.views)}</strong>
             </span>
             
             <span class="metric-item interactive ${stats.isLiked ? 'like-active' : ''}" 
@@ -422,19 +452,19 @@ function renderFilteredPosts(allPosts) {
               <svg width="15" height="15" viewBox="0 0 24 24" fill="${stats.isLiked ? '#FF4757' : 'none'}" stroke="currentColor" stroke-width="2">
                 <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
               </svg>
-              <strong class="like-num-${post.id}">${stats.likes.toLocaleString('en-IN')}</strong>
+              <strong class="like-num-${post.id}">${formatMetricNumber(stats.likes)}</strong>
             </span>
 
             <a href="post.html?id=${post.id}#commentsSection" class="metric-item interactive" style="color:inherit;text-decoration:none;" title="भक्त टिप्पणियाँ">
-              💬 <strong class="comment-num-${post.id}">${stats.commentsCount}</strong>
+              💬 <strong class="comment-num-${post.id}">${formatMetricNumber(stats.commentsCount)}</strong>
             </a>
 
             <span class="metric-item" title="कुल शेयर (Shares)">
-              📲 <strong class="share-num-${post.id}">${stats.shares.toLocaleString('en-IN')}</strong>
+              📲 <strong class="share-num-${post.id}">${formatMetricNumber(stats.shares)}</strong>
             </span>
 
             <span class="metric-item" title="वॉलपेपर / रील डाउनलोड">
-              ⬇️ <strong class="dl-num-${post.id}">${stats.downloads.toLocaleString('en-IN')}</strong>
+              ⬇️ <strong class="dl-num-${post.id}">${formatMetricNumber(stats.downloads)}</strong>
             </span>
           </div>
 
@@ -468,7 +498,7 @@ function toggleFeedLike(postId, event) {
   
   // Update all instances of like counts for this post
   document.querySelectorAll(`.like-num-${postId}`).forEach(el => {
-    el.textContent = result.stats.likes.toLocaleString('en-IN');
+    el.textContent = formatMetricNumber(result.stats.likes);
   });
 
   const cardBtn = document.getElementById(`card-like-${postId}`);
@@ -574,12 +604,12 @@ function shareOnWhatsApp(postId) {
 
   // Update visible share counts
   document.querySelectorAll(`.share-num-${postId}`).forEach(el => {
-    el.textContent = updatedStats.shares.toLocaleString('en-IN');
+    el.textContent = formatMetricNumber(updatedStats.shares);
   });
 
   const detailShares = document.getElementById('dShares');
   if (detailShares) {
-    detailShares.textContent = updatedStats.shares.toLocaleString('en-IN');
+    detailShares.textContent = formatMetricNumber(updatedStats.shares);
   }
 
   const currentUrl = window.location.origin + window.location.pathname.replace('index.html', '') + 'post.html?id=' + post.id;
@@ -649,11 +679,11 @@ async function downloadHdWallpaper(postId) {
   // Increment download metric
   const updatedStats = StatsManager.incrementDownload(postId);
   document.querySelectorAll(`.dl-num-${postId}`).forEach(el => {
-    el.textContent = updatedStats.downloads.toLocaleString('en-IN');
+    el.textContent = formatMetricNumber(updatedStats.downloads);
   });
   const detailDls = document.getElementById('dDownloads');
   if (detailDls) {
-    detailDls.textContent = updatedStats.downloads.toLocaleString('en-IN');
+    detailDls.textContent = formatMetricNumber(updatedStats.downloads);
   }
 }
 
@@ -679,17 +709,62 @@ function fallbackBlobDownload(blob, filename, isVideo) {
 }
 
 // 6. Copy Quote to Clipboard
-function copyQuote(postId) {
+function copyQuote(postId, event) {
+  if (event) {
+    if (typeof event.stopPropagation === 'function') event.stopPropagation();
+    if (typeof event.preventDefault === 'function') event.preventDefault();
+  }
   const post = getPostById(postId);
   if (!post) return;
 
   const textToCopy = `"${post.quote}" — श्री कृष्ण (via krishnavibez.in)`;
-  navigator.clipboard.writeText(textToCopy).then(() => {
+
+  const onCopySuccess = () => {
     showToast('✨ सुविचार कॉपी हो गया!');
-  }).catch(() => {
-    showToast('⚠️ कॉपी नहीं हो सका');
-  });
+    const btn = document.getElementById(`copy-btn-${postId}`);
+    if (btn) {
+      btn.classList.add('copied');
+      const textSpan = btn.querySelector('.copy-text');
+      const originalText = textSpan ? textSpan.textContent : 'कॉपी';
+      if (textSpan) textSpan.textContent = '✓ कॉपीड';
+      setTimeout(() => {
+        btn.classList.remove('copied');
+        if (textSpan) textSpan.textContent = originalText;
+      }, 2000);
+    }
+  };
+
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(textToCopy).then(onCopySuccess).catch(() => {
+      fallbackCopyText(textToCopy, onCopySuccess);
+    });
+  } else {
+    fallbackCopyText(textToCopy, onCopySuccess);
+  }
 }
+
+function fallbackCopyText(text, onSuccess) {
+  try {
+    const textArea = document.createElement("textarea");
+    textArea.value = text;
+    textArea.style.position = "fixed";
+    textArea.style.left = "-999999px";
+    textArea.style.top = "-999999px";
+    document.body.appendChild(textArea);
+    textArea.focus();
+    textArea.select();
+    const successful = document.execCommand('copy');
+    document.body.removeChild(textArea);
+    if (successful && typeof onSuccess === 'function') {
+      onSuccess();
+    } else {
+      showToast('✨ सुविचार कॉपी हो गया!');
+    }
+  } catch (err) {
+    showToast('⚠️ कॉपी नहीं हो सका');
+  }
+}
+window.copyQuote = copyQuote;
 
 // 7. Ambient Flute Sound Generator (Web Audio API - Zero MP3 dependency)
 function initAudioPlayer() {
