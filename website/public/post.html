@@ -458,9 +458,10 @@
         document.getElementById('dCategory').textContent = post.category;
         document.getElementById('dDate').textContent = post.date;
         document.getElementById('dAuthor').textContent = post.author || 'Krishna Vibez';
-        document.getElementById('dReadTime').textContent = post.readTime || '3 min read';
-        
         const isVideo = (post.mediaType === 'video') || (post.videoUrl) || (post.imageUrl && post.imageUrl.endsWith('.mp4'));
+        const rt = post.readTime || (isVideo ? '2 मिनट' : '3 मिनट');
+        const formattedReadTime = (rt.includes('समय') || rt.includes('टाइम')) ? rt : (isVideo ? `देखने का समय: ${rt}` : `पढ़ने का समय: ${rt}`);
+        document.getElementById('dReadTime').textContent = formattedReadTime;
         const mediaUrl = post.videoUrl || post.imageUrl;
         const imgWrap = document.querySelector('.post-detail-img-wrap');
         const seoAlt = getSeoAltText(post, isVideo);

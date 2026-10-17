@@ -395,7 +395,11 @@ function renderFilteredPosts(allPosts) {
         <div class="card-body">
           <div class="card-date-row">
             <span>📅 ${post.date}</span>
-            <span>⏱️ ${post.readTime || '3 min read'}</span>
+            <span>⏱️ ${(() => {
+              const rt = post.readTime || (isVideo ? '2 मिनट' : '3 मिनट');
+              if (rt.includes('समय') || rt.includes('टाइम')) return rt;
+              return isVideo ? `देखने का समय: ${rt}` : `पढ़ने का समय: ${rt}`;
+            })()}</span>
           </div>
           <h2 class="card-title">
             <a href="post.html?id=${post.id}" style="color:inherit;text-decoration:none;">
