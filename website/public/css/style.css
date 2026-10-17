@@ -318,9 +318,10 @@ body {
 
 /* Main Content Grid */
 .main-container {
-  max-width: 1560px;
+  max-width: 1680px;
+  width: 96%;
   margin: 0 auto;
-  padding: 0 24px 60px;
+  padding: 0 12px 60px;
   position: relative;
   z-index: 1;
 }
@@ -407,25 +408,18 @@ body {
   line-height: 1;
 }
 
-/* Posts Grid - 4 Columns on Desktop with Smooth Fade-In */
+/* Posts Grid - 4 Columns on all Laptops and Desktops (down to 960px) */
 .posts-grid {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
-  gap: 22px;
+  gap: 16px;
   animation: feedFadeIn 0.35s ease-out;
 }
 
-@media (max-width: 1300px) {
-  .posts-grid {
-    grid-template-columns: repeat(3, 1fr);
-    gap: 20px;
-  }
-}
-
-@media (max-width: 900px) {
+@media (max-width: 960px) {
   .posts-grid {
     grid-template-columns: repeat(2, 1fr);
-    gap: 16px;
+    gap: 14px;
   }
 }
 @keyframes feedFadeIn {
