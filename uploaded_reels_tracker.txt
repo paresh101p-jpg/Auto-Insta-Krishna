@@ -1909,3 +1909,4 @@ krishna_quote_jar.mp4
 krishna_quote_mirror_vanity.mp4
 krishna_quote_path.mp4
 krishna_quote_pillar.mp4
+krishna_quote_pitcher.mp4
