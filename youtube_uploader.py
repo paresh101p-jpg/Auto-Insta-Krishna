@@ -142,31 +142,37 @@ def verify_video_integrity(file_path):
 
 def download_video(url):
     print(f"Downloading reel for YouTube upload: {url}...")
-    headers = {"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64)"}
-    proxies = [
-        "",
-        "https://api.allorigins.win/raw?url=",
-        "https://corsproxy.io/?"
-    ]
-    for attempt in range(4):
+    headers = {
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+        "Accept": "*/*"
+    }
+    for attempt in range(1, 4):
         try:
-            target_url = proxies[attempt % len(proxies)] + url
-            print(f"Attempt {attempt+1} downloading via: {target_url[:65]}...")
-            res = requests.get(target_url, headers=headers, timeout=60, stream=True)
-            if res.status_code == 200:
-                with open(TEMP_VIDEO, "wb") as f:
-                    for chunk in res.iter_content(chunk_size=1024*1024):
-                        if chunk:
-                            f.write(chunk)
-                file_size = os.path.getsize(TEMP_VIDEO)
-                if file_size > 500000 and verify_video_integrity(TEMP_VIDEO):
-                    print(f"✅ Video downloaded & verified successfully ({file_size / (1024*1024):.2f} MB)")
-                    return True
+            print(f"Attempt {attempt} downloading from: {url[:80]}...")
+            with requests.get(url, headers=headers, timeout=60, stream=True) as res:
+                if res.status_code == 200:
+                    with open(TEMP_VIDEO, "wb") as f:
+                        for chunk in res.iter_content(chunk_size=65536):
+                            if chunk:
+                                f.write(chunk)
+                    file_size = os.path.getsize(TEMP_VIDEO) if os.path.exists(TEMP_VIDEO) else 0
+                    content_length = res.headers.get("content-length")
+                    if content_length and int(content_length) > 0 and file_size < int(content_length):
+                        print(f"Warning: Download incomplete ({file_size}/{content_length} bytes). Retrying...")
+                        continue
+                    if file_size > 500000 and verify_video_integrity(TEMP_VIDEO):
+                        print(f"✅ Video downloaded & verified successfully ({file_size / (1024*1024):.2f} MB)")
+                        return True
+                    else:
+                        print(f"Warning: Downloaded video failed integrity check (size: {file_size} bytes).")
+                elif res.status_code == 404:
+                    print(f"Notice: Video returned 404 Not Found.")
+                    return False
                 else:
-                    print(f"Warning: Downloaded video failed integrity check (size: {file_size} bytes). Retrying...")
+                    print(f"Attempt {attempt} HTTP Status: {res.status_code}")
         except Exception as e:
-            print(f"Download attempt {attempt+1} error: {e}")
-        time.sleep(3)
+            print(f"Download attempt {attempt} error: {e}")
+        time.sleep(2)
     return False
 
 def find_ffmpeg():
@@ -320,7 +326,7 @@ def generate_youtube_metadata_from_video(video_path):
         else:
             contents = [prompt]
 
-        models_to_try = ["gemini-3.8-flash", "gemini-2.0-flash", "gemini-1.5-flash"]
+        models_to_try = ["gemini-3.8-flash", "gemini-3.8-pro", "gemini-3.7-flash"]
         response = None
         for m in models_to_try:
             try:
@@ -332,6 +338,21 @@ def generate_youtube_metadata_from_video(video_path):
                     break
             except Exception as me:
                 print(f"Notice: Model {m} failed: {me}")
+
+        if not (response and response.text):
+            try:
+                for dyn_m in client.models.list():
+                    m_name = dyn_m.name.replace("models/", "") if hasattr(dyn_m, "name") and dyn_m.name else ""
+                    if m_name and m_name not in models_to_try and "flash" in m_name.lower():
+                        try:
+                            print(f"Trying dynamic model: {m_name}...")
+                            response = client.models.generate_content(model=m_name, contents=contents)
+                            if response and response.text:
+                                break
+                        except Exception as dyn_err:
+                            print(f"Notice with {m_name}: {dyn_err}")
+            except Exception as dyn_list_err:
+                print(f"Notice listing models: {dyn_list_err}")
         
         text = response.text.strip()
         if "```json" in text:
@@ -465,9 +486,35 @@ def main():
         print("Error: No reels available in youtube_reels_urls.txt or backup!")
         sys.exit(1)
 
-    chosen_url = random.choice(urls)
-    if not download_video(chosen_url):
-        print(f"Failed to download {chosen_url}. Exiting.")
+    chosen_url = None
+    upload_video_path = None
+    max_url_attempts = 5
+
+    for attempt_idx in range(max_url_attempts):
+        if not urls:
+            urls = reload_reels_from_backup_if_needed()
+            if not urls:
+                break
+
+        candidate_url = random.choice(urls)
+        print(f"\n[Attempt {attempt_idx + 1}/{max_url_attempts}] Selecting candidate reel: {candidate_url}")
+
+        if download_video(candidate_url):
+            chosen_url = candidate_url
+            break
+        else:
+            print(f"⚠️ Video at {candidate_url} failed download or integrity check. Discarding broken URL from queue...")
+            if candidate_url in urls:
+                urls.remove(candidate_url)
+                try:
+                    with open(YT_REELS_FILE, "w", encoding="utf-8") as f:
+                        f.write("\n".join(urls) + "\n")
+                except Exception as ef:
+                    print(f"Notice updating reels file: {ef}")
+            time.sleep(2)
+
+    if not chosen_url:
+        print("Error: Failed to download a valid reel after trying multiple candidate URLs. Exiting.")
         sys.exit(1)
 
     # Check current cycle:
