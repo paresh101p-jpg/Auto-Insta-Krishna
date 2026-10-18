@@ -1974,3 +1974,4 @@ new_quote_19.mp4
 new_quote_20.mp4
 new_quote_21.mp4
 new_quote_22.mp4
+new_quote_23.mp4
