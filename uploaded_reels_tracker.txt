@@ -1913,3 +1913,4 @@ krishna_quote_pitcher.mp4
 krishna_quote_plate.mp4
 krishna_quote_pot.mp4
 krishna_quote_stairs.mp4
+krishna_quote_typewriter.mp4
