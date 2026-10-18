@@ -1933,3 +1933,5 @@ krishna_theme_bicycle.mp4
 krishna_theme_door.mp4
 krishna_theme_lantern.mp4
 krishna_theme_plate.mp4
+krishna_theme_pot.mp4
+krishna_theme_river.mp4
