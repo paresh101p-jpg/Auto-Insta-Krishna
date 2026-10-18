@@ -1963,3 +1963,4 @@ new_quote_08.mp4
 new_quote_09.mp4
 new_quote_10.mp4
 new_quote_11.mp4
+new_quote_12.mp4
