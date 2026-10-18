@@ -1942,3 +1942,4 @@ krishna_theme_window.mp4
 krishna_vintage_book_quote_1791521222218.mp4
 krishna_vintage_mirror_1791527233530.mp4
 krishna_wall_1790742180372.mp4
+krishna_wall_quote_2.mp4
