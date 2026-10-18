@@ -1898,3 +1898,4 @@ krishna_quote_car.mp4
 krishna_quote_charkha.mp4
 krishna_quote_charpai.mp4
 krishna_quote_chime.mp4
+krishna_quote_compass.mp4
