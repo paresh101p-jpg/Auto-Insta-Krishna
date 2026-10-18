@@ -33,7 +33,7 @@ if FB_PAGE_ID == "YAHAN_APNA_NAYA_PAGE_ID_DALNA_HAI":
 
 client = genai.Client(api_key=GEMINI_API_KEY)
 IMAGES_FOLDER = "images"
-GEMINI_MODELS = ["gemini-2.5-flash", "gemini-2.0-flash", "gemini-1.5-flash"]
+GEMINI_MODELS = ["gemini-3.8-flash", "gemini-3.8-pro", "gemini-3.7-flash"]
 # Yahan naye repo ka naam aayega (e.g., Auto-Insta-Krishna)
 GITHUB_REPO_RAW_URL = "https://raw.githubusercontent.com/paresh101p-jpg/Auto-Insta-Krishna/master/"
 
@@ -402,6 +402,29 @@ def generate_caption(media_path):
                 except Exception as e:
                     print(f"Gemini notice on attempt {attempt} with {model_name}: {e}")
                     time.sleep(2)
+
+        # Dynamic fallback: If predefined models fail, query active models from Google API
+        try:
+            print("Checking active models list from Google GenAI...")
+            for m in client.models.list():
+                m_name = m.name.replace("models/", "") if hasattr(m, "name") and m.name else ""
+                if m_name and m_name not in GEMINI_MODELS and "flash" in m_name.lower():
+                    try:
+                        print(f"Trying dynamic model: {m_name}...")
+                        response = client.models.generate_content(
+                            model=m_name,
+                            contents=contents_list
+                        )
+                        if response.text:
+                            caption = clean_caption(response.text)
+                            print(f"Caption generated successfully from visual using {m_name}!\n")
+                            print(caption)
+                            print("\n" + "="*50 + "\n")
+                            return caption
+                    except Exception as dyn_err:
+                        print(f"Notice with {m_name}: {dyn_err}")
+        except Exception as list_err:
+            print(f"Notice listing models: {list_err}")
     finally:
         if os.path.exists(temp_frame_path):
             try:
