@@ -312,6 +312,38 @@ def generate_youtube_metadata_from_video(video_path):
     """
     has_frame = extract_sharp_frame(video_path)
     
+    master_ranking_tags = [
+        "Krishna Shorts", "Radhe Krishna", "श्री कृष्ण", "Shri Krishna Amrit Vani",
+        "Krishna Suvichar", "Bhagavad Gita", "Krishna Quotes in Hindi", "Radha Krishna Status",
+        "Krishna Vibez", "Spiritual Shorts", "Daily Suvichar", "Krishna Gyan",
+        "Bhagavad Gita Updesh", "Motivational Quotes Hindi", "Lord Krishna Status",
+        "Aaj Ka Suvichar", "Radha Krishna", "Shorts", "Viral Shorts", "श्री कृष्ण अमृत वचन",
+        "Geeta Saar", "Krishna Bhakti", "Spiritual Motivation"
+    ]
+
+    seo_search_block = (
+        "━━━━━━━━━━━━━━━━━━━━━━━━━━\n"
+        "🔍 Searches & Topics Covered:\n"
+        "Shri Krishna Amrit Vani | Krishna Suvichar Hindi | Radha Krishna Status Shorts | "
+        "Bhagavad Gita Updesh | Lord Krishna Quotes Hindi | Daily Spiritual Motivation | "
+        "Krishna Vibez Shorts | आज का सुविचार | श्री कृष्ण उपदेश | Geeta Gyan Hindi | "
+        "Radhe Krishna Bhakti Status | Best Krishna Suvichar\n"
+    )
+
+    def build_optimized_tags(input_tags=None):
+        tags_pool = (input_tags or []) + master_ranking_tags
+        final_tags = []
+        seen = set()
+        total_chars = 0
+        for tag in tags_pool:
+            clean_tag = str(tag).strip().replace("#", "")
+            if clean_tag and clean_tag.lower() not in seen:
+                seen.add(clean_tag.lower())
+                if total_chars + len(clean_tag) + 1 <= 480:
+                    final_tags.append(clean_tag)
+                    total_chars += len(clean_tag) + 1
+        return final_tags
+
     default_quote = "कर्मण्येवाधिकारस्ते मा फलेषु कदाचन।"
     default_title = "कर्म का फल और जीवन की सीख | श्री कृष्ण अमृत वचन #Shorts #Krishna #RadheKrishna"
     default_desc = (
@@ -328,6 +360,7 @@ def generate_youtube_metadata_from_video(video_path):
         "• सब कुछ परमात्मा को समर्पित करके निस्वार्थ भाव से जीवन जिएं।\n\n"
         "✨ English Wisdom Summary:\n"
         "\"Focus on your sincere efforts without being attached to the results. Pure dedication brings true peace of mind.\"\n\n"
+        + seo_search_block +
         "━━━━━━━━━━━━━━━━━━━━━━━━━━\n"
         "🕊️ श्री कृष्ण के दिव्य सान्निध्य और दैनिक प्रेरणा के लिए हमसे जुड़ें:\n"
         f"🌐 आधिकारिक वेबसाइट: {OFFICIAL_LINKS['website']}\n"
@@ -339,13 +372,9 @@ def generate_youtube_metadata_from_video(video_path):
         "━━━━━━━━━━━━━━━━━━━━━━━━━━\n"
         "🙏 यदि इस विचार ने आपके हृदय को छुआ हो, तो वीडियो को लाइक करें, अपने परिजनों के साथ शेयर करें और चैनल को सब्सक्राइब अवश्य करें।\n\n"
         "जय श्री राधे कृष्ण! 🪷✨\n\n"
-        "#Shorts #Krishna #RadheKrishna #KrishnaVibez #BhagavadGita #DailySuvichar #SpiritualShorts #KrishnaQuotes"
+        "#Shorts #Krishna #RadheKrishna #KrishnaVibez #BhagavadGita #DailySuvichar #SpiritualShorts #KrishnaQuotes #KrishnaStatus #LordKrishna #GeetaGyan #MotivationalQuotes"
     )
-    default_tags = [
-        "श्री कृष्ण", "Krishna Shorts", "Bhagavad Gita", "Radhe Krishna",
-        "Spiritual Reels", "Krishna Vibez", "Shorts", "Daily Suvichar",
-        "Krishna Gyan", "Motivational Hindi", "Karma"
-    ]
+    default_tags = build_optimized_tags(["श्री कृष्ण", "Krishna Shorts", "Bhagavad Gita", "Radhe Krishna"])
 
     if not GEMINI_API_KEY:
         return default_title, default_desc, default_tags
@@ -358,14 +387,14 @@ def generate_youtube_metadata_from_video(video_path):
             "Analyze this video frame from our Lord Krishna reel.\n"
             "Task:\n"
             "1. Read and transcribe the EXACT Hindi spiritual thought/suvichar printed physically on the image.\n"
-            "2. Generate YouTube metadata:\n"
-            "   - 'hook_title': A high-CTR viral hook (4-6 Hindi words) summarizing the core thought.\n"
+            "2. Generate YouTube metadata optimized for search ranking & recommendations:\n"
+            "   - 'hook_title': A high-CTR viral hook (4-6 Hindi words with strong emotional keyword like कर्म, सत्य, प्रेम, विश्वास, सफलता, etc.) summarizing the core thought.\n"
             "   - 'exact_thought': The exact Hindi thought transcribed from the frame.\n"
             "   - 'spiritual_meaning': 2-3 deep, inspiring Hindi sentences explaining the spiritual philosophy of this thought.\n"
             "   - 'practical_lessons': List of 3 concise, actionable bullet points in Hindi for daily life.\n"
             "   - 'english_summary': 1-2 soulful sentences in English explaining the core spiritual wisdom for global viewers.\n"
             "   - 'custom_hashtags': 4-6 specific hashtags matching this exact thought (e.g. #Karma, #InnerPeace, #Strength, etc.).\n"
-            "   - 'tags': 8-12 search tags for YouTube ranking.\n"
+            "   - 'tags': 8-12 search tags for YouTube ranking in Hindi and Hinglish.\n"
             "Return valid JSON ONLY."
         )
 
@@ -422,7 +451,8 @@ def generate_youtube_metadata_from_video(video_path):
         ])
         english = data.get("english_summary", "True peace comes from surrender and righteous action guided by the Divine.")
         custom_tags = data.get("custom_hashtags", ["#Krishna", "#RadheKrishna", "#DailySuvichar"])
-        ranking_tags = data.get("tags", default_tags)
+        gemini_tags = data.get("tags", [])
+        ranking_tags = build_optimized_tags(gemini_tags)
 
         # Title formatting: must be under 95 characters
         title = f"{hook} | श्री कृष्ण अमृत वचन #Shorts #Krishna #RadheKrishna"
@@ -444,6 +474,7 @@ def generate_youtube_metadata_from_video(video_path):
             f"{lessons_text}\n\n"
             "✨ English Wisdom Summary:\n"
             f"\"{english}\"\n\n"
+            + seo_search_block +
             "━━━━━━━━━━━━━━━━━━━━━━━━━━\n"
             "🕊️ श्री कृष्ण के दिव्य सान्निध्य और दैनिक प्रेरणा के लिए हमसे जुड़ें:\n"
             f"🌐 आधिकारिक वेबसाइट: {OFFICIAL_LINKS['website']}\n"
@@ -455,7 +486,7 @@ def generate_youtube_metadata_from_video(video_path):
             "━━━━━━━━━━━━━━━━━━━━━━━━━━\n"
             "🙏 यदि इस विचार ने आपके हृदय को स्पर्श किया हो, तो कृपया लाइक करें, अपने प्रियजनों के साथ शेयर करें और चैनल को सब्सक्राइब अवश्य करें।\n\n"
             "जय श्री राधे कृष्ण! 🪷✨\n\n"
-            f"#Shorts #Krishna #RadheKrishna #KrishnaVibez #BhagavadGita #DailySuvichar #SpiritualShorts #KrishnaQuotes {hashtags_str}"
+            f"#Shorts #Krishna #RadheKrishna #KrishnaVibez #BhagavadGita #DailySuvichar #SpiritualShorts #KrishnaQuotes #KrishnaStatus #LordKrishna #GeetaGyan #MotivationalQuotes {hashtags_str}"
         )
 
         return title, description, ranking_tags
