@@ -1896,3 +1896,4 @@ krishna_quote_bowl.mp4
 krishna_quote_bridge.mp4
 krishna_quote_car.mp4
 krishna_quote_charkha.mp4
+krishna_quote_charpai.mp4
