@@ -1958,3 +1958,4 @@ new_quote_03.mp4
 new_quote_04.mp4
 new_quote_05.mp4
 new_quote_06.mp4
+new_quote_07.mp4
