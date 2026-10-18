@@ -1,5 +1,11 @@
 import os
 import sys
+
+if sys.stdout and hasattr(sys.stdout, "reconfigure"):
+    sys.stdout.reconfigure(encoding="utf-8", errors="replace")
+if sys.stderr and hasattr(sys.stderr, "reconfigure"):
+    sys.stderr.reconfigure(encoding="utf-8", errors="replace")
+
 import random
 import time
 import subprocess
@@ -27,7 +33,7 @@ if FB_PAGE_ID == "YAHAN_APNA_NAYA_PAGE_ID_DALNA_HAI":
 
 client = genai.Client(api_key=GEMINI_API_KEY)
 IMAGES_FOLDER = "images"
-GEMINI_MODELS = ["gemini-3.8-flash", "gemini-3.8-pro", "gemini-3.7-flash"]
+GEMINI_MODELS = ["gemini-2.5-flash", "gemini-2.0-flash", "gemini-1.5-flash"]
 # Yahan naye repo ka naam aayega (e.g., Auto-Insta-Krishna)
 GITHUB_REPO_RAW_URL = "https://raw.githubusercontent.com/paresh101p-jpg/Auto-Insta-Krishna/master/"
 
@@ -139,57 +145,84 @@ def get_next_media():
         urls = reload_urls_from_backup_if_needed(filename, is_video)
         if urls:
             attempts = 0
-            while urls and attempts < 3:
+            while urls and attempts < 5:
                 chosen_url = random.choice(urls)
-                
                 temp_ext = ".mp4" if is_video else ".jpg"
                 temp_file = "temp_media" + temp_ext
-                print(f"Downloading from {chosen_url}...")
+                min_size = 500 * 1024 if is_video else 40 * 1024
+                
+                print(f"Downloading from {chosen_url} (min required size: {min_size // 1024} KB)...")
                 
                 import time
                 import requests
-                max_retries = 3
+                headers = {
+                    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36',
+                    'Accept': '*/*'
+                }
+                
                 success_download = False
-                headers = {'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)'}
+                is_404 = False
                 
-                proxies = [
-                    "",  # Direct
-                    "https://api.allorigins.win/raw?url=", # Proxy 1
-                    "https://corsproxy.io/?" # Proxy 2
-                ]
-                
-                for attempt in range(max_retries):
+                for attempt in range(1, 4):
                     try:
-                        target_url = proxies[attempt % len(proxies)] + chosen_url
-                        print(f"Attempt {attempt+1} downloading via: {target_url}")
-                        res = requests.get(target_url, headers=headers, timeout=25)
-                        if res.status_code == 200:
-                            with open(temp_file, "wb") as f:
-                                f.write(res.content)
-                            success_download = True
-                            break
-                        elif res.status_code == 404:
-                            print("URL returned 404. We will skip it.")
-                            break
-                        else:
-                            print(f"Attempt {attempt+1} failed to download: Status {res.status_code}")
+                        print(f"Attempt {attempt} downloading from: {chosen_url[:80]}...")
+                        with requests.get(chosen_url, headers=headers, stream=True, timeout=60) as r:
+                            if r.status_code == 200:
+                                with open(temp_file, "wb") as f:
+                                    for chunk in r.iter_content(chunk_size=65536):
+                                        if chunk:
+                                            f.write(chunk)
+                                
+                                actual_size = os.path.getsize(temp_file) if os.path.exists(temp_file) else 0
+                                content_length = r.headers.get("content-length")
+                                
+                                if content_length and int(content_length) > 0 and actual_size < int(content_length):
+                                    print(f"Warning: Download incomplete ({actual_size}/{content_length} bytes). Retrying...")
+                                    continue
+                                    
+                                if actual_size >= min_size:
+                                    if is_video:
+                                        try:
+                                            import cv2
+                                            cap = cv2.VideoCapture(temp_file)
+                                            is_valid = cap.isOpened()
+                                            frame_cnt = cap.get(cv2.CAP_PROP_FRAME_COUNT) if is_valid else 0
+                                            cap.release()
+                                            if not is_valid or frame_cnt <= 0:
+                                                print(f"Warning: Video validation failed (corrupted or missing moov atom). Skipping URL.")
+                                                break
+                                        except Exception as cv_err:
+                                            print(f"Notice during video validation: {cv_err}")
+                                            
+                                    print(f"[OK] Successfully downloaded complete media ({actual_size / (1024*1024):.2f} MB)")
+                                    success_download = True
+                                    break
+                                else:
+                                    print(f"Warning: Downloaded file too small ({actual_size} bytes < {min_size} bytes).")
+                            elif r.status_code == 404:
+                                print(f"URL returned 404: {chosen_url}")
+                                is_404 = True
+                                break
+                            else:
+                                print(f"Attempt {attempt} HTTP Status: {r.status_code}")
                     except Exception as e:
-                        print(f"Attempt {attempt+1} failed to download: {e}")
+                        print(f"Attempt {attempt} failed to download: {e}")
                     time.sleep(2)
                     
                 if not success_download:
-                    print(f"Failed to download {chosen_url} entirely.")
-                    # Only remove if it was a 404 (file actually missing)
-                    if 'res' in locals() and res.status_code == 404:
-                        if chosen_url in urls:
-                            urls.remove(chosen_url)
-                            with open(filename, "w") as f:
-                                f.write("\n".join(urls))
+                    print(f"Failed to download valid media from {chosen_url}.")
+                    if os.path.exists(temp_file):
+                        try:
+                            os.remove(temp_file)
+                        except:
+                            pass
+                    if is_404 and chosen_url in urls:
+                        urls.remove(chosen_url)
+                        with open(filename, "w", encoding="utf-8") as f:
+                            f.write("\n".join(urls) + "\n")
                     attempts += 1
-                    continue # Try next URL
+                    continue
                     
-                # If we get here, download succeeded!
-                # DO NOT DELETE IT YET! Wait for Instagram post success!
                 return {
                     "type": "catbox",
                     "local_path": temp_file,
@@ -197,8 +230,8 @@ def get_next_media():
                     "is_video": is_video,
                     "original_path": None
                 }
-            if attempts >= 3:
-                raise Exception("Failed to download media after trying 3 different URLs.")
+            if attempts >= 5:
+                raise Exception("Failed to download healthy media after trying 5 different URLs.")
         return None
     if next_type == "IMAGE":
         res = get_from_file("images_urls.txt", False)
@@ -348,13 +381,16 @@ def generate_caption(media_path):
             img.load()
             content_to_pass = img
             
+        # Prepare contents list: NEVER pass None inside contents!
+        contents_list = [content_to_pass, prompt] if content_to_pass is not None else [prompt]
+
         for model_name in GEMINI_MODELS:
-            for attempt in range(1, 4):
+            for attempt in range(1, 3):
                 try:
                     print(f"Attempt {attempt} with model {model_name}...")
                     response = client.models.generate_content(
                         model=model_name,
-                        contents=[content_to_pass, prompt]
+                        contents=contents_list
                     )
                     caption = response.text
                     if caption:
@@ -364,37 +400,8 @@ def generate_caption(media_path):
                         print("\n" + "="*50 + "\n")
                         return caption
                 except Exception as e:
-                    print(f"Gemini error on attempt {attempt} with {model_name}: {e}")
-                    time.sleep(3)
-
-        # Fallback: Dynamically discover working models if predefined ones fail
-        try:
-            print("Attempting dynamic model discovery via client.models.list()...")
-            discovered_models = []
-            for m in client.models.list():
-                m_name = m.name.replace("models/", "") if hasattr(m, "name") and m.name else ""
-                supported = getattr(m, "supported_actions", []) or getattr(m, "supported_generation_methods", []) or []
-                if m_name and ("generateContent" in supported or not supported) and m_name not in GEMINI_MODELS:
-                    discovered_models.append(m_name)
-            
-            print(f"Discovered available models: {discovered_models[:5]}")
-            for m_name in discovered_models:
-                try:
-                    print(f"Attempting with dynamically discovered model {m_name}...")
-                    response = client.models.generate_content(
-                        model=model_name,
-                        contents=[content_to_pass, prompt]
-                    )
-                    if response.text:
-                        caption = clean_caption(response.text)
-                        print(f"Caption generated successfully using dynamic model {m_name}!\n")
-                        print(caption)
-                        print("\n" + "="*50 + "\n")
-                        return caption
-                except Exception as dyn_e:
-                    print(f"Gemini error with dynamic model {m_name}: {dyn_e}")
-        except Exception as list_e:
-            print(f"Could not list models: {list_e}")
+                    print(f"Gemini notice on attempt {attempt} with {model_name}: {e}")
+                    time.sleep(2)
     finally:
         if os.path.exists(temp_frame_path):
             try:
@@ -587,14 +594,19 @@ def post_ig_media(ig_account_id, caption, media_url, is_story=False, is_video=Fa
     
     if is_video:
         status = "IN_PROGRESS"
-        while status != "FINISHED":
+        wait_count = 0
+        while status != "FINISHED" and wait_count < 30:
             time.sleep(10)
+            wait_count += 1
             status_res = requests.get(f"https://graph.facebook.com/v20.0/{container_id}?fields=status_code&access_token={FB_ACCESS_TOKEN}").json()
             status = status_res.get('status_code', 'ERROR')
-            print(f"Video Status: {status}")
+            print(f"Video Status ({wait_count}/30): {status}")
             if status == "ERROR" or status == "EXPIRED":
-                print(f"âŒ Video Processing Failed!")
+                print(f"❌ Video Processing Failed! Error details: {status_res}")
                 return False
+        if status != "FINISHED":
+            print(f"❌ Video Processing Timed Out after {wait_count * 10} seconds.")
+            return False
     else:
         time.sleep(25)
     
@@ -626,16 +638,18 @@ def handle_failure(media_info):
             
         git_commit_and_push(f"Rollback: Moved back to images: {os.path.basename(media_info['original_path'])}")
     elif media_info["type"] == "catbox":
-        print("Restoring Catbox URL to top of reels_urls.txt...")
+        print("Moving failed Catbox URL to bottom of reels_urls.txt to prevent queue blocking...")
         url = media_info["media_url"]
         urls = []
         if os.path.exists(REELS_FILE):
-            with open(REELS_FILE, "r") as f:
+            with open(REELS_FILE, "r", encoding="utf-8", errors="ignore") as f:
                 urls = [line.strip() for line in f.readlines() if line.strip()]
-        urls.insert(0, url)
-        with open(REELS_FILE, "w") as f:
-            f.write("\n".join(urls))
-        git_commit_and_push("Rollback: Restored failed Catbox URL")
+        if url in urls:
+            urls.remove(url)
+        urls.append(url)
+        with open(REELS_FILE, "w", encoding="utf-8") as f:
+            f.write("\n".join(urls) + "\n")
+        git_commit_and_push("Rollback: Moved failed Catbox URL to end of queue")
 
 
 def create_story_image(local_path):
@@ -798,30 +812,30 @@ if __name__ == "__main__":
             if "post_fb_story" in globals():
                 retry_post(post_fb_story, story_url)
         
-        if success:
-            print("Successfully posted!")
-            # Record post timestamp for double-post safety lock
+        # Always syndicate to Website, Telegram, Threads, and Pinterest
+        print("Broadcasting to Krishna Vibez Website, Telegram & Multi-channel Social ecosystem...")
+        web_success = False
+        try:
+            import website_publisher
+            web_success, _ = website_publisher.publish_to_website(
+                media_url=media_info["media_url"],
+                caption=caption,
+                is_video=media_info["is_video"],
+                custom_post_id=planned_post_id
+            )
+        except Exception as web_err:
+            print(f"Warning: Website auto-publish error: {web_err}")
+
+        if success or web_success:
+            print("Successfully published to channels!")
             try:
                 with open("last_posted_timestamp.txt", "w") as f:
                     f.write(str(time.time()))
             except Exception as ts_err:
                 print(f"Notice: Could not write last_posted_timestamp: {ts_err}")
                 
-            # Now we mark it as used!
             if media_info["type"] == "catbox":
                 mark_url_as_used(media_info["media_url"], media_info["is_video"])
-            
-            # Automatically publish new post to Krishna Vibez Website!
-            try:
-                import website_publisher
-                website_publisher.publish_to_website(
-                    media_url=media_info["media_url"],
-                    caption=caption,
-                    is_video=media_info["is_video"],
-                    custom_post_id=planned_post_id
-                )
-            except Exception as web_err:
-                print(f"Warning: Website auto-publish error: {web_err}")
         else:
             if "handle_failure" in globals():
                 handle_failure(media_info)
