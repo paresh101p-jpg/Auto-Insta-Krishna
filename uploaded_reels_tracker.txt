@@ -1931,3 +1931,4 @@ krishna_theme_2.mp4
 krishna_theme_3.mp4
 krishna_theme_bicycle.mp4
 krishna_theme_door.mp4
+krishna_theme_lantern.mp4
