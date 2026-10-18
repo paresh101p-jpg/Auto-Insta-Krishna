@@ -1904,3 +1904,4 @@ krishna_quote_door.mp4
 krishna_quote_fan.mp4
 krishna_quote_flute.mp4
 krishna_quote_globe.mp4
+krishna_quote_hourglass.mp4
