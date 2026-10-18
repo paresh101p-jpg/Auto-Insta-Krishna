@@ -142,13 +142,70 @@ def verify_video_integrity(file_path):
 
 def download_video(url):
     print(f"Downloading reel for YouTube upload: {url}...")
-    headers = {
-        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
-        "Accept": "*/*"
-    }
-    for attempt in range(1, 4):
+    if os.path.exists(TEMP_VIDEO):
         try:
-            print(f"Attempt {attempt} downloading from: {url[:80]}...")
+            os.remove(TEMP_VIDEO)
+        except:
+            pass
+
+    # 1. Primary method: curl (Native HTTP/2 & modern TLS stack, 100% resilient on cloud runners)
+    try:
+        cmd = [
+            "curl", "-s", "-L", "-f",
+            "--connect-timeout", "15",
+            "--max-time", "90",
+            "--retry", "3",
+            "--retry-delay", "2",
+            "-A", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36",
+            "-o", TEMP_VIDEO,
+            url
+        ]
+        res = subprocess.run(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, timeout=100)
+        if res.returncode == 0 and os.path.exists(TEMP_VIDEO):
+            file_size = os.path.getsize(TEMP_VIDEO)
+            if file_size > 500000 and verify_video_integrity(TEMP_VIDEO):
+                print(f"✅ Video downloaded & verified successfully via curl ({file_size / (1024*1024):.2f} MB)")
+                return True, False
+            else:
+                print(f"Warning: curl download completed but failed integrity check (size: {file_size} bytes).")
+                return False, True
+    except Exception as ce:
+        print(f"Notice: curl invocation error: {ce}")
+
+    # 2. Fallback: urllib.request (uses distinct socket implementation)
+    try:
+        import urllib.request
+        req = urllib.request.Request(
+            url,
+            headers={
+                "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36",
+                "Accept": "*/*"
+            }
+        )
+        with urllib.request.urlopen(req, timeout=45) as resp:
+            if resp.status == 200:
+                with open(TEMP_VIDEO, "wb") as f:
+                    while True:
+                        chunk = resp.read(65536)
+                        if not chunk:
+                            break
+                        f.write(chunk)
+                file_size = os.path.getsize(TEMP_VIDEO) if os.path.exists(TEMP_VIDEO) else 0
+                if file_size > 500000 and verify_video_integrity(TEMP_VIDEO):
+                    print(f"✅ Video downloaded & verified successfully via urllib ({file_size / (1024*1024):.2f} MB)")
+                    return True, False
+    except Exception as ue:
+        print(f"Notice: urllib download attempt error: {ue}")
+
+    # 3. Fallback: requests with Connection: close
+    headers = {
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36",
+        "Accept": "*/*",
+        "Connection": "close"
+    }
+    for attempt in range(1, 3):
+        try:
+            print(f"Attempt {attempt} downloading via requests from: {url[:80]}...")
             with requests.get(url, headers=headers, timeout=60, stream=True) as res:
                 if res.status_code == 200:
                     with open(TEMP_VIDEO, "wb") as f:
@@ -156,24 +213,17 @@ def download_video(url):
                             if chunk:
                                 f.write(chunk)
                     file_size = os.path.getsize(TEMP_VIDEO) if os.path.exists(TEMP_VIDEO) else 0
-                    content_length = res.headers.get("content-length")
-                    if content_length and int(content_length) > 0 and file_size < int(content_length):
-                        print(f"Warning: Download incomplete ({file_size}/{content_length} bytes). Retrying...")
-                        continue
                     if file_size > 500000 and verify_video_integrity(TEMP_VIDEO):
-                        print(f"✅ Video downloaded & verified successfully ({file_size / (1024*1024):.2f} MB)")
-                        return True
-                    else:
-                        print(f"Warning: Downloaded video failed integrity check (size: {file_size} bytes).")
+                        print(f"✅ Video downloaded & verified successfully via requests ({file_size / (1024*1024):.2f} MB)")
+                        return True, False
                 elif res.status_code == 404:
                     print(f"Notice: Video returned 404 Not Found.")
-                    return False
-                else:
-                    print(f"Attempt {attempt} HTTP Status: {res.status_code}")
+                    return False, True
         except Exception as e:
             print(f"Download attempt {attempt} error: {e}")
         time.sleep(2)
-    return False
+
+    return False, False
 
 def find_ffmpeg():
     if shutil.which("ffmpeg"):
@@ -499,18 +549,22 @@ def main():
         candidate_url = random.choice(urls)
         print(f"\n[Attempt {attempt_idx + 1}/{max_url_attempts}] Selecting candidate reel: {candidate_url}")
 
-        if download_video(candidate_url):
+        success, is_corrupt = download_video(candidate_url)
+        if success:
             chosen_url = candidate_url
             break
         else:
-            print(f"⚠️ Video at {candidate_url} failed download or integrity check. Discarding broken URL from queue...")
-            if candidate_url in urls:
-                urls.remove(candidate_url)
-                try:
-                    with open(YT_REELS_FILE, "w", encoding="utf-8") as f:
-                        f.write("\n".join(urls) + "\n")
-                except Exception as ef:
-                    print(f"Notice updating reels file: {ef}")
+            if is_corrupt:
+                print(f"⚠️ Video at {candidate_url} confirmed corrupted or 404. Discarding broken URL from queue...")
+                if candidate_url in urls:
+                    urls.remove(candidate_url)
+                    try:
+                        with open(YT_REELS_FILE, "w", encoding="utf-8") as f:
+                            f.write("\n".join(urls) + "\n")
+                    except Exception as ef:
+                        print(f"Notice updating reels file: {ef}")
+            else:
+                print(f"⚠️ Temporary network error with {candidate_url}. Keeping in queue and trying another candidate reel...")
             time.sleep(2)
 
     if not chosen_url:
