@@ -1907,3 +1907,4 @@ krishna_quote_globe.mp4
 krishna_quote_hourglass.mp4
 krishna_quote_jar.mp4
 krishna_quote_mirror_vanity.mp4
+krishna_quote_path.mp4
