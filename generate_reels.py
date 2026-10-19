@@ -106,7 +106,7 @@ VOICE_PROFILES = [
     # Category 2: Women (महिला - शांत / भक्तिमय / अमृतवाणी)
     {"engine": "sarvam", "speaker": "ishita_hi_devotional", "pace": 0.94, "name": "Women - Ishita (Devotional)"},
     {"engine": "sarvam", "speaker": "roopa_hi_narration", "pace": 0.94, "name": "Women - Roopa (Peaceful Soul)"},
-    {"engine": "edge", "voice": "hi-IN-SwaraNeural", "rate": "-6%", "pitch": "0Hz", "name": "Women - Swara (Sweet Devotion)"},
+    {"engine": "edge", "voice": "hi-IN-SwaraNeural", "rate": "-6%", "pitch": "+0Hz", "name": "Women - Swara (Sweet Devotion)"},
     {"engine": "gcloud", "voice": "hi-IN-Neural2-A", "rate": "0.92", "pitch": "-1st", "name": "Women - Google Neural2-A (Graceful)"},
 
     # Category 3: Boy (युवा बालक - कथावाचक / प्रेरणा)
