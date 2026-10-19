@@ -26,23 +26,11 @@ TRACKER_FILE = os.path.join(BASE_DIR, "uploaded_reels_tracker.txt")
 OLD_SILENT_BACKUP = os.path.join(BASE_DIR, "old_silent_reels_backup.txt")
 
 def init_clean_reels_files():
-    """Archives old silent reels and clears active reels files on first run."""
-    if not os.path.exists(TRACKER_FILE) or os.path.getsize(TRACKER_FILE) == 0:
-        print("First-time setup: Archiving old silent reel URLs...", flush=True)
-        # Backup old URLs if not already done
-        if not os.path.exists(OLD_SILENT_BACKUP) and os.path.exists(REELS_URLS_FILE):
-            with open(REELS_URLS_FILE, "r", encoding="utf-8", errors="ignore") as f:
-                old_urls = f.read()
-            with open(OLD_SILENT_BACKUP, "w", encoding="utf-8") as bf:
-                bf.write(old_urls)
-            print(f"Archived old silent URLs to {OLD_SILENT_BACKUP}", flush=True)
-            
-        # Clean active files
-        with open(REELS_URLS_FILE, "w", encoding="utf-8") as f:
-            f.write("")
-        with open(BACKUP_REELS_URLS_FILE, "w", encoding="utf-8") as f:
-            f.write("")
-        print("Cleared reels_urls.txt and reels_urls_backup.txt for new voice reels.", flush=True)
+    """Ensures reels URL files exist without ever clearing or overwriting existing URLs."""
+    for fpath in [REELS_URLS_FILE, BACKUP_REELS_URLS_FILE, YT_REELS_URLS_FILE, BACKUP_YT_REELS_URLS_FILE]:
+        if not os.path.exists(fpath):
+            with open(fpath, "w", encoding="utf-8") as f:
+                f.write("")
 
 def get_already_uploaded():
     uploaded = set()

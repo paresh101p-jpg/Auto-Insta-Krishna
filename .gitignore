@@ -12,3 +12,6 @@ gemini_key.txt
 .env
 .youtube_community_profile/
 .whatsapp_channel_profile/
+elevenlabs_key.txt
+sarvam_key.txt
+google_tts_service_account.json
