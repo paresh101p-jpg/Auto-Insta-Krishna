@@ -34,19 +34,23 @@ def publish_to_telegram(media_url, caption, post_url, is_video=False):
     """
     bot_token = os.environ.get("TELEGRAM_BOT_TOKEN")
     chat_id = os.environ.get("TELEGRAM_CHAT_ID")
+    admin_chat_id = os.environ.get("TELEGRAM_ADMIN_CHAT_ID")
 
-    if not bot_token or not chat_id:
-        token_file = os.path.join(os.path.dirname(os.path.abspath(__file__)), "telegram_token.txt")
-        if os.path.exists(token_file):
-            try:
-                with open(token_file, "r", encoding="utf-8") as tf:
-                    for line in tf:
-                        if line.startswith("TELEGRAM_BOT_TOKEN="):
-                            bot_token = line.split("=", 1)[1].strip()
-                        elif line.startswith("TELEGRAM_CHAT_ID="):
-                            chat_id = line.split("=", 1)[1].strip()
-            except Exception:
-                pass
+    token_file = os.path.join(os.path.dirname(os.path.abspath(__file__)), "telegram_token.txt")
+    if os.path.exists(token_file):
+        try:
+            with open(token_file, "r", encoding="utf-8") as tf:
+                for line in tf:
+                    if not bot_token and line.startswith("TELEGRAM_BOT_TOKEN="):
+                        bot_token = line.split("=", 1)[1].strip()
+                    elif not chat_id and line.startswith("TELEGRAM_CHAT_ID="):
+                        chat_id = line.split("=", 1)[1].strip()
+                    elif not admin_chat_id and line.startswith("TELEGRAM_ADMIN_CHAT_ID="):
+                        admin_chat_id = line.split("=", 1)[1].strip()
+        except Exception:
+            pass
+
+    admin_chat_id = admin_chat_id or "753762808"
 
     if not bot_token or not chat_id:
         print("[Telegram] ℹ️ Skipped: TELEGRAM_BOT_TOKEN or TELEGRAM_CHAT_ID not configured.")
@@ -159,6 +163,57 @@ def publish_to_telegram(media_url, caption, post_url, is_video=False):
                     requests.post(react_url, data=react_payload, timeout=10)
                 except Exception:
                     pass
+
+            # Also send personal reminder to Paresh bhai so they can 1-click share to WhatsApp Channel & YouTube!
+            if admin_chat_id:
+                try:
+                    admin_caption = (
+                        f"🔔 <b>परेश भाई, आज का नया पोस्ट तैयार है!</b>\n"
+                        f"👉 <i>इस फ़ोटो/रील को अपने WhatsApp Channel और YouTube पर शेयर कर दीजिए:</i>\n\n"
+                        f"{formatted_caption}"
+                    )
+                    admin_reply_markup = {
+                        "inline_keyboard": [
+                            [
+                                {"text": "🟢 WhatsApp चैनल खोलें", "url": "https://whatsapp.com/channel/0029VbDxJHk30LKNtj4Er62J"},
+                                {"text": "▶️ YouTube Community खोलें", "url": "https://youtube.com/@krishnavibezofficial/community"}
+                            ],
+                            [
+                                {"text": "🌸 4K दर्शन वेबसाइट पर देखें", "url": post_url}
+                            ]
+                        ]
+                    }
+                    admin_payload = {
+                        "chat_id": admin_chat_id,
+                        param_name: media_url,
+                        "caption": admin_caption[:1024],
+                        "parse_mode": "HTML",
+                        "reply_markup": json.dumps(admin_reply_markup)
+                    }
+                    requests.post(api_url, data=admin_payload, timeout=20)
+
+                    # Send 1-tap instant copy message so Paresh bhai never has to manually select text
+                    clean_wa_caption = (
+                        f"✨ श्री कृष्ण पावन अमृत विचार ✨\n\n"
+                        f"\"{quote_text}\"\n\n"
+                        f"📖 पावन भावार्थ:\n"
+                        f"{reflection[:300]}\n\n"
+                        f"🌸 4K दर्शन व डाउनलोड:\n{post_url}\n\n"
+                        f"🕊️ Krishna Vibez Official:\n"
+                        f"🟢 WhatsApp: {whatsapp_channel}\n"
+                        f"▶️ YouTube: https://youtube.com/@krishnavibezofficial\n\n"
+                        f"जय श्री राधे कृष्ण! 🙏✨\n\n"
+                        f"#Krishna #RadheKrishna #BhagavadGita #KrishnaQuotes"
+                    )
+                    copy_text_payload = {
+                        "chat_id": admin_chat_id,
+                        "text": f"📋 <b>नीचे दिए गए बॉक्स पर सिर्फ 1 बार टैप (Click) करें — पूरा Caption तुरंत Copy हो जाएगा:</b>\n\n<code>{clean_wa_caption}</code>",
+                        "parse_mode": "HTML"
+                    }
+                    requests.post(f"https://api.telegram.org/bot{bot_token}/sendMessage", data=copy_text_payload, timeout=15)
+                    print(f"[Telegram] 🔔 Personal reminder & 1-tap copy box sent to Paresh bhai ({admin_chat_id})!")
+                except Exception as admin_err:
+                    print(f"[Telegram] Notice (Admin reminder): {admin_err}")
 
             return True
         else:

@@ -8,3 +8,7 @@ client_secret.json
 youtube_token.json
 __pycache__/
 *.pyc
+gemini_key.txt
+.env
+.youtube_community_profile/
+.whatsapp_channel_profile/
