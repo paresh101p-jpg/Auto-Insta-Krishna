@@ -1,0 +1,473 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>विशेष आध्यात्मिक लेख एवं गीता ज्ञान — Krishna Vibez</title>
+  <meta name="description" content="भगवान श्री कृष्ण के दिव्य उपदेश, भगवद्गीता सार, मानसिक शांति, कर्म योग, क्रोध नियंत्रण एवं जीवन प्रबंधन पर विशेष आध्यात्मिक लेख।">
+  <meta name="keywords" content="Krishna Articles, Bhagavad Gita Hindi, गीता ज्ञान, श्री कृष्ण उपदेश, कर्म योग, मानसिक शांति, Krishna Vibez">
+  <meta name="author" content="Krishna Vibez (krishnavibez.in)">
+  <link rel="canonical" href="https://krishnavibez.in/articles.html">
+
+  <!-- Open Graph -->
+  <meta property="og:site_name" content="Krishna Vibez">
+  <meta property="og:type" content="article">
+  <meta property="og:url" content="https://krishnavibez.in/articles.html">
+  <meta property="og:title" content="विशेष आध्यात्मिक लेख एवं गीता ज्ञान — Krishna Vibez">
+  <meta property="og:description" content="भगवान श्री कृष्ण के दिव्य उपदेश, भगवद्गीता सार, मानसिक शांति, कर्म योग और जीवन प्रबंधन पर ज्ञानवर्धक लेख।">
+  <meta property="og:image" content="https://krishnavibez.in/assets/logo.png">
+
+  <!-- Favicon -->
+  <link rel="icon" href="/favicon.ico" sizes="any">
+  <link rel="icon" type="image/png" sizes="192x192" href="/favicon-192.png">
+  <link rel="apple-touch-icon" href="/favicon-192.png">
+
+  <!-- Google AdSense -->
+  <meta name="google-adsense-account" content="ca-pub-4064462736581300">
+  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-4064462736581300" crossorigin="anonymous"></script>
+
+  <!-- Google Analytics -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-M7W6128K1Z"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'G-M7W6128K1Z');
+  </script>
+
+  <link rel="stylesheet" href="css/style.css?v=4.6">
+  <style>
+    .articles-hero {
+      text-align: center;
+      padding: 36px 16px 24px;
+      max-width: 900px;
+      margin: 0 auto;
+    }
+    .articles-hero h1 {
+      font-family: var(--font-title);
+      font-size: clamp(1.8rem, 4vw, 2.8rem);
+      margin-bottom: 12px;
+      background: var(--gold-gradient);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+    .articles-hero p {
+      color: var(--text-muted);
+      font-size: 1rem;
+      line-height: 1.6;
+      max-width: 720px;
+      margin: 0 auto 20px;
+    }
+    .articles-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+      gap: 22px;
+      max-width: 1200px;
+      margin: 0 auto 50px;
+      padding: 0 16px;
+    }
+    .article-card {
+      background: rgba(13, 17, 23, 0.85);
+      border: 1px solid var(--border-subtle);
+      border-radius: 16px;
+      padding: 22px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      transition: all 0.28s ease;
+      position: relative;
+      overflow: hidden;
+    }
+    .article-card:hover {
+      transform: translateY(-4px);
+      border-color: rgba(245, 197, 66, 0.45);
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.6);
+    }
+    .article-top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 12px;
+    }
+    .article-tag {
+      font-size: 0.72rem;
+      font-weight: 700;
+      color: var(--gold-primary);
+      background: rgba(245, 197, 66, 0.12);
+      border: 1px solid rgba(245, 197, 66, 0.25);
+      padding: 3px 10px;
+      border-radius: 12px;
+    }
+    .article-read-time {
+      font-size: 0.72rem;
+      color: var(--text-muted);
+    }
+    .article-title {
+      font-size: 1.18rem;
+      font-weight: 700;
+      line-height: 1.4;
+      margin-bottom: 10px;
+      color: #fff;
+    }
+    .article-summary {
+      font-size: 0.88rem;
+      color: #8b949e;
+      line-height: 1.6;
+      margin-bottom: 18px;
+      flex-grow: 1;
+    }
+    .article-footer {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-top: 1px solid rgba(255, 255, 255, 0.06);
+      padding-top: 14px;
+      margin-top: 10px;
+    }
+    .read-more-btn {
+      color: var(--gold-primary);
+      text-decoration: none;
+      font-size: 0.86rem;
+      font-weight: 600;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      transition: gap 0.2s ease;
+    }
+    .read-more-btn:hover {
+      gap: 8px;
+    }
+    .article-modal {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0, 0, 0, 0.85);
+      backdrop-filter: blur(10px);
+      z-index: 10002;
+      padding: 20px;
+      overflow-y: auto;
+    }
+    .article-modal.active {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .modal-box {
+      background: #0d1117;
+      border: 1px solid rgba(245, 197, 66, 0.35);
+      border-radius: 20px;
+      max-width: 780px;
+      width: 100%;
+      max-height: 90vh;
+      overflow-y: auto;
+      padding: 30px;
+      position: relative;
+      box-shadow: 0 15px 50px rgba(0, 0, 0, 0.9);
+    }
+    .modal-close {
+      position: absolute;
+      top: 18px;
+      right: 20px;
+      background: rgba(255, 255, 255, 0.08);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      color: #fff;
+      font-size: 1.2rem;
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .modal-close:hover {
+      background: rgba(245, 197, 66, 0.25);
+      color: var(--gold-primary);
+    }
+    .modal-content h2 {
+      font-size: 1.5rem;
+      color: var(--gold-primary);
+      margin-bottom: 14px;
+      line-height: 1.35;
+      padding-right: 40px;
+    }
+    .modal-content p {
+      font-size: 0.98rem;
+      line-height: 1.8;
+      color: #d1d5db;
+      margin-bottom: 16px;
+    }
+    .modal-content blockquote {
+      border-left: 3px solid var(--gold-primary);
+      background: rgba(245, 197, 66, 0.08);
+      padding: 12px 18px;
+      border-radius: 0 10px 10px 0;
+      margin: 18px 0;
+      font-style: italic;
+      color: #fff;
+    }
+    @media (max-width: 640px) {
+      .modal-box { padding: 20px 16px; }
+      .articles-grid { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Ambient Glow -->
+  <div class="ambient-glow-1"></div>
+  <div class="ambient-glow-2"></div>
+
+  <!-- Navigation Bar -->
+  <nav class="navbar">
+    <div class="nav-container">
+      <a href="index.html" class="brand-link">
+        <img src="assets/logo.png" alt="Krishna Vibez Logo" class="brand-logo-img">
+        <div class="brand-text-wrap">
+          <span class="brand-name">KRISHNA VIBEZ</span>
+          <span class="brand-tagline">DIVINE INSPIRATION</span>
+        </div>
+      </a>
+
+      <div class="nav-center">
+        <a href="index.html" class="nav-link">होम (Home)</a>
+        <a href="articles.html" class="nav-link active">ज्ञान लेख</a>
+        <a href="index.html#feed" class="nav-link">दैनिक दर्शन</a>
+        <a href="about.html" class="nav-link">हमारे बारे में</a>
+        <a href="contact.html" class="nav-link">संपर्क</a>
+      </div>
+
+      <div class="nav-actions">
+        <a href="https://whatsapp.com/channel/0029VbDxJHk30LKNtj4Er62J" target="_blank" rel="noopener noreferrer" class="nav-social-btn whatsapp" title="WhatsApp Channel जॉइन करें">
+          <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor"><path d="M12.04 2c-5.46 0-9.91 4.45-9.91 9.91 0 1.75.46 3.45 1.32 4.95L2.05 22l5.25-1.38c1.45.79 3.08 1.21 4.74 1.21 5.46 0 9.91-4.45 9.91-9.91 0-2.65-1.03-5.14-2.9-7.01A9.816 9.816 0 0 0 12.04 2z"/></svg>
+          <span>WhatsApp</span>
+        </a>
+        <a href="https://t.me/krishnavibezz" target="_blank" rel="noopener noreferrer" class="nav-social-btn telegram" title="Telegram Channel जॉइन करें">
+          <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm4.64 6.8c-.15 1.58-.8 5.42-1.13 7.19-.14.75-.42 1-.68 1.03-.58.05-1.02-.38-1.58-.75-.88-.58-1.38-.94-2.23-1.5-.99-.65-.35-1.01.22-1.59.15-.15 2.71-2.48 2.76-2.69a.2.2 0 00-.05-.18c-.06-.05-.14-.03-.21-.02-.09.02-1.49.95-4.22 2.79-.4.27-.76.41-1.08.4-.36-.01-1.04-.2-1.55-.37-.63-.2-1.12-.31-1.08-.66.02-.18.27-.36.74-.55 2.92-1.27 4.86-2.11 5.83-2.51 2.78-1.16 3.35-1.36 3.73-1.36.08 0 .27.02.39.12.1.08.13.19.14.27-.01.06.01.24 0 .38z"/></svg>
+          <span>Telegram</span>
+        </a>
+        <a href="https://in.pinterest.com/MojiloMart/" target="_blank" rel="noopener noreferrer" class="nav-social-btn pinterest" title="Pinterest पर फॉलो करें">
+          <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor"><path d="M12 0C5.373 0 0 5.372 0 12c0 5.084 3.163 9.426 7.627 11.174-.105-.949-.2-2.405.042-3.441.218-.937 1.407-5.965 1.407-5.965s-.359-.719-.359-1.782c0-1.668.967-2.914 2.171-2.914 1.023 0 1.518.769 1.518 1.69 0 1.029-.655 2.568-.994 3.995-.283 1.194.599 2.169 1.777 2.169 2.133 0 3.772-2.249 3.772-5.495 0-2.873-2.064-4.882-5.012-4.882-3.414 0-5.418 2.561-5.418 5.207 0 1.031.397 2.138.893 2.738a.36.36 0 0 1 .083.345l-.333 1.36c-.053.22-.174.267-.402.161-1.499-.698-2.436-2.889-2.436-4.649 0-3.785 2.75-7.262 7.929-7.262 4.163 0 7.398 2.967 7.398 6.931 0 4.136-2.607 7.464-6.227 7.464-1.216 0-2.359-.631-2.75-1.378l-.748 2.853c-.271 1.043-1.002 2.35-1.492 3.146C9.57 23.812 10.763 24 12 24c6.627 0 12-5.373 12-12 0-6.628-5.373-12-12-12z"/></svg>
+          <span>Pinterest</span>
+        </a>
+        <a href="https://www.instagram.com/pareshpadsala_/" target="_blank" rel="noopener noreferrer" class="nav-social-btn instagram" title="Instagram पर फॉलो करें: @pareshpadsala_">
+          <svg viewBox="0 0 24 24"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/></svg>
+          <span>Instagram</span>
+        </a>
+        <a href="https://www.facebook.com/1808917602588221" target="_blank" rel="noopener noreferrer" class="nav-social-btn facebook" title="Facebook पर फॉलो करें: Krishna Vibez">
+          <svg viewBox="0 0 24 24"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>
+          <span>Facebook</span>
+        </a>
+        <button class="mobile-menu-btn" id="mobileMenuBtn" aria-label="मेनू खोलें (Open Menu)" onclick="toggleMobileNav(event)">
+          <span class="bar bar-1"></span>
+          <span class="bar bar-2"></span>
+          <span class="bar bar-3"></span>
+        </button>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Hero Section -->
+  <header class="articles-hero">
+    <h1>विशेष आध्यात्मिक लेख एवं गीता ज्ञान</h1>
+    <p>जीवन की हर दुविधा, तनाव, अशांति, क्रोध और कर्म के रहस्य का समाधान — भगवान श्री कृष्ण के पावन वचनों और श्रीमद्भगवद्गीता के अमर सूत्रों में।</p>
+  </header>
+
+  <!-- Articles Grid -->
+  <main class="articles-grid" id="articlesGrid">
+
+    <!-- Article 1 -->
+    <article class="article-card">
+      <div class="article-top">
+        <span class="article-tag">कर्म योग</span>
+        <span class="article-read-time">⏱️ 4 मिनट पठन</span>
+      </div>
+      <h2 class="article-title">कर्मण्येवाधिकारस्ते मा फलेषु कदाचन: जीवन में इसका असली अर्थ</h2>
+      <p class="article-summary">क्यों इंसान फल की चिंता में अपने वर्तमान कर्म को बिगाड़ बैठता है? जानिए श्री कृष्ण का वह सूत्र जो आपको कर्म करते हुए भी तनावमुक्त और विजयी बनाता है।</p>
+      <div class="article-footer">
+        <span style="font-size:0.78rem;color:#8b949e;">लेखक: Krishna Vibez</span>
+        <button class="read-more-btn" onclick="openArticleModal(1)">पूरा लेख पढ़ें →</button>
+      </div>
+    </article>
+
+    <!-- Article 2 -->
+    <article class="article-card">
+      <div class="article-top">
+        <span class="article-tag">क्रोध नियंत्रण</span>
+        <span class="article-read-time">⏱️ 5 मिनट पठन</span>
+      </div>
+      <h2 class="article-title">क्रोध से भ्रम और बुद्धि नाश: क्रोध को शांत करने के 5 अचूक नियम</h2>
+      <p class="article-summary">क्रोधाद्भवति संमोहः संमोहात्स्मृतिविभ्रमः। जब गुस्सा आता है तो सबसे पहले अपनी ही सोचने-समझने की शक्ति क्यों खो जाती है? श्री कृष्ण का आत्म-नियंत्रण सूत्र।</p>
+      <div class="article-footer">
+        <span style="font-size:0.78rem;color:#8b949e;">लेखक: Krishna Vibez</span>
+        <button class="read-more-btn" onclick="openArticleModal(2)">पूरा लेख पढ़ें →</button>
+      </div>
+    </article>
+
+    <!-- Article 3 -->
+    <article class="article-card">
+      <div class="article-top">
+        <span class="article-tag">मानसिक शांति</span>
+        <span class="article-read-time">⏱️ 6 मिनट पठन</span>
+      </div>
+      <h2 class="article-title">मन की अशांति और ओवरथिंकिंग: दिमाग में विचारों का तूफान कैसे शांत करें?</h2>
+      <p class="article-summary">चंचलं हि मनः कृष्ण प्रमाथि बलवद्दृढम्। मन हवा की तरह चंचल है, इसे वश में करना कठिन अवश्य है लेकिन असंभव नहीं। जानिए अभ्यास और वैराग्य का व्यावहारिक रहस्य।</p>
+      <div class="article-footer">
+        <span style="font-size:0.78rem;color:#8b949e;">लेखक: Krishna Vibez</span>
+        <button class="read-more-btn" onclick="openArticleModal(3)">पूरा लेख पढ़ें →</button>
+      </div>
+    </article>
+
+    <!-- Article 4 -->
+    <article class="article-card">
+      <div class="article-top">
+        <span class="article-tag">अवसाद मुक्ति</span>
+        <span class="article-read-time">⏱️ 5 मिनट पठन</span>
+      </div>
+      <h2 class="article-title">अर्जुन का विषाद: जब जीवन में सब कुछ व्यर्थ लगने लगे तो क्या करें?</h2>
+      <p class="article-summary">कुरुक्षेत्र के मैदान में महान धनुर्धर अर्जुन के हाथ से गांडीव छूट गया था। कैसे श्री कृष्ण ने एक टूटे हुए इंसान को विश्व का सबसे बड़ा विजेता बनाया?</p>
+      <div class="article-footer">
+        <span style="font-size:0.78rem;color:#8b949e;">लेखक: Krishna Vibez</span>
+        <button class="read-more-btn" onclick="openArticleModal(4)">पूरा लेख पढ़ें →</button>
+      </div>
+    </article>
+
+    <!-- Article 5 -->
+    <article class="article-card">
+      <div class="article-top">
+        <span class="article-tag">आत्मा का ज्ञान</span>
+        <span class="article-read-time">⏱️ 4 मिनट पठन</span>
+      </div>
+      <h2 class="article-title">मृत्यु का भय और आत्मा की अमरता: नैनं छिन्दन्ति शस्त्राणि</h2>
+      <p class="article-summary">मनुष्य जिस मृत्यु से सबसे ज्यादा डरता है, वह केवल पुराने वस्त्र बदलकर नए वस्त्र धारण करने जैसी है। जानिए आत्मा की अमरता का वह सत्य जो जीवन को निर्भय बनाता है।</p>
+      <div class="article-footer">
+        <span style="font-size:0.78rem;color:#8b949e;">लेखक: Krishna Vibez</span>
+        <button class="read-more-btn" onclick="openArticleModal(5)">पूरा लेख पढ़ें →</button>
+      </div>
+    </article>
+
+    <!-- Article 6 -->
+    <article class="article-card">
+      <div class="article-top">
+        <span class="article-tag">निस्वार्थ प्रेम</span>
+        <span class="article-read-time">⏱️ 5 मिनट पठन</span>
+      </div>
+      <h2 class="article-title">राधा-कृष्ण का निस्वार्थ प्रेम: अधिकार नहीं, समर्पण का नाम है प्रेम</h2>
+      <p class="article-summary">सांसारिक प्रेम में मांग और अधिकार होता है, लेकिन दिव्य प्रेम में केवल समर्पण और कल्याण होता है। जानिए राधा और कृष्ण के अटूट आध्यात्मिक संबंध की पावन सीख।</p>
+      <div class="article-footer">
+        <span style="font-size:0.78rem;color:#8b949e;">लेखक: Krishna Vibez</span>
+        <button class="read-more-btn" onclick="openArticleModal(6)">पूरा लेख पढ़ें →</button>
+      </div>
+    </article>
+
+  </main>
+
+  <!-- Modal Article Reader -->
+  <div class="article-modal" id="articleModal" onclick="closeArticleModal(event)">
+    <div class="modal-box" onclick="event.stopPropagation()">
+      <button class="modal-close" onclick="closeArticleModal()" aria-label="बंद करें">✕</button>
+      <div class="modal-content" id="modalArticleBody"></div>
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <div class="footer-bottom" style="border:none;">
+      <div>© 2026 Krishna Vibez (krishnavibez.in). सर्व अधिकार सुरक्षित।</div>
+    </div>
+  </footer>
+
+  <script src="js/mobile-nav.js?v=20261021"></script>
+  <script>
+    const ARTICLE_DATA = {
+      1: {
+        title: "कर्मण्येवाधिकारस्ते मा फलेषु कदाचन: जीवन में इसका असली अर्थ और तनावमुक्ति का रहस्य",
+        content: `
+          <p>श्रीमद्भगवद्गीता के द्वितीय अध्याय का 47वां श्लोक समस्त मानव इतिहास के सबसे व्यावहारिक और मनोवैज्ञानिक उपदेशों में से एक है:</p>
+          <blockquote>कर्मण्येवाधिकारस्ते मा फलेषु कदाचन।<br>मा कर्मफलहेतुर्भूर्मा ते सङ्गोऽस्त्वकर्मणि॥</blockquote>
+          <p><strong>श्लोक का सरल अर्थ:</strong> तुम्हारा अधिकार केवल अपने कर्तव्य कर्म करने में है, उसके फलों में कभी नहीं। इसलिए कर्म के फल का हेतु मत बनो और तुम्हारी आसक्ति अकर्म (कर्म न करने) में भी न हो।</p>
+          <p><strong>आधुनिक जीवन में इसका मनोवैज्ञानिक महत्व:</strong><br>आज 90% मानसिक तनाव और चिंता का कारण कार्य का दबाव नहीं होता, बल्कि परिणाम की अनिश्चितता और भय होता है। जब कोई विद्यार्थी परीक्षा देता है या कोई व्यवसायी काम करता है, तो उसका 70% ध्यान परिणाम (सफलता या असफलता) पर अटका रहता है।</p>
+          <p>भगवान श्री कृष्ण समझाते हैं कि भविष्य आपके हाथ में नहीं है, आपके हाथ में केवल वर्तमान का प्रयास है। जब आप परिणाम की चिंता छोड़ कर 100% ऊर्जा केवल कर्म में लगाते हैं, तो प्रदर्शन अपने आप श्रेष्ठ हो जाता है और परिणाम स्वतः शुभ प्राप्त होता है।</p>
+          <p><strong>दैनिक जीवन में 3 व्यवहारिक नियम:</strong><br>
+          1. <em>परिणाम का भार ईश्वर पर छोड़ें:</em> जब आप काम शुरू करें, तो अपना 100% दें, लेकिन परिणाम को भगवान का प्रसाद समझकर स्वीकार करने का साहस रखें।<br>
+          2. <em>कर्महीनता से बचें:</em> फल न मिलने के डर से काम छोड़ देना कायरता है। भगवान ने अकर्म में आसक्ति से साफ मना किया है।<br>
+          3. <em>वर्तमान में जिएं:</em> कर्म वर्तमान में होता है और फल भविष्य में। जो वर्तमान को संवार लेता है, उसका भविष्य अपने आप सुधर जाता है।</p>
+        `
+      },
+      2: {
+        title: "क्रोध से भ्रम और बुद्धि नाश: क्रोध को शांत करने के 5 अचूक नियम",
+        content: `
+          <p>भगवद्गीता के द्वितीय अध्याय में भगवान श्री कृष्ण मनुष्य के पतन की शृंखला का वर्णन करते हुए कहते हैं:</p>
+          <blockquote>क्रोधाद्भवति संमोहः संमोहात्स्मृतिविभ्रमः।<br>स्मृतिभ्रंशाद् बुद्धिनाशो बुद्धिनाशात्प्रणश्यति॥</blockquote>
+          <p><strong>पतन की शृंखला:</strong> काम (असंतोष) से क्रोध उत्पन्न होता है, क्रोध से संमोह (अविवेक/भ्रम) उत्पन्न होता है। संमोह से स्मृति भ्रमित होती है, स्मृति भ्रमित होने से बुद्धि (निर्णय लेने की शक्ति) का नाश होता है और बुद्धि नष्ट होते ही मनुष्य स्वयं का सर्वनाश कर बैठता है।</p>
+          <p><strong>क्रोध शांत करने के 5 अचूक आध्यात्मिक नियम:</strong><br>
+          1. <strong>तुरंत प्रतिक्रिया न दें (The 60-Second Rule):</strong> जब भी गुस्सा आए, कम से कम 60 सेकंड तक मौन रहें। क्रोध की तीव्रता केवल कुछ पलों की होती है।<br>
+          2. <strong>दूसरों को दोष देना बंद करें:</strong> याद रखें कि कोई भी व्यक्ति आपको तब तक क्रोधित नहीं कर सकता जब तक आप स्वयं उत्तेजित होने की अनुमति न दें।<br>
+          3. <strong>अपेक्षाओं को सीमित करें:</strong> क्रोध तब आता है जब परिस्थितियां या लोग हमारे अनुसार व्यवहार नहीं करते। यह स्वीकार करें कि संसार आपके नियंत्रण में नहीं है।<br>
+          4. <strong>ईश्वर का स्मरण और गहरी सांस:</strong> क्रोध की स्थिति में 3 गहरी सांस लें और 'हरे कृष्ण' या 'ॐ' का मन में जप करें। इससे मस्तिष्क की नसें शांत होती हैं।<br>
+          5. <strong>सहानुभूति रखें:</strong> जो व्यक्ति आपके साथ कटु व्यवहार कर रहा है, वह स्वयं अंदर से पीड़ित और अशांत है। उस पर क्रोध करने के बजाय दया का भाव रखें।</p>
+        `
+      },
+      3: {
+        title: "मन की अशांति और ओवरथिंकिंग: दिमाग में विचारों का तूफान कैसे शांत करें?",
+        content: `
+          <p>कुरुक्षेत्र में अर्जुन ने भगवान श्री कृष्ण के सामने वही प्रश्न रखा था जो आज हर युवा और परिवार का सबसे बड़ा संघर्ष है:</p>
+          <blockquote>चञ्चलं हि मनः कृष्ण प्रमाथि बलवद्दृढम्।<br>तस्याहं निग्रहं मन्ये वायोरिव सुदुष्करम्॥</blockquote>
+          <p>अर्जुन कहते हैं कि हे कृष्ण! यह मन बड़ा ही चंचल, प्रमथनशील (मथ डालने वाला), बलवान और हठी है। इसे वश में करना आकाश में बहती वायु को मुट्ठी में बांधने के समान दुष्कर प्रतीत होता है।</p>
+          <p>भगवान श्री कृष्ण इस पर मुस्कुराते हुए जो उत्तर देते हैं, वह हर मनुष्य के जीवन का सबसे बड़ा औषधि सूत्र है:</p>
+          <blockquote>असंशयं महाबाहो मनो दुर्निग्रहं चलम्।<br>अभ्यासेन तु कौन्तेय वैराग्येण च गृह्यते॥</blockquote>
+          <p><strong>मन को शांत करने के दो अचूक पंख:</strong><br>
+          1. <strong>अभ्यास (Practice):</strong> जैसे एक नटखट बच्चे को बार-बार समझाकर सही दिशा में लाया जाता है, वैसे ही जब भी मन व्यर्थ की चिंताओं या अतीत-भविष्य में भटके, उसे धैर्यपूर्वक वापस अपने वर्तमान कार्य और ईश्वर के सान्निध्य में लाएं।<br>
+          2. <strong>वैराग्य (Detachment):</strong> वैराग्य का अर्थ घर छोड़ना नहीं है, बल्कि यह समझना है कि संसार की हर वस्तु और परिस्थिति नश्वर है। जिसे आप खोने से डर रहे हैं, वह कभी आपका था ही नहीं। जब पकड़ ढीली होती है, तो अशांति समाप्त हो जाती है।</p>
+        `
+      },
+      4: {
+        title: "अर्जुन का विषाद: जब जीवन में सब कुछ व्यर्थ लगने लगे तो क्या करें?",
+        content: `
+          <p>गीता की शुरुआत किसी युद्ध की जीत से नहीं, बल्कि एक शूरवीर के आंसुओं और मानसिक अवसाद (Depression) से होती है। अर्जुन अपने ही परिजनों, गुरुजनों और संबंधियों को देखकर अवसादग्रस्त हो जाता है और हाथ से गांडीव रखकर रथ के पिछले भाग में बैठ जाता है।</p>
+          <p><strong>श्री कृष्ण का दृष्टिकोण:</strong><br>भगवान कृष्ण अर्जुन को सांत्वना नहीं देते, बल्कि उसे उसके वास्तविक स्वरूप और कर्तव्य का स्मरण कराते हैं: <em>"क्लैब्यं मा स्म गमः पार्थ नैतत्त्वय्युपपद्यते"</em> (हे पार्थ! इस कायरता को मत प्राप्त हो, यह तेरे योग्य नहीं है)।</p>
+          <p><strong>जब जीवन में निराशा घेर ले तो याद रखें:</strong><br>
+          1. आपकी वर्तमान परिस्थिति चाहे कितनी भी कठिन हो, वह आपकी अंतिम नियति नहीं है।<br>
+          2. संघर्ष से भागना समस्याओं का समाधान नहीं है, उनका सामना करना ही धर्म है।<br>
+          3. जब आप अपना कर्तव्य ईमानदारी से करते हैं, तो श्री कृष्ण स्वयं आपके जीवन के सारथी बनकर आपका मार्गदर्शन करते हैं।</p>
+        `
+      },
+      5: {
+        title: "मृत्यु का भय और आत्मा की अमरता: नैनं छिन्दन्ति शस्त्राणि",
+        content: `
+          <blockquote>नैनं छिन्दन्ति शस्त्राणि नैनं दहति पावकः।<br>न चैनं क्लेदयन्त्यापो न शोषयति मारुतः॥</blockquote>
+          <p>आत्मा को न शस्त्र काट सकते हैं, न अग्नि जला सकती है, न जल गीला कर सकता है और न वायु सुखा सकती है। यह अमर, शाश्वत और सनातन है।</p>
+          <p>जैसे मनुष्य फटे-पुराने वस्त्रों को त्यागकर नए वस्त्र धारण करता है, वैसे ही जीवात्मा पुराने शरीर को छोड़कर नया शरीर धारण करती है। जब मनुष्य इस अमरता के सत्य को जान लेता है, तो उसके सारे भय और संशय मिट जाते हैं और वह जीवन को साहस और निडरता के साथ जीता है।</p>
+        `
+      },
+      6: {
+        title: "राधा-कृष्ण का निस्वार्थ प्रेम: अधिकार नहीं, समर्पण का नाम है प्रेम",
+        content: `
+          <p>सांसारिक प्रेम में अक्सर यह देखा जाता है कि लोग प्रेम के बदले प्रेम, ध्यान और नियंत्रण की अपेक्षा करते हैं। जब अपेक्षा पूरी नहीं होती, तो वही प्रेम कलह और घृणा में बदल जाता है।</p>
+          <p>लेकिन राधा-कृष्ण का प्रेम अलौकिक और विशुद्ध है। राधा जी ने कृष्ण से कभी यह नहीं कहा कि 'तुम केवल मेरे हो', बल्कि उन्होंने स्वयं को पूर्ण रूप से कृष्णमय कर दिया। श्री कृष्ण भी कहते हैं कि राधा और मुझमें कोई भेद नहीं है—राधा मेरी आत्मा हैं और मैं उनका प्राण हूँ।</p>
+          <p><strong>रिश्तों में सुख की कुंजी:</strong><br>सच्चा प्रेम वह है जो दूसरे को स्वतंत्र करे, न कि बांधे। जब आप अपने साथी से अपेक्षाएं कम और उसके कल्याण की भावना अधिक रखते हैं, तो आपका जीवन भी दिव्य आनंद से भर जाता है।</p>
+        `
+      }
+    };
+
+    function openArticleModal(id) {
+      const article = ARTICLE_DATA[id];
+      if (!article) return;
+      document.getElementById('modalArticleBody').innerHTML = `
+        <h2>${article.title}</h2>
+        ${article.content}
+      `;
+      document.getElementById('articleModal').classList.add('active');
+      document.body.style.overflow = 'hidden';
+    }
+
+    function closeArticleModal() {
+      document.getElementById('articleModal').classList.remove('active');
+      document.body.style.overflow = '';
+    }
+  </script>
+</body>
+</html>
