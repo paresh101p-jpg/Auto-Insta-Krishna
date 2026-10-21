@@ -19,7 +19,8 @@ import glob
 import time
 import subprocess
 import requests
-from PIL import Image
+from PIL import Image, ImageFile
+ImageFile.LOAD_TRUNCATED_IMAGES = True
 
 # Force UTF-8 output
 if sys.platform == "win32":
@@ -168,18 +169,31 @@ def save_uploaded_name(name):
         f.write(name + "\n")
 
 def upload_file_to_catbox(file_path, retries=3):
-    url = "https://catbox.moe/user/api.php"
+    curl_path = r"C:\Windows\System32\curl.exe"
+    cmd = [
+        curl_path, "-k", "-s",
+        "-F", "reqtype=fileupload",
+        "-F", f"fileToUpload=@{file_path}",
+        "https://catbox.moe/user/api.php"
+    ]
     for attempt in range(retries):
         try:
-            with open(file_path, 'rb') as f:
-                res = requests.post(url, data={"reqtype": "fileupload"}, files={"fileToUpload": f}, timeout=60)
-                result = res.text.strip()
-                if result.startswith("https://files.catbox.moe/"):
-                    return result
-                else:
-                    print(f"Warning: Catbox response: {result}", flush=True)
+            res = subprocess.run(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True, timeout=60)
+            url = res.stdout.strip()
+            if url.startswith("https://files.catbox.moe/"):
+                return url
+            else:
+                print(f"Warning: Catbox attempt {attempt+1} response: {url}", flush=True)
         except Exception as e:
-            print(f"Catbox upload error (attempt {attempt+1}): {e}", flush=True)
+            # Fallback to requests if curl fails
+            try:
+                with open(file_path, 'rb') as f:
+                    r = requests.post("https://catbox.moe/user/api.php", data={"reqtype": "fileupload"}, files={"fileToUpload": f}, timeout=60)
+                    result = r.text.strip()
+                    if result.startswith("https://files.catbox.moe/"):
+                        return result
+            except Exception as e2:
+                print(f"Catbox upload error (attempt {attempt+1}): {e} / {e2}", flush=True)
         time.sleep(3)
     return None
 
@@ -224,22 +238,27 @@ def run_batch():
 
         print(f"\n[{idx+1}/{len(pending_images)}] Processing {fname}...", flush=True)
 
-        # 1. Extract exact quote from image (Zero Mismatch)
-        quote = extract_quote_from_image(reader, img_path, known_quotes)
-        if not quote or len(quote) < 5:
-            print(f"  [SKIPPED] No valid Hindi quote found on {fname}", flush=True)
-            continue
+        # Check if already rendered locally (> 500 KB)
+        if os.path.exists(mp4_path) and os.path.getsize(mp4_path) > 500000:
+            fsize_mb = os.path.getsize(mp4_path) / (1024 * 1024)
+            print(f"  Reel already rendered ({fsize_mb:.2f} MB). Skipping render & proceeding to upload...", flush=True)
+        else:
+            # 1. Extract exact quote from image (Zero Mismatch)
+            quote = extract_quote_from_image(reader, img_path, known_quotes)
+            if not quote or len(quote) < 5:
+                print(f"  [SKIPPED] No valid Hindi quote found on {fname}", flush=True)
+                continue
 
-        print(f"  Exact Quote: \"{quote}\"", flush=True)
+            print(f"  Exact Quote: \"{quote}\"", flush=True)
 
-        # 2. Build Reel (Pass rotating color_profile_idx and voice_idx)
-        ok = build_reel(img_path, quote, mp4_path, color_profile_idx=idx, voice_idx=idx)
-        if not ok or not os.path.exists(mp4_path) or os.path.getsize(mp4_path) < 500000:
-            print(f"  [ERROR] Failed to generate {mp4_name}", flush=True)
-            continue
+            # 2. Build Reel (Pass rotating color_profile_idx and voice_idx)
+            ok = build_reel(img_path, quote, mp4_path, color_profile_idx=idx, voice_idx=idx)
+            if not ok or not os.path.exists(mp4_path) or os.path.getsize(mp4_path) < 500000:
+                print(f"  [ERROR] Failed to generate {mp4_name}", flush=True)
+                continue
 
-        fsize_mb = os.path.getsize(mp4_path) / (1024 * 1024)
-        print(f"  Reel Rendered ({fsize_mb:.2f} MB). Uploading to Catbox...", flush=True)
+            fsize_mb = os.path.getsize(mp4_path) / (1024 * 1024)
+            print(f"  Reel Rendered ({fsize_mb:.2f} MB). Uploading to Catbox...", flush=True)
 
         # 3. Upload to Catbox
         url = upload_file_to_catbox(mp4_path)
