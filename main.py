@@ -336,6 +336,13 @@ def clean_caption(text):
     # Remove any unwanted mentions like @sneha_padsala if present
     cleaned = re.sub(r'(?i)[✨* ]*@sneh?s?a_padsala[✨* ]*', '', cleaned)
 
+    # Enforce maximum 10 hashtags
+    hashtags = re.findall(r'#[a-zA-Z0-9_\u0900-\u097F]+', cleaned)
+    if len(hashtags) > 10:
+        excess = hashtags[10:]
+        for tag in excess:
+            cleaned = re.sub(re.escape(tag) + r'(?:\s+|$)', '', cleaned)
+
     # Normalize excessive newlines (max 2 consecutive newlines)
     cleaned = re.sub(r'\n{3,}', '\n\n', cleaned)
     return cleaned.strip()
