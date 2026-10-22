@@ -78,16 +78,37 @@ def ensure_images():
     return sorted(slides)
 
 def mix_soundtrack():
-    """Assembles 15-Minute Flute & Tabla Master Audio."""
-    print("[1/4] Assembling 15-Minute Flute & Tabla Master Audio...")
-    tracks = [
-        os.path.join(MUSIC_DIR, "jeremiah7-tabla-flute-106-262274.mp3"),
-        os.path.join(MUSIC_DIR, "krasnoshchok-krishna-flute-hindu-music-450217.mp3"),
-        os.path.join(MUSIC_DIR, "boopul-indian-bansuri-flute-tarana-raga-music-525950.mp3"),
+    """Assembles 15-Minute Flute & Tabla Master Audio from a diverse pool of authentic raga tracks."""
+    print("[1/4] Assembling Dynamic 15-Minute Flute & Tabla Master Audio...")
+    
+    candidates = [
+        "jeremiah7-tabla-flute-106-262274.mp3",
+        "boopul-indian-bansuri-flute-tarana-raga-music-525950.mp3",
+        "krasnoshchok-krishna-flute-hindu-music-450217.mp3",
+        "verclub_music-relaxing-krishna-flute-music-deep-sleep-relaxing-music-571036.mp3",
+        "verclub_music-relaxing-krishna-flute-music-deep-sleep-relaxing-music-606118.mp3",
+        "krasnoshchok-hindu-krishna-flute-607253.mp3",
+        "krasnoshchok-hindu-krishna-flute-music-464551.mp3",
+        "echoes_of_lumen-krishna-flute-music-597586.mp3",
+        "echoes_of_lumen-krishna-flute-596320.mp3",
+        "jonasblakewood-indian-flute-indian-flute-music-580577.mp3",
+        "k_datta-floating-flute-169128.mp3",
+        "danamusic-relaxing-flute-meditation-416756.mp3",
     ]
-    for t in tracks:
-        if not os.path.exists(t):
-            raise FileNotFoundError(f"Missing soundtrack file: {t}")
+    
+    # Filter existing tracks and shuffle
+    available = [os.path.join(MUSIC_DIR, f) for f in candidates if os.path.exists(os.path.join(MUSIC_DIR, f))]
+    if not available:
+        # Fallback to any mp3 in music/
+        available = [os.path.join(MUSIC_DIR, f) for f in os.listdir(MUSIC_DIR) if f.lower().endswith('.mp3')]
+    random.shuffle(available)
+    selected_tracks = available[:3]
+    
+    # Ensure we have at least 3 tracks by repeating if needed
+    while len(selected_tracks) < 3:
+        selected_tracks.append(random.choice(available))
+        
+    print(f"  -> Selected Raga Tracks for Today: {[os.path.basename(t) for t in selected_tracks]}")
 
     filter_complex = (
         "[0:a][1:a]acrossfade=d=5:c1=tri:c2=tri[a01];"
@@ -97,16 +118,16 @@ def mix_soundtrack():
     )
     cmd = [
         FFMPEG_EXE, "-y",
-        "-i", tracks[0],
-        "-i", tracks[1],
-        "-i", tracks[2],
+        "-i", selected_tracks[0],
+        "-i", selected_tracks[1],
+        "-i", selected_tracks[2],
         "-filter_complex", filter_complex,
         "-map", "[aout]",
         "-c:a", "libmp3lame", "-b:a", "192k",
         TEMP_AUDIO
     ]
     subprocess.run(cmd, check=True)
-    print(f"  -> Soundtrack ready: {TEMP_AUDIO}")
+    print(f"  -> Dynamic Master Soundtrack ready: {TEMP_AUDIO}")
 
 def render_video(slides):
     """
@@ -387,6 +408,7 @@ def cleanup():
 
 def main():
     slides = ensure_images()
+    random.shuffle(slides)
     theme = random.choice(MEDITATION_THEMES)
     mix_soundtrack()
     render_video(slides)
