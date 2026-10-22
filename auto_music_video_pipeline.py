@@ -29,6 +29,7 @@ IMAGES_DIR = os.path.join(BASE_DIR, "music_video_images")
 OUTPUT_VIDEO = os.path.join(BASE_DIR, "temp_music_video_render.mp4")
 TEMP_AUDIO = os.path.join(BASE_DIR, "temp_music_video_audio.mp3")
 TEMP_THUMBNAIL = os.path.join(BASE_DIR, "temp_music_thumbnail.jpg")
+SPARKLES_LOOP = os.path.join(BASE_DIR, "golden_sparkles_loop.mp4")
 
 # Detect FFmpeg executable
 FFMPEG_EXE = "ffmpeg"
@@ -108,47 +109,109 @@ def mix_soundtrack():
     print(f"  -> Soundtrack ready: {TEMP_AUDIO}")
 
 def render_video(slides):
-    """Renders 15-minute video cycling 12 images every 25 seconds for dynamic visual experience."""
-    print("[2/4] Rendering 15-Minute Dynamic Full HD Video (Cycling 12 slides every 25s)...")
+    """
+    Renders 15-Minute Dynamic Full HD Video with:
+    - Ken Burns Zoom-In & Zoom-Out & Pan motions on every slide
+    - Velvety 1.5s Fade-In & Fade-Out Transitions
+    - Rich 8K HDR color clarity filters
+    - Exact 15:00.00 flat duration (36 slide slots * 25s = 900 seconds)
+    """
+    print("[2/4] Rendering 15-Minute Cinematic Video with Zoom In/Out & Fade Animations...")
     
-    # 900 seconds / 25 seconds = 36 slide slots
-    repeats = (36 // len(slides)) + 1
-    sequence = (slides * repeats)[:36]
-
-    concat_file = os.path.join(BASE_DIR, "temp_concat_pipeline.txt")
-    with open(concat_file, "w", encoding="utf-8") as f:
-        f.write("ffconcat version 1.0\n")
-        for s in sequence:
-            escaped = s.replace("\\", "/")
-            f.write(f"file '{escaped}'\n")
-            f.write("duration 25\n")
-        escaped_last = sequence[-1].replace("\\", "/")
-        f.write(f"file '{escaped_last}'\n")
-
-    # High-Clarity Modern HDR Filters (NO sepia, NO dark vignette)
-    vf_filters = (
-        "scale=1920:1080:force_original_aspect_ratio=decrease,"
-        "pad=1920:1080:(ow-iw)/2:(oh-ih)/2,"
-        "unsharp=5:5:0.7:5:5:0.3,"
-        "eq=saturation=1.06:contrast=1.02:brightness=0.01"
-    )
-
-    cmd = [
-        FFMPEG_EXE, "-y",
-        "-f", "concat", "-safe", "0", "-i", concat_file,
-        "-i", TEMP_AUDIO,
-        "-vf", vf_filters,
-        "-c:v", "libx264", "-preset", "ultrafast", "-tune", "stillimage", "-crf", "19",
-        "-r", "25", "-pix_fmt", "yuv420p",
-        "-c:a", "aac", "-b:a", "192k",
-        "-t", "900",
-        OUTPUT_VIDEO
-    ]
-    subprocess.run(cmd, check=True)
-    if os.path.exists(concat_file):
-        try: os.remove(concat_file)
+    clip_files = []
+    temp_clips_dir = os.path.join(BASE_DIR, "temp_animated_clips")
+    os.makedirs(temp_clips_dir, exist_ok=True)
+    
+    # 1. Generate 25-second animated clip for each slide with alternating motion
+    for idx, slide in enumerate(slides):
+        clip_path = os.path.join(temp_clips_dir, f"clip_{idx+1}.mp4")
+        clip_files.append(clip_path)
+        
+        mode = idx % 4
+        if mode == 0:
+            # Slow Cinematic Zoom-In
+            motion = "zoompan=z='min(zoom+0.00018,1.08)':d=625:x='iw/2-(iw/zoom/2)':y='ih/2-(ih/zoom/2)':s=1920x1080:fps=25"
+        elif mode == 1:
+            # Slow Cinematic Zoom-Out
+            motion = "zoompan=z='if(lte(zoom,1.0),1.08,max(1.001,zoom-0.00018))':d=625:x='iw/2-(iw/zoom/2)':y='ih/2-(ih/zoom/2)':s=1920x1080:fps=25"
+        elif mode == 2:
+            # Gentle Camera Pan Left to Right
+            motion = "zoompan=z=1.05:x='if(lte(on,-1),(iw-iw/zoom)/2,x+0.2)':y='ih/2-(ih/zoom/2)':d=625:s=1920x1080:fps=25"
+        else:
+            # Subtle Smooth Center Float & Zoom-In
+            motion = "zoompan=z='min(zoom+0.00015,1.07)':d=625:x='iw/2-(iw/zoom/2)':y='ih/2-(ih/zoom/2)':s=1920x1080:fps=25"
+            
+        vf = (
+            f"scale=1920:1080,"
+            f"{motion},"
+            f"fade=t=in:st=0:d=1.5,fade=t=out:st=23.5:d=1.5,"
+            f"unsharp=5:5:0.7:5:5:0.3,eq=saturation=1.08:contrast=1.03"
+        )
+        
+        cmd_clip = [
+            FFMPEG_EXE, "-y",
+            "-loop", "1", "-i", slide,
+            "-vf", vf,
+            "-c:v", "libx264", "-preset", "ultrafast", "-crf", "20",
+            "-t", "25",
+            "-pix_fmt", "yuv420p",
+            clip_path
+        ]
+        subprocess.run(cmd_clip, check=True)
+    
+    # 2. Concat 12 animated clips 3 times = exactly 36 clips * 25s = 900 seconds (15:00.00)
+    concat_list = os.path.join(BASE_DIR, "temp_concat_clips.txt")
+    with open(concat_list, "w", encoding="utf-8") as f:
+        for _ in range(3):
+            for cp in clip_files:
+                esc = cp.replace("\\", "/")
+                f.write(f"file '{esc}'\n")
+                
+    if os.path.exists(SPARKLES_LOOP):
+        print("  -> Blending divine golden sparkles particle animation...")
+        filter_complex = (
+            "[0:v]format=gbrp[img];"
+            "[1:v]scale=1920:1080,format=gbrp[spk];"
+            "[img][spk]blend=all_mode=screen:all_opacity=0.85,format=yuv420p[vout]"
+        )
+        cmd_final = [
+            FFMPEG_EXE, "-y",
+            "-f", "concat", "-safe", "0", "-i", concat_list,
+            "-stream_loop", "-1", "-i", SPARKLES_LOOP,
+            "-i", TEMP_AUDIO,
+            "-filter_complex", filter_complex,
+            "-map", "[vout]",
+            "-map", "2:a",
+            "-c:v", "libx264", "-preset", "ultrafast", "-crf", "20",
+            "-c:a", "aac", "-b:a", "192k",
+            "-t", "900",
+            OUTPUT_VIDEO
+        ]
+    else:
+        cmd_final = [
+            FFMPEG_EXE, "-y",
+            "-f", "concat", "-safe", "0", "-i", concat_list,
+            "-i", TEMP_AUDIO,
+            "-c:v", "copy",
+            "-c:a", "aac", "-b:a", "192k",
+            "-t", "900",
+            OUTPUT_VIDEO
+        ]
+    subprocess.run(cmd_final, check=True)
+    
+    # Clean up animated temp clips
+    for cp in clip_files:
+        if os.path.exists(cp):
+            try: os.remove(cp)
+            except Exception: pass
+    if os.path.exists(temp_clips_dir):
+        try: os.rmdir(temp_clips_dir)
         except Exception: pass
-    print(f"  -> Video Rendered Successfully: {OUTPUT_VIDEO} (Exact 15:00.00)")
+    if os.path.exists(concat_list):
+        try: os.remove(concat_list)
+        except Exception: pass
+        
+    print(f"  -> Video Rendered with Zoom & Fade: {OUTPUT_VIDEO} (Exact 15:00.00)")
 
 def generate_thumbnail(slides, theme):
     """Creates a high-CTR 16:9 YouTube Thumbnail using FFmpeg HarfBuzz text rendering."""
@@ -309,10 +372,17 @@ def upload_to_youtube(theme):
 def cleanup():
     """Post-upload cleanup of temporary media files."""
     print("[Cleanup] Cleaning temporary audio, video and thumbnail files...")
-    for f in [TEMP_AUDIO, OUTPUT_VIDEO, TEMP_THUMBNAIL]:
+    for f in [TEMP_AUDIO, OUTPUT_VIDEO, TEMP_THUMBNAIL, os.path.join(BASE_DIR, "temp_concat_clips.txt"), os.path.join(BASE_DIR, "NotoSansDevanagari-Bold.ttf")]:
         if os.path.exists(f):
             try: os.remove(f)
             except Exception: pass
+    clips_dir = os.path.join(BASE_DIR, "temp_animated_clips")
+    if os.path.exists(clips_dir):
+        try:
+            for c in os.listdir(clips_dir):
+                os.remove(os.path.join(clips_dir, c))
+            os.rmdir(clips_dir)
+        except Exception: pass
     print("[Cleanup] All temporary media deleted. Workspace is clean and light.")
 
 def main():

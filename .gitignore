@@ -16,6 +16,7 @@ elevenlabs_key.txt
 sarvam_key.txt
 google_tts_service_account.json
 *.mp4
+!golden_sparkles_loop.mp4
 temp_*
 frame_*
 test_*
