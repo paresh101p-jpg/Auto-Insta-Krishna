@@ -30,6 +30,9 @@ OUTPUT_VIDEO = os.path.join(BASE_DIR, "temp_music_video_render.mp4")
 TEMP_AUDIO = os.path.join(BASE_DIR, "temp_music_video_audio.mp3")
 TEMP_THUMBNAIL = os.path.join(BASE_DIR, "temp_music_thumbnail.jpg")
 SPARKLES_LOOP = os.path.join(BASE_DIR, "golden_sparkles_loop.mp4")
+SUNO_URLS_FILE = os.path.join(BASE_DIR, "suno_music_urls.txt")
+SUNO_BACKUP_URLS_FILE = os.path.join(BASE_DIR, "suno_music_urls_backup.txt")
+SUNO_USED_URLS_FILE = os.path.join(BASE_DIR, "suno_music_used_urls.txt")
 
 # Detect FFmpeg executable
 FFMPEG_EXE = "ffmpeg"
@@ -78,9 +81,72 @@ def ensure_images():
     return sorted(slides)
 
 def mix_soundtrack():
-    """Assembles 15-Minute Flute & Tabla Master Audio from a diverse pool of authentic raga tracks."""
+    """Assembles 15-Minute Flute & Tabla Master Audio, prioritizing fresh Suno AI tracks from Catbox."""
     print("[1/4] Assembling Dynamic 15-Minute Flute & Tabla Master Audio...")
     
+    # 1. Check if User Suno AI Music URLs are available
+    suno_urls = []
+    if os.path.exists(SUNO_URLS_FILE):
+        with open(SUNO_URLS_FILE, "r", encoding="utf-8") as f:
+            suno_urls = [line.strip() for line in f if line.strip() and line.strip().startswith("http")]
+            
+    # Auto-recycle from backup if empty
+    if not suno_urls and os.path.exists(SUNO_BACKUP_URLS_FILE):
+        with open(SUNO_BACKUP_URLS_FILE, "r", encoding="utf-8") as f:
+            backup_urls = [line.strip() for line in f if line.strip() and line.strip().startswith("http")]
+        if backup_urls:
+            print("  -> Suno URL queue was empty; auto-reloading from backup pool...")
+            random.shuffle(backup_urls)
+            suno_urls = backup_urls[:]
+            with open(SUNO_URLS_FILE, "w", encoding="utf-8") as f:
+                f.write("\n".join(suno_urls) + "\n")
+
+    # If Suno URL found, download via curl and loop/master to 15:00 flat
+    while suno_urls:
+        chosen_url = suno_urls.pop(0)
+        temp_input = os.path.join(BASE_DIR, "temp_suno_input.mp3")
+        print(f"  -> Found Fresh User Suno AI Track in queue: {chosen_url}")
+        print("  -> Downloading from Catbox CDN via native curl...")
+        
+        curl_path = "curl"
+        if sys.platform == "win32" and os.path.exists(r"C:\Windows\System32\curl.exe"):
+            curl_path = r"C:\Windows\System32\curl.exe"
+            
+        dl_cmd = [curl_path, "-s", "-L", "-f", "--retry", "3", chosen_url, "-o", temp_input]
+        res = subprocess.run(dl_cmd)
+        
+        if res.returncode == 0 and os.path.exists(temp_input) and os.path.getsize(temp_input) > 50000:
+            print("  -> Download successful! Mastering and looping into 15:00 flat master soundtrack...")
+            filter_str = "afade=t=in:st=0:d=3,afade=t=out:st=896:d=4,volume=1.05"
+            master_cmd = [
+                FFMPEG_EXE, "-y",
+                "-stream_loop", "-1",
+                "-i", temp_input,
+                "-t", "900",
+                "-af", filter_str,
+                "-c:a", "libmp3lame", "-b:a", "192k",
+                TEMP_AUDIO
+            ]
+            subprocess.run(master_cmd, check=True)
+            
+            # Record used URL and update queue
+            with open(SUNO_USED_URLS_FILE, "a", encoding="utf-8") as f:
+                f.write(chosen_url + "\n")
+            with open(SUNO_URLS_FILE, "w", encoding="utf-8") as f:
+                f.write("\n".join(suno_urls) + "\n")
+                
+            try:
+                os.remove(temp_input)
+            except Exception:
+                pass
+                
+            print(f"  -> ✅ 15-Minute Master Soundtrack ready from Suno AI: {TEMP_AUDIO}")
+            return
+        else:
+            print(f"  ⚠️ Warning: Failed to download {chosen_url}, trying next track...")
+
+    # Fallback to local candidates if no Suno track is in the queue yet
+    print("  -> [Fallback] Using authentic raga pool...")
     candidates = [
         "jeremiah7-tabla-flute-106-262274.mp3",
         "boopul-indian-bansuri-flute-tarana-raga-music-525950.mp3",
@@ -96,19 +162,13 @@ def mix_soundtrack():
         "danamusic-relaxing-flute-meditation-416756.mp3",
     ]
     
-    # Filter existing tracks and shuffle
     available = [os.path.join(MUSIC_DIR, f) for f in candidates if os.path.exists(os.path.join(MUSIC_DIR, f))]
     if not available:
-        # Fallback to any mp3 in music/
         available = [os.path.join(MUSIC_DIR, f) for f in os.listdir(MUSIC_DIR) if f.lower().endswith('.mp3')]
     random.shuffle(available)
     selected_tracks = available[:3]
-    
-    # Ensure we have at least 3 tracks by repeating if needed
     while len(selected_tracks) < 3:
         selected_tracks.append(random.choice(available))
-        
-    print(f"  -> Selected Raga Tracks for Today: {[os.path.basename(t) for t in selected_tracks]}")
 
     filter_complex = (
         "[0:a][1:a]acrossfade=d=5:c1=tri:c2=tri[a01];"
@@ -128,6 +188,7 @@ def mix_soundtrack():
     ]
     subprocess.run(cmd, check=True)
     print(f"  -> Dynamic Master Soundtrack ready: {TEMP_AUDIO}")
+
 
 def render_video(slides):
     """

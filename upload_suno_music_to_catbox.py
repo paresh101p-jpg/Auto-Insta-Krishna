@@ -1,0 +1,114 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+"""
+Upload Suno AI Music Tracks to Catbox CDN & Sync URL Queue to GitHub
+- Checks 'user_suno_music/' for any audio files (.mp3, .wav, .m4a)
+- Uploads them to Catbox CDN (files.catbox.moe)
+- Appends URLs to 'suno_music_urls.txt' and 'suno_music_urls_backup.txt'
+- Moves processed files to 'user_suno_music/uploaded/'
+- Automatically commits and pushes to GitHub so GitHub Actions has the fresh tracks ready
+"""
+
+import os
+import sys
+import time
+import shutil
+import subprocess
+
+if sys.platform == "win32":
+    sys.stdout.reconfigure(encoding="utf-8")
+
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+MUSIC_INBOX = os.path.join(BASE_DIR, "user_suno_music")
+UPLOADED_DIR = os.path.join(MUSIC_INBOX, "uploaded")
+URLS_FILE = os.path.join(BASE_DIR, "suno_music_urls.txt")
+BACKUP_URLS_FILE = os.path.join(BASE_DIR, "suno_music_urls_backup.txt")
+
+os.makedirs(MUSIC_INBOX, exist_ok=True)
+os.makedirs(UPLOADED_DIR, exist_ok=True)
+
+def upload_file_to_catbox(file_path, retries=3):
+    curl_path = "curl"
+    if sys.platform == "win32" and os.path.exists(r"C:\Windows\System32\curl.exe"):
+        curl_path = r"C:\Windows\System32\curl.exe"
+
+    cmd = [
+        curl_path, "-k", "-s",
+        "-F", "reqtype=fileupload",
+        "-F", f"fileToUpload=@{file_path}",
+        "https://catbox.moe/user/api.php"
+    ]
+    for attempt in range(retries):
+        try:
+            res = subprocess.run(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True, timeout=60)
+            url = res.stdout.strip()
+            if url.startswith("https://files.catbox.moe/"):
+                return url
+            else:
+                print(f"  [Attempt {attempt+1}] Response: {url}")
+        except Exception as e:
+            print(f"  [Attempt {attempt+1}] Exception: {e}")
+        time.sleep(2)
+    return None
+
+def main():
+    print("=" * 65)
+    print(" 🎵 SUNO AI MUSIC UPLOADER TO CATBOX & GITHUB SYNC")
+    print("=" * 65)
+    
+    files = [
+        f for f in os.listdir(MUSIC_INBOX)
+        if os.path.isfile(os.path.join(MUSIC_INBOX, f))
+        and f.lower().endswith(('.mp3', '.wav', '.m4a'))
+    ]
+    
+    if not files:
+        print(f"\n⚠️  Koi nayi audio file nahi mili 'user_suno_music/' folder me.")
+        print(f"👉 Kripya apni Suno AI ki .mp3 file yahan dalein:")
+        print(f"   {MUSIC_INBOX}")
+        return
+
+    print(f"\nFound {len(files)} new music track(s) to upload:\n")
+    uploaded_urls = []
+
+    for idx, fname in enumerate(files, 1):
+        fpath = os.path.join(MUSIC_INBOX, fname)
+        size_mb = os.path.getsize(fpath) / (1024 * 1024)
+        print(f"[{idx}/{len(files)}] Uploading: {fname} ({size_mb:.2f} MB)...")
+        
+        url = upload_file_to_catbox(fpath)
+        if url:
+            print(f"  ✅ Uploaded successfully -> {url}")
+            uploaded_urls.append(url)
+            
+            # Append to URL queue and backup
+            with open(URLS_FILE, "a", encoding="utf-8") as f:
+                f.write(url + "\n")
+            with open(BACKUP_URLS_FILE, "a", encoding="utf-8") as f:
+                f.write(url + "\n")
+                
+            # Move to uploaded/
+            dest_path = os.path.join(UPLOADED_DIR, fname)
+            if os.path.exists(dest_path):
+                dest_path = os.path.join(UPLOADED_DIR, f"{int(time.time())}_{fname}")
+            shutil.move(fpath, dest_path)
+        else:
+            print(f"  ❌ Upload failed for {fname}. Retain in folder.")
+
+    if uploaded_urls:
+        print("\n" + "=" * 65)
+        print(f"Successfully uploaded {len(uploaded_urls)} track(s) to Catbox!")
+        print("Now pushing URL queue to GitHub...")
+        print("=" * 65)
+        
+        try:
+            subprocess.run(["git", "pull", "--rebase", "origin", "master"], cwd=BASE_DIR, check=False)
+            subprocess.run(["git", "add", "suno_music_urls.txt", "suno_music_urls_backup.txt"], cwd=BASE_DIR, check=True)
+            subprocess.run(["git", "commit", "-m", f"Add {len(uploaded_urls)} new Suno AI music track URLs to queue"], cwd=BASE_DIR, check=True)
+            subprocess.run(["git", "push", "origin", "master"], cwd=BASE_DIR, check=True)
+            print("🚀 GitHub synced successfully! Video pipeline is ready to pick this up.")
+        except Exception as e:
+            print(f"⚠️ Git push failed or nothing to commit: {e}")
+
+if __name__ == "__main__":
+    main()
