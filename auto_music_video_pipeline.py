@@ -489,6 +489,8 @@ def cleanup():
 def main():
     slides = ensure_images()
     random.shuffle(slides)
+    if len(slides) > 12:
+        slides = slides[:12]
     theme = random.choice(MEDITATION_THEMES)
     mix_soundtrack()
     render_video(slides)
