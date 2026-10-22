@@ -86,9 +86,12 @@ Whenever you are generating video reels or YouTube Shorts from images (whether b
   - MUST split into natural breathing clauses at conjunctions (`जब... तब...`, `लेकिन...`, `क्योंकि...`, `और...`, commas) with `...` and 350ms–500ms pauses between thoughts.
   - Audio Mastering: Apply studio warmth (`bass=g=3:f=160,treble=g=2:f=3200`) and subtle divine room ambiance (`aecho=0.8:0.7:30:0.10`).
 
-### 4. Background Music (Flute / Bansuri)
-- ALWAYS use Lord Krishna devotional flute/bansuri tracks from the project's music library (`Auto-Insta-Krishna/music/`).
-- Flute volume MUST be softly balanced at **14% - 15%** so the voice is crystal clear and prominent (voice at 115% volume).
+### 4. Background Music & AI Music Generation Rules (Strict Negative Constraint)
+- **STRICT PROHIBITION ON `Auto-Insta-Krishna/music/`**: NEVER use, pick, copy, or read any music files from `Auto-Insta-Krishna/music/` under ANY circumstance. Using pre-existing tracks from this folder is 100% STRICTLY FORBIDDEN.
+- **ALWAYS GENERATE BRAND NEW FRESH AI MUSIC**: Every single music video or BGM track MUST be newly, freshly generated using AI (e.g. AI Music generation engines / models / Suno AI). Never reuse old pre-recorded files.
+- **True Melody & Rhythm (Taal & Dhun)**: AI music must have authentic Indian classical Bansuri flute melody and real Tabla beats/rhythm. Never produce empty or robotic monotone beeps.
+- **Clean Visuals (No Quotes/Thoughts)**: For dedicated music videos, NEVER use Instagram quote/thought images. Always generate clean, 100% new, 16:9 cinematic Lord Krishna images without any written text, quotes, or thoughts.
+- Flute volume MUST be softly balanced at **14% - 15%** for voice reels, and 100% full master for music videos.
 - BGM MUST have a smooth **1.2 to 1.5-second fade-out** at the end.
 - Voice delay: Start the voice 0.6 to 0.7 seconds after video begins, allowing the viewer to first hear the flute music and experience the unblur transition.
 

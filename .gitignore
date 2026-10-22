@@ -15,3 +15,7 @@ gemini_key.txt
 elevenlabs_key.txt
 sarvam_key.txt
 google_tts_service_account.json
+*.mp4
+temp_*
+frame_*
+test_*

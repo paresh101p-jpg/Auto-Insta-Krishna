@@ -1,0 +1,51 @@
+name: Daily Krishna AI Music Video (15-Min Meditation)
+
+on:
+  workflow_dispatch: # Allows manual trigger from GitHub UI
+  repository_dispatch: # Allows external triggers from https://cron-job.org/
+    types: [generate_music_video, daily_music_video]
+  schedule:
+    # Daily at 04:30 UTC = 10:00 AM IST (or trigger via cron-job.org anytime)
+    - cron: '30 4 * * *'
+
+concurrency:
+  group: krishna-music-video-upload
+  cancel-in-progress: false
+
+jobs:
+  generate-and-upload-music-video:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+
+      - name: Install System Dependencies (FFmpeg & Devanagari Fonts)
+        run: sudo apt-get update && sudo apt-get install -y ffmpeg fonts-deva fonts-noto-core
+
+      - name: Install Python Dependencies
+        run: |
+          pip install -r requirements.txt || true
+          pip install google-genai pillow requests
+
+      - name: Generate and Upload 15-Min Golden Theme Music Video
+        env:
+          YOUTUBE_CLIENT_ID: ${{ secrets.YOUTUBE_CLIENT_ID }}
+          YOUTUBE_CLIENT_SECRET: ${{ secrets.YOUTUBE_CLIENT_SECRET }}
+          YOUTUBE_REFRESH_TOKEN: ${{ secrets.YOUTUBE_REFRESH_TOKEN }}
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+        run: |
+          python -u auto_music_video_pipeline.py
+
+      - name: Auto-Cleanup Old Temporary Music Video Media
+        run: |
+          # Deletes generated temporary slides, audio, and videos so repo stays clean
+          rm -rf temp_* music_video_temp_* *.mp4 || true
+          echo "Temporary media cleaned up successfully."
