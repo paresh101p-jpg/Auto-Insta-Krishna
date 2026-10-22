@@ -10,6 +10,17 @@ Whenever you are instructed to generate images for "Pooja" or "Krishna", ALWAYS 
 
 This rule is mandatory and must be strictly followed to keep the post backlog balanced between the two bots.
 
+# Strict Account Separation & Content Segregation Rule (Krishna vs Pooja)
+1. **100% Zero-Leak Isolation**:
+   - Lord Krishna content (images, reels, audio, quotes, and URLs) MUST NEVER enter `Auto-Insta-Pooja`.
+   - Pooja content (images, reels, URLs) MUST NEVER enter `Auto-Insta-Krishna`.
+   - Both repositories, bots, image folders, and URL queues are 100% isolated and independent.
+2. **Dedicated Queues & Scripts**:
+   - `Auto-Insta-Krishna` strictly reads and writes to its own folders (`Auto-Insta-Krishna/Images/`, `Auto-Insta-Krishna/music_video_images/`) and its own URL queues (`images_urls.txt`, `reels_urls.txt`, `youtube_reels_urls.txt`, `suno_music_urls.txt`).
+   - `Auto-Insta-Pooja` strictly reads and writes to its own folders (`Auto-Insta-Pooja/images/`) and its own URL queues (`images_urls.txt`, `reels_urls.txt`).
+   - NEVER copy, move, mix, or cross-reference any file between these two directories under any circumstance.
+
+
 # Unique Quotes for Krishna Images
 Whenever you generate AI images for Krishna that include text/quotes:
 1. ALWAYS read the file `e:\Paresh\Auto Post\Auto-Insta-Krishna\quotes.txt`.
