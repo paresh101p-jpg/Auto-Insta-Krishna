@@ -42,28 +42,28 @@ MEDITATION_THEMES = [
         "badge": "15 MIN DEEP MEDITATION",
         "hindi_main": "दिव्य बांसुरी एवं तबला संगीत",
         "hindi_sub": "तनाव दूर करें और असीम शांति पाएं",
-        "title": "15 Min Divine Krishna Flute & Tabla | Deep Meditation & Stress Relief Music | श्री कृष्ण बांसुरी",
+        "title": "15 Min Divine Krishna Flute & Tabla | Deep Meditation Music",
         "tags": ["Krishna Flute", "Deep Meditation", "Stress Relief", "Peaceful Music", "Bansuri Meditation", "Krishna Bhajan Instrumental", "Radha Krishna", "Relaxing Music"]
     },
     {
         "badge": "INNER PEACE & HEALING",
         "hindi_main": "श्री कृष्ण अमृत बाँसुरी",
         "hindi_sub": "मन की शांति और गहरी नींद के लिए",
-        "title": "श्री कृष्ण दिव्य बाँसुरी धुन | 15 Minute Inner Peace & Deep Sleep Music | Krishna Vibez",
+        "title": "श्री कृष्ण दिव्य बाँसुरी धुन | 15 Min Inner Peace & Deep Sleep",
         "tags": ["Krishna Flute Meditation", "Deep Sleep Music", "Inner Peace", "Bansuri Dhun", "Spiritual Relaxation", "Calm Mind", "Healing Music", "Radhe Krishna"]
     },
     {
         "badge": "432 Hz SACRED VIBES",
         "hindi_main": "राधे कृष्ण पावन धुन",
         "hindi_sub": "सकारात्मक ऊर्जा और आत्मिक सुकून",
-        "title": "Sacred Krishna Flute for Positive Energy | 15 Min Relaxation & Focus Music | बाँसुरी वादन",
+        "title": "Sacred Krishna Flute for Positive Energy | 15 Min Relaxation",
         "tags": ["432Hz Music", "Positive Energy Music", "Krishna Flute", "Focus Music", "Morning Meditation", "Yoga Music", "Bansuri Tabla Jugalbandi"]
     },
     {
         "badge": "STRESS RELIEF & CALM",
         "hindi_main": "मन को शांत करने वाला संगीत",
         "hindi_sub": "दिव्य शांति और विश्राम का अनुभव",
-        "title": "Calming Krishna Flute Music for Stress Relief & Overthinking | ध्यान और विश्राम | Krishna Vibez",
+        "title": "Calming Krishna Flute for Stress Relief | ध्यान एवं विश्राम संगीत",
         "tags": ["Stress Relief Music", "Overthinking Relief", "Peaceful Bansuri", "Meditation Music Hindi", "Krishna Vibez", "Spiritual Music"]
     }
 ]
@@ -225,7 +225,11 @@ def upload_to_youtube(theme):
     access_token = resp.json().get("access_token")
 
     # Resumable Video Upload
-    title = f"{theme['title']} | Krishna Vibez"
+    raw_title = theme.get("title", "15 Min Divine Krishna Flute & Tabla")
+    title = f"{raw_title} | Krishna Vibez"
+    if len(title) > 95:
+        title = title[:95]
+    title = title.replace("<", "").replace(">", "").strip()
     description = (
         f"🌸 15 Minute Peaceful Divine Krishna Flute (Bansuri) & Live Tabla Meditation Music.\n\n"
         f"🌿 Theme: {theme['hindi_main']} — {theme['hindi_sub']}\n\n"
