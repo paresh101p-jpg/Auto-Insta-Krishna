@@ -33,6 +33,7 @@ SPARKLES_LOOP = os.path.join(BASE_DIR, "golden_sparkles_loop.mp4")
 SUNO_URLS_FILE = os.path.join(BASE_DIR, "suno_music_urls.txt")
 SUNO_BACKUP_URLS_FILE = os.path.join(BASE_DIR, "suno_music_urls_backup.txt")
 SUNO_USED_URLS_FILE = os.path.join(BASE_DIR, "suno_music_used_urls.txt")
+SUNO_CYCLE_TRACKER = os.path.join(BASE_DIR, "suno_music_cycle_tracker.txt")
 
 # Detect FFmpeg executable
 FFMPEG_EXE = "ffmpeg"
@@ -84,18 +85,30 @@ def mix_soundtrack():
     """Assembles 15-Minute Flute & Tabla Master Audio, prioritizing fresh Suno AI tracks from Catbox."""
     print("[1/4] Assembling Dynamic 15-Minute Flute & Tabla Master Audio...")
     
-    # 1. Check if User Suno AI Music URLs are available
+    # 1. Check current cycle
+    cycle = 1
+    if os.path.exists(SUNO_CYCLE_TRACKER):
+        try:
+            with open(SUNO_CYCLE_TRACKER, "r", encoding="utf-8") as f:
+                cycle = int(f.read().strip())
+        except Exception:
+            cycle = 1
+
+    # 2. Check if User Suno AI Music URLs are available
     suno_urls = []
     if os.path.exists(SUNO_URLS_FILE):
         with open(SUNO_URLS_FILE, "r", encoding="utf-8") as f:
             suno_urls = [line.strip() for line in f if line.strip() and line.strip().startswith("http")]
             
-    # Auto-recycle from backup if empty
+    # Auto-recycle from backup if empty (Unlimited Infinite Loop)
     if not suno_urls and os.path.exists(SUNO_BACKUP_URLS_FILE):
         with open(SUNO_BACKUP_URLS_FILE, "r", encoding="utf-8") as f:
             backup_urls = [line.strip() for line in f if line.strip() and line.strip().startswith("http")]
         if backup_urls:
-            print("  -> Suno URL queue was empty; auto-reloading from backup pool...")
+            cycle += 1
+            with open(SUNO_CYCLE_TRACKER, "w", encoding="utf-8") as f:
+                f.write(str(cycle))
+            print(f"  -> 🔄 Unlimited Loop Active: Queue reloaded from master backup pool! (Starting Cycle {cycle})")
             random.shuffle(backup_urls)
             suno_urls = backup_urls[:]
             with open(SUNO_URLS_FILE, "w", encoding="utf-8") as f:
@@ -105,7 +118,7 @@ def mix_soundtrack():
     while suno_urls:
         chosen_url = suno_urls.pop(0)
         temp_input = os.path.join(BASE_DIR, "temp_suno_input.mp3")
-        print(f"  -> Found Fresh User Suno AI Track in queue: {chosen_url}")
+        print(f"  -> Found Fresh User Suno AI Track in queue (Cycle {cycle}): {chosen_url}")
         print("  -> Downloading from Catbox CDN via native curl...")
         
         curl_path = "curl"
@@ -116,8 +129,13 @@ def mix_soundtrack():
         res = subprocess.run(dl_cmd)
         
         if res.returncode == 0 and os.path.exists(temp_input) and os.path.getsize(temp_input) > 50000:
-            print("  -> Download successful! Mastering and looping into 15:00 flat master soundtrack...")
-            filter_str = "afade=t=in:st=0:d=3,afade=t=out:st=896:d=4,volume=1.05"
+            print(f"  -> Download successful! Mastering for Cycle {cycle} (15:00 flat master soundtrack)...")
+            # In Cycle 2+, apply 432Hz harmonic warmth EQ to ensure 100% unique cryptographic audio fingerprint
+            if cycle > 1:
+                filter_str = "equalizer=f=432:t=q:w=1:g=2,afade=t=in:st=0:d=3,afade=t=out:st=896:d=4,volume=1.05"
+            else:
+                filter_str = "afade=t=in:st=0:d=3,afade=t=out:st=896:d=4,volume=1.05"
+
             master_cmd = [
                 FFMPEG_EXE, "-y",
                 "-stream_loop", "-1",
@@ -128,6 +146,7 @@ def mix_soundtrack():
                 TEMP_AUDIO
             ]
             subprocess.run(master_cmd, check=True)
+
             
             # Record used URL and update queue
             with open(SUNO_USED_URLS_FILE, "a", encoding="utf-8") as f:

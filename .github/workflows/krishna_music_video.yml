@@ -54,7 +54,7 @@ jobs:
         run: |
           git config user.name "Krishna Vibez Music Bot"
           git config user.email "bot@krishnavibez.in"
-          git add suno_music_urls.txt suno_music_used_urls.txt || true
+          git add suno_music_urls.txt suno_music_used_urls.txt suno_music_cycle_tracker.txt || true
           git diff --staged --quiet || git commit -m "Auto-posted 15-min Music Video and updated Suno music queue [skip ci]"
           for i in 1 2 3 4 5; do
             git pull --rebase origin master || true
