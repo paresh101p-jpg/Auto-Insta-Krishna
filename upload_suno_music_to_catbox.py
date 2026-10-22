@@ -70,33 +70,40 @@ def main():
 
     print(f"\nFound {len(files)} new music track(s) to upload:\n")
     uploaded_urls = []
+    import threading
+    lock = threading.Lock()
 
-    for idx, fname in enumerate(files, 1):
+    def upload_worker(item):
+        idx, fname = item
         fpath = os.path.join(MUSIC_INBOX, fname)
         size_mb = os.path.getsize(fpath) / (1024 * 1024)
         print(f"[{idx}/{len(files)}] Uploading: {fname} ({size_mb:.2f} MB)...")
         
         url = upload_file_to_catbox(fpath)
         if url:
-            print(f"  ✅ Uploaded successfully -> {url}")
-            uploaded_urls.append(url)
-            
-            # Append to URL queue and backup
-            with open(URLS_FILE, "a", encoding="utf-8") as f:
-                f.write(url + "\n")
-            with open(BACKUP_URLS_FILE, "a", encoding="utf-8") as f:
-                f.write(url + "\n")
-                
-            # Move to uploaded/
+            print(f"  [SUCCESS] {fname} -> {url}")
+            with lock:
+                uploaded_urls.append(url)
+                with open(URLS_FILE, "a", encoding="utf-8") as f:
+                    f.write(url + "\n")
+                with open(BACKUP_URLS_FILE, "a", encoding="utf-8") as f:
+                    f.write(url + "\n")
             dest_path = os.path.join(UPLOADED_DIR, fname)
             if os.path.exists(dest_path):
                 dest_path = os.path.join(UPLOADED_DIR, f"{int(time.time())}_{fname}")
             shutil.move(fpath, dest_path)
+            return url
         else:
-            print(f"  ❌ Upload failed for {fname}. Retain in folder.")
+            print(f"  [FAIL] Upload failed for {fname}. Retaining in folder.")
+            return None
+
+    from concurrent.futures import ThreadPoolExecutor
+    with ThreadPoolExecutor(max_workers=3) as executor:
+        list(executor.map(upload_worker, enumerate(files, 1)))
 
     if uploaded_urls:
         print("\n" + "=" * 65)
+
         print(f"Successfully uploaded {len(uploaded_urls)} track(s) to Catbox!")
         print("Now pushing URL queue to GitHub...")
         print("=" * 65)
