@@ -155,13 +155,21 @@ def generate_thumbnail(slides, theme):
     print("[3/4] Generating AI High-CTR YouTube Thumbnail...")
     selected_slide = random.choice(slides)
     
+    local_font = os.path.join(BASE_DIR, "NotoSansDevanagari-Bold.ttf")
+    if not os.path.exists("C:/Windows/Fonts/Nirmala.ttc") and not os.path.exists(local_font):
+        try:
+            f_url = "https://github.com/googlefonts/noto-fonts/raw/main/hinted/ttf/NotoSansDevanagari/NotoSansDevanagari-Bold.ttf"
+            r = requests.get(f_url, timeout=10)
+            if r.status_code == 200:
+                with open(local_font, "wb") as f:
+                    f.write(r.content)
+        except Exception:
+            pass
+
     font_candidates = [
+        local_font,
         "C:/Windows/Fonts/Nirmala.ttc",
         "C:/Windows/Fonts/arialbd.ttf",
-        "C:/Windows/Fonts/arial.ttf",
-        "/usr/share/fonts/truetype/noto/NotoSansDevanagari-Bold.ttf",
-        "/usr/share/fonts/truetype/fonts-deva-extra/gargi.ttf",
-        "/usr/share/fonts/truetype/fonts-deva-extra/Samyak-Devanagari.ttf",
         "/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf",
         "arial.ttf"
     ]

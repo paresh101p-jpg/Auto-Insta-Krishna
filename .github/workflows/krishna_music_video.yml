@@ -27,8 +27,8 @@ jobs:
         with:
           python-version: '3.11'
 
-      - name: Install System Dependencies (FFmpeg & Devanagari Fonts)
-        run: sudo apt-get update && sudo apt-get install -y ffmpeg fonts-deva fonts-noto-core
+      - name: Install System Dependencies (FFmpeg)
+        run: sudo apt-get update && sudo apt-get install -y ffmpeg
 
       - name: Install Python Dependencies
         run: |
