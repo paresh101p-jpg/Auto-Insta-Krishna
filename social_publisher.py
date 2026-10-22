@@ -347,24 +347,47 @@ def publish_to_threads(media_url, caption, post_url, is_video=False):
         creation_id = create_data.get("id")
 
         if not creation_id:
-            print(f"[Threads] ⚠️ Failed to create container: {create_data}")
-            return False
+            print(f"[Threads] ⚠️ Failed to create {media_type} container: {create_data}. Retrying as TEXT thread...")
+            text_payload = {
+                "media_type": "TEXT",
+                "text": thread_text,
+                "access_token": access_token
+            }
+            res_create = requests.post(container_url, data=text_payload, headers=headers, timeout=20)
+            create_data = res_create.json()
+            creation_id = create_data.get("id")
+            if not creation_id:
+                print(f"[Threads] ⚠️ Text fallback also failed: {create_data}")
+                return False
 
         # For video: poll container status until Meta Threads finishes transcoding
-        if is_video:
+        if is_video and create_payload.get("media_type") == "VIDEO":
             status_url = f"https://graph.threads.net/v1.0/{creation_id}?fields=status,error_message&access_token={access_token}"
+            video_ok = False
             for _ in range(12):  # Poll up to 60s
                 time.sleep(5)
                 try:
                     s_res = requests.get(status_url, timeout=10).json()
                     st = s_res.get("status")
                     if st == "FINISHED":
+                        video_ok = True
                         break
                     elif st == "ERROR":
                         print(f"[Threads] Video processing failed: {s_res}")
-                        return False
+                        break
                 except Exception:
                     pass
+            if not video_ok:
+                print("[Threads] Video failed on Threads. Publishing as TEXT thread with direct link instead...")
+                text_payload = {
+                    "media_type": "TEXT",
+                    "text": thread_text,
+                    "access_token": access_token
+                }
+                res_create = requests.post(container_url, data=text_payload, headers=headers, timeout=20)
+                creation_id = res_create.json().get("id")
+                if not creation_id:
+                    return False
 
         # Step 2: Publish Container
         publish_url = f"https://graph.threads.net/v1.0/{user_id}/threads_publish"
