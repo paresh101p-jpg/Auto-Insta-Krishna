@@ -148,7 +148,7 @@ def get_next_media():
             while urls and attempts < 5:
                 chosen_url = random.choice(urls)
                 temp_ext = ".mp4" if is_video else ".jpg"
-                temp_file = "temp_media" + temp_ext
+                temp_file = "download_temp_media" + temp_ext
                 min_size = 500 * 1024 if is_video else 40 * 1024
                 
                 print(f"Downloading from {chosen_url} (min required size: {min_size // 1024} KB)...")
@@ -278,17 +278,18 @@ def get_next_media():
                 }
             if attempts >= 5:
                 print("⚠️ External media URLs unreachable (Catbox connection timeout/outage). Activating repository media fallback...")
-                fallback_file = "temp_media.mp4" if is_video else "temp_media.jpg"
-                if os.path.exists(fallback_file) and os.path.getsize(fallback_file) >= min_size:
-                    cdn_url = f"https://cdn.jsdelivr.net/gh/paresh101p-jpg/Auto-Insta-Krishna@master/{fallback_file}"
-                    print(f"✅ Loaded repository fallback media: {fallback_file} ({cdn_url})")
-                    return {
-                        "type": "repo_fallback",
-                        "local_path": fallback_file,
-                        "media_url": cdn_url,
-                        "is_video": is_video,
-                        "original_path": None
-                    }
+                candidates = ["fallback_media.mp4", "temp_media.mp4"] if is_video else ["fallback_media.jpg", "temp_media.jpg"]
+                for fb in candidates:
+                    if os.path.exists(fb) and os.path.getsize(fb) >= min_size:
+                        cdn_url = f"https://cdn.jsdelivr.net/gh/paresh101p-jpg/Auto-Insta-Krishna@master/{fb}"
+                        print(f"✅ Loaded repository fallback media: {fb} ({cdn_url})")
+                        return {
+                            "type": "repo_fallback",
+                            "local_path": fb,
+                            "media_url": cdn_url,
+                            "is_video": is_video,
+                            "original_path": None
+                        }
                 raise Exception("Failed to download healthy media after trying 5 different URLs and no local fallback available.")
         return None
     if next_type == "IMAGE":
