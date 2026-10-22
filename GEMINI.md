@@ -198,3 +198,25 @@ Whenever power cuts, system reboots, or execution stops, the entire pipeline is 
    - Instagram: direct link to `https://www.instagram.com/pareshpadsala_/`.
    - Facebook: direct link to `https://www.facebook.com/1808917602588221`.
    - Styled with gold hover highlights and smooth transitions.
+
+### 13. Suno AI Music & 15-Minute Lord Krishna Flute Video Pipeline Rules
+
+1. **User Suno Music Ingestion Protocol**:
+   - Whenever the USER provides Suno share URLs (e.g. `https://suno.com/s/...` or `https://suno.com/song/...`) in chat:
+     - Automatically extract the direct audio stream from Suno's CloudFront CDN (`https://d2lwuy8qc234o3.cloudfront.net/1/clip/{clip_id}.m4a`).
+     - Download the pristine audio file directly to local folder: `e:\Paresh\Auto Post\Auto-Insta-Krishna\user_suno_music\`.
+     - Automatically execute `upload_suno_music_to_catbox.py` to upload the track to Catbox CDN (`https://catbox.moe/user/api.php`).
+     - Append the direct Catbox URL to `suno_music_urls.txt` (active queue) and `suno_music_urls_backup.txt` (master backup pool).
+     - Move the processed local audio file to `user_suno_music\uploaded\` to prevent duplicate uploads.
+     - Automatically commit and push `suno_music_urls.txt` and `suno_music_urls_backup.txt` to GitHub remote `origin master`.
+
+2. **Daily 10:00 AM IST Automated Cloud Publishing**:
+   - Runs daily at 10:00 AM IST via GitHub Actions (`krishna_music_video.yml`) and `cron-job.org`.
+   - Reads the top URL from `suno_music_urls.txt` via native `curl`.
+   - Loops and masters audio seamlessly to exact 15:00.00 flat duration with 3s fade-in, 4s fade-out, and 432 Hz harmonic warmth EQ.
+   - Selects 12 random slides from the 50+ master clean image pool (`music_video_images/`), applying alternating Ken Burns Zoom-In, Pan, and Zoom-Out with 1.5s crossfades and floating golden sparkles (`golden_sparkles_loop.mp4`).
+   - Generates high-CTR Devanagari AI thumbnail, dynamic meditation title (<= 95 chars), and publishes directly to YouTube channel `Krishna Vibez`.
+   - Moves used URL to `suno_music_used_urls.txt`, updates `suno_music_urls.txt`, and commits changes with `[skip ci]`.
+   - **Infinite Auto-Recycle Loop**: When `suno_music_urls.txt` is exhausted, auto-reloads from `suno_music_urls_backup.txt`, shuffles them, increments `suno_music_cycle_tracker.txt`, and applies 432Hz anti-duplicate remastering to ensure 100% unique cryptographic file hash.
+   - **NEVER manually run the workflow**: Runs strictly on schedule or when explicitly instructed by the user.
+
