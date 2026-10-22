@@ -590,7 +590,6 @@ def post_fb_video_story(local_file):
             
         upload_headers = {
             'Authorization': f'OAuth {FB_ACCESS_TOKEN}',
-            'Content-Type': 'application/octet-stream',
             'offset': '0',
             'file_size': str(file_size)
         }
@@ -677,7 +676,6 @@ def post_ig_media(ig_account_id, caption, media_url, is_story=False, is_video=Fa
                     'Authorization': f'OAuth {FB_ACCESS_TOKEN}',
                     'offset': '0',
                     'file_size': str(file_size),
-                    'Content-Type': 'application/octet-stream'
                 }
                 up_res = requests.post(upload_uri, data=video_bytes, headers=upload_headers, timeout=60)
                 print(f"Binary transfer completed with HTTP {up_res.status_code}. Waiting for Meta transcoding...")
