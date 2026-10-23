@@ -114,6 +114,30 @@ def main():
             subprocess.run(["git", "commit", "-m", f"Add {len(uploaded_urls)} new Suno AI music track URLs to queue"], cwd=BASE_DIR, check=True)
             subprocess.run(["git", "push", "origin", "master"], cwd=BASE_DIR, check=True)
             print("🚀 GitHub synced successfully! Video pipeline is ready to pick this up.")
+            
+            # Automatic Sync to Oracle Cloud 24/7 Live Stream
+            ssh_key = r"e:\Paresh\Auto Post\ssh_oracle.key"
+            if os.path.exists(ssh_key):
+                print("📡 Syncing new tracks to 24/7 Live Stream on Oracle Cloud...")
+                for u_name in files:
+                    u_file = os.path.join(UPLOADED_DIR, u_name)
+                    if os.path.exists(u_file):
+                        subprocess.run([
+                            "scp", "-i", ssh_key, "-o", "BatchMode=yes", "-o", "StrictHostKeyChecking=no",
+                            u_file, "ubuntu@92.4.66.182:/home/ubuntu/krishna-live/music/"
+                        ], check=False)
+                remote_script = (
+                    "python3 -c \"import glob, os; "
+                    "tracks = sorted(glob.glob('/home/ubuntu/krishna-live/music/*.mp3')); "
+                    "with open('/home/ubuntu/krishna-live/audio_playlist.txt', 'w') as f: "
+                    "    for _ in range(30): "
+                    "        for t in tracks: f.write(f\\\"file '{t}'\\\\n\\\")\""
+                )
+                subprocess.run([
+                    "ssh", "-n", "-i", ssh_key, "-o", "BatchMode=yes", "-o", "StrictHostKeyChecking=no",
+                    "ubuntu@92.4.66.182", remote_script
+                ], check=False)
+                print("✅ 24/7 Live Stream playlist automatically updated on Oracle Cloud!")
         except Exception as e:
             print(f"⚠️ Git push failed or nothing to commit: {e}")
 

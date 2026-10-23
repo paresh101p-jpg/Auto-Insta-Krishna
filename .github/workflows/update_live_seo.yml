@@ -1,0 +1,33 @@
+name: Weekly 24/7 Live Stream SEO Auto-Updater
+
+on:
+  schedule:
+    # Runs every Sunday at 03:00 UTC (08:30 AM IST)
+    - cron: '0 3 * * 0'
+  workflow_dispatch: # Allows manual trigger from GitHub Actions tab anytime
+
+concurrency:
+  group: live-stream-seo-update
+  cancel-in-progress: false
+
+jobs:
+  update-seo:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.10'
+
+      - name: Install Python dependencies
+        run: pip install google-api-python-client google-auth-oauthlib google-auth-httplib2
+
+      - name: Update Live Stream Title, Description & Tags
+        env:
+          YOUTUBE_CLIENT_ID: ${{ secrets.YOUTUBE_CLIENT_ID }}
+          YOUTUBE_CLIENT_SECRET: ${{ secrets.YOUTUBE_CLIENT_SECRET }}
+          YOUTUBE_REFRESH_TOKEN: ${{ secrets.YOUTUBE_REFRESH_TOKEN }}
+        run: python -u update_live_stream_seo.py
