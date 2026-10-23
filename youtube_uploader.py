@@ -42,6 +42,7 @@ TEMP_FRAME = os.path.join(BASE_DIR, "temp_frame.jpg")
 # Official Social & Platform Links (Clickable in YouTube description)
 OFFICIAL_LINKS = {
     "website": "https://krishnavibez.in/",
+    "youtube": "https://www.youtube.com/@KrishnaVibezofficial",
     "whatsapp": "https://whatsapp.com/channel/0029VbDxJHk30LKNtj4Er62J",
     "telegram": "https://t.me/krishnavibezz",
     "instagram": "https://www.instagram.com/pareshpadsala_/",
@@ -334,6 +335,7 @@ def generate_youtube_metadata_from_video(video_path):
         "━━━━━━━━━━━━━━━━━━━━━━━━━━\n"
         "🕊️ श्री कृष्ण के दिव्य सान्निध्य और दैनिक प्रेरणा के लिए हमसे जुड़ें:\n"
         f"🌐 आधिकारिक वेबसाइट: {OFFICIAL_LINKS['website']}\n"
+        f"▶️ आधिकारिक YouTube चैनल: {OFFICIAL_LINKS['youtube']}\n"
         f"📲 WhatsApp चैनल: {OFFICIAL_LINKS['whatsapp']}\n"
         f"🕊️ Telegram चैनल: {OFFICIAL_LINKS['telegram']}\n"
         f"📸 Instagram: {OFFICIAL_LINKS['instagram']}\n"
@@ -493,6 +495,7 @@ def generate_youtube_metadata_from_video(video_path):
             "━━━━━━━━━━━━━━━━━━━━━━━━━━\n"
             "🕊️ श्री कृष्ण के दिव्य सान्निध्य और दैनिक प्रेरणा के लिए हमसे जुड़ें:\n"
             f"🌐 आधिकारिक वेबसाइट: {OFFICIAL_LINKS['website']}\n"
+            f"▶️ आधिकारिक YouTube चैनल: {OFFICIAL_LINKS['youtube']}\n"
             f"📲 WhatsApp चैनल: {OFFICIAL_LINKS['whatsapp']}\n"
             f"🕊️ Telegram चैनल: {OFFICIAL_LINKS['telegram']}\n"
             f"📸 Instagram: {OFFICIAL_LINKS['instagram']}\n"
