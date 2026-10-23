@@ -22,6 +22,9 @@ import time
 import random
 import subprocess
 import requests
+import math
+import cv2
+import numpy as np
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 MUSIC_DIR = os.path.join(BASE_DIR, "music")
@@ -209,56 +212,415 @@ def mix_soundtrack():
     print(f"  -> Dynamic Master Soundtrack ready: {TEMP_AUDIO}")
 
 
+LOGO_PATH = os.path.join(BASE_DIR, "website", "public", "assets", "logo.png")
+FEATHER_GREEN_SCREEN = os.path.join(BASE_DIR, "morpankh_green_screen.mp4")
+FEATHER_CDN_URL = "https://files.catbox.moe/d7132r.mp4"
+
+def ensure_feather_asset():
+    """Ensures morpankh_green_screen.mp4 exists; downloads from Catbox CDN fallback if missing."""
+    if not os.path.exists(FEATHER_GREEN_SCREEN) or os.path.getsize(FEATHER_GREEN_SCREEN) < 50000:
+        print("  -> Downloading authentic Morpankh green screen asset from Catbox CDN...")
+        try:
+            r = requests.get(FEATHER_CDN_URL, timeout=30)
+            if r.status_code == 200:
+                with open(FEATHER_GREEN_SCREEN, "wb") as f:
+                    f.write(r.content)
+                print(f"  -> Successfully saved Morpankh asset ({len(r.content)} bytes).")
+        except Exception as e:
+            print(f"  ⚠️ Warning: Could not download Morpankh asset: {e}")
+    return os.path.exists(FEATHER_GREEN_SCREEN)
+
+
+def create_corner_logo_badge(size=120):
+    """Creates a circular luxury glass badge with golden rim for top corner branding."""
+    if not os.path.exists(LOGO_PATH):
+        return None
+    logo = cv2.imread(LOGO_PATH, cv2.IMREAD_UNCHANGED)
+    if logo is None:
+        return None
+    resized = cv2.resize(logo, (size, size), interpolation=cv2.INTER_AREA)
+    if resized.shape[2] == 4:
+        b, g, r, a = cv2.split(resized)
+    else:
+        b, g, r = cv2.split(resized)
+        a = np.ones((size, size), dtype=np.uint8) * 255
+        
+    center = size // 2
+    radius = size // 2 - 3
+    mask = np.zeros((size, size), dtype=np.uint8)
+    cv2.circle(mask, (center, center), radius, 255, -1, lineType=cv2.LINE_AA)
+    
+    inside_circle = (mask > 0)
+    bg_backing_alpha = (inside_circle.astype(np.uint8) * 200)
+    final_alpha = np.maximum(np.minimum(a, mask), bg_backing_alpha)
+    
+    badge = np.dstack([b, g, r, final_alpha])
+    cv2.circle(badge, (center, center), radius, (50, 205, 255, 230), 2, lineType=cv2.LINE_AA)
+    cv2.circle(badge, (center, center), radius - 3, (30, 160, 220, 140), 1, lineType=cv2.LINE_AA)
+    return badge
+
+
+def load_and_key_feather_frames():
+    """Extracts, crops watermark, keys green screen, and applies golden halo."""
+    if not ensure_feather_asset():
+        return []
+    cap = cv2.VideoCapture(FEATHER_GREEN_SCREEN)
+    raw_frames = []
+    x1, x2 = 310, 970
+    y1, y2 = 20, 700
+    while True:
+        ret, frame = cap.read()
+        if not ret:
+            break
+        raw_frames.append(frame[y1:y2, x1:x2])
+    cap.release()
+    
+    keyed_glowing_frames = []
+    for f in raw_frames:
+        b = f[:, :, 0].astype(np.float32)
+        g = f[:, :, 1].astype(np.float32)
+        r = f[:, :, 2].astype(np.float32)
+        greenness = g - np.maximum(r, b)
+        alpha = np.clip(1.0 - (greenness - 25.0) / 45.0, 0.0, 1.0)
+        alpha = (alpha * 255.0).astype(np.uint8)
+        suppressed_g = np.minimum(g, np.maximum(r, b) * 1.15).astype(np.uint8)
+        clean_rgb = np.stack([f[:, :, 0], suppressed_g, f[:, :, 2]], axis=-1)
+        rgba = np.dstack([clean_rgb, alpha])
+        
+        # Golden halo around feather
+        h, w = rgba.shape[:2]
+        pad = 28
+        padded = np.zeros((h + pad*2, w + pad*2, 4), dtype=np.uint8)
+        padded[pad:pad+h, pad:pad+w] = rgba
+        pad_alpha = padded[:, :, 3]
+        
+        kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (13, 13))
+        dilated = cv2.dilate(pad_alpha, kernel, iterations=2)
+        blurred_glow = cv2.GaussianBlur(dilated, (25, 25), 0).astype(np.float32) / 255.0
+        
+        glow_b = (blurred_glow * 45).astype(np.uint8)
+        glow_g = (blurred_glow * 195).astype(np.uint8)
+        glow_r = (blurred_glow * 255).astype(np.uint8)
+        glow_a = (blurred_glow * 135).astype(np.uint8)
+        glow_rgba = np.dstack([glow_b, glow_g, glow_r, glow_a])
+        
+        f_a = padded[:, :, 3:].astype(np.float32) / 255.0
+        g_a = glow_rgba[:, :, 3:].astype(np.float32) / 255.0 * (1.0 - f_a)
+        out_rgb = padded[:, :, :3].astype(np.float32) * f_a + glow_rgba[:, :, :3].astype(np.float32) * g_a
+        out_a = np.clip(f_a + g_a, 0.0, 1.0) * 255.0
+        keyed_glowing_frames.append(np.dstack([out_rgb.astype(np.uint8), out_a.astype(np.uint8)]))
+        
+    return keyed_glowing_frames
+
+
+def overlay_rgba(bg_img, fg_rgba, center_x, center_y, scale, angle_deg):
+    fh, fw = fg_rgba.shape[:2]
+    new_w = int(fw * scale)
+    new_h = int(fh * scale)
+    if new_w <= 0 or new_h <= 0:
+        return
+    resized = cv2.resize(fg_rgba, (new_w, new_h), interpolation=cv2.INTER_LINEAR)
+    if abs(angle_deg) > 0.5:
+        M = cv2.getRotationMatrix2D((new_w / 2, new_h / 2), angle_deg, 1.0)
+        cos = np.abs(M[0, 0])
+        sin = np.abs(M[0, 1])
+        bound_w = int((new_h * sin) + (new_w * cos))
+        bound_h = int((new_h * cos) + (new_w * sin))
+        M[0, 2] += (bound_w / 2) - new_w / 2
+        M[1, 2] += (bound_h / 2) - new_h / 2
+        rotated = cv2.warpAffine(resized, M, (bound_w, bound_h), flags=cv2.INTER_LINEAR, borderMode=cv2.BORDER_CONSTANT, borderValue=(0,0,0,0))
+    else:
+        rotated = resized
+        
+    rw, rh = rotated.shape[1], rotated.shape[0]
+    x1 = int(center_x - rw / 2)
+    y1 = int(center_y - rh / 2)
+    x2 = x1 + rw
+    y2 = y1 + rh
+    
+    bg_h, bg_w = bg_img.shape[:2]
+    cx1 = max(0, x1)
+    cy1 = max(0, y1)
+    cx2 = min(bg_w, x2)
+    cy2 = min(bg_h, y2)
+    if cx2 <= cx1 or cy2 <= cy1:
+        return
+        
+    fx1 = cx1 - x1
+    fy1 = cy1 - y1
+    fx2 = fx1 + (cx2 - cx1)
+    fy2 = fy1 + (cy2 - cy1)
+    
+    fg_crop = rotated[fy1:fy2, fx1:fx2]
+    alpha = fg_crop[:, :, 3:].astype(np.float32) / 255.0
+    bg_crop = bg_img[cy1:cy2, cx1:cx2].astype(np.float32)
+    blended = fg_crop[:, :, :3].astype(np.float32) * alpha + bg_crop * (1.0 - alpha)
+    bg_img[cy1:cy2, cx1:cx2] = blended.astype(np.uint8)
+
+
+def get_image_adapted_gold(bg_img):
+    avg_b = float(np.mean(bg_img[:, :, 0]))
+    avg_g = float(np.mean(bg_img[:, :, 1]))
+    avg_r = float(np.mean(bg_img[:, :, 2]))
+    ambient = np.array([avg_b, avg_g, avg_r])
+    pure_gold = np.array([45.0, 205.0, 255.0])
+    adapted = 0.75 * pure_gold + 0.25 * ambient
+    return adapted
+
+
+def prebuild_sparkle_sprites(adapted_gold):
+    sprites = {}
+    radii = [2.5, 3.5, 4.5, 5.5, 6.5]
+    for r in radii:
+        for star in [False, True]:
+            dim = int(r * 9) | 1
+            cx = dim // 2
+            cy = dim // 2
+            stamp = np.zeros((dim, dim, 4), dtype=np.uint8)
+            
+            def draw_layer(rad_mult, alpha_val, col):
+                cr = int(r * rad_mult)
+                if cr <= 0: return
+                layer = np.zeros((dim, dim, 3), dtype=np.uint8)
+                cv2.circle(layer, (cx, cy), cr, [int(c) for c in col], -1, lineType=cv2.LINE_AA)
+                l_mask = np.zeros((dim, dim), dtype=np.uint8)
+                cv2.circle(l_mask, (cx, cy), cr, 255, -1, lineType=cv2.LINE_AA)
+                l_blur = cv2.GaussianBlur(l_mask, (cr*2+1, cr*2+1), 0).astype(np.float32) / 255.0 * alpha_val
+                cur_a = stamp[:, :, 3].astype(np.float32) / 255.0
+                add_a = l_blur
+                out_a = np.clip(cur_a + add_a, 0.0, 1.0)
+                for c in range(3):
+                    cur_c = stamp[:, :, c].astype(np.float32)
+                    stamp[:, :, c] = np.clip(cur_c + col[c] * add_a, 0, 255).astype(np.uint8)
+                stamp[:, :, 3] = (out_a * 255.0).astype(np.uint8)
+
+            draw_layer(3.6, 0.25, adapted_gold)
+            draw_layer(2.0, 0.45, adapted_gold)
+            draw_layer(1.1, 0.70, adapted_gold)
+            core_col = 0.65 * np.array([255, 255, 255]) + 0.35 * adapted_gold
+            draw_layer(0.55, 0.95, core_col)
+            
+            if star and r >= 3.5:
+                ray_len = int(r * 3.5)
+                ray_img = np.zeros((dim, dim, 4), dtype=np.uint8)
+                cv2.line(ray_img, (cx - ray_len, cy), (cx + ray_len, cy), (int(core_col[0]), int(core_col[1]), int(core_col[2]), 200), 1, lineType=cv2.LINE_AA)
+                cv2.line(ray_img, (cx, cy - ray_len), (cx, cy + ray_len), (int(core_col[0]), int(core_col[1]), int(core_col[2]), 200), 1, lineType=cv2.LINE_AA)
+                ra = ray_img[:, :, 3].astype(np.float32) / 255.0
+                sa = stamp[:, :, 3].astype(np.float32) / 255.0
+                out_a = np.clip(sa + ra, 0.0, 1.0)
+                for c in range(3):
+                    stamp[:, :, c] = np.clip(stamp[:, :, c] * (1.0 - ra) + ray_img[:, :, c] * ra, 0, 255).astype(np.uint8)
+                stamp[:, :, 3] = (out_a * 255.0).astype(np.uint8)
+
+            sprites[(r, star)] = stamp
+    return sprites
+
+
+def fast_draw_sparkle(target, cx, cy, rad, star, brightness, sprites):
+    if brightness <= 0.08: return
+    keys = [2.5, 3.5, 4.5, 5.5, 6.5]
+    nearest_r = min(keys, key=lambda k: abs(k - rad))
+    stamp = sprites.get((nearest_r, star))
+    if stamp is None: return
+    sh, sw = stamp.shape[:2]
+    x1, y1 = int(cx - sw / 2), int(cy - sh / 2)
+    x2, y2 = x1 + sw, y1 + sh
+    bg_h, bg_w = target.shape[:2]
+    cx1, cy1 = max(0, x1), max(0, y1)
+    cx2, cy2 = min(bg_w, x2), min(bg_h, y2)
+    if cx2 <= cx1 or cy2 <= cy1: return
+    sx1, sy1 = cx1 - x1, cy1 - y1
+    sx2, sy2 = sx1 + (cx2 - cx1), sy1 + (cy2 - cy1)
+    stamp_crop = stamp[sy1:sy2, sx1:sx2]
+    alpha = (stamp_crop[:, :, 3].astype(np.float32) / 255.0) * brightness
+    alpha = np.dstack([alpha, alpha, alpha])
+    bg_crop = target[cy1:cy2, cx1:cx2].astype(np.float32)
+    fg_rgb = stamp_crop[:, :, :3].astype(np.float32)
+    target[cy1:cy2, cx1:cx2] = (fg_rgb * alpha + bg_crop * (1.0 - alpha)).astype(np.uint8)
+
+
+def generate_feather_configs(seed=None):
+    rng = random.Random(seed)
+    return [
+        {
+            "scale": rng.uniform(0.58, 0.65), "offset": rng.randint(0, 30),
+            "base_x": rng.uniform(180, 240), "base_y": rng.uniform(350, 420),
+            "type": "breeze", "amp_x": rng.uniform(25, 40), "amp_y": rng.uniform(20, 35),
+            "freq_x": rng.uniform(0.7, 0.9), "freq_y": rng.uniform(1.0, 1.3),
+            "base_rot": rng.uniform(-10, -5), "amp_rot": rng.uniform(5, 8),
+        },
+        {
+            "scale": rng.uniform(0.40, 0.46), "offset": rng.randint(45, 75),
+            "base_x": rng.uniform(1500, 1600), "base_y": rng.uniform(320, 400),
+            "type": "breeze", "amp_x": rng.uniform(20, 35), "amp_y": rng.uniform(18, 30),
+            "freq_x": rng.uniform(0.65, 0.85), "freq_y": rng.uniform(0.95, 1.2),
+            "base_rot": rng.uniform(6, 12), "amp_rot": rng.uniform(4, 7),
+        },
+        {
+            "scale": rng.uniform(0.30, 0.36), "offset": rng.randint(90, 125),
+            "type": "drift", "drift_cycle": rng.uniform(16.0, 21.0),
+            "drift_phase": rng.uniform(0.0, 10.0), "base_x": rng.uniform(700, 850),
+            "amp_x": rng.uniform(80, 120), "freq_x": rng.uniform(1.1, 1.4),
+            "amp_rot": rng.uniform(10, 15),
+        },
+        {
+            "scale": rng.uniform(0.22, 0.28), "offset": rng.randint(140, 175),
+            "type": "drift", "drift_cycle": rng.uniform(19.0, 25.0),
+            "drift_phase": rng.uniform(10.0, 20.0), "base_x": rng.uniform(420, 560),
+            "amp_x": rng.uniform(60, 95), "freq_x": rng.uniform(1.0, 1.3),
+            "amp_rot": rng.uniform(8, 14),
+        },
+        {
+            "scale": rng.uniform(0.16, 0.21), "offset": rng.randint(70, 100),
+            "base_x": rng.uniform(1150, 1280), "base_y": rng.uniform(140, 220),
+            "type": "breeze", "amp_x": rng.uniform(30, 45), "amp_y": rng.uniform(15, 25),
+            "freq_x": rng.uniform(0.5, 0.7), "freq_y": rng.uniform(0.8, 1.0),
+            "base_rot": rng.uniform(4, 8), "amp_rot": rng.uniform(3, 5),
+        }
+    ]
+
+
+def render_animated_slide_clip(slide_path, clip_output_path, feather_frames, logo_badge, slide_idx=0, duration=25, fps=25):
+    """
+    Renders a single 25-second slide clip with:
+    - Subpixel 64-bit Floating Bicubic Ken Burns Zoom & Pan (ZERO Jhatka)
+    - 5 Asynchronous Multi-Size Glowing Morpankh Feathers (Staggered motion)
+    - 45 Floating Golden Sparkles with Image-Harmonized Tint
+    - Circular Luxury Krishna Vibez Logo in Top Corner
+    - Smooth 1.2s Fade-In & 1.2s Fade-Out
+    """
+    src_img = cv2.imread(slide_path)
+    if src_img is None:
+        raise FileNotFoundError(f"Slide not found: {slide_path}")
+    src_img = cv2.resize(src_img, (1920, 1080), interpolation=cv2.INTER_LANCZOS4)
+    
+    adapted_gold = get_image_adapted_gold(src_img)
+    sprites = prebuild_sparkle_sprites(adapted_gold)
+    feather_configs = generate_feather_configs(seed=slide_idx * 17 + 108)
+    
+    # 45 Golden Sparkles
+    rng_spk = random.Random(slide_idx * 31 + 42)
+    sparkles = []
+    for i in range(45):
+        sx = rng_spk.randint(40, 1880)
+        sy = rng_spk.randint(40, 1040)
+        rad = rng_spk.uniform(2.5, 6.2)
+        phase = rng_spk.uniform(0, math.pi * 2)
+        speed = rng_spk.uniform(0.8, 1.8)
+        star = (i % 2 == 0)
+        sparkles.append((sx, sy, rad, phase, speed, star))
+        
+    total_frames = int(duration * fps)
+    total_raw = len(feather_frames)
+    
+    ffmpeg_cmd = [
+        FFMPEG_EXE, "-y",
+        "-f", "rawvideo",
+        "-vcodec", "rawvideo",
+        "-s", "1920x1080",
+        "-pix_fmt", "bgr24",
+        "-r", str(fps),
+        "-i", "-",
+        "-c:v", "libx264",
+        "-preset", "ultrafast",
+        "-crf", "20",
+        "-pix_fmt", "yuv420p",
+        clip_output_path
+    ]
+    proc = subprocess.Popen(ffmpeg_cmd, stdin=subprocess.PIPE)
+    
+    fade_frames = int(1.2 * fps)
+    
+    for i in range(total_frames):
+        t = i / float(fps)
+        
+        # Subpixel Floating Ken Burns Zoom & Pan
+        mode = slide_idx % 3
+        if mode == 0:
+            zoom = 1.0 + 0.065 * (t / float(duration))
+            pan_x = 18.0 * (t / float(duration))
+            pan_y = 10.0 * (t / float(duration))
+        elif mode == 1:
+            zoom = 1.065 - 0.055 * (t / float(duration))
+            pan_x = -15.0 * (t / float(duration))
+            pan_y = 8.0 * (t / float(duration))
+        else:
+            zoom = 1.0 + 0.05 * (t / float(duration))
+            pan_x = 22.0 * math.sin((t / float(duration)) * math.pi)
+            pan_y = -10.0 * (t / float(duration))
+            
+        cx, cy = 960.0, 540.0
+        M = np.array([
+            [zoom, 0, (1.0 - zoom) * cx - pan_x],
+            [0, zoom, (1.0 - zoom) * cy - pan_y]
+        ], dtype=np.float32)
+        frame = cv2.warpAffine(src_img, M, (1920, 1080), flags=cv2.INTER_CUBIC, borderMode=cv2.BORDER_REFLECT)
+        
+        # Overlay Morpankh Feathers
+        if total_raw > 0:
+            for cfg in feather_configs:
+                f_idx = int((t * 30.0 + cfg["offset"]) % total_raw)
+                f_rgba = feather_frames[f_idx]
+                if cfg["type"] == "breeze":
+                    fx = cfg["base_x"] + cfg["amp_x"] * math.sin(t * cfg["freq_x"])
+                    fy = cfg["base_y"] + cfg["amp_y"] * math.sin(t * cfg["freq_y"])
+                    frot = cfg["base_rot"] + cfg["amp_rot"] * math.sin(t * cfg["freq_x"] * 1.1)
+                else:
+                    cycle = (t + cfg["drift_phase"]) % cfg["drift_cycle"]
+                    fy = -100 + cycle * (1280.0 / cfg["drift_cycle"])
+                    fx = cfg["base_x"] + cfg["amp_x"] * math.sin(cycle * cfg["freq_x"])
+                    frot = cfg["amp_rot"] * math.cos(cycle * cfg["freq_x"] * 1.15)
+                overlay_rgba(frame, f_rgba, fx, fy, scale=cfg["scale"], angle_deg=frot)
+                
+        # Overlay Golden Sparkles
+        for sx, sy, rad, phase, speed, star in sparkles:
+            cur_y = (sy - (t * 22.0 * speed)) % 1080
+            cur_x = sx + 15.0 * math.sin(t * 1.2 + phase)
+            brightness = 0.35 + 0.65 * (0.5 + 0.5 * math.sin(t * speed * 2.0 + phase))
+            fast_draw_sparkle(frame, cur_x, cur_y, rad, star, brightness, sprites)
+            
+        # Top Corner Logo Badge
+        if logo_badge is not None:
+            overlay_rgba(frame, logo_badge, center_x=95, center_y=95, scale=1.0, angle_deg=0)
+            
+        # Fade In / Fade Out
+        if i < fade_frames:
+            alpha = float(i) / float(fade_frames)
+            frame = (frame.astype(np.float32) * alpha).astype(np.uint8)
+        elif i > total_frames - fade_frames:
+            alpha = float(total_frames - i) / float(fade_frames)
+            frame = (frame.astype(np.float32) * alpha).astype(np.uint8)
+            
+        proc.stdin.write(frame.tobytes())
+        
+    proc.stdin.close()
+    proc.wait()
+
+
 def render_video(slides):
     """
     Renders 15-Minute Dynamic Full HD Video with:
-    - Ken Burns Zoom-In & Zoom-Out & Pan motions on every slide
-    - Velvety 1.5s Fade-In & Fade-Out Transitions
-    - Rich 8K HDR color clarity filters
+    - Butter-Smooth Subpixel Bicubic Ken Burns Zoom & Pan (ZERO Jhatka)
+    - Asynchronous Multi-Size 3D Morpankh Feathers (Staggered Floating)
+    - Image-Harmonized Golden Sparkles (No square artifacts)
+    - Krishna Vibez Circular Luxury Channel Logo Badge in Top Corner
     - Exact 15:00.00 flat duration (36 slide slots * 25s = 900 seconds)
     """
-    print("[2/4] Rendering 15-Minute Cinematic Video with Zoom In/Out & Fade Animations...")
+    print("[2/4] Rendering 15-Minute Cinematic Video with Subpixel Zoom & Divine Morpankh...")
     
     clip_files = []
     temp_clips_dir = os.path.join(BASE_DIR, "temp_animated_clips")
     os.makedirs(temp_clips_dir, exist_ok=True)
     
-    # 1. Generate 25-second animated clip for each slide with alternating motion
+    logo_badge = create_corner_logo_badge(size=120)
+    feather_frames = load_and_key_feather_frames()
+    
+    # 1. Render 25-second animated clip for each slide
     for idx, slide in enumerate(slides):
         clip_path = os.path.join(temp_clips_dir, f"clip_{idx+1}.mp4")
         clip_files.append(clip_path)
-        
-        mode = idx % 4
-        if mode == 0:
-            # Slow Cinematic Zoom-In
-            motion = "zoompan=z='min(zoom+0.00018,1.08)':d=625:x='iw/2-(iw/zoom/2)':y='ih/2-(ih/zoom/2)':s=1920x1080:fps=25"
-        elif mode == 1:
-            # Slow Cinematic Zoom-Out
-            motion = "zoompan=z='if(lte(zoom,1.0),1.08,max(1.001,zoom-0.00018))':d=625:x='iw/2-(iw/zoom/2)':y='ih/2-(ih/zoom/2)':s=1920x1080:fps=25"
-        elif mode == 2:
-            # Gentle Camera Pan Left to Right
-            motion = "zoompan=z=1.05:x='if(lte(on,-1),(iw-iw/zoom)/2,x+0.2)':y='ih/2-(ih/zoom/2)':d=625:s=1920x1080:fps=25"
-        else:
-            # Subtle Smooth Center Float & Zoom-In
-            motion = "zoompan=z='min(zoom+0.00015,1.07)':d=625:x='iw/2-(iw/zoom/2)':y='ih/2-(ih/zoom/2)':s=1920x1080:fps=25"
-            
-        vf = (
-            f"scale=1920:1080,"
-            f"{motion},"
-            f"fade=t=in:st=0:d=1.5,fade=t=out:st=23.5:d=1.5,"
-            f"unsharp=5:5:0.7:5:5:0.3,eq=saturation=1.08:contrast=1.03"
-        )
-        
-        cmd_clip = [
-            FFMPEG_EXE, "-y",
-            "-loop", "1", "-i", slide,
-            "-vf", vf,
-            "-c:v", "libx264", "-preset", "ultrafast", "-crf", "20",
-            "-t", "25",
-            "-pix_fmt", "yuv420p",
-            clip_path
-        ]
-        subprocess.run(cmd_clip, check=True)
+        print(f"  -> Rendering Slide {idx+1}/{len(slides)} with Morpankh & Smooth Zoom...")
+        render_animated_slide_clip(slide, clip_path, feather_frames, logo_badge, slide_idx=idx, duration=25, fps=25)
     
     # 2. Concat 12 animated clips 3 times = exactly 36 clips * 25s = 900 seconds (15:00.00)
     concat_list = os.path.join(BASE_DIR, "temp_concat_clips.txt")
@@ -268,36 +630,15 @@ def render_video(slides):
                 esc = cp.replace("\\", "/")
                 f.write(f"file '{esc}'\n")
                 
-    if os.path.exists(SPARKLES_LOOP):
-        print("  -> Blending divine golden sparkles particle animation...")
-        filter_complex = (
-            "[0:v]format=gbrp[img];"
-            "[1:v]scale=1920:1080,format=gbrp[spk];"
-            "[img][spk]blend=all_mode=screen:all_opacity=0.85,format=yuv420p[vout]"
-        )
-        cmd_final = [
-            FFMPEG_EXE, "-y",
-            "-f", "concat", "-safe", "0", "-i", concat_list,
-            "-stream_loop", "-1", "-i", SPARKLES_LOOP,
-            "-i", TEMP_AUDIO,
-            "-filter_complex", filter_complex,
-            "-map", "[vout]",
-            "-map", "2:a",
-            "-c:v", "libx264", "-preset", "ultrafast", "-crf", "20",
-            "-c:a", "aac", "-b:a", "192k",
-            "-t", "900",
-            OUTPUT_VIDEO
-        ]
-    else:
-        cmd_final = [
-            FFMPEG_EXE, "-y",
-            "-f", "concat", "-safe", "0", "-i", concat_list,
-            "-i", TEMP_AUDIO,
-            "-c:v", "copy",
-            "-c:a", "aac", "-b:a", "192k",
-            "-t", "900",
-            OUTPUT_VIDEO
-        ]
+    cmd_final = [
+        FFMPEG_EXE, "-y",
+        "-f", "concat", "-safe", "0", "-i", concat_list,
+        "-i", TEMP_AUDIO,
+        "-c:v", "copy",
+        "-c:a", "aac", "-b:a", "192k",
+        "-t", "900",
+        OUTPUT_VIDEO
+    ]
     subprocess.run(cmd_final, check=True)
     
     # Clean up animated temp clips
@@ -312,7 +653,8 @@ def render_video(slides):
         try: os.remove(concat_list)
         except Exception: pass
         
-    print(f"  -> Video Rendered with Zoom & Fade: {OUTPUT_VIDEO} (Exact 15:00.00)")
+    print(f"  -> Video Rendered with Smooth Morpankh & Zoom: {OUTPUT_VIDEO} (Exact 15:00.00)")
+
 
 def generate_thumbnail(slides, theme):
     """Creates a high-CTR 16:9 YouTube Thumbnail using FFmpeg HarfBuzz text rendering."""

@@ -17,6 +17,7 @@ sarvam_key.txt
 google_tts_service_account.json
 *.mp4
 !golden_sparkles_loop.mp4
+!morpankh_green_screen.mp4
 temp_*
 frame_*
 test_*
