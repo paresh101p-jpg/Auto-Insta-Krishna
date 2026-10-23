@@ -755,8 +755,12 @@ def upload_to_youtube(theme):
         "• Sleep & Insomnia Relief\n"
         "• Daily Morning Pooja & Spiritual Focus\n\n"
         "🌐 Official Website: https://krishnavibez.in/\n"
+        "▶️ Official YouTube: https://www.youtube.com/@KrishnaVibezofficial\n"
         "📱 WhatsApp Channel: https://whatsapp.com/channel/0029VbDxJHk30LKNtj4Er62J\n"
         "📢 Telegram: https://t.me/krishnavibezz\n\n"
+        "🛍️ Divine Recommendations (Amazon Storefront):\n"
+        "👉 Explore our Amazon Store: https://www.amazon.in/shop/myhappybirthday\n"
+        "(Disclaimer: As an Amazon Associate, Krishna Vibez earns from qualifying purchases at no extra cost to you.)\n\n"
         "#Krishna #Flute #Bansuri #MeditationMusic #KrishnaMusic #DivineMusic #RadhaKrishna #RelaxingMusic #InnerPeace"
     )
 

@@ -47,7 +47,8 @@ OFFICIAL_LINKS = {
     "telegram": "https://t.me/krishnavibezz",
     "instagram": "https://www.instagram.com/pareshpadsala_/",
     "facebook": "https://www.facebook.com/1808917602588221",
-    "pinterest": "https://in.pinterest.com/MojiloMart/"
+    "pinterest": "https://in.pinterest.com/MojiloMart/",
+    "amazon_shop": "https://www.amazon.in/shop/myhappybirthday"
 }
 
 # Load Credentials (from GitHub Actions Secrets with fallback to local youtube_token.json)
@@ -342,6 +343,10 @@ def generate_youtube_metadata_from_video(video_path):
         f"📘 Facebook पेज: {OFFICIAL_LINKS['facebook']}\n"
         f"📌 Pinterest: {OFFICIAL_LINKS['pinterest']}\n\n"
         "━━━━━━━━━━━━━━━━━━━━━━━━━━\n"
+        "🛍️ Divine Recommendations (Amazon Storefront):\n"
+        f"👉 Explore our Amazon Store: {OFFICIAL_LINKS['amazon_shop']}\n"
+        "(Disclaimer: As an Amazon Associate, Krishna Vibez earns from qualifying purchases.)\n\n"
+        "━━━━━━━━━━━━━━━━━━━━━━━━━━\n"
         "🙏 यदि इस विचार ने आपके हृदय को छुआ हो, तो वीडियो को लाइक करें, अपने परिजनों के साथ शेयर करें और चैनल को सब्सक्राइब अवश्य करें।\n\n"
         "जय श्री राधे कृष्ण! 🪷✨\n\n"
         "#Shorts #Krishna #RadheKrishna #KrishnaVibez #DailySuvichar #Karma #KarmYoga #GeetaGyan #Inspiration"
@@ -501,6 +506,10 @@ def generate_youtube_metadata_from_video(video_path):
             f"📸 Instagram: {OFFICIAL_LINKS['instagram']}\n"
             f"📘 Facebook पेज: {OFFICIAL_LINKS['facebook']}\n"
             f"📌 Pinterest: {OFFICIAL_LINKS['pinterest']}\n\n"
+            "━━━━━━━━━━━━━━━━━━━━━━━━━━\n"
+            "🛍️ Divine Recommendations (Amazon Storefront):\n"
+            f"👉 Explore our Amazon Store: {OFFICIAL_LINKS['amazon_shop']}\n"
+            "(Disclaimer: As an Amazon Associate, Krishna Vibez earns from qualifying purchases.)\n\n"
             "━━━━━━━━━━━━━━━━━━━━━━━━━━\n"
             "🙏 यदि इस विचार ने आपके हृदय को स्पर्श किया हो, तो कृपया लाइक करें, अपने प्रियजनों के साथ शेयर करें और चैनल को सब्सक्राइब अवश्य करें।\n\n"
             "जय श्री राधे कृष्ण! 🪷✨\n\n"

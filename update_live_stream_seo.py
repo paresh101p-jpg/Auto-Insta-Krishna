@@ -110,6 +110,10 @@ Presented with love and devotion by Krishna Vibez — your sacred sanctuary for 
 🧵 Threads: https://www.threads.net/@pareshpadsala_
 📌 Pinterest: https://in.pinterest.com/MojiloMart/
 
+🛍️ Divine Recommendations (Amazon Storefront):
+👉 Explore our curated Amazon Store: https://www.amazon.in/shop/myhappybirthday
+(Disclaimer: As an Amazon Associate, Krishna Vibez earns from qualifying purchases at no extra cost to you.)
+
 🔍 Searches & Topics Covered:
 Krishna Vibez, Krishna Vibez live, Krishna flute music live, shri krishna bansuri live, radhe krishna live stream, 24/7 krishna flute, peaceful flute meditation, relaxing sleep music, bansuri dhun, vrindavan live music, devotional flute music, daily krishna meditation, stress relief music, study focus flute.
 
