@@ -18,6 +18,7 @@ if sys.platform == "win32":
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 NEW_VIDEO_DIR = os.path.join(BASE_DIR, "new_video")
+REELS_OUTPUT_DIR = os.path.join(BASE_DIR, "reels_output")
 REELS_URLS_FILE = os.path.join(BASE_DIR, "reels_urls.txt")
 BACKUP_REELS_URLS_FILE = os.path.join(BASE_DIR, "reels_urls_backup.txt")
 YT_REELS_URLS_FILE = os.path.join(BASE_DIR, "youtube_reels_urls.txt")
@@ -80,11 +81,11 @@ def push_urls_to_github():
 
 def run_reels_uploader(continuous=True):
     init_clean_reels_files()
-    print("Catbox Reels Uploader active. Monitoring new_video for .mp4 files...", flush=True)
+    print("Catbox Reels Uploader active. Monitoring reels_output & new_video for .mp4 files...", flush=True)
     
     total_uploaded = 0
     while True:
-        all_mp4s = glob.glob(os.path.join(NEW_VIDEO_DIR, "*.mp4"))
+        all_mp4s = glob.glob(os.path.join(REELS_OUTPUT_DIR, "*.mp4")) + glob.glob(os.path.join(NEW_VIDEO_DIR, "*.mp4"))
         all_mp4s.sort()
         
         already_done = get_already_uploaded()
