@@ -26,25 +26,25 @@ BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 TOKEN_FILE = os.path.join(BASE_DIR, "youtube_token.json")
 LIVE_VIDEO_ID = "4RNGpmv8S1s"
 
-# Rotating High-CTR Weekly Themes
+# Rotating High-CTR Weekly Themes (Includes Channel Name 'Krishna Vibez')
 WEEKLY_THEMES = [
     {
-        "title": "🔴 24/7 LIVE: Lord Krishna Flute Meditation Music | श्री कृष्ण बांसुरी धुन | Deep Peace, Sleep & Relax",
+        "title": "🔴 24/7 LIVE: Lord Krishna Flute Meditation Music | श्री कृष्ण बांसुरी धुन | Krishna Vibez",
         "hook": "Experience profound peace and calmness with non-stop divine Bansuri flute music dedicated to Lord Shri Krishna.",
         "focus": "Deep Sleep, Insomnia Relief, Meditation, Relaxation"
     },
     {
-        "title": "🔴 LIVE 24/7: Radha Krishna Peaceful Flute Music | दिव्य बांसुरी की धुन | Stress Relief & Morning Dhyan",
+        "title": "🔴 LIVE 24/7: Radha Krishna Peaceful Flute Music | दिव्य बांसुरी की धुन | Krishna Vibez",
         "hook": "Start your day with positive energy and divine vibrations of Radha Krishna flute melodies in Vrindavan.",
         "focus": "Morning Meditation, Stress Relief, Positive Energy, Mind Healing"
     },
     {
-        "title": "🔴 24/7 LIVE: Shri Krishna Bansuri Healing Music | मानसिक शांति और ध्यान | Study, Focus & Deep Sleep",
+        "title": "🔴 24/7 LIVE: Shri Krishna Bansuri Healing Music | मानसिक शांति और ध्यान | Krishna Vibez",
         "hook": "Calm your mind and improve concentration with soulful Indian classical flute meditation by Krishna Vibez.",
         "focus": "Study Focus, Work Concentration, Mental Clarity, Inner Healing"
     },
     {
-        "title": "🔴 LIVE 24/7: Divine Vrindavan Flute Meditation | श्री कृष्ण अमृत बांसुरी | Positive Energy & Relaxation",
+        "title": "🔴 LIVE 24/7: Divine Vrindavan Flute Meditation | श्री कृष्ण अमृत बांसुरी | Krishna Vibez",
         "hook": "Immerse in the soothing aura of Vrindavan with authentic Lord Krishna flute ragas and peaceful spiritual ambiance.",
         "focus": "Spiritual Awakening, Soulful Peace, Anxiety Relief, Deep Relaxation"
     }
@@ -90,30 +90,35 @@ def update_live_seo():
     week_num = datetime.now().isocalendar()[1]
     theme = WEEKLY_THEMES[week_num % len(WEEKLY_THEMES)]
 
-    description = f"""🌸 Welcome to Krishna Vibez 24/7 Official Live Stream 🌸
+    description = f"""🌸 Welcome to the Official 24/7 Live Stream by Krishna Vibez 🌸
 {theme['hook']}
+
+Presented with love and devotion by Krishna Vibez — your sacred sanctuary for continuous divine flute meditation, inner healing, and spiritual serenity.
 
 🪶 Ideal For:
 • {theme['focus']}
-• Chanting, Prayer & Temple Atmosphere
+• Chanting, Dhyan & Daily Prayer
 • Pure relaxation after a long, tiring day
 
-✨ Official Platforms & Connect:
+✨ Official Platforms & Connect (Krishna Vibez):
 🌐 Official Website: https://krishnavibez.in/
 📱 WhatsApp Channel: https://whatsapp.com/channel/0029VbDxJHk30LKNtj4Er62J
 ✈️ Telegram Channel: https://t.me/krishnavibezz
 📷 Instagram: https://www.instagram.com/pareshpadsala_/
+📘 Facebook: https://www.facebook.com/1808917602588221
+🧵 Threads: https://www.threads.net/@pareshpadsala_
+📌 Pinterest: https://in.pinterest.com/MojiloMart/
 
 🔍 Searches & Topics Covered:
-Krishna flute music live, shri krishna bansuri live, radhe krishna live stream, 24/7 krishna flute, peaceful flute meditation, relaxing sleep music, bansuri dhun, vrindavan live music, devotional flute music, daily krishna meditation, stress relief music, study focus flute.
+Krishna Vibez, Krishna Vibez live, Krishna flute music live, shri krishna bansuri live, radhe krishna live stream, 24/7 krishna flute, peaceful flute meditation, relaxing sleep music, bansuri dhun, vrindavan live music, devotional flute music, daily krishna meditation, stress relief music, study focus flute.
 
-#Krishna #RadheKrishna #LiveStream #FluteMusic #Meditation #BansuriDhun #KrishnaVibez #PeacefulMusic #247Live #Vrindavan"""
+#KrishnaVibez #Krishna #RadheKrishna #LiveStream #FluteMusic #Meditation #BansuriDhun #PeacefulMusic #247Live #Vrindavan"""
 
     tags = [
-        "krishna flute music", "krishna live", "radhe krishna live", "bansuri dhun",
-        "24/7 live stream", "meditation flute", "deep sleep music", "peaceful flute",
-        "krishna bhajan flute", "relaxing krishna music", "vrindavan live",
-        "flute music live", "stress relief music", "krishna vibez", "shri krishna live"
+        "Krishna Vibez", "Krishna Vibez live", "krishna flute music", "krishna live",
+        "radhe krishna live", "bansuri dhun", "24/7 live stream", "meditation flute",
+        "deep sleep music", "peaceful flute", "krishna bhajan flute", "relaxing krishna music",
+        "vrindavan live", "flute music live", "stress relief music", "shri krishna live"
     ]
 
     youtube = get_authenticated_service()
