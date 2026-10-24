@@ -705,12 +705,12 @@ def generate_thumbnail(slides, theme):
     vf = (
         f"scale=1920:1080,"
         f"drawbox=y=0:h=180:color=black@0.45:t=fill,"
-        f"drawbox=y=680:h=400:color=black@0.65:t=fill,"
-        f"drawbox=x=80:y=60:w=580:h=60:color=goldenrod@0.9:t=fill,"
-        f"drawtext=fontfile='{english_font_arg}':text='{badge}':fontcolor=black:fontsize=32:x=105:y=76,"
-        f"drawtext=fontfile='{hindi_font_arg}':text='{main_text}':fontcolor=0xFFE240:fontsize=76:x=80:y=740:borderw=4:bordercolor=black,"
-        f"drawtext=fontfile='{hindi_font_arg}':text='{sub_text}':fontcolor=white:fontsize=46:x=80:y=850:borderw=3:bordercolor=black,"
-        f"drawtext=fontfile='{english_font_arg}':text='KRISHNA VIBEZ':fontcolor=0xD4AF37:fontsize=30:x=1650:y=1000:borderw=2:bordercolor=black"
+        f"drawbox=y=630:h=450:color=black@0.75:t=fill,"
+        f"drawbox=x=80:y=50:w=680:h=75:color=goldenrod@0.95:t=fill,"
+        f"drawtext=fontfile='{english_font_arg}':text='{badge}':fontcolor=black:fontsize=42:x=115:y=68,"
+        f"drawtext=fontfile='{hindi_font_arg}':text='{main_text}':fontcolor=0xFFDF00:fontsize=100:x=80:y=680:borderw=6:bordercolor=black,"
+        f"drawtext=fontfile='{hindi_font_arg}':text='{sub_text}':fontcolor=white:fontsize=62:x=80:y=830:borderw=4:bordercolor=black,"
+        f"drawtext=fontfile='{english_font_arg}':text='KRISHNA VIBEZ':fontcolor=0xD4AF37:fontsize=36:x=1600:y=990:borderw=3:bordercolor=black"
     )
 
     cmd = [
