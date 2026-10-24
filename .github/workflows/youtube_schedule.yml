@@ -8,6 +8,9 @@ on:
     # 14:30 UTC = 08:00 PM IST (Evening Peak)
     - cron: '30 2,8,14 * * *'
   workflow_dispatch: # Allows manual trigger from GitHub UI anytime
+  push:
+    paths:
+      - 'TRIGGER_YOUTUBE_POST.txt'
 
 concurrency:
   group: youtube-shorts-upload
