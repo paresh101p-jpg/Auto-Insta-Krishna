@@ -24,7 +24,7 @@ if sys.platform == "win32":
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 TOKEN_FILE = os.path.join(BASE_DIR, "youtube_token.json")
-LIVE_VIDEO_ID = "4RNGpmv8S1s"
+LIVE_VIDEO_ID = "JOTMkj_W2RE"
 
 # Rotating High-CTR Weekly Themes (Includes Channel Name 'Krishna Vibez')
 WEEKLY_THEMES = [
