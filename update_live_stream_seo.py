@@ -93,20 +93,22 @@ def update_live_seo():
     description = f"""🌸 Welcome to the Official 24/7 Live Stream by Krishna Vibez 🌸
 {theme['hook']}
 
-Presented with love and devotion by Krishna Vibez — your sacred sanctuary for continuous divine flute meditation, inner healing, and spiritual serenity.
+Presented with utmost devotion by Krishna Vibez — your sacred sanctuary for continuous divine flute meditation, inner healing, deep relaxation, and spiritual awakening.
 
 🪶 Ideal For:
 • {theme['focus']}
-• Chanting, Dhyan & Daily Prayer
-• Pure relaxation after a long, tiring day
+• Deep Meditation, Dhyan, Yoga & Daily Prayer
+• Stress Relief, Anxiety Calming & Overthinking Detox
+• Deep Sleep, Insomnia Relief & Peaceful Relaxation
+• Work Focus, Study Concentration & Mind Refreshment
 
-✨ Official Platforms & Connect (Krishna Vibez):
+✨ Official Platforms & Community (Krishna Vibez):
 🌐 Official Website: https://krishnavibez.in/
 ▶️ Official YouTube: https://www.youtube.com/@KrishnaVibezofficial
 📱 WhatsApp Channel: https://whatsapp.com/channel/0029VbDxJHk30LKNtj4Er62J
 ✈️ Telegram Channel: https://t.me/krishnavibezz
 📷 Instagram: https://www.instagram.com/pareshpadsala_/
-📘 Facebook: https://www.facebook.com/1808917602588221
+📘 Facebook Page: https://www.facebook.com/1808917602588221
 🧵 Threads: https://www.threads.net/@pareshpadsala_
 📌 Pinterest: https://in.pinterest.com/MojiloMart/
 
@@ -114,10 +116,11 @@ Presented with love and devotion by Krishna Vibez — your sacred sanctuary for 
 👉 Explore our curated Amazon Store: https://www.amazon.in/shop/myhappybirthday
 (Disclaimer: As an Amazon Associate, Krishna Vibez earns from qualifying purchases at no extra cost to you.)
 
+━━━━━━━━━━━━━━━━━━━━━━━━━━
 🔍 Searches & Topics Covered:
-Krishna Vibez, Krishna Vibez live, Krishna flute music live, shri krishna bansuri live, radhe krishna live stream, 24/7 krishna flute, peaceful flute meditation, relaxing sleep music, bansuri dhun, vrindavan live music, devotional flute music, daily krishna meditation, stress relief music, study focus flute.
+Krishna Vibez, Krishna Vibez live, Krishna flute music live, shri krishna bansuri live, radhe krishna live stream, 24/7 krishna flute, peaceful flute meditation, relaxing sleep music, bansuri dhun, vrindavan live music, devotional flute music, daily krishna meditation, stress relief music, study focus flute, deep sleep flute music, krishna bhajan instrumental, 432hz healing music.
 
-#KrishnaVibez #Krishna #RadheKrishna #LiveStream #FluteMusic #Meditation #BansuriDhun #PeacefulMusic #247Live #Vrindavan"""
+#KrishnaVibez #Krishna #RadheKrishna #LiveStream #FluteMusic #Meditation #BansuriDhun #PeacefulMusic #247Live #Vrindavan #DeepSleep #StressRelief"""
 
     tags = [
         "Krishna Vibez", "Krishna Vibez live", "krishna flute music", "krishna live",
