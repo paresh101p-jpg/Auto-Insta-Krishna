@@ -95,33 +95,20 @@ CINEMATIC_COLOR_PROFILES = [
     }
 ]
 
-# 15 Rotating Diverse Voice Profiles (Men, Women, Boy, Girl, Baby/Kid)
+# 100% Male / Boy Spiritual Voice Profiles (Strict GEMINI.md compliance: Male/Boy only for Krishna)
 VOICE_PROFILES = [
-    # Category 1: Men (पुरुष - गंभीर / भक्ति / प्रवचन)
+    # Category 1: Men (पुरुष - गंभीर / भक्ति / प्रवचन / संत वाणी)
     {"engine": "sarvam", "speaker": "girish_hi_devotional", "pace": 0.92, "name": "Men - Girish (Devotional Guru)"},
     {"engine": "sarvam", "speaker": "ratan_hi_devotional", "pace": 0.92, "name": "Men - Ratan (Deep Spiritual)"},
     {"engine": "sarvam", "speaker": "ashok_hi_character", "pace": 0.93, "name": "Men - Ashok (Vedic Rishi)"},
     {"engine": "gcloud", "voice": "hi-IN-Neural2-B", "rate": "0.90", "pitch": "-2st", "name": "Men - Google Neural2-B (Baritone)"},
     {"engine": "gcloud", "voice": "hi-IN-Wavenet-C", "rate": "0.90", "pitch": "-2st", "name": "Men - Google Wavenet-C (Classical)"},
 
-    # Category 2: Women (महिला - शांत / भक्तिमय / अमृतवाणी)
-    {"engine": "sarvam", "speaker": "ishita_hi_devotional", "pace": 0.94, "name": "Women - Ishita (Devotional)"},
-    {"engine": "sarvam", "speaker": "roopa_hi_narration", "pace": 0.94, "name": "Women - Roopa (Peaceful Soul)"},
-    {"engine": "edge", "voice": "hi-IN-SwaraNeural", "rate": "-6%", "pitch": "+0Hz", "name": "Women - Swara (Sweet Devotion)"},
-    {"engine": "gcloud", "voice": "hi-IN-Neural2-A", "rate": "0.92", "pitch": "-1st", "name": "Women - Google Neural2-A (Graceful)"},
-
-    # Category 3: Boy (युवा बालक - कथावाचक / प्रेरणा)
+    # Category 2: Boy / Youth (युवा बालक / प्रेरणा / दिव्य कथावाचक)
     {"engine": "sarvam", "speaker": "shubh_hi_devotional", "pace": 0.93, "name": "Boy - Shubh (Emotional Storyteller)"},
     {"engine": "sarvam", "speaker": "aayan_hi_conversational", "pace": 0.94, "name": "Boy - Aayan (Expressive Youth)"},
-    {"engine": "edge", "voice": "hi-IN-MadhurNeural", "rate": "-6%", "pitch": "-1Hz", "name": "Boy - Madhur (Inspiring Youth)"},
-
-    # Category 4: Girl (युवती / कन्या - सौम्य / कोमल स्वर)
-    {"engine": "sarvam", "speaker": "kavya_hi_conversational", "pace": 0.95, "name": "Girl - Kavya (Melodious & Gentle)"},
-    {"engine": "sarvam", "speaker": "tanya_hi_narration", "pace": 0.94, "name": "Girl - Tanya (Calm & Reflective)"},
-
-    # Category 5: Baby / Kid (बाल गोपाल / नन्हा बालक स्वर)
-    {"engine": "sarvam", "speaker": "kunal_hi_kids", "pace": 0.96, "name": "Baby/Kid - Kunal (Bal Gopal Voice)"},
-    {"engine": "sarvam", "speaker": "chhavi_hi_kids", "pace": 0.96, "name": "Baby/Kid - Chhavi (Sweet Child Voice)"}
+    {"engine": "edge", "voice": "hi-IN-MadhurNeural", "rate": "-6%", "pitch": "-1Hz", "name": "Boy - Madhur Neural (Inspiring Youth)"},
+    {"engine": "sarvam", "speaker": "kunal_hi_kids", "pace": 0.96, "name": "Boy - Kunal (Bal Gopal Cadence)"}
 ]
 
 # ----------------- CREDENTIALS & QUOTA -----------------
@@ -293,11 +280,21 @@ def get_audio_duration(file_path):
             return float(h)*3600 + float(m)*60 + float(s)
     return 14.0
 
+SUNO_MUSIC_DIRS = [
+    os.path.join(BASE_DIR, "suno_live_music"),
+    os.path.join(BASE_DIR, "user_suno_music", "uploaded")
+]
+
 def get_random_flute_bgm():
-    if os.path.exists(MUSIC_DIR):
-        mp3s = glob.glob(os.path.join(MUSIC_DIR, "*.mp3"))
-        if mp3s:
-            return random.choice(mp3s)
+    """STRICT RULE: Only use Suno AI Flute Music. Never use legacy music/ folder."""
+    all_suno_mp3s = []
+    for s_dir in SUNO_MUSIC_DIRS:
+        if os.path.exists(s_dir):
+            all_suno_mp3s.extend(glob.glob(os.path.join(s_dir, "*.mp3")))
+    if all_suno_mp3s:
+        chosen = random.choice(all_suno_mp3s)
+        print(f"  BGM: Using Suno AI Flute Track -> {os.path.basename(chosen)}", flush=True)
+        return chosen
     return None
 
 def build_reel(image_path, quote_text, output_video_path, bgm_path=None, color_profile_idx=0, voice_idx=0):
@@ -349,7 +346,7 @@ def build_reel(image_path, quote_text, output_video_path, bgm_path=None, color_p
         f"[fg_blurred][fg_sharp2]blend=all_expr='if(lte(T,2.0), A*(1-T/2.0) + B*(T/2.0), B)'[fg_dynamic];"
         f"[bg][fg_dynamic]overlay=(W-w)/2:(H-h)/2,{color_filter}[v];"
         f"[1:a]adelay={delay_ms}|{delay_ms},highpass=f=80,equalizer=f=300:t=q:w=1.2:g=-2.0,equalizer=f=3400:t=q:w=1.5:g=2.5,compand=attacks=0.03:decays=0.25:points=-60/-60|-24/-10|0/-2:soft-knee=6,aecho=0.8:0.6:28:0.11,volume=1.20[master_voice];"
-        f"[2:a]volume=0.35,afade=t=out:st={fade_out_start}:d=1.5[bgm];"
+        f"[2:a]volume=0.20,afade=t=out:st={fade_out_start}:d=1.5[bgm];"
         f"[master_voice][bgm]amix=inputs=2:duration=longest:dropout_transition=0,volume=2.0[a]"
     )
 
