@@ -321,17 +321,36 @@ def overlay_rgba(bg_img, fg_rgba, center_x, center_y, scale, angle_deg):
     bg_img[cy1:cy2, cx1:cx2] = blended.astype(np.uint8)
 
 
-def get_image_adapted_gold(bg_img):
+DIVINE_SPARKLE_PALETTES = [
+    {"name": "Vrindavan Royal Gold", "gold_bgr": np.array([45.0, 210.0, 255.0]), "core_bgr": np.array([255.0, 255.0, 255.0])},
+    {"name": "Amber Sunrise Honey", "gold_bgr": np.array([25.0, 180.0, 255.0]), "core_bgr": np.array([210.0, 245.0, 255.0])},
+    {"name": "Champagne Starlight", "gold_bgr": np.array([130.0, 225.0, 255.0]), "core_bgr": np.array([255.0, 255.0, 255.0])},
+    {"name": "Lotus Peach-Gold", "gold_bgr": np.array([85.0, 175.0, 255.0]), "core_bgr": np.array([230.0, 235.0, 255.0])},
+    {"name": "Celestial White-Gold", "gold_bgr": np.array([170.0, 235.0, 255.0]), "core_bgr": np.array([255.0, 255.0, 255.0])},
+    {"name": "Sacred Saffron Gold", "gold_bgr": np.array([20.0, 195.0, 250.0]), "core_bgr": np.array([200.0, 240.0, 255.0])},
+    {"name": "Morning Dawn Gold", "gold_bgr": np.array([60.0, 205.0, 245.0]), "core_bgr": np.array([240.0, 250.0, 255.0])},
+]
+
+def get_image_adapted_gold(bg_img, palette=None):
     avg_b = float(np.mean(bg_img[:, :, 0]))
     avg_g = float(np.mean(bg_img[:, :, 1]))
     avg_r = float(np.mean(bg_img[:, :, 2]))
     ambient = np.array([avg_b, avg_g, avg_r])
-    pure_gold = np.array([45.0, 205.0, 255.0])
-    adapted = 0.75 * pure_gold + 0.25 * ambient
-    return adapted
+    
+    if palette is not None:
+        base_gold = palette["gold_bgr"]
+        core_col_base = palette.get("core_bgr", np.array([255.0, 255.0, 255.0]))
+    else:
+        base_gold = np.array([45.0, 205.0, 255.0])
+        core_col_base = np.array([255.0, 255.0, 255.0])
+        
+    adapted = 0.72 * base_gold + 0.28 * ambient
+    return adapted, core_col_base
 
 
-def prebuild_sparkle_sprites(adapted_gold):
+def prebuild_sparkle_sprites(adapted_gold, core_col_base=None):
+    if core_col_base is None:
+        core_col_base = np.array([255.0, 255.0, 255.0])
     sprites = {}
     radii = [2.5, 3.5, 4.5, 5.5, 6.5]
     for r in radii:
@@ -360,7 +379,7 @@ def prebuild_sparkle_sprites(adapted_gold):
             draw_layer(3.6, 0.25, adapted_gold)
             draw_layer(2.0, 0.45, adapted_gold)
             draw_layer(1.1, 0.70, adapted_gold)
-            core_col = 0.65 * np.array([255, 255, 255]) + 0.35 * adapted_gold
+            core_col = 0.65 * core_col_base + 0.35 * adapted_gold
             draw_layer(0.55, 0.95, core_col)
             
             if star and r >= 3.5:
@@ -404,51 +423,115 @@ def fast_draw_sparkle(target, cx, cy, rad, star, brightness, sprites):
 
 def generate_feather_configs(seed=None):
     rng = random.Random(seed)
-    return [
+    # 6 feathers distributed across screen, all drifting top-to-bottom with gentle diagonal side motion
+    # Scales reduced significantly: Max scale is ~0.33 (down from 0.65!)
+    configs = [
+        # Feather 0: Medium-large majestic accent (left-center falling rightwards)
         {
-            "scale": rng.uniform(0.58, 0.65), "offset": rng.randint(0, 30),
-            "base_x": rng.uniform(180, 240), "base_y": rng.uniform(350, 420),
-            "type": "breeze", "amp_x": rng.uniform(25, 40), "amp_y": rng.uniform(20, 35),
-            "freq_x": rng.uniform(0.7, 0.9), "freq_y": rng.uniform(1.0, 1.3),
-            "base_rot": rng.uniform(-10, -5), "amp_rot": rng.uniform(5, 8),
+            "scale": rng.uniform(0.30, 0.34),
+            "offset": rng.randint(0, 30),
+            "start_x": rng.uniform(220, 380),
+            "drift_cycle": rng.uniform(16.0, 21.0),
+            "drift_phase": rng.uniform(0.0, 7.0),
+            "drift_dx": rng.uniform(120, 200),     # Drifts gently rightwards as it falls
+            "amp_x": rng.uniform(25, 45),          # Natural breeze sway
+            "freq_x": rng.uniform(1.0, 1.3),
+            "phase_x": rng.uniform(0.0, math.pi),
+            "base_rot": rng.uniform(-10, 5),
+            "amp_rot": rng.uniform(6, 10),
+            "freq_rot": rng.uniform(0.9, 1.2),
+            "phase_rot": rng.uniform(0.0, math.pi),
         },
+        # Feather 1: Medium elegant (right-center falling leftwards)
         {
-            "scale": rng.uniform(0.40, 0.46), "offset": rng.randint(45, 75),
-            "base_x": rng.uniform(1500, 1600), "base_y": rng.uniform(320, 400),
-            "type": "breeze", "amp_x": rng.uniform(20, 35), "amp_y": rng.uniform(18, 30),
-            "freq_x": rng.uniform(0.65, 0.85), "freq_y": rng.uniform(0.95, 1.2),
-            "base_rot": rng.uniform(6, 12), "amp_rot": rng.uniform(4, 7),
+            "scale": rng.uniform(0.24, 0.28),
+            "offset": rng.randint(40, 70),
+            "start_x": rng.uniform(1450, 1650),
+            "drift_cycle": rng.uniform(18.0, 23.0),
+            "drift_phase": rng.uniform(6.0, 14.0),
+            "drift_dx": rng.uniform(-200, -120),   # Drifts gently leftwards as it falls
+            "amp_x": rng.uniform(25, 40),
+            "freq_x": rng.uniform(0.9, 1.2),
+            "phase_x": rng.uniform(0.0, math.pi),
+            "base_rot": rng.uniform(5, 15),
+            "amp_rot": rng.uniform(5, 9),
+            "freq_rot": rng.uniform(0.8, 1.1),
+            "phase_rot": rng.uniform(0.0, math.pi),
         },
+        # Feather 2: Delicate center floating
         {
-            "scale": rng.uniform(0.30, 0.36), "offset": rng.randint(90, 125),
-            "type": "drift", "drift_cycle": rng.uniform(16.0, 21.0),
-            "drift_phase": rng.uniform(0.0, 10.0), "base_x": rng.uniform(700, 850),
-            "amp_x": rng.uniform(80, 120), "freq_x": rng.uniform(1.1, 1.4),
-            "amp_rot": rng.uniform(10, 15),
+            "scale": rng.uniform(0.19, 0.23),
+            "offset": rng.randint(80, 110),
+            "start_x": rng.uniform(850, 1050),
+            "drift_cycle": rng.uniform(19.0, 25.0),
+            "drift_phase": rng.uniform(12.0, 20.0),
+            "drift_dx": rng.uniform(80, 160) * rng.choice([-1, 1]),
+            "amp_x": rng.uniform(30, 50),
+            "freq_x": rng.uniform(1.1, 1.4),
+            "phase_x": rng.uniform(0.0, math.pi),
+            "base_rot": rng.uniform(-8, 8),
+            "amp_rot": rng.uniform(6, 12),
+            "freq_rot": rng.uniform(1.0, 1.3),
+            "phase_rot": rng.uniform(0.0, math.pi),
         },
+        # Feather 3: Soft ambient background feather (left side)
         {
-            "scale": rng.uniform(0.22, 0.28), "offset": rng.randint(140, 175),
-            "type": "drift", "drift_cycle": rng.uniform(19.0, 25.0),
-            "drift_phase": rng.uniform(10.0, 20.0), "base_x": rng.uniform(420, 560),
-            "amp_x": rng.uniform(60, 95), "freq_x": rng.uniform(1.0, 1.3),
-            "amp_rot": rng.uniform(8, 14),
+            "scale": rng.uniform(0.14, 0.18),
+            "offset": rng.randint(120, 150),
+            "start_x": rng.uniform(100, 250),
+            "drift_cycle": rng.uniform(22.0, 28.0),
+            "drift_phase": rng.uniform(3.0, 10.0),
+            "drift_dx": rng.uniform(90, 150),
+            "amp_x": rng.uniform(20, 35),
+            "freq_x": rng.uniform(0.8, 1.1),
+            "phase_x": rng.uniform(0.0, math.pi),
+            "base_rot": rng.uniform(-12, 0),
+            "amp_rot": rng.uniform(5, 8),
+            "freq_rot": rng.uniform(0.7, 1.0),
+            "phase_rot": rng.uniform(0.0, math.pi),
         },
+        # Feather 4: Soft ambient background feather (far right side)
         {
-            "scale": rng.uniform(0.16, 0.21), "offset": rng.randint(70, 100),
-            "base_x": rng.uniform(1150, 1280), "base_y": rng.uniform(140, 220),
-            "type": "breeze", "amp_x": rng.uniform(30, 45), "amp_y": rng.uniform(15, 25),
-            "freq_x": rng.uniform(0.5, 0.7), "freq_y": rng.uniform(0.8, 1.0),
-            "base_rot": rng.uniform(4, 8), "amp_rot": rng.uniform(3, 5),
+            "scale": rng.uniform(0.12, 0.16),
+            "offset": rng.randint(60, 90),
+            "start_x": rng.uniform(1680, 1850),
+            "drift_cycle": rng.uniform(20.0, 26.0),
+            "drift_phase": rng.uniform(15.0, 23.0),
+            "drift_dx": rng.uniform(-160, -90),
+            "amp_x": rng.uniform(20, 35),
+            "freq_x": rng.uniform(0.85, 1.15),
+            "phase_x": rng.uniform(0.0, math.pi),
+            "base_rot": rng.uniform(0, 12),
+            "amp_rot": rng.uniform(4, 8),
+            "freq_rot": rng.uniform(0.8, 1.1),
+            "phase_rot": rng.uniform(0.0, math.pi),
+        },
+        # Feather 5: Medium ambient drifter (mid-left)
+        {
+            "scale": rng.uniform(0.20, 0.25),
+            "offset": rng.randint(20, 50),
+            "start_x": rng.uniform(550, 750),
+            "drift_cycle": rng.uniform(17.0, 22.0),
+            "drift_phase": rng.uniform(8.0, 16.0),
+            "drift_dx": rng.uniform(-120, 120),
+            "amp_x": rng.uniform(30, 48),
+            "freq_x": rng.uniform(1.0, 1.3),
+            "phase_x": rng.uniform(0.0, math.pi),
+            "base_rot": rng.uniform(-10, 10),
+            "amp_rot": rng.uniform(6, 11),
+            "freq_rot": rng.uniform(0.9, 1.2),
+            "phase_rot": rng.uniform(0.0, math.pi),
         }
     ]
+    return configs
 
 
-def render_animated_slide_clip(slide_path, clip_output_path, feather_frames, logo_badge, slide_idx=0, duration=25, fps=25):
+def render_animated_slide_clip(slide_path, clip_output_path, feather_frames, logo_badge, slide_idx=0, duration=25, fps=25, sparkle_palette=None):
     """
     Renders a single 25-second slide clip with:
     - Subpixel 64-bit Floating Bicubic Ken Burns Zoom & Pan (ZERO Jhatka)
-    - 5 Asynchronous Multi-Size Glowing Morpankh Feathers (Staggered motion)
-    - 45 Floating Golden Sparkles with Image-Harmonized Tint
+    - 6 Asynchronous Multi-Size Glowing Morpankh Feathers (All gently drifting top-to-bottom with side breeze)
+    - 45 Floating Golden Sparkles with Image-Harmonized Video-Specific Palette Tint
     - Circular Luxury Krishna Vibez Logo in Top Corner
     - Smooth 1.2s Fade-In & 1.2s Fade-Out
     """
@@ -457,8 +540,8 @@ def render_animated_slide_clip(slide_path, clip_output_path, feather_frames, log
         raise FileNotFoundError(f"Slide not found: {slide_path}")
     src_img = cv2.resize(src_img, (1920, 1080), interpolation=cv2.INTER_LANCZOS4)
     
-    adapted_gold = get_image_adapted_gold(src_img)
-    sprites = prebuild_sparkle_sprites(adapted_gold)
+    adapted_gold, core_bgr = get_image_adapted_gold(src_img, palette=sparkle_palette)
+    sprites = prebuild_sparkle_sprites(adapted_gold, core_col_base=core_bgr)
     feather_configs = generate_feather_configs(seed=slide_idx * 17 + 108)
     
     # 45 Golden Sparkles
@@ -519,20 +602,24 @@ def render_animated_slide_clip(slide_path, clip_output_path, feather_frames, log
         ], dtype=np.float32)
         frame = cv2.warpAffine(src_img, M, (1920, 1080), flags=cv2.INTER_CUBIC, borderMode=cv2.BORDER_REFLECT)
         
-        # Overlay Morpankh Feathers
+        # Overlay Morpankh Feathers (All drifting top to bottom with gentle diagonal side motion)
         if total_raw > 0:
             for cfg in feather_configs:
+                cycle_dur = cfg["drift_cycle"]
+                progress = ((t + cfg["drift_phase"]) % cycle_dur) / cycle_dur
+                
+                # Fall from top (-160) to bottom (1240)
+                fy = -160.0 + progress * (1080.0 + 320.0)
+                side_glide = progress * cfg["drift_dx"]
+                breeze_sway = cfg["amp_x"] * math.sin((progress * 6.28 * cfg["freq_x"]) + cfg["phase_x"])
+                fx = cfg["start_x"] + side_glide + breeze_sway
+                
+                drift_tilt = (cfg["drift_dx"] / 200.0) * 12.0
+                air_flutter = cfg["amp_rot"] * math.cos((progress * 6.28 * cfg["freq_rot"]) + cfg["phase_rot"])
+                frot = cfg["base_rot"] + drift_tilt + air_flutter
+                
                 f_idx = int((t * 30.0 + cfg["offset"]) % total_raw)
                 f_rgba = feather_frames[f_idx]
-                if cfg["type"] == "breeze":
-                    fx = cfg["base_x"] + cfg["amp_x"] * math.sin(t * cfg["freq_x"])
-                    fy = cfg["base_y"] + cfg["amp_y"] * math.sin(t * cfg["freq_y"])
-                    frot = cfg["base_rot"] + cfg["amp_rot"] * math.sin(t * cfg["freq_x"] * 1.1)
-                else:
-                    cycle = (t + cfg["drift_phase"]) % cfg["drift_cycle"]
-                    fy = -100 + cycle * (1280.0 / cfg["drift_cycle"])
-                    fx = cfg["base_x"] + cfg["amp_x"] * math.sin(cycle * cfg["freq_x"])
-                    frot = cfg["amp_rot"] * math.cos(cycle * cfg["freq_x"] * 1.15)
                 overlay_rgba(frame, f_rgba, fx, fy, scale=cfg["scale"], angle_deg=frot)
                 
         # Overlay Golden Sparkles
@@ -564,14 +651,24 @@ def render_video(slides, duration_sec=900):
     """
     Renders Dynamic Full HD Video (12-20 Mins) with:
     - Butter-Smooth Subpixel Bicubic Ken Burns Zoom & Pan (ZERO Jhatka)
-    - Asynchronous Multi-Size 3D Morpankh Feathers (Staggered Floating)
-    - Image-Harmonized Golden Sparkles (No square artifacts)
+    - Asynchronous Multi-Size 3D Morpankh Feathers (All Drifting Top-To-Bottom with Side Breeze)
+    - Dynamic Sparkle Color Palette (Varies subtly per video)
     - Krishna Vibez Circular Luxury Channel Logo Badge in Top Corner
     - Dynamic duration matching user soundtrack (12 to 20 minutes)
     """
     dur_min = int(round(duration_sec / 60.0))
     print(f"[2/4] Rendering {dur_min}-Minute ({duration_sec}s) Cinematic Video with Subpixel Zoom & Divine Morpankh...")
     
+    # 1. Dynamically select a unique divine sparkle palette for this video
+    chosen_palette = random.choice(DIVINE_SPARKLE_PALETTES)
+    print(f"  -> ✨ Selected Divine Sparkle Theme: {chosen_palette['name']}")
+    
+    # 2. Select 12 unique slides to keep total video render time under 9 minutes while ensuring high variety
+    selected_slides = slides[:]
+    if len(selected_slides) > 12:
+        random.shuffle(selected_slides)
+        selected_slides = selected_slides[:12]
+        
     clip_files = []
     temp_clips_dir = os.path.join(BASE_DIR, "temp_animated_clips")
     os.makedirs(temp_clips_dir, exist_ok=True)
@@ -579,12 +676,12 @@ def render_video(slides, duration_sec=900):
     logo_badge = create_corner_logo_badge(size=120)
     feather_frames = load_and_key_feather_frames()
     
-    # 1. Render 25-second animated clip for each slide
-    for idx, slide in enumerate(slides):
+    # 3. Render 25-second animated clip for each slide
+    for idx, slide in enumerate(selected_slides):
         clip_path = os.path.join(temp_clips_dir, f"clip_{idx+1}.mp4")
         clip_files.append(clip_path)
-        print(f"  -> Rendering Slide {idx+1}/{len(slides)} with Morpankh & Smooth Zoom...")
-        render_animated_slide_clip(slide, clip_path, feather_frames, logo_badge, slide_idx=idx, duration=25, fps=25)
+        print(f"  -> Rendering Slide {idx+1}/{len(selected_slides)} with Morpankh & Smooth Zoom...")
+        render_animated_slide_clip(slide, clip_path, feather_frames, logo_badge, slide_idx=idx, duration=25, fps=25, sparkle_palette=chosen_palette)
     
     # 2. Concat animated clips to cover duration_sec
     clips_total_sec = len(clip_files) * 25
