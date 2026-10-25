@@ -84,9 +84,10 @@ def ensure_images():
         raise FileNotFoundError(f"No images found in {IMAGES_DIR}")
     return sorted(slides)
 
-def mix_soundtrack():
-    """Assembles 15-Minute Flute & Tabla Master Audio, prioritizing fresh Suno AI tracks from Catbox."""
-    print("[1/4] Assembling Dynamic 15-Minute Flute & Tabla Master Audio...")
+def mix_soundtrack(duration_sec=900):
+    """Assembles Dynamic Flute & Tabla Master Audio (12-20 Mins), prioritizing fresh Suno AI tracks from Catbox."""
+    dur_min = int(round(duration_sec / 60.0))
+    print(f"[1/4] Assembling Dynamic {dur_min}-Minute Flute & Tabla Master Audio ({duration_sec}s)...")
     
     # 1. Check current cycle
     cycle = 1
@@ -117,7 +118,7 @@ def mix_soundtrack():
             with open(SUNO_URLS_FILE, "w", encoding="utf-8") as f:
                 f.write("\n".join(suno_urls) + "\n")
 
-    # If Suno URL found, download via curl and loop/master to 15:00 flat
+    # If Suno URL found, download via curl and loop/master to duration_sec
     while suno_urls:
         chosen_url = suno_urls.pop(0)
         temp_input = os.path.join(BASE_DIR, "temp_suno_input.mp3")
@@ -132,17 +133,18 @@ def mix_soundtrack():
         res = subprocess.run(dl_cmd)
         
         if res.returncode == 0 and os.path.exists(temp_input) and os.path.getsize(temp_input) > 50000:
-            print(f"  -> Download successful! Mastering for Cycle {cycle} (15:00 flat master soundtrack)...")
+            print(f"  -> Download successful! Mastering for Cycle {cycle} ({dur_min}:00 dynamic master soundtrack)...")
             # Always apply 432Hz harmonic warmth EQ, 1.8% micro-pitch shift, and strip metadata
             # to guarantee 100% unique cryptographic audio fingerprint and zero Content ID matches
-            filter_str = "asetrate=44100*1.018,aresample=44100,equalizer=f=432:t=q:w=1:g=2,equalizer=f=3200:t=q:w=1.5:g=1.5,afade=t=in:st=0:d=3,afade=t=out:st=896:d=4,volume=1.05"
+            fade_out_st = max(10, duration_sec - 5)
+            filter_str = f"asetrate=44100*1.018,aresample=44100,equalizer=f=432:t=q:w=1:g=2,equalizer=f=3200:t=q:w=1.5:g=1.5,afade=t=in:st=0:d=3,afade=t=out:st={fade_out_st}:d=4,volume=1.05"
 
             master_cmd = [
                 FFMPEG_EXE, "-y",
                 "-stream_loop", "-1",
                 "-i", temp_input,
                 "-map_metadata", "-1",
-                "-t", "900",
+                "-t", str(duration_sec),
                 "-af", filter_str,
                 "-c:a", "libmp3lame", "-b:a", "192k",
                 TEMP_AUDIO
@@ -161,7 +163,7 @@ def mix_soundtrack():
             except Exception:
                 pass
                 
-            print(f"  -> ✅ 15-Minute Master Soundtrack ready from Suno AI: {TEMP_AUDIO}")
+            print(f"  -> ✅ {dur_min}-Minute Master Soundtrack ready from Suno AI ({duration_sec}s): {TEMP_AUDIO}")
             return
         else:
             print(f"  ⚠️ Warning: Failed to download {chosen_url}, trying next track...")
@@ -596,16 +598,17 @@ def render_animated_slide_clip(slide_path, clip_output_path, feather_frames, log
     proc.wait()
 
 
-def render_video(slides):
+def render_video(slides, duration_sec=900):
     """
-    Renders 15-Minute Dynamic Full HD Video with:
+    Renders Dynamic Full HD Video (12-20 Mins) with:
     - Butter-Smooth Subpixel Bicubic Ken Burns Zoom & Pan (ZERO Jhatka)
     - Asynchronous Multi-Size 3D Morpankh Feathers (Staggered Floating)
     - Image-Harmonized Golden Sparkles (No square artifacts)
     - Krishna Vibez Circular Luxury Channel Logo Badge in Top Corner
-    - Exact 15:00.00 flat duration (36 slide slots * 25s = 900 seconds)
+    - Dynamic duration matching user soundtrack (12 to 20 minutes)
     """
-    print("[2/4] Rendering 15-Minute Cinematic Video with Subpixel Zoom & Divine Morpankh...")
+    dur_min = int(round(duration_sec / 60.0))
+    print(f"[2/4] Rendering {dur_min}-Minute ({duration_sec}s) Cinematic Video with Subpixel Zoom & Divine Morpankh...")
     
     clip_files = []
     temp_clips_dir = os.path.join(BASE_DIR, "temp_animated_clips")
@@ -621,10 +624,12 @@ def render_video(slides):
         print(f"  -> Rendering Slide {idx+1}/{len(slides)} with Morpankh & Smooth Zoom...")
         render_animated_slide_clip(slide, clip_path, feather_frames, logo_badge, slide_idx=idx, duration=25, fps=25)
     
-    # 2. Concat 12 animated clips 3 times = exactly 36 clips * 25s = 900 seconds (15:00.00)
+    # 2. Concat animated clips to cover duration_sec
+    clips_total_sec = len(clip_files) * 25
+    repeat_count = int(math.ceil(duration_sec / float(clips_total_sec))) + 1
     concat_list = os.path.join(BASE_DIR, "temp_concat_clips.txt")
     with open(concat_list, "w", encoding="utf-8") as f:
-        for _ in range(3):
+        for _ in range(repeat_count):
             for cp in clip_files:
                 esc = cp.replace("\\", "/")
                 f.write(f"file '{esc}'\n")
@@ -635,7 +640,7 @@ def render_video(slides):
         "-i", TEMP_AUDIO,
         "-c:v", "copy",
         "-c:a", "aac", "-b:a", "192k",
-        "-t", "900",
+        "-t", str(duration_sec),
         OUTPUT_VIDEO
     ]
     subprocess.run(cmd_final, check=True)
@@ -652,7 +657,7 @@ def render_video(slides):
         try: os.remove(concat_list)
         except Exception: pass
         
-    print(f"  -> Video Rendered with Smooth Morpankh & Zoom: {OUTPUT_VIDEO} (Exact 15:00.00)")
+    print(f"  -> Video Rendered with Smooth Morpankh & Zoom: {OUTPUT_VIDEO} ({dur_min} Mins / {duration_sec}s)")
 
 
 def generate_thumbnail(slides, theme):
@@ -848,9 +853,19 @@ def main():
     random.shuffle(slides)
     if len(slides) > 12:
         slides = slides[:12]
-    theme = random.choice(MEDITATION_THEMES)
-    mix_soundtrack()
-    render_video(slides)
+        
+    # User rule: Dynamic duration between 12 and 20 minutes (never monotonous)
+    dur_min = random.randint(12, 20)
+    dur_sec = dur_min * 60 + random.randint(5, 45)
+    print(f"🎬 [DYNAMIC DURATION] Today's Master Video: {dur_min} Minutes ({dur_sec} seconds)")
+    
+    theme = random.choice(MEDITATION_THEMES).copy()
+    # Adapt theme badge and title to reflect the exact minutes
+    theme["badge"] = theme["badge"].replace("15 MIN", f"{dur_min} MIN")
+    theme["title"] = theme["title"].replace("15 Min", f"{dur_min} Min")
+    
+    mix_soundtrack(duration_sec=dur_sec)
+    render_video(slides, duration_sec=dur_sec)
     generate_thumbnail(slides, theme)
     upload_to_youtube(theme)
     cleanup()
