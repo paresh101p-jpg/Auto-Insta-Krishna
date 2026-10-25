@@ -1,14 +1,13 @@
-# Image Generation Strategy for Krishna & Pooja
+# Image Generation Strategy for Krishna Music Videos (50+ Images)
 
-Whenever you are instructed to generate images for "Pooja" or "Krishna", ALWAYS perform this check first:
-1. Count the number of images currently in the GitHub `images/` folder (local repo folder) for `Auto-Insta-Krishna` and `Auto-Insta-Pooja`.
-2. Compare the counts. 
-3. Whichever account has FEWER images at the START of the generation process, generate the ENTIRE batch of images for THAT specific account until the daily/session limit is reached.
-   - Example: If Krishna has 5 and Pooja has 6, the entire batch for today will be for Krishna because he started with fewer images.
-4. If they have the exact same number of images at the start, generate images equally for both.
-5. After generating, always compress them, apply necessary watermarks, and save them in the correct repository's `images/` folder, then upload to GitHub.
+**NOTE (User Instruction)**: Instagram quote/text images for Pooja and Krishna are discontinued.
+All future image generation is dedicated strictly to **Krishna 16:9 Cinematic Music Video Images (`Auto-Insta-Krishna/music_video_images/`)**.
 
-This rule is mandatory and must be strictly followed to keep the post backlog balanced between the two bots.
+1. **Aspect Ratio**: Always 16:9 Landscape (1920x1080 / 4K / 8K cinematic).
+2. **Clean Visuals (No Text / No Quotes)**: Absolutely ZERO quotes, text, watermarks, or typography on the images.
+3. **Themes**: Ultra-realistic cinematic Lord Krishna in Vrindavan, playing flute under Kadamba tree, divine cows, Yamuna river ghats, sunrise/sunset golden hour lighting, peacocks, lotus ponds, and majestic divine scenery.
+4. **Target Pool**: Minimum 50+ high-quality images stored in `Auto-Insta-Krishna/music_video_images/` for the automated 15-minute music video pipeline.
+
 
 # Strict Account Separation & Content Segregation Rule (Krishna vs Pooja)
 1. **100% Zero-Leak Isolation**:
@@ -23,42 +22,41 @@ This rule is mandatory and must be strictly followed to keep the post backlog ba
 
 # Unique Quotes for Krishna Images
 Whenever you generate AI images for Krishna that include text/quotes:
-1. ALWAYS read the file `e:\Paresh\Auto Post\Auto-Insta-Krishna\quotes.txt`.
-2. NEVER generate your own quotes. ONLY use the exact quotes provided in `quotes.txt`. Pick quotes from this file RANDOMLY (not sequentially) to use in the images.
-3. **CRITICAL:** DO NOT append Sandeep Maheshwari's name, "- राधे कृष्ण", or any other signature at the end of the quotes. Only write the core quote exactly as it is in the file.
-4. **Varied Backgrounds (Unlimited Creativity):** Do not always use a simple wooden board. You can write the text on almost ANY realistic surface! Rotate between hyper-realistic backgrounds like: vintage book pages, old weathered wooden door, stone wall, boat wood, raste (roads), pani (water surface), glass, diwaar (walls), kapde (cloth/fabric), leaves, etc. The text must look naturally integrated (painted, carved, or reflected) into whatever surface you choose.
-5. Explicitly pass the specific thought into the image generation prompt.
-6. AFTER generating the image successfully, ALWAYS MOVE the used quote(s) from `quotes.txt` to `e:\Paresh\Auto Post\Auto-Insta-Krishna\used_quotes.txt` (backup). This means you must delete the quote from `quotes.txt` and append it to `used_quotes.txt`. This ensures the quote is permanently preserved as a backup but never repeated, preventing duplicate images.
+1. ALWAYS read the file `e:\Paresh\Auto Post\Auto-Insta-Krishna\quotes.txt` to get the next available Hindi/Sanskrit spiritual thought. (Take quotes starting from the top of the file).
+2. NEVER generate your own quotes. ONLY use the exact quotes provided in `quotes.txt`.
+3. Explicitly pass the specific thought into the image generation prompt.
+4. AFTER generating the image successfully, ALWAYS MOVE the used quote(s) from `quotes.txt` to `e:\Paresh\Auto Post\Auto-Insta-Krishna\used_quotes.txt`. This means you must delete the quote from `quotes.txt` and append it to `used_quotes.txt`. This ensures the quote is preserved as a backup but never repeated.
 
-# 🚀 NEW ARCHITECTURE: Catbox URL Queue System (Active & Mandatory)
-Auto-Insta-Krishna and Auto-Insta-Pooja both use a robust URL-based queue system for posting.
+# Image Persistence and Addition Rule
+Whenever new AI images are generated, they MUST be ADDED to the existing GitHub repository pool. You MUST NEVER delete, replace, or overwrite existing images when pushing new ones.
 
-### Rule 1: Post via URLs ONLY
-- The bots read strictly from `images_urls.txt` and `reels_urls.txt`.
-- They **do not** pull local files from the `images/` or `new_video/` folders to post.
-- This bypasses Catbox's IP blocking by passing direct raw links to Graph API.
-- After a successful post, the URL is removed from the active file and saved in `used_urls.txt`.
+# Failed Posts Rule
+If a post fails (e.g. due to an API error), the image MUST NOT be deleted. The image should be returned to the images/ folder so it can be picked up and tried again on the next run. Only images that successfully post to all platforms should be permanently removed on the subsequent run.
 
-### Rule 2: NEVER Delete User Files (Permanent Backup)
-- **CRITICAL:** Do NOT write scripts that delete local `.jpg`, `.png`, or `.mp4` files from the user's PC after they are uploaded or posted.
-- The `images/` and `new_video/` folders serve as the user's permanent local and GitHub backup.
-- Always use `-lt` filters (e.g. `(Get-Date).AddMinutes(-2)`) in PowerShell when uploading to ensure old files are skipped instead of deleted.
+# User Uploaded Images Sync Rule
+Whenever the USER manually adds new images to the local PC's images/ folder, DO NOT automatically push them to GitHub. Only push these manually added images to GitHub if the USER explicitly instructs you to do so (e.g., "images folder ki images github me send karo").
 
-### Rule 3: File Type Handling (.JPG vs .PNG)
-- When writing scripts to upload or process images, always check for BOTH `.jpg` and `.png` files.
-- Example: `Get-ChildItem -Path "images" -Include *.jpg, *.png`
-- If you forget `.png`, half the user's images (e.g. from older screenshot generations) will be skipped.
+# Krishna Image Generation Prompt Template
+Whenever you generate AI images for Krishna, you MUST use the following exact prompt structure:
 
-### Rule 4: Amazon Affiliate Splitting (Pooja Bot)
-- Auto-Insta-Pooja uses a split logic for captions to comply with Amazon Affiliate rules.
-- **Instagram:** Appends `🛒 Check out the link in my Bio! #ad #CommissionsEarned` (No clickable links allowed).
-- **Facebook:** Appends `🛒 Buy my favorite product here: https://link.amazon/A02oaFqo9 #ad #CommissionsEarned` (Direct clickable link).
-- **Self-Referral Rule:** The user is aware that linking their own brand (Mojilo) via the same affiliate ID is a violation and has opted not to do it. Only promote products officially using this split-caption method.
+Create a premium, ultra-realistic Instagram photograph.
+TEXT + LOCATION:
+"[WRITE YOUR TEXT] — physically written/printed/painted on [WRITE YOUR LOCATION]"
+Make the text look 100% REAL and physically present on the specified location, like a professionally photographed real-world mockup — never like a digital overlay, pasted PNG, sticker, floating text or Photoshop layer.
+Automatically adapt the typography to the exact surface: perspective, curves, folds, texture, grain, depth, shadows, highlights, reflections, lighting and imperfections. The text must naturally follow the surface and look as if it existed there before the photograph was taken.
+Create artistic typography with BIG + small words, different premium fonts, slightly tilted/rotated/curved words, dynamic spacing, controlled overlap and 3–6 beautiful complementary colors. Keep everything stylish, balanced and highly readable.
+Automatically choose the most realistic physical application method for the specified location.
+Ultra-realistic commercial photography, cinematic lighting, realistic materials, professional composition, HDR, sharp details, premium editorial look.
+Preserve the exact text spelling. No extra words, logos, watermark, gibberish or cropped letters.
+The final image must look like a genuine real-life photograph with authentic physical typography integrated into the scene.
 
-### Rule 5: Facebook Video Story Upload Fix (CRITICAL)
-- When uploading a Video Story to Facebook via the Graph API (`post_fb_video_story`), Meta's servers require time to process the video chunk in the `transfer` phase before the `finish` phase.
-- **NEVER** reduce the `time.sleep(35)` after the chunk upload. 
-- If reduced, Meta's API will return a false `Video Upload Is Missing` error, crashing the Facebook Story post. This has been permanently fixed and must remain exactly as is.
+Notes:
+1. Replace [WRITE YOUR TEXT] with a unique, trending Hindi spiritual thought. **CRITICAL: NEVER include "- राधे कृष्ण" or any other name at the end of the quote.**
+2. Replace [WRITE YOUR LOCATION] with a creative physical location (e.g., old rustic wooden door, ancient stone wall, vintage diary, temple pillars, etc.).
+3. ALWAYS include a beautiful flute (banshuri) and 2 peacock feathers (morpankh) placed beautifully in the scene.
+4. ALWAYS write "PareshPadsala_" clearly visible at the bottom center of the image.
+
+5. ALWAYS use a 3:4 Aspect Ratio for ALL generated images (Instagram Portrait). DO NOT use 1:1 or any other ratio.
 
 # YouTube Shorts & Video Reel Generation Rules
 
@@ -99,10 +97,16 @@ Whenever you are generating video reels or YouTube Shorts from images (whether b
 
 ### 4. Background Music & AI Music Generation Rules (Strict Negative Constraint)
 - **STRICT PROHIBITION ON `Auto-Insta-Krishna/music/`**: NEVER use, pick, copy, or read any music files from `Auto-Insta-Krishna/music/` under ANY circumstance. Using pre-existing tracks from this folder is 100% STRICTLY FORBIDDEN.
-- **ALWAYS GENERATE BRAND NEW FRESH AI MUSIC**: Every single music video or BGM track MUST be newly, freshly generated using AI (e.g. AI Music generation engines / models / Suno AI). Never reuse old pre-recorded files.
+- **ALWAYS USE SUNO AI MUSIC (Zero Local Ragas)**: Every single music video or BGM track MUST strictly use Suno AI generated tracks (`suno_music_urls.txt` / `user_suno_music/uploaded/`). Never reuse old pre-recorded Indian raga files from `music/`.
+- **UNIFIED SUNO URLS AUTO-SYNC RULE (Music Videos + 24/7 Live Stream)**: Whenever the user provides new Suno AI URLs or adds tracks, ALWAYS automatically use them for BOTH:
+  1. Standalone full-length 15-minute Krishna Music Videos.
+  2. 24/7 YouTube Live Meditation Stream on Oracle Cloud (`/home/ubuntu/krishna-live/music/` and `audio_playlist.txt`).
+  The user does NOT need to ask or say "live me add karo" — it must happen simultaneously and automatically.
+- **ZERO-REFUSAL SUNO URL AUTO-EXTRACTION (Never Say "MP3 Nahi Hogi")**: Whenever the user shares any Suno links (`suno.com/s/...` or `suno.com/song/...`), NEVER refuse or ask the user to download manually. ALWAYS use the automated extractor engine (`resolve_suno_urls.py` / `batch_process_all_suno_urls.py`) with dynamic rotating `Fingerprint-Id` to automatically extract pristine MP3s, strip all Suno IDs (`-map_metadata -1`), apply 432Hz harmonic EQ, upload to Catbox CDN, push to GitHub `master`, sync to Oracle VPS live stream, and immediately delete local temporary files from PC to keep local storage at 0% waste.
+- **SINGLE TRACK PER MUSIC VIDEO RULE**: In every standalone 15-minute Krishna music video, strictly use **1 unique track** looped seamlessly with `-stream_loop -1` and smooth fade-in/fade-out to maintain deep meditative focus. Never mix or mash up different tracks within the same video.
 - **True Melody & Rhythm (Taal & Dhun)**: AI music must have authentic Indian classical Bansuri flute melody and real Tabla beats/rhythm. Never produce empty or robotic monotone beeps.
-- **Clean Visuals (No Quotes/Thoughts)**: For dedicated music videos, NEVER use Instagram quote/thought images. Always generate clean, 100% new, 16:9 cinematic Lord Krishna images without any written text, quotes, or thoughts.
-- Flute volume MUST be softly balanced at **14% - 15%** for voice reels, and 100% full master for music videos.
+- **Clean Visuals (No Quotes/Thoughts)**: For dedicated music videos and live streams, NEVER use Instagram quote/thought images. Always use clean, 100% text-free, 16:9 cinematic Lord Krishna images without any written text, quotes, or thoughts.
+- Flute volume MUST be softly balanced at **14% - 15%** for voice reels, and 100% full master for music videos and live stream.
 - BGM MUST have a smooth **1.2 to 1.5-second fade-out** at the end.
 - Voice delay: Start the voice 0.6 to 0.7 seconds after video begins, allowing the viewer to first hear the flute music and experience the unblur transition.
 
@@ -111,7 +115,7 @@ Whenever you are generating video reels or YouTube Shorts from images (whether b
 - Frame Rate: **25 fps**, Codec: **libx264** (CRF 18), Audio: **AAC 192k**.
 - Total Duration: Matches voice length + ~2 seconds padding (typically 15 to 20 seconds).
 
-### 6. YouTube Partner Program (YPP) Monetization & Metadata Rules
+### 6. YouTube Partner Program (YPP) Monetization & Upload Automation Rules
 Whenever uploading or generating metadata for YouTube Shorts:
 1. **Meaningful Title Structure (Never post bare hashtags):**
    - Title MUST have the core wisdom/hook followed by hashtags.
@@ -122,10 +126,53 @@ Whenever uploading or generating metadata for YouTube Shorts:
    - This complies with YouTube's 2024-2026 AI transparency policy and prevents any demonetization flags.
 3. **Original Value Addition Guarantee:**
    - Every reel must incorporate the 4-layer signature: (a) Emotion-Adaptive Voiceover with pauses, (b) 0 to 3.5s Focus-Reveal Unblur Hook, (c) Studio-mastered Flute BGM, and (d) Visible creator brand watermark (`@PareshPadsala_` / `Krishna Vibez`).
-4. **Description & Cross-Promotion:**
-   - Include a concise 2-3 line spiritual summary of the thought.
+4. **Description & Cross-Promotion (100% Thought-Adaptive Keywords & Hashtags):**
+   - Include a concise 2-3 line spiritual summary of the thought + 3 practical life lessons + English wisdom summary.
+   - **Reel-Specific Searches & Topics Block**: Dynamically generated `🔍 Searches & Topics Covered` block containing 6-8 search queries specifically matching what the reel is about (e.g., patience, anger, karma, hard times, faith) in Hindi and Hinglish.
+   - **Reel-Specific Hashtags**: Base platform tags (`#Shorts #Krishna #RadheKrishna #KrishnaVibez #DailySuvichar`) followed by 5-8 hashtags that directly reflect the core topic of the reel (e.g. `#Dhairya #Patience #BuraWaqt #Samay` or `#Karma #KarmFal #Duty`).
+   - **Thought-First Backend Tags**: YouTube API backend `tags` prioritizes the reel's specific search tags first, followed by anchor tags, capped at 480 chars.
    - Include direct links to the website (`https://krishnavibez.in/`), WhatsApp Channel (`https://whatsapp.com/channel/0029VbDxJHk30LKNtj4Er62J`), and Telegram (`https://t.me/krishnavibezz`).
-   - Relevant hashtags: `#KrishnaVibez #BhagavadGita #DailySuvichar #SpiritualShorts #KrishnaQuotes`.
+5. **Multi-Candidate Auto-Recovery Loop (Crash-Proof Queue):**
+   - NEVER crash the workflow if a single video URL fails download or video integrity check (e.g., missing `moov atom` or truncated upload).
+   - Distinguish between Corrupted/404 files vs temporary network drops:
+     - If confirmed corrupt (failed `verify_video_integrity()` due to truncated upload/missing `moov atom`) or HTTP 404: automatically prune and discard from `youtube_reels_urls.txt`.
+     - If temporary network drop: preserve URL in queue and immediately attempt the next candidate reel.
+   - The script attempts up to 5 distinct candidate reels per run, ensuring 99.9% uptime even if a few uploaded files in the queue were truncated.
+6. **Native `curl` (HTTP/2 & TLS 1.3) Primary Download Engine:**
+   - Always prioritize native `curl -s -L -f --retry 3` over Python's `requests`/`urllib3`.
+   - **Root Cause & Reason**: Cloudflare and Catbox anti-bot firewall aggressively drop Python HTTP/1.1 socket connections from Microsoft Azure / GitHub Actions runner IPs (`Remote end closed connection without response`), while native `curl` negotiates HTTP/2 and modern TLS 1.3 smoothly in < 1 second.
+   - Fallback chain: Primary `curl` ➔ Secondary `urllib.request` ➔ Tertiary `requests` (with `Connection: close`).
+   - NEVER wrap video downloads with free web HTML proxies (e.g. `allorigins.win` or `corsproxy.io`) as they truncate binary streams and strip the `moov atom`.
+7. **CI/CD System Dependencies (FFmpeg):**
+   - In `.github/workflows/youtube_schedule.yml`, ALWAYS include `sudo apt-get update && sudo apt-get install -y ffmpeg` before running the Python script.
+   - Required for OpenCV video reading, 4.0s sharp frame extraction, and anti-duplicate audio-visual variations.
+8. **Gemini Vision Model & Active Discovery:**
+   - Always use `gemini-3.8-flash`, `gemini-3.8-pro`, `gemini-3.7-flash` with dynamic `client.models.list()` fallback to ensure prompt metadata generation never fails due to deprecated models.
+9. **Anti-Duplicate Fingerprint & Auto-Recycle Loop:**
+   - Cycle 1: Upload pristine original voice reels without modifications from the master 2,000+ backlog.
+   - Cycle 2+ (Looping): When `youtube_reels_urls.txt` runs out, it auto-reloads from `youtube_reels_urls_backup.txt`, shuffles them, and applies micro-speed/color grading variations via FFmpeg to guarantee 100% unique cryptographic file hash and pixel matrix.
+10. **Automated Publishing Schedule & Queue Archiving:**
+   - 3 Daily automated scheduled slots: `02:30 UTC` (08:00 AM IST), `08:30 UTC` (02:00 PM IST), `14:30 UTC` (08:00 PM IST) via GitHub Actions `youtube_schedule.yml` (`cron: '30 2,8,14 * * *'`).
+   - Resumable YouTube Data API v3 upload (`insert(part="snippet,status", body=body, media_body=media)`).
+   - Once uploaded successfully, URL is archived to `youtube_used_urls.txt`, removed from `youtube_reels_urls.txt`, and committed to GitHub `master` with automatic rebase retry.
+
+### 6.1 YouTube Community Tab Image Post Automation Rules
+1. **Strict Pipeline Separation**:
+   - YouTube Shorts/Reels pipeline (`youtube_uploader.py`, `youtube_reels_urls.txt`, `.github/workflows/youtube_schedule.yml`) is 100% INDEPENDENT and MUST NEVER be touched or modified for community image posts.
+2. **Dedicated Cloud URL Queue**:
+   - Community posts strictly use `youtube_community_urls.txt` and archive used URLs to `youtube_community_used_urls.txt`.
+   - Images are downloaded on-the-fly (`temp_community_image.jpg`) from Cloud CDN and deleted immediately upon post completion (0% disk space waste).
+3. **Safety & Rate Limit Guards**:
+   - Strictly maximum 2 community posts per day.
+   - Enforce a minimum 4-hour gap between posts (timestamped in `youtube_community_history.json`).
+4. **Image-Specific Thought Matching & SEO**:
+   - Gemini Vision reads the exact thought from the image (or falls back to `quotes.txt`).
+   - Generates thought-matched divine hook, spiritual meaning, 3 practical lessons, topic-specific search queries, and specific hashtags.
+   - Moves used thoughts from `quotes.txt` to `used_quotes.txt`.
+5. **Local Stealth Execution**:
+   - Run exclusively via local Playwright with dedicated browser profile (`.youtube_community_profile/`) to eliminate datacenter IP blocks and protect the channel from any suspension or security challenges.
+6. **Infinite Auto-Recycle Loop**:
+   - When `youtube_community_urls.txt` runs out of URLs, the script automatically reloads all 2,000+ image URLs from `youtube_community_urls_backup.txt`, shuffles them randomly, increments the cycle in `youtube_community_cycle_tracker.txt`, and continues posting indefinitely without ever stopping.
 
 ### 7. Power Cut & System Restart Auto-Recovery Architecture (Crash-Proof)
 Whenever power cuts, system reboots, or execution stops, the entire pipeline is designed to resume seamlessly without any data loss or duplicate work:
@@ -143,7 +190,6 @@ Whenever power cuts, system reboots, or execution stops, the entire pipeline is 
 5. **Zero Interference with Scheduled Posts**:
    - Scheduled posting runs in GitHub Actions cloud.
    - All git sync scripts use `git pull --rebase origin master` so that cloud posts and local uploads never create merge conflicts.
-
 ### 8. Multi-Channel Social Syndication & Dailyhunt Ecosystem Rules
 
 1. **WhatsApp Share & Telegram Button 512-Byte Bypass**:
@@ -165,6 +211,23 @@ Whenever power cuts, system reboots, or execution stops, the entire pipeline is 
    - KYC & Banking: Axis Bank (A/C `915010046668776`, IFSC `UTIB0002083`, PAN `AVKPP7401M`), Signature & KYC documents uploaded.
    - Automated Content Ingestion: Syndicated via Media RSS (MRSS) feed at `https://krishnavibez.in/rss.xml`.
    - Both 4K Images (`type="image/jpeg"`) and Video Reels (`type="video/mp4"`) are automatically generated and looped continuously from the master 2,000+ backlog.
+
+### 8.1 WhatsApp Channel Post Automation Rules
+1. **100% Ban-Proof Architecture**:
+   - Uses real local Chromium via Playwright on residential IP (`.whatsapp_channel_profile/`).
+   - Meta Multi-Device authorized: acts as official secondary linked device (never conflicts with personal phone or personal browser WhatsApp).
+2. **Alternating Reel & Image Engine**:
+   - Alternates strictly every post: **Reel ➔ Image ➔ Reel ➔ Image** (tracked via `whatsapp_last_post_type.txt`).
+3. **Dedicated Independent Queues & Auto-Recycle**:
+   - Dedicated `whatsapp_images_urls.txt` (2,009 items) + `whatsapp_images_urls_backup.txt`.
+   - Dedicated `whatsapp_reels_urls.txt` (2,080 items) + `whatsapp_reels_urls_backup.txt`.
+   - Infinite Auto-Recycle Loop restores and shuffles URLs independently whenever either queue finishes.
+4. **Publishing Schedule, Gap & Auto-Catchup Policy**:
+   - 3 Daily Target Slots: **09:00 AM IST**, **01:00 PM IST**, and **05:00 PM IST** (Task Scheduler tasks `WhatsApp_Channel_Poster_Slot1`, `Slot2`, `Slot3`).
+   - Enforce a minimum **3-hour gap** between posts (timestamped in `whatsapp_history.json`).
+   - **PC Power Cut / Boot Catchup**: Configured with `StartWhenAvailable = True`. If PC was turned off during scheduled time or for days, upon PC boot the task automatically fires, verifies >= 3 hours have passed since the last post, and immediately posts the next alternating item!
+5. **AI Vision Thought-Matching**:
+   - Gemini Vision reads the exact thought from the image or reel's 4.0s video frame, formats divine hook, spiritual meaning, and practical lessons using WhatsApp typography (`*bold*` & bullet points `•`).
 
 ### 9. Website UI/UX, SEO & Engagement Engine Rules (`krishnavibez.in`)
 
@@ -210,18 +273,67 @@ Whenever power cuts, system reboots, or execution stops, the entire pipeline is 
    - Facebook: direct link to `https://www.facebook.com/1808917602588221`.
    - Styled with gold hover highlights and smooth transitions.
 
+### 11. Zero-Cost & Strict Free-Tier Quota Guard Rule (बिल 0 रहना चाहिए - Zero Bill Policy)
+1. **Absolute Zero Bill Policy**: Under NO circumstances should any paid bill, card debit, or fee ever be incurred from Google Cloud, ElevenLabs, Sarvam AI, or any other API.
+2. **Local Character Tracker (`gcloud_usage_tracker.json`)**: Every single character synthesized must be counted and recorded with month/year.
+3. **Strict Safety Ceiling (800,000 chars)**: Google Cloud TTS offers 1,000,000 characters free per month. A hard cut-off is strictly locked at 800,000 characters (leaving a massive 200,000 character safety buffer).
+4. **Auto-Stop & Fallback**: If the safety ceiling is reached or free tier expires, the system MUST IMMEDIATELY STOP making API requests, notify Paresh bhai, and switch automatically to the 100% free offline engine (Edge-TTS). Never proceed with paid calls once free limits are reached.
+
+### 12. Anchor Aadhya — AI & Future Tech News Channel Rules
+1. **Absolute Standalone Independence**:
+   - Location: `E:\Paresh\Auto Post\AI News Channel`.
+   - Must NEVER be mixed, linked, or merged with `Auto-Insta-Krishna`, `Auto-Insta-Mojilo`, or `Auto-Insta-Pooja`.
+2. **Daily 4:30 PM Research -> 5:00 PM YouTube Upload**:
+   - 04:30 PM (16:30 IST): Automatic research fetches today's latest real AI & tech news, sources real photojournalism photos, renders full 1080p video (3.5 to 5 min), generates 1280x720 high-CTR thumbnail, and full Hinglish metadata (`RUN_DAILY_430PM.bat`).
+   - 05:00 PM (17:00 IST): Automatic upload engine publishes video, thumbnail, and metadata directly to YouTube (`RUN_DAILY_5PM_UPLOAD.bat`).
+3. **Anchor Aadhya Visual & Character Identity**:
+   - Name: **आध्या** / **Anchor Aadhya** (Channel: **AI Aadhya**).
+   - Voice: Microsoft Swara Neural (`hi-IN-SwaraNeural`).
+   - Visuals: Gorgeous, glamorous Indian female news anchor with radiant glowing skin, expressive eyes, dazzling confident smile, and modern fitted crimson red/navy broadcast blazer with asymmetrical cuts.
+   - Studio Branding: Digital studio monitors and desk plates must prominently display **"AI Aadhya"**.
+   - Thumbnail Aspect Ratio: STRICT mathematical aspect ratio preservation `(crop_w/crop_h == target_w/target_h)`. Never stretch or distort facial features.
+4. **YouTube Policy & YPP Compliance**:
+   - Strict Anti-Tag-Stuffing Rule: NEVER put comma-separated lists of tags inside the description. Comma tags belong strictly in YouTube's backend `tags` field.
+   - Description must contain engaging Hinglish narrative, exact timestamps/chapters, question of the day, channel mission, mandatory synthetic media disclosure, and 6-10 `#Hashtags`.
+5. **100% Autonomous Broadcast TV Outro Architecture**:
+   - Duration: Last 15–20 seconds of the video (Scene 6 Outro).
+   - Zero Manual Studio Touch: The creator NEVER needs to open YouTube Studio to manually add end screen elements.
+   - Autonomous Visual & Audio Sign-off:
+     - Anchor Aadhya (`anchor_aadhya_outro.jpg`) warmly smiles on full broadcast studio frame.
+     - Professional Animated Lower-Third Plate: `DAILY 5PM BULLETIN | ROZ SHAAM 5 BAJE NAYA VIDEO!`.
+     - Animated Bullets: `• Like karo, doston ko share karo aur bell icon dabao` and `• Kal shaam 5 baje milte hain ek aur naye dhamake ke saath!`.
+     - Scrolling Bottom Ticker Tape with daily 5 PM schedule and subscribe callout.
+     - Audio: Natural, engaging sign-off inviting viewers to like, share, subscribe, and meet tomorrow at 5:00 PM.
+
 ### 13. Suno AI Music & 15-Minute Lord Krishna Flute Video Pipeline Rules
 
-1. **User Suno Music Ingestion Protocol**:
-   - Whenever the USER provides Suno share URLs (e.g. `https://suno.com/s/...` or `https://suno.com/song/...`) in chat:
-     - Automatically extract the direct audio stream from Suno's CloudFront CDN (`https://d2lwuy8qc234o3.cloudfront.net/1/clip/{clip_id}.m4a`).
-     - Download the pristine audio file directly to local folder: `e:\Paresh\Auto Post\Auto-Insta-Krishna\user_suno_music\`.
-     - Automatically execute `upload_suno_music_to_catbox.py` to upload the track to Catbox CDN (`https://catbox.moe/user/api.php`).
+1. **User Suno Music Ingestion & Zero-Refusal Extraction Protocol**:
+   - **Never Refuse Any Suno Link ("MP3 Nahi Hogi" is Strictly Forbidden)**: Whenever the USER provides any Suno share URLs (`https://suno.com/s/...` or `https://suno.com/song/...`) or files:
+     - Automatically extract pristine, high-fidelity MP3 audio using the automated extractor engine (`resolve_suno_urls.py` / `batch_process_all_suno_urls.py`) via `api.sunodown.com` with dynamic rotating `Fingerprint-Id: str(uuid.uuid4())` to completely bypass daily download limits.
+     - Strip all Suno metadata (`-map_metadata -1`) and apply 432Hz harmonic warmth EQ + subtle atempo normalization (`equalizer=f=432:t=q:w=1:g=2,equalizer=f=3200:t=q:w=1.5:g=1.5,atempo=1.015,volume=1.05`).
+     - Upload the mastered track to Catbox CDN (`https://catbox.moe/user/api.php`).
      - Append the direct Catbox URL to `suno_music_urls.txt` (active queue) and `suno_music_urls_backup.txt` (master backup pool).
-     - Move the processed local audio file to `user_suno_music\uploaded\` to prevent duplicate uploads.
+     - **0% Local PC Disk Waste**: Immediately delete all temporary audio files (`.mp3`, `.m4a`) from local PC storage once uploaded to Catbox and synced to Oracle VPS. Local PC storage must remain clean and uncluttered.
      - Automatically commit and push `suno_music_urls.txt` and `suno_music_urls_backup.txt` to GitHub remote `origin master`.
 
-2. **Daily 10:00 AM IST Automated Cloud Publishing**:
+2. **Unified Suno Auto-Sync (Music Videos + 24/7 Live Stream)**:
+   - Every single Suno track added MUST automatically and simultaneously be synced to BOTH:
+     1. Standalone full-length 15-minute Krishna Music Videos (`suno_music_urls.txt`).
+     2. 24/7 YouTube Live Meditation Stream on Oracle Cloud VPS (`/home/ubuntu/krishna-live/music/` and `audio_playlist.txt`).
+   - The user does NOT need to ask or say "live me add karo" — it must happen simultaneously and automatically every time.
+
+3. **Single Track Per Music Video Rule**:
+   - In every standalone 15-minute Krishna music video, strictly use **1 unique track** looped seamlessly with `-stream_loop -1` and smooth fade-in (3s) and fade-out (4s) to maintain deep meditative trance.
+   - NEVER mix, mash up, or stitch different tracks within the same video.
+
+4. **Channel Branding & Public Title Standards**:
+   - **Mandatory Channel Signature**: Every title across Shorts, 15-Minute Music Videos, and Live Stream MUST end with `| Krishna Vibez`.
+   - **Zero Technical Frequency Numbers**: NEVER write `432Hz` or technical frequency numbers in public video titles or thumbnail badges. Titles must remain purely devotional, spiritual, and meditative (e.g., `श्री कृष्ण बाँसुरी ध्यान संगीत | Deep Meditation & Inner Peace Flute Music | Krishna Vibez`).
+
+5. **Strict Prohibition on Old Local Audio (`Auto-Insta-Krishna/music/`)**:
+   - NEVER use, pick, copy, or read any music files from `Auto-Insta-Krishna/music/` under ANY circumstance. Pre-existing tracks from this folder are 100% strictly forbidden. Every single track must be pure Suno AI flute dhun.
+
+6. **Daily 10:00 AM IST Automated Cloud Publishing**:
    - Runs daily at 10:00 AM IST via GitHub Actions (`krishna_music_video.yml`) and `cron-job.org`.
    - Reads the top URL from `suno_music_urls.txt` via native `curl`.
    - Loops and masters audio seamlessly to exact 15:00.00 flat duration with 3s fade-in, 4s fade-out, and 432 Hz harmonic warmth EQ.
@@ -230,4 +342,40 @@ Whenever power cuts, system reboots, or execution stops, the entire pipeline is 
    - Moves used URL to `suno_music_used_urls.txt`, updates `suno_music_urls.txt`, and commits changes with `[skip ci]`.
    - **Infinite Auto-Recycle Loop**: When `suno_music_urls.txt` is exhausted, auto-reloads from `suno_music_urls_backup.txt`, shuffles them, increments `suno_music_cycle_tracker.txt`, and applies 432Hz anti-duplicate remastering to ensure 100% unique cryptographic file hash.
    - **NEVER manually run the workflow**: Runs strictly on schedule or when explicitly instructed by the user.
+
+### 14. YouTube 24/7 Live Stream Description & SEO Standards
+1. **Description Length & Completeness**:
+   - The 24/7 Live Stream description (`update_live_stream_seo.py`) must NEVER be a short stub. It must always be comprehensive (~1,800 to 2,000 chars) with:
+     - Divine Hook & spiritual meditation narrative.
+     - Comprehensive "Ideal For" points (Deep Meditation, Dhyan, Yoga, Stress Relief, Deep Sleep, Insomnia, Work/Study Focus).
+     - Full official ecosystem links: Website (`https://krishnavibez.in/`), YouTube (`@KrishnaVibezofficial`), WhatsApp Channel, Telegram, Instagram (`@pareshpadsala_`), Facebook Page (`1808917602588221`), Threads (`@pareshpadsala_`), and Pinterest (`MojiloMart`).
+     - Amazon Storefront section: `https://www.amazon.in/shop/myhappybirthday` with official Amazon Associate legal disclosure.
+     - Long-tail search keywords block & top devotional hashtags.
+2. **Weekly Rotation**: Rotates through 4 weekly theme hooks and titles automatically via `update_live_stream_seo.py` without stopping or interrupting the stream.
+
+### 15. YouTube Thumbnail Dual-Font Standard (Zero Tofu Box Rule) & Typography
+1. **Root Cause Prevention**:
+   - Standard English fonts (`arial.ttf`, `DejaVuSans`) do NOT contain Devanagari Hindi glyphs and result in square/tofu box (`□`) rendering artifacts in FFmpeg drawtext.
+   - ALWAYS enforce **Dual-Font Rendering**:
+     - English badges & branding: `arialbd.ttf` (or system English bold font).
+     - Hindi Title & Subtitle: Dedicated Unicode font `NotoSansDevanagari-Bold.ttf` (stored locally in `Auto-Insta-Krishna/`).
+2. **High-CTR Visibility Font Sizes**:
+   - Main Hindi Title: **100px** font size (`#FFDF00` bright gold) with 6px solid black outline.
+   - Hindi Subtitle: **62px** font size (pure white) with 4px black outline.
+   - Category Badge: **42px** font size on goldenrod badge.
+   - Bottom Contrast Gradient: Deep 450px solid/gradient dark overlay (`black@0.75`) to guarantee maximum contrast and readability across all mobile and TV screens.
+
+### 16. Mojilo Shorts & Reels Generation Engine
+1. **Technical Specifications**:
+   - Location: `E:\Paresh\Auto Post\Auto-Insta-Mojilo`.
+   - Script: `batch_create_mojilo_reels.py`.
+   - Resolution: 1080x1920 (9:16 vertical full HD).
+   - Duration: ~55 to 58 seconds (strict <60s Shorts limit).
+   - Structure: 0–5s viral flash cut hook (15 rapid cuts), 5–52s cinematic smooth model pans/zooms into cotton fabric/collar/fit, last 6s flat t-shirt mockup hero frame + Call To Action.
+   - Voiceover: `hi-IN-SwaraNeural` (+8% speed).
+   - Audio Mix: Voiceover delayed by 5s (after viral hook), background music softly mixed with 1.5s fade-out at end.
+2. **Crash-Proof Resume Tracker**:
+   - Completed folders are logged into `uploaded_mojilo_reels_tracker.txt`.
+   - On power loss or reboot, it skips all tracked folders and resumes immediately from the next pending item.
+
 
