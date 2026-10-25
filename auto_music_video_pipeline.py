@@ -47,34 +47,34 @@ local_ffmpeg = r"E:\Paresh\Auto Post\ffmpeg-master-latest-win64-gpl\ffmpeg-maste
 if os.path.exists(local_ffmpeg):
     FFMPEG_EXE = local_ffmpeg
 
-# Meditation / Relaxation Hook Templates (Dynamic High-CTR Themes)
+# Meditation / Relaxation Hook Templates (Dynamic High-CTR Themes — Zero Technical Numbers)
 MEDITATION_THEMES = [
     {
         "badge": "15 MIN DEEP MEDITATION",
         "hindi_main": "दिव्य बांसुरी एवं तबला संगीत",
         "hindi_sub": "तनाव दूर करें और असीम शांति पाएं",
-        "title": "15 Min Divine Krishna Flute & Tabla | तनाव मुक्ति और असीम शांति | 432Hz Meditation Music",
+        "title": "15 Min Divine Krishna Flute & Tabla | तनाव मुक्ति और असीम शांति",
         "tags": ["Krishna Flute", "Deep Meditation", "Stress Relief", "Peaceful Music", "Bansuri Meditation", "Krishna Bhajan Instrumental", "Radha Krishna", "Relaxing Music", "Bansuri Tabla Jugalbandi"]
     },
     {
         "badge": "INNER PEACE & HEALING",
         "hindi_main": "श्री कृष्ण अमृत बाँसुरी",
         "hindi_sub": "मन की शांति और गहरी नींद के लिए",
-        "title": "श्री कृष्ण दिव्य बाँसुरी धुन | 15 Min Inner Peace & Deep Sleep | Healing Music",
+        "title": "श्री कृष्ण दिव्य बाँसुरी धुन | 15 Min Inner Peace & Deep Sleep",
         "tags": ["Krishna Flute Meditation", "Deep Sleep Music", "Inner Peace", "Bansuri Dhun", "Spiritual Relaxation", "Calm Mind", "Healing Music", "Radhe Krishna", "Man Ki Shanti"]
     },
     {
-        "badge": "432 Hz SACRED VIBES",
+        "badge": "DIVINE SACRED VIBES",
         "hindi_main": "राधे कृष्ण पावन धुन",
         "hindi_sub": "सकारात्मक ऊर्जा और आत्मिक सुकून",
-        "title": "Sacred Krishna Flute for Positive Energy | 15 Min Relaxation | 432Hz Music",
-        "tags": ["432Hz Music", "Positive Energy Music", "Krishna Flute", "Focus Music", "Morning Meditation", "Yoga Music", "Bansuri Tabla Jugalbandi", "Positive Vibes Flute"]
+        "title": "Sacred Krishna Flute for Positive Energy | 15 Min Relaxation",
+        "tags": ["Positive Energy Music", "Krishna Flute", "Focus Music", "Morning Meditation", "Yoga Music", "Bansuri Tabla Jugalbandi", "Positive Vibes Flute"]
     },
     {
         "badge": "STRESS RELIEF & CALM",
         "hindi_main": "मन को शांत करने वाला संगीत",
         "hindi_sub": "दिव्य शांति और विश्राम का अनुभव",
-        "title": "Calming Krishna Flute for Stress Relief | ध्यान एवं विश्राम संगीत | 432Hz Music",
+        "title": "Calming Krishna Flute for Stress Relief | ध्यान एवं विश्राम संगीत",
         "tags": ["Stress Relief Music", "Overthinking Relief", "Peaceful Bansuri", "Meditation Music Hindi", "Krishna Vibez", "Spiritual Music", "Chinta Mukti Bansuri"]
     },
     {
@@ -847,21 +847,28 @@ def upload_to_youtube(theme, duration_sec=900):
     ch3 = f"{(dur_quarter * 2):02d}:30"
     ch4 = f"{(dur_quarter * 3):02d}:45"
 
+    brand_suffix = " | Krishna Vibez"
     raw_title = theme.get("title", f"{dur_min} Min Divine Krishna Flute & Tabla")
-    title = f"{raw_title} | Krishna Vibez"
-    if len(title) > 95:
-        title = title[:95]
-    title = title.replace("<", "").replace(">", "").strip()
+    # Guarantee zero technical frequency numbers in title
+    raw_title = raw_title.replace("432Hz", "").replace("432 Hz", "").replace("528Hz", "").strip()
+    raw_title = raw_title.replace("<", "").replace(">", "").strip()
+
+    # Reserve space for brand_suffix so 'Krishna Vibez' is 100% guaranteed in title
+    max_raw_len = 95 - len(brand_suffix)
+    if len(raw_title) > max_raw_len:
+        raw_title = raw_title[:max_raw_len].rstrip(" |")
+
+    title = f"{raw_title}{brand_suffix}"
 
     description = (
         f"🌸 स्वागत है Krishna Vibez के पावन संगीत संसार में 🌸\n\n"
         f"Experience profound inner peace, deep tranquility, and divine healing with this {dur_min}-minute sacred "
-        f"Lord Krishna Flute (Bansuri) & authentic Live Tabla meditation music, mastered in 432Hz harmonic resonance.\n\n"
+        f"Lord Krishna Flute (Bansuri) & authentic Live Tabla meditation music, mastered in sacred harmonic resonance.\n\n"
         f"🌿 आज का पावन प्रसंग (Theme): {theme['hindi_main']} — {theme['hindi_sub']}\n\n"
         "भगवान श्री कृष्ण की मधुर मुरली की यह दिव्य ध्वनि मन के समस्त तनाव, चिंता और नकारात्मकता को समाप्त कर अंतरात्मा को "
         "असीम शांति से भर देती है। इसके साथ बजती हुई तबले की कोमल ताल (कहरवा एवं तीन ताल) हृदय में एक सुखद लय और सकारात्मक ऊर्जा का संचार करती है।\n\n"
-        "✨ 432 Hz पावन हीलिंग आवृत्ति का महत्व (432Hz Sacred Resonance):\n"
-        "यह संगीत 432 Hz प्राकृतिक हीलिंग फ्रीक्वेंसी पर ट्यून किया गया है। 432 Hz संगीत मस्तिष्क की अल्फा तरंगों (Alpha Waves) को "
+        "✨ पावन हीलिंग ध्वनि का महत्व (Sacred Resonance & Mind Healing):\n"
+        "यह संगीत प्राकृतिक हीलिंग तरंगों पर आधारित है। यह मधुर संगीत मस्तिष्क की अल्फा तरंगों (Alpha Waves) को "
         "सक्रिय करता है, मानसिक तनाव को घटाता है, हृदय स्पंदन को शांत करता है और गहरी नींद व आत्मिक सुकून प्रदान करता है।\n\n"
         "🧘 इस पावन संगीत के सर्वोत्तम उपयोग (Ideal For):\n"
         "• ध्यान, योग और दैनिक साधना (Deep Meditation, Dhyan & Daily Yoga)\n"
@@ -872,7 +879,7 @@ def upload_to_youtube(theme, duration_sec=900):
         "⏱️ समय सारणी (Chapters / Timestamps):\n"
         f"{ch1} 🪷 वृंदावन प्रातःकालीन बांसुरी (Divine Prelude)\n"
         f"{ch2} 🪶 बांसुरी एवं तबला कोमल जुगलबंदी (Keherwa Taal Rhythm)\n"
-        f"{ch3} 🌊 432Hz आत्मिक शांति और ध्यान प्रवाह (Deep Healing Flow)\n"
+        f"{ch3} 🌊 आत्मिक शांति और ध्यान प्रवाह (Deep Healing Flow)\n"
         f"{ch4} ✨ असीम शांति एवं समापन विश्राम (Closing Shanti & Gratitude)\n\n"
         "━━━━━━━━━━━━━━━━━━━━━━━━━━\n"
         "🔍 इस संगीत में समाहित प्रमुख विषय एवं खोज प्रश्न (Topics & Searches Covered):\n"

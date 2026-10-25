@@ -315,7 +315,7 @@ def generate_youtube_metadata_from_video(video_path):
     has_frame = extract_sharp_frame(video_path)
     
     default_quote = "कर्मण्येवाधिकारस्ते मा फलेषु कदाचन।"
-    default_title = "कर्म का फल और जीवन की सीख | श्री कृष्ण अमृत वचन #Shorts #Krishna #RadheKrishna"
+    default_title = "कर्म का फल और जीवन की सीख | श्री कृष्ण अमृत वचन | Krishna Vibez #Shorts"
     default_desc = (
         "🌸 कर्म का मर्म और जीवन की सच्ची शांति\n"
         "━━━━━━━━━━━━━━━━━━━━━━━━━━\n"
@@ -477,10 +477,14 @@ def generate_youtube_metadata_from_video(video_path):
                     ranking_tags.append(clean_tag)
                     total_chars += len(clean_tag) + 1
 
-        # Title formatting: must be under 95 characters
-        title = f"{hook} | श्री कृष्ण अमृत वचन #Shorts #Krishna #RadheKrishna"
-        if len(title) > 95:
-            title = f"{hook[:35]} | श्री कृष्ण अमृत वचन #Shorts #Krishna"
+        # Title formatting: Always includes channel brand 'Krishna Vibez' and stays under 95 characters
+        brand_suffix = " | Krishna Vibez #Shorts"
+        middle = " | श्री कृष्ण अमृत वचन"
+        max_hook = 95 - len(middle) - len(brand_suffix)
+        clean_hook = hook.replace("<", "").replace(">", "").strip()
+        if len(clean_hook) > max_hook:
+            clean_hook = clean_hook[:max_hook].rstrip(" ,|")
+        title = f"{clean_hook}{middle}{brand_suffix}"
 
         # Build Rich, Aesthetic Description
         lessons_text = "\n".join([f"• {item}" for item in lessons])
