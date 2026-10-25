@@ -47,35 +47,49 @@ local_ffmpeg = r"E:\Paresh\Auto Post\ffmpeg-master-latest-win64-gpl\ffmpeg-maste
 if os.path.exists(local_ffmpeg):
     FFMPEG_EXE = local_ffmpeg
 
-# Meditation / Relaxation Hook Templates (Dynamic AI & Fallback)
+# Meditation / Relaxation Hook Templates (Dynamic High-CTR Themes)
 MEDITATION_THEMES = [
     {
         "badge": "15 MIN DEEP MEDITATION",
         "hindi_main": "दिव्य बांसुरी एवं तबला संगीत",
         "hindi_sub": "तनाव दूर करें और असीम शांति पाएं",
-        "title": "15 Min Divine Krishna Flute & Tabla | Deep Meditation Music",
-        "tags": ["Krishna Flute", "Deep Meditation", "Stress Relief", "Peaceful Music", "Bansuri Meditation", "Krishna Bhajan Instrumental", "Radha Krishna", "Relaxing Music"]
+        "title": "15 Min Divine Krishna Flute & Tabla | तनाव मुक्ति और असीम शांति | 432Hz Meditation Music",
+        "tags": ["Krishna Flute", "Deep Meditation", "Stress Relief", "Peaceful Music", "Bansuri Meditation", "Krishna Bhajan Instrumental", "Radha Krishna", "Relaxing Music", "Bansuri Tabla Jugalbandi"]
     },
     {
         "badge": "INNER PEACE & HEALING",
         "hindi_main": "श्री कृष्ण अमृत बाँसुरी",
         "hindi_sub": "मन की शांति और गहरी नींद के लिए",
-        "title": "श्री कृष्ण दिव्य बाँसुरी धुन | 15 Min Inner Peace & Deep Sleep",
-        "tags": ["Krishna Flute Meditation", "Deep Sleep Music", "Inner Peace", "Bansuri Dhun", "Spiritual Relaxation", "Calm Mind", "Healing Music", "Radhe Krishna"]
+        "title": "श्री कृष्ण दिव्य बाँसुरी धुन | 15 Min Inner Peace & Deep Sleep | Healing Music",
+        "tags": ["Krishna Flute Meditation", "Deep Sleep Music", "Inner Peace", "Bansuri Dhun", "Spiritual Relaxation", "Calm Mind", "Healing Music", "Radhe Krishna", "Man Ki Shanti"]
     },
     {
         "badge": "432 Hz SACRED VIBES",
         "hindi_main": "राधे कृष्ण पावन धुन",
         "hindi_sub": "सकारात्मक ऊर्जा और आत्मिक सुकून",
-        "title": "Sacred Krishna Flute for Positive Energy | 15 Min Relaxation",
-        "tags": ["432Hz Music", "Positive Energy Music", "Krishna Flute", "Focus Music", "Morning Meditation", "Yoga Music", "Bansuri Tabla Jugalbandi"]
+        "title": "Sacred Krishna Flute for Positive Energy | 15 Min Relaxation | 432Hz Music",
+        "tags": ["432Hz Music", "Positive Energy Music", "Krishna Flute", "Focus Music", "Morning Meditation", "Yoga Music", "Bansuri Tabla Jugalbandi", "Positive Vibes Flute"]
     },
     {
         "badge": "STRESS RELIEF & CALM",
         "hindi_main": "मन को शांत करने वाला संगीत",
         "hindi_sub": "दिव्य शांति और विश्राम का अनुभव",
-        "title": "Calming Krishna Flute for Stress Relief | ध्यान एवं विश्राम संगीत",
-        "tags": ["Stress Relief Music", "Overthinking Relief", "Peaceful Bansuri", "Meditation Music Hindi", "Krishna Vibez", "Spiritual Music"]
+        "title": "Calming Krishna Flute for Stress Relief | ध्यान एवं विश्राम संगीत | 432Hz Music",
+        "tags": ["Stress Relief Music", "Overthinking Relief", "Peaceful Bansuri", "Meditation Music Hindi", "Krishna Vibez", "Spiritual Music", "Chinta Mukti Bansuri"]
+    },
+    {
+        "badge": "VRINDAVAN MORNING DHUN",
+        "hindi_main": "वृंदावन प्रभात बाँसुरी",
+        "hindi_sub": "प्रातःकालीन पूजा और सकारात्मक शुरुआत",
+        "title": "15 Min Vrindavan Morning Krishna Flute | सुबह की शांति और सकारात्मक ऊर्जा",
+        "tags": ["Morning Flute Music", "Subah Ki Bansuri", "Morning Pooja Music", "Vrindavan Flute", "Krishna Morning Bhajan", "Positive Energy", "Daily Meditation"]
+    },
+    {
+        "badge": "DEEP SLEEP & CHINTA MUKTI",
+        "hindi_main": "चिंता मुक्ति और गहरी नींद",
+        "hindi_sub": "रात्रि विश्राम और मानसिक सुकून",
+        "title": "Krishna Flute for Deep Sleep & Insomnia | रात को गहरी नींद के लिए बांसुरी",
+        "tags": ["Deep Sleep Music", "Insomnia Relief", "Sleep Flute Hindi", "Gehri Neend Music", "Night Relaxation", "Krishna Flute Sleep", "Mind Healing"]
     }
 ]
 
@@ -826,37 +840,91 @@ def upload_to_youtube(theme, duration_sec=900):
         return
     access_token = resp.json().get("access_token")
 
-    # Resumable Video Upload
+    # Resumable Video Upload with Long Trilingual SEO
+    dur_quarter = dur_min // 4
+    ch1 = f"00:00"
+    ch2 = f"{dur_quarter:02d}:15"
+    ch3 = f"{(dur_quarter * 2):02d}:30"
+    ch4 = f"{(dur_quarter * 3):02d}:45"
+
     raw_title = theme.get("title", f"{dur_min} Min Divine Krishna Flute & Tabla")
     title = f"{raw_title} | Krishna Vibez"
     if len(title) > 95:
         title = title[:95]
     title = title.replace("<", "").replace(">", "").strip()
+
     description = (
-        f"🌸 {dur_min} Minute Peaceful Divine Krishna Flute (Bansuri) & Live Tabla Meditation Music.\n\n"
-        f"🌿 Theme: {theme['hindi_main']} — {theme['hindi_sub']}\n\n"
-        "Experience deep tranquility, inner peace, and divine connection with the sacred flute of Lord Krishna "
-        "accompanied by gentle Indian classical tabla beats in Keherwa Taal.\n\n"
-        "🧘 Ideal for:\n"
-        "• Deep Meditation & Yoga\n"
-        "• Stress Relief & Mental Calmness\n"
-        "• Sleep & Insomnia Relief\n"
-        "• Daily Morning Pooja & Spiritual Focus\n\n"
-        "🌐 Official Website: https://krishnavibez.in/\n"
-        "▶️ Official YouTube: https://www.youtube.com/@KrishnaVibezMusic\n"
-        "📱 WhatsApp Channel: https://whatsapp.com/channel/0029VbDxJHk30LKNtj4Er62J\n"
-        "📢 Telegram: https://t.me/krishnavibezz\n\n"
+        f"🌸 स्वागत है Krishna Vibez के पावन संगीत संसार में 🌸\n\n"
+        f"Experience profound inner peace, deep tranquility, and divine healing with this {dur_min}-minute sacred "
+        f"Lord Krishna Flute (Bansuri) & authentic Live Tabla meditation music, mastered in 432Hz harmonic resonance.\n\n"
+        f"🌿 आज का पावन प्रसंग (Theme): {theme['hindi_main']} — {theme['hindi_sub']}\n\n"
+        "भगवान श्री कृष्ण की मधुर मुरली की यह दिव्य ध्वनि मन के समस्त तनाव, चिंता और नकारात्मकता को समाप्त कर अंतरात्मा को "
+        "असीम शांति से भर देती है। इसके साथ बजती हुई तबले की कोमल ताल (कहरवा एवं तीन ताल) हृदय में एक सुखद लय और सकारात्मक ऊर्जा का संचार करती है।\n\n"
+        "✨ 432 Hz पावन हीलिंग आवृत्ति का महत्व (432Hz Sacred Resonance):\n"
+        "यह संगीत 432 Hz प्राकृतिक हीलिंग फ्रीक्वेंसी पर ट्यून किया गया है। 432 Hz संगीत मस्तिष्क की अल्फा तरंगों (Alpha Waves) को "
+        "सक्रिय करता है, मानसिक तनाव को घटाता है, हृदय स्पंदन को शांत करता है और गहरी नींद व आत्मिक सुकून प्रदान करता है।\n\n"
+        "🧘 इस पावन संगीत के सर्वोत्तम उपयोग (Ideal For):\n"
+        "• ध्यान, योग और दैनिक साधना (Deep Meditation, Dhyan & Daily Yoga)\n"
+        "• तनाव, चिंता और अधिक सोचने (Overthinking) से मुक्ति (Stress Relief & Mental Peace)\n"
+        "• गहरी और सुकून भरी नींद (Deep Sleep & Insomnia Relief)\n"
+        "• प्रातःकालीन पूजा, आरती और घर में सकारात्मक ऊर्जा (Morning Pooja & Positive Home Vibes)\n"
+        "• पढ़ाई और कार्य में एकाग्रता (Deep Study & Work Concentration)\n\n"
+        "⏱️ समय सारणी (Chapters / Timestamps):\n"
+        f"{ch1} 🪷 वृंदावन प्रातःकालीन बांसुरी (Divine Prelude)\n"
+        f"{ch2} 🪶 बांसुरी एवं तबला कोमल जुगलबंदी (Keherwa Taal Rhythm)\n"
+        f"{ch3} 🌊 432Hz आत्मिक शांति और ध्यान प्रवाह (Deep Healing Flow)\n"
+        f"{ch4} ✨ असीम शांति एवं समापन विश्राम (Closing Shanti & Gratitude)\n\n"
+        "━━━━━━━━━━━━━━━━━━━━━━━━━━\n"
+        "🔍 इस संगीत में समाहित प्रमुख विषय एवं खोज प्रश्न (Topics & Searches Covered):\n"
+        "• Shri Krishna Bansuri Dhun for Deep Meditation & Stress Relief\n"
+        "• Subah ki Shanti aur Positivity ke liye Morning Flute Music\n"
+        "• Radha Krishna Peaceful Instrumental with Live Tabla Keherwa Taal\n"
+        "• Raat ko gehri neend aane ka shant bansuri sangeet (Sleep Music)\n"
+        "• 432Hz Divine Healing Frequency Music for Anxiety and Mental Calm\n"
+        "• Vrindavan Divine Morning Bansuri Dhun by Krishna Vibez\n"
+        "• Man ko shant karne wali flute dhun hindi me\n"
+        "• Pure Indian Classical Bansuri Tabla Jugalbandi for Pooja and Yoga\n"
+        "━━━━━━━━━━━━━━━━━━━━━━━━━━\n\n"
+        "🕊️ कृष्ण वाइब्स के आध्यात्मिक परिवार से जुड़ें:\n"
+        "🌐 आधिकारिक वेबसाइट: https://krishnavibez.in/\n"
+        "▶️ आधिकारिक YouTube: https://www.youtube.com/@KrishnaVibezMusic\n"
+        "📲 WhatsApp चैनल: https://whatsapp.com/channel/0029VbDxJHk30LKNtj4Er62J\n"
+        "📢 Telegram चैनल: https://t.me/krishnavibezz\n"
+        "📸 Instagram: https://www.instagram.com/pareshpadsala_/\n"
+        "📘 Facebook पेज: https://www.facebook.com/1808917602588221\n"
+        "📌 Pinterest: https://in.pinterest.com/MojiloMart/\n\n"
+        "━━━━━━━━━━━━━━━━━━━━━━━━━━\n"
         "🛍️ Divine Recommendations (Amazon Storefront):\n"
         "👉 Explore our Amazon Store: https://www.amazon.in/shop/myhappybirthday\n"
-        "(Disclaimer: As an Amazon Associate, Krishna Vibez earns from qualifying purchases at no extra cost to you.)\n\n"
-        "#Krishna #Flute #Bansuri #MeditationMusic #KrishnaMusic #DivineMusic #RadhaKrishna #RelaxingMusic #InnerPeace"
+        "(Disclaimer: As an Amazon Associate, Krishna Vibez earns from qualifying purchases at no extra cost to you.)\n"
+        "━━━━━━━━━━━━━━━━━━━━━━━━━━\n\n"
+        "🙏 यदि इस संगीत ने आपके मन को शांति और सुकून दिया हो, तो वीडियो को लाइक करें, अपने परिजनों के साथ साझा करें और चैनल को सब्सक्राइब अवश्य करें।\n\n"
+        "जय श्री राधे कृष्ण! 🪷✨\n\n"
+        "#Krishna #Flute #Bansuri #MeditationMusic #KrishnaMusic #DivineMusic #RadhaKrishna #RelaxingMusic #InnerPeace #432Hz #DeepSleep #BansuriTabla #KrishnaVibez #DailyMeditation"
     )
+
+    curated_tags = list(dict.fromkeys(
+        theme.get("tags", []) + [
+            "Krishna Flute", "Bansuri Dhun", "Krishna Meditation Music", "432Hz Music",
+            "Deep Sleep Music", "Stress Relief Music", "Radha Krishna Flute", "Bansuri Tabla",
+            "Man Ki Shanti", "Subah Ki Flute", "Indian Classical Flute", "Morning Meditation",
+            "Yoga Music", "Krishna Vibez", "Peaceful Instrumental", "Shri Krishna Bansuri",
+            "Gehri Neend Music", "Healing Music", "Radhe Krishna", "Bhakti Music"
+        ]
+    ))
+    # Keep total tags string length strictly under 490 chars (YouTube 500 char limit)
+    final_tags = []
+    char_count = 0
+    for t in curated_tags:
+        if char_count + len(t) + 1 <= 485:
+            final_tags.append(t)
+            char_count += len(t) + 1
 
     metadata = {
         "snippet": {
             "title": title,
             "description": description,
-            "tags": theme["tags"] + ["Krishna", "Flute", "Bansuri", "Meditation Music", "Relaxing Music", "Radhe Krishna"],
+            "tags": final_tags,
             "categoryId": "10" # Music
         },
         "status": {

@@ -117,8 +117,15 @@ Presented with utmost devotion by Krishna Vibez — your sacred sanctuary for co
 (Disclaimer: As an Amazon Associate, Krishna Vibez earns from qualifying purchases at no extra cost to you.)
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━
-🔍 Searches & Topics Covered:
-Krishna Vibez, Krishna Vibez live, Krishna flute music live, shri krishna bansuri live, radhe krishna live stream, 24/7 krishna flute, peaceful flute meditation, relaxing sleep music, bansuri dhun, vrindavan live music, devotional flute music, daily krishna meditation, stress relief music, study focus flute, deep sleep flute music, krishna bhajan instrumental, 432hz healing music.
+🔍 इस लाइव स्ट्रीम के प्रमुख विषय एवं खोज प्रश्न (Topics & Searches Covered):
+• Shri Krishna Bansuri 24/7 Live Stream for Peace & Meditation
+• Radha Krishna Peaceful Flute Music Live Radio (432Hz Resonance)
+• Subah se raat tak shanti ke liye non-stop bansuri dhun
+• Raat ko gehri neend aur insomnia relief live ambient music
+• Ghar me sakaratmak urja aur shanti ke liye live flute radio
+• Pure Vrindavan Divine Morning Bansuri & Live Tabla Beats
+• 24/7 Akhand Bhajan Instrumental & Flute Meditation
+━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 #KrishnaVibez #Krishna #RadheKrishna #LiveStream #FluteMusic #Meditation #BansuriDhun #PeacefulMusic #247Live #Vrindavan #DeepSleep #StressRelief"""
 
@@ -126,7 +133,8 @@ Krishna Vibez, Krishna Vibez live, Krishna flute music live, shri krishna bansur
         "Krishna Vibez", "Krishna Vibez live", "krishna flute music", "krishna live",
         "radhe krishna live", "bansuri dhun", "24/7 live stream", "meditation flute",
         "deep sleep music", "peaceful flute", "krishna bhajan flute", "relaxing krishna music",
-        "vrindavan live", "flute music live", "stress relief music", "shri krishna live"
+        "vrindavan live", "flute music live", "stress relief music", "shri krishna live",
+        "432hz music", "subah ki flute", "gehri neend music", "krishna radio"
     ]
 
     youtube = get_authenticated_service()
