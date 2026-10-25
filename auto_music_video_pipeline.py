@@ -729,15 +729,28 @@ def generate_thumbnail(slides, theme):
     print(f"  -> Thumbnail Created: {TEMP_THUMBNAIL}")
     return TEMP_THUMBNAIL
 
-def upload_to_youtube(theme):
+def upload_to_youtube(theme, duration_sec=900):
     """Uploads video & custom thumbnail to YouTube via Data API v3."""
+    dur_min = int(round(duration_sec / 60.0))
     print("[4/4] Checking YouTube API credentials for Upload...")
     client_id = os.environ.get("YOUTUBE_CLIENT_ID")
     client_secret = os.environ.get("YOUTUBE_CLIENT_SECRET")
     refresh_token = os.environ.get("YOUTUBE_REFRESH_TOKEN")
 
     if not all([client_id, client_secret, refresh_token]):
-        print("[Notice] YouTube credentials not present in environment. Local test complete!")
+        token_path = os.path.join(BASE_DIR, "youtube_token.json")
+        if os.path.exists(token_path):
+            try:
+                with open(token_path, "r", encoding="utf-8") as f:
+                    t_data = json.load(f)
+                    client_id = client_id or t_data.get("client_id")
+                    client_secret = client_secret or t_data.get("client_secret")
+                    refresh_token = refresh_token or t_data.get("refresh_token")
+            except Exception as e:
+                print(f"Notice reading local token file: {e}")
+
+    if not all([client_id, client_secret, refresh_token]):
+        print("[Notice] YouTube credentials not present. Local test complete!")
         return
 
     # Refresh Access Token
@@ -755,13 +768,13 @@ def upload_to_youtube(theme):
     access_token = resp.json().get("access_token")
 
     # Resumable Video Upload
-    raw_title = theme.get("title", "15 Min Divine Krishna Flute & Tabla")
+    raw_title = theme.get("title", f"{dur_min} Min Divine Krishna Flute & Tabla")
     title = f"{raw_title} | Krishna Vibez"
     if len(title) > 95:
         title = title[:95]
     title = title.replace("<", "").replace(">", "").strip()
     description = (
-        f"🌸 15 Minute Peaceful Divine Krishna Flute (Bansuri) & Live Tabla Meditation Music.\n\n"
+        f"🌸 {dur_min} Minute Peaceful Divine Krishna Flute (Bansuri) & Live Tabla Meditation Music.\n\n"
         f"🌿 Theme: {theme['hindi_main']} — {theme['hindi_sub']}\n\n"
         "Experience deep tranquility, inner peace, and divine connection with the sacred flute of Lord Krishna "
         "accompanied by gentle Indian classical tabla beats in Keherwa Taal.\n\n"
@@ -771,7 +784,7 @@ def upload_to_youtube(theme):
         "• Sleep & Insomnia Relief\n"
         "• Daily Morning Pooja & Spiritual Focus\n\n"
         "🌐 Official Website: https://krishnavibez.in/\n"
-        "▶️ Official YouTube: https://www.youtube.com/@KrishnaVibezofficial\n"
+        "▶️ Official YouTube: https://www.youtube.com/@KrishnaVibezMusic\n"
         "📱 WhatsApp Channel: https://whatsapp.com/channel/0029VbDxJHk30LKNtj4Er62J\n"
         "📢 Telegram: https://t.me/krishnavibezz\n\n"
         "🛍️ Divine Recommendations (Amazon Storefront):\n"
@@ -867,7 +880,7 @@ def main():
     mix_soundtrack(duration_sec=dur_sec)
     render_video(slides, duration_sec=dur_sec)
     generate_thumbnail(slides, theme)
-    upload_to_youtube(theme)
+    upload_to_youtube(theme, duration_sec=dur_sec)
     cleanup()
 
 if __name__ == "__main__":
