@@ -540,12 +540,90 @@ def generate_feather_configs(seed=None):
     return configs
 
 
-def render_animated_slide_clip(slide_path, clip_output_path, feather_frames, logo_badge, slide_idx=0, duration=25, fps=25, sparkle_palette=None):
+# 5 Dynamic Thematic Flora Palettes (Unique Per Video)
+FLORA_THEMES = [
+    {
+        "name": "कमल एवं तुलसी (Lotus & Sacred Tulsi)",
+        "sprites": ["flower_01", "flower_06", "flower_11", "flower_04", "flower_09", "feather_petal_01", "feather_petal_04"],
+        "desc": "Soft pink lotus petals, fresh green tulsi leaves, and elegant peacock feather."
+    },
+    {
+        "name": "गुलाब एवं मोगरा (Vrindavan Red Rose & Mogra)",
+        "sprites": ["flower_00", "flower_08", "flower_03", "feather_petal_04", "feather_petal_05", "feather_petal_03"],
+        "desc": "Deep velvet red rose petals, fragrant white jasmine/mogra, and soft pink rose petals."
+    },
+    {
+        "name": "स्वर्ण गेंदा एवं पारिजात (Golden Marigold & Parijat)",
+        "sprites": ["flower_02", "flower_05", "flower_07", "flower_10", "feather_petal_02"],
+        "desc": "Bright golden yellow & orange marigold petals with divine white parijat flowers."
+    },
+    {
+        "name": "पारिजात एवं श्वेत पुष्प (Celestial White Parijat & Mogra)",
+        "sprites": ["flower_03", "flower_07", "flower_10", "flower_06", "feather_petal_00"],
+        "desc": "Night-blooming parijat, fragrant white jasmine, and moonlight white petals."
+    },
+    {
+        "name": "मयूरपंख एवं वनमाला (Divine Peacock Feathers & Forest Flora)",
+        "sprites": ["feather_petal_00", "feather_petal_01", "feather_petal_02", "feather_petal_03", "flower_00", "flower_01", "flower_04"],
+        "desc": "Majestic miniature peacock feathers balanced with red rose, lotus, and sacred tulsi."
+    }
+]
+
+# 4 Distinct Motion & Wind Styles (Unique Per Video)
+MOTION_STYLES = [
+    {
+        "name": "शांत मंद पवन (Gentle Serene Float)",
+        "vy_range": (75, 125),
+        "amp_range": (18, 40),
+        "freq_range": (0.6, 1.0),
+        "wind_drift_range": (8, 22),
+        "tumble_freq_range": (0.5, 1.1)
+    },
+    {
+        "name": "तिरछी बयार (Soft Diagonal Breeze)",
+        "vy_range": (85, 140),
+        "amp_range": (22, 48),
+        "freq_range": (0.7, 1.2),
+        "wind_drift_range": (45, 80),
+        "tumble_freq_range": (0.8, 1.5)
+    },
+    {
+        "name": "हल्की भँवर (Playful Swirling Flutter)",
+        "vy_range": (90, 150),
+        "amp_range": (40, 75),
+        "freq_range": (1.1, 1.6),
+        "wind_drift_range": (12, 30),
+        "tumble_freq_range": (1.0, 1.7)
+    },
+    {
+        "name": "गहन ध्यान प्रवाह (Deep Meditation Slow-Mo)",
+        "vy_range": (55, 95),
+        "amp_range": (12, 30),
+        "freq_range": (0.45, 0.75),
+        "wind_drift_range": (5, 15),
+        "tumble_freq_range": (0.4, 0.85)
+    }
+]
+
+def load_flora_sprites_dict():
+    """Loads all 20 transparent RGBA sprites from extracted_petals/."""
+    petals_dir = os.path.join(BASE_DIR, "extracted_petals")
+    sprites_dict = {}
+    if os.path.exists(petals_dir):
+        for sf in glob.glob(os.path.join(petals_dir, "*.png")):
+            name = os.path.basename(sf).replace(".png", "")
+            img = cv2.imread(sf, cv2.IMREAD_UNCHANGED)
+            if img is not None and img.shape[2] == 4:
+                sprites_dict[name] = img
+    return sprites_dict
+
+
+def render_animated_slide_clip(slide_path, clip_output_path, flora_sprites, motion_style, logo_badge, slide_idx=0, duration=25, fps=25, sparkle_palette=None, num_particles=17):
     """
     Renders a single 25-second slide clip with:
     - Subpixel 64-bit Floating Bicubic Ken Burns Zoom & Pan (ZERO Jhatka)
-    - 6 Asynchronous Multi-Size Glowing Morpankh Feathers (All gently drifting top-to-bottom with side breeze)
-    - 45 Floating Golden Sparkles with Image-Harmonized Video-Specific Palette Tint
+    - 17 Clean, Dynamic 3D Falling Flower Petals, Leaves, & Feathers (Video-Specific Theme & Motion)
+    - 40 Floating Golden Sparkles with Image-Harmonized Video-Specific Palette Tint
     - Circular Luxury Krishna Vibez Logo in Top Corner
     - Smooth 1.2s Fade-In & 1.2s Fade-Out
     """
@@ -556,22 +634,103 @@ def render_animated_slide_clip(slide_path, clip_output_path, feather_frames, log
     
     adapted_gold, core_bgr = get_image_adapted_gold(src_img, palette=sparkle_palette)
     sprites = prebuild_sparkle_sprites(adapted_gold, core_col_base=core_bgr)
-    feather_configs = generate_feather_configs(seed=slide_idx * 17 + 108)
     
-    # 45 Golden Sparkles
+    # Initialize 17 particles for this slide
+    rng_p = random.Random(slide_idx * 19 + 77)
+    
+    class SlideParticle:
+        def __init__(self, rng, initial_spread=False):
+            self.rng = rng
+            self.reset(initial_spread=initial_spread)
+            
+        def reset(self, initial_spread=False):
+            self.sprite = self.rng.choice(flora_sprites) if flora_sprites else None
+            layer = self.rng.choices(["bg", "mid", "fg"], weights=[0.40, 0.40, 0.20])[0]
+            if layer == "fg":
+                self.scale = self.rng.uniform(0.38, 0.50)
+                self.vy = self.rng.uniform(motion_style["vy_range"][0] * 1.15, motion_style["vy_range"][1] * 1.15)
+                self.opacity = self.rng.uniform(0.92, 0.98)
+            elif layer == "mid":
+                self.scale = self.rng.uniform(0.26, 0.36)
+                self.vy = self.rng.uniform(*motion_style["vy_range"])
+                self.opacity = self.rng.uniform(0.82, 0.92)
+            else: # bg
+                self.scale = self.rng.uniform(0.15, 0.23)
+                self.vy = self.rng.uniform(motion_style["vy_range"][0] * 0.85, motion_style["vy_range"][1] * 0.85)
+                self.opacity = self.rng.uniform(0.65, 0.80)
+                
+            self.x = self.rng.uniform(-60, 1920 + 60)
+            if initial_spread:
+                self.y = self.rng.uniform(-100, 1080 + 100)
+            else:
+                self.y = self.rng.uniform(-140, -30)
+                
+            self.amp_x = self.rng.uniform(*motion_style["amp_range"])
+            self.freq_x = self.rng.uniform(*motion_style["freq_range"])
+            self.phase_x = self.rng.uniform(0, 2 * math.pi)
+            self.wind_drift = self.rng.uniform(*motion_style["wind_drift_range"])
+            
+            self.angle = self.rng.uniform(0, 360)
+            self.rot_speed = self.rng.uniform(-35, 35)
+            self.tumble_freq = self.rng.uniform(*motion_style["tumble_freq_range"])
+            self.tumble_phase = self.rng.uniform(0, 2 * math.pi)
+
+        def update(self, dt, current_time):
+            self.y += self.vy * dt
+            sway = self.amp_x * math.sin(current_time * self.freq_x * 2 * math.pi + self.phase_x)
+            self.x += (self.wind_drift + sway * 0.5) * dt
+            self.angle += self.rot_speed * dt
+            if self.y > 1080 + 100 or self.x < -120 or self.x > 1920 + 120:
+                self.reset(initial_spread=False)
+                
+        def render(self, target_img):
+            if self.sprite is None: return
+            tumble = math.cos(self.angle * math.pi / 180.0 + self.tumble_phase)
+            sx = self.scale * (0.35 + 0.65 * abs(tumble))
+            sy = self.scale
+            h, w = self.sprite.shape[:2]
+            nw = max(6, int(w * sx))
+            nh = max(6, int(h * sy))
+            resized = cv2.resize(self.sprite, (nw, nh), interpolation=cv2.INTER_LINEAR)
+            center = (nw // 2, nh // 2)
+            M = cv2.getRotationMatrix2D(center, self.angle, 1.0)
+            cos = np.abs(M[0, 0])
+            sin = np.abs(M[0, 1])
+            bw = int((nh * sin) + (nw * cos))
+            bh = int((nh * cos) + (nw * sin))
+            M[0, 2] += (bw / 2) - center[0]
+            M[1, 2] += (bh / 2) - center[1]
+            rotated = cv2.warpAffine(resized, M, (bw, bh), flags=cv2.INTER_LINEAR, borderMode=cv2.BORDER_CONSTANT, borderValue=(0,0,0,0))
+            px = int(self.x - bw // 2)
+            py = int(self.y - bh // 2)
+            x1, y1 = max(0, px), max(0, py)
+            x2, y2 = min(1920, px + bw), min(1080, py + bh)
+            if x1 >= x2 or y1 >= y2: return
+            sx1, sy1 = x1 - px, y1 - py
+            sx2, sy2 = sx1 + (x2 - x1), sy1 + (y2 - y1)
+            crop_sprite = rotated[sy1:sy2, sx1:sx2]
+            crop_target = target_img[y1:y2, x1:x2]
+            alpha = (crop_sprite[:, :, 3].astype(np.float32) / 255.0) * self.opacity
+            alpha = alpha[:, :, np.newaxis]
+            fg_rgb = crop_sprite[:, :, :3].astype(np.float32)
+            bg_rgb = crop_target.astype(np.float32)
+            target_img[y1:y2, x1:x2] = (fg_rgb * alpha + bg_rgb * (1.0 - alpha)).astype(np.uint8)
+
+    particles = [SlideParticle(rng_p, initial_spread=True) for _ in range(num_particles)] if flora_sprites else []
+    
+    # 40 Golden Sparkles
     rng_spk = random.Random(slide_idx * 31 + 42)
     sparkles = []
-    for i in range(45):
+    for i in range(40):
         sx = rng_spk.randint(40, 1880)
         sy = rng_spk.randint(40, 1040)
-        rad = rng_spk.uniform(2.5, 6.2)
+        rad = rng_spk.uniform(2.5, 5.8)
         phase = rng_spk.uniform(0, math.pi * 2)
         speed = rng_spk.uniform(0.8, 1.8)
         star = (i % 2 == 0)
         sparkles.append((sx, sy, rad, phase, speed, star))
         
     total_frames = int(duration * fps)
-    total_raw = len(feather_frames)
     
     ffmpeg_cmd = [
         FFMPEG_EXE, "-y",
@@ -588,11 +747,11 @@ def render_animated_slide_clip(slide_path, clip_output_path, feather_frames, log
         clip_output_path
     ]
     proc = subprocess.Popen(ffmpeg_cmd, stdin=subprocess.PIPE)
-    
     fade_frames = int(1.2 * fps)
+    dt = 1.0 / float(fps)
     
     for i in range(total_frames):
-        t = i / float(fps)
+        t = i * dt
         
         # Subpixel Floating Ken Burns Zoom & Pan
         mode = slide_idx % 3
@@ -616,25 +775,13 @@ def render_animated_slide_clip(slide_path, clip_output_path, feather_frames, log
         ], dtype=np.float32)
         frame = cv2.warpAffine(src_img, M, (1920, 1080), flags=cv2.INTER_CUBIC, borderMode=cv2.BORDER_REFLECT)
         
-        # Overlay Morpankh Feathers (All drifting top to bottom with gentle diagonal side motion)
-        if total_raw > 0:
-            for cfg in feather_configs:
-                cycle_dur = cfg["drift_cycle"]
-                progress = ((t + cfg["drift_phase"]) % cycle_dur) / cycle_dur
-                
-                # Fall from top (-160) to bottom (1240)
-                fy = -160.0 + progress * (1080.0 + 320.0)
-                side_glide = progress * cfg["drift_dx"]
-                breeze_sway = cfg["amp_x"] * math.sin((progress * 6.28 * cfg["freq_x"]) + cfg["phase_x"])
-                fx = cfg["start_x"] + side_glide + breeze_sway
-                
-                drift_tilt = (cfg["drift_dx"] / 200.0) * 12.0
-                air_flutter = cfg["amp_rot"] * math.cos((progress * 6.28 * cfg["freq_rot"]) + cfg["phase_rot"])
-                frot = cfg["base_rot"] + drift_tilt + air_flutter
-                
-                f_idx = int((t * 30.0 + cfg["offset"]) % total_raw)
-                f_rgba = feather_frames[f_idx]
-                overlay_rgba(frame, f_rgba, fx, fy, scale=cfg["scale"], angle_deg=frot)
+        # Update and render 17 Dynamic 3D Flora Particles (Petals, Leaves & Feathers)
+        if particles:
+            for p in particles:
+                p.update(dt, t)
+            sorted_p = sorted(particles, key=lambda p: p.scale)
+            for p in sorted_p:
+                p.render(frame)
                 
         # Overlay Golden Sparkles
         for sx, sy, rad, phase, speed, star in sparkles:
@@ -665,19 +812,32 @@ def render_video(slides, duration_sec=900):
     """
     Renders Dynamic Full HD Video (12-20 Mins) with:
     - Butter-Smooth Subpixel Bicubic Ken Burns Zoom & Pan (ZERO Jhatka)
-    - Asynchronous Multi-Size 3D Morpankh Feathers (All Drifting Top-To-Bottom with Side Breeze)
+    - 17 Clean, Dynamic 3D Falling Flower Petals, Leaves, & Feathers (Random Unique Theme & Motion Per Video)
     - Dynamic Sparkle Color Palette (Varies subtly per video)
     - Krishna Vibez Circular Luxury Channel Logo Badge in Top Corner
     - Dynamic duration matching user soundtrack (12 to 20 minutes)
     """
     dur_min = int(round(duration_sec / 60.0))
-    print(f"[2/4] Rendering {dur_min}-Minute ({duration_sec}s) Cinematic Video with Subpixel Zoom & Divine Morpankh...")
+    print(f"[2/4] Rendering {dur_min}-Minute ({duration_sec}s) Cinematic Video with Dynamic Petals & Subpixel Zoom...")
     
-    # 1. Dynamically select a unique divine sparkle palette for this video
+    # 1. Dynamically select a unique Flora Theme, Motion Style, and Sparkle Palette for this video
+    chosen_flora = random.choice(FLORA_THEMES)
+    chosen_motion = random.choice(MOTION_STYLES)
     chosen_palette = random.choice(DIVINE_SPARKLE_PALETTES)
-    print(f"  -> ✨ Selected Divine Sparkle Theme: {chosen_palette['name']}")
     
-    # 2. Select 12 unique slides to keep total video render time under 9 minutes while ensuring high variety
+    print("=================================================================")
+    print(f"  -> 🌸 Selected Flora Theme   : {chosen_flora['name']}")
+    print(f"  -> 🍃 Selected Motion Style  : {chosen_motion['name']}")
+    print(f"  -> ✨ Selected Sparkle Theme : {chosen_palette['name']}")
+    print("=================================================================")
+    
+    # 2. Load flora sprites for chosen theme
+    flora_dict = load_flora_sprites_dict()
+    active_flora_sprites = [flora_dict[k] for k in chosen_flora["sprites"] if k in flora_dict]
+    if not active_flora_sprites:
+        active_flora_sprites = list(flora_dict.values())
+        
+    # 3. Select 12 unique slides to keep total video render time under 8 minutes while ensuring high variety
     selected_slides = slides[:]
     if len(selected_slides) > 12:
         random.shuffle(selected_slides)
@@ -688,14 +848,16 @@ def render_video(slides, duration_sec=900):
     os.makedirs(temp_clips_dir, exist_ok=True)
     
     logo_badge = create_corner_logo_badge(size=120)
-    feather_frames = load_and_key_feather_frames()
     
-    # 3. Render 25-second animated clip for each slide
+    # 4. Render 25-second animated clip for each slide
     for idx, slide in enumerate(selected_slides):
         clip_path = os.path.join(temp_clips_dir, f"clip_{idx+1}.mp4")
         clip_files.append(clip_path)
-        print(f"  -> Rendering Slide {idx+1}/{len(selected_slides)} with Morpankh & Smooth Zoom...")
-        render_animated_slide_clip(slide, clip_path, feather_frames, logo_badge, slide_idx=idx, duration=25, fps=25, sparkle_palette=chosen_palette)
+        print(f"  -> Rendering Slide {idx+1}/{len(selected_slides)} with Dynamic Petals & Smooth Zoom...")
+        render_animated_slide_clip(
+            slide, clip_path, active_flora_sprites, chosen_motion, logo_badge,
+            slide_idx=idx, duration=25, fps=25, sparkle_palette=chosen_palette, num_particles=17
+        )
     
     # 2. Concat animated clips to cover duration_sec
     clips_total_sec = len(clip_files) * 25
