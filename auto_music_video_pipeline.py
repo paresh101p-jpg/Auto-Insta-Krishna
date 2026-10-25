@@ -22,6 +22,9 @@ import time
 import random
 import subprocess
 import requests
+
+if sys.platform == "win32":
+    sys.stdout.reconfigure(encoding="utf-8")
 import math
 import cv2
 import numpy as np
