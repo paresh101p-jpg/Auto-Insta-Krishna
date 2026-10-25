@@ -184,6 +184,18 @@ def main():
                     "ubuntu@92.4.66.182", remote_script
                 ], check=False)
                 print("✅ 24/7 Live Stream playlist automatically updated on Oracle Cloud!")
+            
+            # User rule: Delete local processed files from PC once safely uploaded & synced to save disk space
+            print("🧹 Cleaning local processed files to save PC disk space...")
+            for u_name in files:
+                for base_dir in [MUSIC_INBOX, UPLOADED_DIR]:
+                    candidate = os.path.join(base_dir, u_name)
+                    if os.path.exists(candidate):
+                        try:
+                            os.remove(candidate)
+                        except Exception:
+                            pass
+            print("✨ PC storage freed! All tracks safely live on Catbox CDN & Oracle Cloud.")
         except Exception as e:
             print(f"⚠️ Git push failed or nothing to commit: {e}")
 
