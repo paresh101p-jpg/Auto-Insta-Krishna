@@ -154,7 +154,7 @@ def mix_soundtrack(duration_sec=900):
             # Always apply 432Hz harmonic warmth EQ, 1.8% micro-pitch shift, and strip metadata
             # to guarantee 100% unique cryptographic audio fingerprint and zero Content ID matches
             fade_out_st = max(10, duration_sec - 5)
-            filter_str = f"asetrate=44100*1.018,aresample=44100,equalizer=f=432:t=q:w=1:g=2,equalizer=f=3200:t=q:w=1.5:g=1.5,afade=t=in:st=0:d=3,afade=t=out:st={fade_out_st}:d=4,volume=1.05"
+            filter_str = f"equalizer=f=432:t=q:w=1:g=2,equalizer=f=3200:t=q:w=1.5:g=1.5,atempo=1.015,afade=t=in:st=0:d=3,afade=t=out:st={fade_out_st}:d=4,volume=1.05"
 
             master_cmd = [
                 FFMPEG_EXE, "-y",

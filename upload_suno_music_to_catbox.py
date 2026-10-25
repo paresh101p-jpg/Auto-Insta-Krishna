@@ -63,7 +63,7 @@ def clean_audio_file(fpath):
     cmd = [
         FFMPEG_EXE, "-y", "-i", fpath,
         "-map_metadata", "-1",
-        "-filter_complex", "asetrate=44100*1.018,aresample=44100,equalizer=f=432:t=q:w=1:g=2,equalizer=f=3200:t=q:w=1.5:g=1.5,volume=1.05",
+        "-filter_complex", "equalizer=f=432:t=q:w=1:g=2,equalizer=f=3200:t=q:w=1.5:g=1.5,atempo=1.015,volume=1.05",
         "-c:a", "libmp3lame", "-b:a", "320k",
         temp_clean
     ]
