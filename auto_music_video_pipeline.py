@@ -146,6 +146,7 @@ def mix_soundtrack(duration_sec=900):
                 FFMPEG_EXE, "-y",
                 "-stream_loop", "-1",
                 "-i", temp_input,
+                "-vn",
                 "-map_metadata", "-1",
                 "-t", str(duration_sec),
                 "-af", filter_str,
@@ -154,7 +155,6 @@ def mix_soundtrack(duration_sec=900):
             ]
             subprocess.run(master_cmd, check=True)
 
-            
             # Record used URL and update queue
             with open(SUNO_USED_URLS_FILE, "a", encoding="utf-8") as f:
                 f.write(chosen_url + "\n")
@@ -171,49 +171,8 @@ def mix_soundtrack(duration_sec=900):
         else:
             print(f"  ⚠️ Warning: Failed to download {chosen_url}, trying next track...")
 
-    # Fallback to local candidates if no Suno track is in the queue yet
-    print("  -> [Fallback] Using authentic raga pool...")
-    candidates = [
-        "jeremiah7-tabla-flute-106-262274.mp3",
-        "boopul-indian-bansuri-flute-tarana-raga-music-525950.mp3",
-        "krasnoshchok-krishna-flute-hindu-music-450217.mp3",
-        "verclub_music-relaxing-krishna-flute-music-deep-sleep-relaxing-music-571036.mp3",
-        "verclub_music-relaxing-krishna-flute-music-deep-sleep-relaxing-music-606118.mp3",
-        "krasnoshchok-hindu-krishna-flute-607253.mp3",
-        "krasnoshchok-hindu-krishna-flute-music-464551.mp3",
-        "echoes_of_lumen-krishna-flute-music-597586.mp3",
-        "echoes_of_lumen-krishna-flute-596320.mp3",
-        "jonasblakewood-indian-flute-indian-flute-music-580577.mp3",
-        "k_datta-floating-flute-169128.mp3",
-        "danamusic-relaxing-flute-meditation-416756.mp3",
-    ]
-    
-    available = [os.path.join(MUSIC_DIR, f) for f in candidates if os.path.exists(os.path.join(MUSIC_DIR, f))]
-    if not available:
-        available = [os.path.join(MUSIC_DIR, f) for f in os.listdir(MUSIC_DIR) if f.lower().endswith('.mp3')]
-    random.shuffle(available)
-    selected_tracks = available[:3]
-    while len(selected_tracks) < 3:
-        selected_tracks.append(random.choice(available))
-
-    filter_complex = (
-        "[0:a][1:a]acrossfade=d=5:c1=tri:c2=tri[a01];"
-        "[a01][2:a]acrossfade=d=5:c1=tri:c2=tri[a02];"
-        "[a02]atrim=0:900,afade=t=in:st=0:d=3,afade=t=out:st=896:d=4,"
-        "volume=1.05[aout]"
-    )
-    cmd = [
-        FFMPEG_EXE, "-y",
-        "-i", selected_tracks[0],
-        "-i", selected_tracks[1],
-        "-i", selected_tracks[2],
-        "-filter_complex", filter_complex,
-        "-map", "[aout]",
-        "-c:a", "libmp3lame", "-b:a", "192k",
-        TEMP_AUDIO
-    ]
-    subprocess.run(cmd, check=True)
-    print(f"  -> Dynamic Master Soundtrack ready: {TEMP_AUDIO}")
+    # Strict rule: NEVER touch Auto-Insta-Krishna/music/ folder. Always reload Suno tracks.
+    raise RuntimeError("No valid Suno AI tracks could be downloaded from queue. Auto-Insta-Krishna/music/ is strictly forbidden.")
 
 
 LOGO_PATH = os.path.join(BASE_DIR, "website", "public", "assets", "logo.png")
