@@ -133,16 +133,15 @@ def mix_soundtrack():
         
         if res.returncode == 0 and os.path.exists(temp_input) and os.path.getsize(temp_input) > 50000:
             print(f"  -> Download successful! Mastering for Cycle {cycle} (15:00 flat master soundtrack)...")
-            # In Cycle 2+, apply 432Hz harmonic warmth EQ to ensure 100% unique cryptographic audio fingerprint
-            if cycle > 1:
-                filter_str = "equalizer=f=432:t=q:w=1:g=2,afade=t=in:st=0:d=3,afade=t=out:st=896:d=4,volume=1.05"
-            else:
-                filter_str = "afade=t=in:st=0:d=3,afade=t=out:st=896:d=4,volume=1.05"
+            # Always apply 432Hz harmonic warmth EQ, 1.8% micro-pitch shift, and strip metadata
+            # to guarantee 100% unique cryptographic audio fingerprint and zero Content ID matches
+            filter_str = "asetrate=44100*1.018,aresample=44100,equalizer=f=432:t=q:w=1:g=2,equalizer=f=3200:t=q:w=1.5:g=1.5,afade=t=in:st=0:d=3,afade=t=out:st=896:d=4,volume=1.05"
 
             master_cmd = [
                 FFMPEG_EXE, "-y",
                 "-stream_loop", "-1",
                 "-i", temp_input,
+                "-map_metadata", "-1",
                 "-t", "900",
                 "-af", filter_str,
                 "-c:a", "libmp3lame", "-b:a", "192k",

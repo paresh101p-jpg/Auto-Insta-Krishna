@@ -6,6 +6,7 @@ telegram_token.txt
 threads_token.txt
 client_secret.json
 youtube_token.json
+youtube_refresh_token.txt
 __pycache__/
 *.pyc
 gemini_key.txt
