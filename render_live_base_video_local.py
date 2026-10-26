@@ -15,6 +15,12 @@ import subprocess
 import cv2
 import numpy as np
 
+if sys.platform == "win32":
+    try:
+        sys.stdout.reconfigure(encoding="utf-8")
+    except Exception:
+        pass
+
 BASE_DIR = r"e:\Paresh\Auto Post\Auto-Insta-Krishna"
 IMAGES_DIR = os.path.join(BASE_DIR, "music_video_images")
 LOGO_PATH = os.path.join(BASE_DIR, "website", "public", "assets", "logo.png")
@@ -223,10 +229,102 @@ def fast_draw_sparkle(frame, x, y, rad, star, brightness, sprites):
 def generate_feather_configs(seed=108):
     rng = random.Random(seed)
     return [
-        {"type": "breeze", "scale": rng.uniform(0.70, 0.85), "base_x": rng.randint(1450, 1680), "base_y": rng.randint(480, 680), "amp_x": 35, "amp_y": 25, "freq_x": 0.35, "freq_y": 0.45, "base_rot": rng.uniform(-15, 10), "amp_rot": 8, "offset": rng.randint(0, 100)},
-        {"type": "falling", "scale": rng.uniform(0.35, 0.48), "base_x": rng.randint(350, 750), "drift_cycle": rng.uniform(16.0, 22.0), "drift_phase": rng.uniform(0, 15), "amp_x": 45, "freq_x": 0.55, "amp_rot": 18, "offset": rng.randint(0, 100)},
-        {"type": "falling", "scale": rng.uniform(0.20, 0.30), "base_x": rng.randint(950, 1400), "drift_cycle": rng.uniform(14.0, 19.0), "drift_phase": rng.uniform(0, 15), "amp_x": 30, "freq_x": 0.65, "amp_rot": 22, "offset": rng.randint(0, 100)},
-        {"type": "breeze", "scale": rng.uniform(0.40, 0.52), "base_x": rng.randint(220, 420), "base_y": rng.randint(650, 850), "amp_x": 28, "amp_y": 20, "freq_x": 0.38, "freq_y": 0.48, "base_rot": rng.uniform(10, 35), "amp_rot": 10, "offset": rng.randint(0, 100)}
+        # Feather 0: Medium-large majestic accent (left-center falling rightwards)
+        {
+            "scale": rng.uniform(0.28, 0.32),
+            "offset": rng.randint(0, 30),
+            "start_x": rng.uniform(220, 380),
+            "drift_cycle": rng.uniform(16.0, 21.0),
+            "drift_phase": rng.uniform(0.0, 7.0),
+            "drift_dx": rng.uniform(120, 200),
+            "amp_x": rng.uniform(25, 45),
+            "freq_x": rng.uniform(1.0, 1.3),
+            "phase_x": rng.uniform(0.0, math.pi),
+            "base_rot": rng.uniform(-10, 5),
+            "amp_rot": rng.uniform(6, 10),
+            "freq_rot": rng.uniform(0.9, 1.2),
+            "phase_rot": rng.uniform(0.0, math.pi),
+        },
+        # Feather 1: Medium elegant (right-center falling leftwards)
+        {
+            "scale": rng.uniform(0.22, 0.26),
+            "offset": rng.randint(40, 70),
+            "start_x": rng.uniform(1450, 1650),
+            "drift_cycle": rng.uniform(18.0, 23.0),
+            "drift_phase": rng.uniform(6.0, 14.0),
+            "drift_dx": rng.uniform(-200, -120),
+            "amp_x": rng.uniform(25, 40),
+            "freq_x": rng.uniform(0.9, 1.2),
+            "phase_x": rng.uniform(0.0, math.pi),
+            "base_rot": rng.uniform(5, 15),
+            "amp_rot": rng.uniform(5, 9),
+            "freq_rot": rng.uniform(0.8, 1.1),
+            "phase_rot": rng.uniform(0.0, math.pi),
+        },
+        # Feather 2: Delicate center floating
+        {
+            "scale": rng.uniform(0.18, 0.22),
+            "offset": rng.randint(80, 110),
+            "start_x": rng.uniform(850, 1050),
+            "drift_cycle": rng.uniform(19.0, 25.0),
+            "drift_phase": rng.uniform(12.0, 20.0),
+            "drift_dx": rng.uniform(80, 160) * rng.choice([-1, 1]),
+            "amp_x": rng.uniform(30, 50),
+            "freq_x": rng.uniform(1.1, 1.4),
+            "phase_x": rng.uniform(0.0, math.pi),
+            "base_rot": rng.uniform(-8, 8),
+            "amp_rot": rng.uniform(6, 12),
+            "freq_rot": rng.uniform(1.0, 1.3),
+            "phase_rot": rng.uniform(0.0, math.pi),
+        },
+        # Feather 3: Soft ambient background feather (left side)
+        {
+            "scale": rng.uniform(0.13, 0.17),
+            "offset": rng.randint(120, 150),
+            "start_x": rng.uniform(100, 250),
+            "drift_cycle": rng.uniform(22.0, 28.0),
+            "drift_phase": rng.uniform(3.0, 10.0),
+            "drift_dx": rng.uniform(90, 150),
+            "amp_x": rng.uniform(20, 35),
+            "freq_x": rng.uniform(0.8, 1.1),
+            "phase_x": rng.uniform(0.0, math.pi),
+            "base_rot": rng.uniform(-12, 0),
+            "amp_rot": rng.uniform(5, 8),
+            "freq_rot": rng.uniform(0.7, 1.0),
+            "phase_rot": rng.uniform(0.0, math.pi),
+        },
+        # Feather 4: Soft ambient background feather (far right side)
+        {
+            "scale": rng.uniform(0.12, 0.15),
+            "offset": rng.randint(60, 90),
+            "start_x": rng.uniform(1680, 1850),
+            "drift_cycle": rng.uniform(20.0, 26.0),
+            "drift_phase": rng.uniform(15.0, 23.0),
+            "drift_dx": rng.uniform(-160, -90),
+            "amp_x": rng.uniform(20, 35),
+            "freq_x": rng.uniform(0.85, 1.15),
+            "phase_x": rng.uniform(0.0, math.pi),
+            "base_rot": rng.uniform(0, 12),
+            "amp_rot": rng.uniform(4, 8),
+            "freq_rot": rng.uniform(0.8, 1.1),
+            "phase_rot": rng.uniform(0.0, math.pi),
+        },
+        # Feather 5: Medium ambient drifter (mid-left)
+        {
+            "scale": rng.uniform(0.18, 0.23),
+            "offset": rng.randint(20, 50),
+            "start_x": rng.uniform(550, 750),
+            "drift_cycle": rng.uniform(17.0, 22.0),
+            "drift_phase": rng.uniform(8.0, 16.0),
+            "drift_dx": rng.uniform(-120, 120),
+            "amp_x": rng.uniform(30, 48),
+            "freq_x": rng.uniform(1.0, 1.3),
+            "phase_x": rng.uniform(0.0, math.pi),
+            "base_rot": rng.uniform(-10, 10),
+            "amp_rot": rng.uniform(6, 11),
+            "freq_rot": rng.uniform(0.9, 1.2),
+            "phase_rot": rng.uniform(0.0, math.pi),
+        }
     ]
 
 
@@ -269,7 +367,8 @@ def render_all():
             "-f", "rawvideo", "-vcodec", "rawvideo",
             "-s", "1920x1080", "-pix_fmt", "bgr24", "-r", str(fps),
             "-i", "-",
-            "-c:v", "libx264", "-preset", "ultrafast", "-crf", "20",
+            "-c:v", "libx264", "-preset", "veryfast", "-crf", "19",
+            "-g", "50", "-keyint_min", "50",
             "-pix_fmt", "yuv420p",
             clip_path
         ]
@@ -298,19 +397,21 @@ def render_all():
             ], dtype=np.float32)
             frame = cv2.warpAffine(src_img, M, (1920, 1080), flags=cv2.INTER_CUBIC, borderMode=cv2.BORDER_REFLECT)
             
+            # 6 Asynchronous Morpankh Feathers (All Drifting Top-To-Bottom with Side Breeze)
             if feather_frames:
                 for cfg in feather_configs:
+                    cycle_dur = cfg["drift_cycle"]
+                    progress = ((t + cfg["drift_phase"]) % cycle_dur) / cycle_dur
+                    fy = -160.0 + progress * (1080.0 + 320.0)
+                    side_glide = progress * cfg["drift_dx"]
+                    breeze_sway = cfg["amp_x"] * math.sin((progress * 6.28 * cfg["freq_x"]) + cfg["phase_x"])
+                    fx = cfg["start_x"] + side_glide + breeze_sway
+                    drift_tilt = (cfg["drift_dx"] / 200.0) * 12.0
+                    air_flutter = cfg["amp_rot"] * math.cos((progress * 6.28 * cfg["freq_rot"]) + cfg["phase_rot"])
+                    frot = cfg["base_rot"] + drift_tilt + air_flutter
+                    
                     f_idx = int((t * 30.0 + cfg["offset"]) % len(feather_frames))
                     f_rgba = feather_frames[f_idx]
-                    if cfg["type"] == "breeze":
-                        fx = cfg["base_x"] + cfg["amp_x"] * math.sin(t * cfg["freq_x"])
-                        fy = cfg["base_y"] + cfg["amp_y"] * math.sin(t * cfg["freq_y"])
-                        frot = cfg["base_rot"] + cfg["amp_rot"] * math.sin(t * cfg["freq_x"] * 1.1)
-                    else:
-                        cycle = (t + cfg["drift_phase"]) % cfg["drift_cycle"]
-                        fy = -100 + cycle * (1280.0 / cfg["drift_cycle"])
-                        fx = cfg["base_x"] + cfg["amp_x"] * math.sin(cycle * cfg["freq_x"])
-                        frot = cfg["amp_rot"] * math.cos(cycle * cfg["freq_x"] * 1.15)
                     overlay_rgba(frame, f_rgba, fx, fy, scale=cfg["scale"], angle_deg=frot)
                     
             for sx, sy, rad, phase, speed, star in sparkles:
