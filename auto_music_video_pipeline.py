@@ -22,6 +22,7 @@ import time
 import random
 import subprocess
 import requests
+import glob
 
 if sys.platform == "win32":
     sys.stdout.reconfigure(encoding="utf-8")
@@ -1189,9 +1190,9 @@ def main():
     if len(slides) > 12:
         slides = slides[:12]
         
-    # User rule: Dynamic duration between 12 and 20 minutes (never monotonous)
-    dur_min = random.randint(12, 20)
-    dur_sec = dur_min * 60 + random.randint(5, 45)
+    # User rule: Dynamic duration between 12 and 50 minutes (randomized per run, e.g. 12:30, 15:06, 40:47)
+    dur_min = random.randint(12, 50)
+    dur_sec = dur_min * 60 + random.randint(5, 55)
     print(f"🎬 [DYNAMIC DURATION] Today's Master Video: {dur_min} Minutes ({dur_sec} seconds)")
     
     theme = random.choice(MEDITATION_THEMES).copy()
