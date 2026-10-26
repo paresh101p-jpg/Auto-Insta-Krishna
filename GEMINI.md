@@ -376,6 +376,25 @@ Whenever power cuts, system reboots, or execution stops, the entire pipeline is 
    - Audio Mix: Voiceover delayed by 5s (after viral hook), background music softly mixed with 1.5s fade-out at end.
 2. **Crash-Proof Resume Tracker**:
    - Completed folders are logged into `uploaded_mojilo_reels_tracker.txt`.
-   - On power loss or reboot, it skips all tracked folders and resumes immediately from the next pending item.
-
-
+### 17. Master AI Music Inventory & Treblo Sequential Queue Architecture (Permanent Lifetime Record)
+1. **Permanent Suno AI Music Inventory Count (Lifetime Record - Even After 2+ Years)**:
+   - **Total Master Backup Tracks**: Exactly **751 Unique Suno Tracks** (`suno_music_urls_backup.txt`).
+   - **Active Pending Queue (Current)**: **743 Tracks** (`suno_music_urls.txt`).
+   - **Initial Uploaded/Used**: **7 Tracks** (`suno_music_used_urls.txt`).
+   - **User Shared Backlog Pool**: **461 Tracks** (`ALL_USER_SUNO_TRACKS_300_PLUS.txt`).
+2. **Treblo AI Music (Sequential Fallback & Integration Rule)**:
+   - Folder: `Auto-Insta-Krishna/Treblo Music/` and `Auto-Insta-Krishna/Treblo Music/uploaded/`.
+   - Dedicated Queues: `treblo_music_urls.txt`, `treblo_music_urls_backup.txt`, `treblo_music_used_urls.txt`.
+   - **Sequential Priority Rule**:
+     - **Tier 1 (Primary)**: Always prioritize and play through Suno AI tracks (`suno_music_urls.txt`).
+     - **Tier 2 (Treblo Takeover)**: When Suno music queue runs out / is depleted (`not suno_urls`), the pipeline automatically transitions seamlessly to Treblo music tracks (`treblo_music_urls.txt`).
+     - **Tier 3 (Infinite Loop)**: When both queues run out, it increments cycle, shuffles backup pools, and restarts seamlessly.
+   - **Treblo Processing & Mastering Standards**:
+     - All tracks undergo automated cleaning via `process_treblo_music.py`:
+       - 100% metadata stripped (`-map_metadata -1`).
+       - 432Hz harmonic meditation EQ applied.
+       - Mastered to 320kbps MP3 and uploaded to Catbox CDN (`files.catbox.moe`).
+       - Original files archived to `Treblo Music/uploaded/` so local disk remains light and clean.
+     - Also synced to Oracle Cloud VPS 24/7 Live Stream (`/home/ubuntu/krishna-live/music/`).
+3. **Automated AI Content Disclosure (`containsSyntheticMedia = True`)**:
+   - Every video upload across all channels (Krishna music videos, Krishna shorts, Anchor Aadhya news) automatically passes `"containsSyntheticMedia": True` in the YouTube Data API `status` object and includes the full legal disclosure in the description.

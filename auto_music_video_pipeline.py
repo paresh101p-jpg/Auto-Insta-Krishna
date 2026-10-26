@@ -40,6 +40,9 @@ SUNO_URLS_FILE = os.path.join(BASE_DIR, "suno_music_urls.txt")
 SUNO_BACKUP_URLS_FILE = os.path.join(BASE_DIR, "suno_music_urls_backup.txt")
 SUNO_USED_URLS_FILE = os.path.join(BASE_DIR, "suno_music_used_urls.txt")
 SUNO_CYCLE_TRACKER = os.path.join(BASE_DIR, "suno_music_cycle_tracker.txt")
+TREBLO_URLS_FILE = os.path.join(BASE_DIR, "treblo_music_urls.txt")
+TREBLO_BACKUP_URLS_FILE = os.path.join(BASE_DIR, "treblo_music_urls_backup.txt")
+TREBLO_USED_URLS_FILE = os.path.join(BASE_DIR, "treblo_music_used_urls.txt")
 
 # Detect FFmpeg executable
 FFMPEG_EXE = "ffmpeg"
@@ -115,40 +118,59 @@ def mix_soundtrack(duration_sec=900):
         except Exception:
             cycle = 1
 
-    # 2. Check if User Suno AI Music URLs are available
+    # 2. Check if User Suno AI Music URLs are available (Tier 1 Primary)
     suno_urls = []
     if os.path.exists(SUNO_URLS_FILE):
         with open(SUNO_URLS_FILE, "r", encoding="utf-8") as f:
             suno_urls = [line.strip() for line in f if line.strip() and line.strip().startswith("http")]
-            
-    # Auto-recycle from backup if empty (Unlimited Infinite Loop)
-    if not suno_urls and os.path.exists(SUNO_BACKUP_URLS_FILE):
-        with open(SUNO_BACKUP_URLS_FILE, "r", encoding="utf-8") as f:
-            backup_urls = [line.strip() for line in f if line.strip() and line.strip().startswith("http")]
-        if backup_urls:
-            cycle += 1
-            with open(SUNO_CYCLE_TRACKER, "w", encoding="utf-8") as f:
-                f.write(str(cycle))
-            print(f"  -> 🔄 Unlimited Loop Active: Queue reloaded from master backup pool! (Starting Cycle {cycle})")
-            random.shuffle(backup_urls)
-            suno_urls = backup_urls[:]
-            with open(SUNO_URLS_FILE, "w", encoding="utf-8") as f:
-                f.write("\n".join(suno_urls) + "\n")
 
-    # If Suno URL found, download via curl and loop/master to duration_sec
-    while suno_urls:
-        chosen_url = suno_urls.pop(0)
-        temp_input = os.path.join(BASE_DIR, "temp_suno_input.mp3")
-        print(f"  -> Found Fresh User Suno AI Track in queue (Cycle {cycle}): {chosen_url}")
+    source_type = "Suno AI"
+    chosen_urls = suno_urls
+    active_urls_file = SUNO_URLS_FILE
+    active_used_file = SUNO_USED_URLS_FILE
+
+    # Tier 2 Sequential Fallback: If Suno songs are finished, switch to Treblo Music queue!
+    if not chosen_urls:
+        treblo_urls = []
+        if os.path.exists(TREBLO_URLS_FILE):
+            with open(TREBLO_URLS_FILE, "r", encoding="utf-8") as f:
+                treblo_urls = [line.strip() for line in f if line.strip() and line.strip().startswith("http")]
+        if treblo_urls:
+            print("  -> 🎵 Suno queue finished! Seamlessly switching to Treblo Music queue!")
+            source_type = "Treblo"
+            chosen_urls = treblo_urls
+            active_urls_file = TREBLO_URLS_FILE
+            active_used_file = TREBLO_USED_URLS_FILE
+        elif os.path.exists(SUNO_BACKUP_URLS_FILE):
+            # Auto-recycle from backup if both queues empty (Unlimited Infinite Loop)
+            with open(SUNO_BACKUP_URLS_FILE, "r", encoding="utf-8") as f:
+                backup_urls = [line.strip() for line in f if line.strip() and line.strip().startswith("http")]
+            if backup_urls:
+                cycle += 1
+                with open(SUNO_CYCLE_TRACKER, "w", encoding="utf-8") as f:
+                    f.write(str(cycle))
+                print(f"  -> 🔄 Unlimited Loop Active: Queue reloaded from master backup pool! (Starting Cycle {cycle})")
+                random.shuffle(backup_urls)
+                chosen_urls = backup_urls[:]
+                with open(SUNO_URLS_FILE, "w", encoding="utf-8") as f:
+                    f.write("\n".join(chosen_urls) + "\n")
+                active_urls_file = SUNO_URLS_FILE
+                active_used_file = SUNO_USED_URLS_FILE
+
+    # Download via curl and loop/master to duration_sec
+    while chosen_urls:
+        chosen_url = chosen_urls.pop(0)
+        temp_input = os.path.join(BASE_DIR, "temp_music_input.mp3")
+        print(f"  -> Found Fresh {source_type} Track in queue (Cycle {cycle}): {chosen_url}")
         print("  -> Downloading from Catbox CDN via native curl...")
-        
+
         curl_path = "curl"
         if sys.platform == "win32" and os.path.exists(r"C:\Windows\System32\curl.exe"):
             curl_path = r"C:\Windows\System32\curl.exe"
-            
+
         dl_cmd = [curl_path, "-s", "-L", "-f", "--retry", "3", chosen_url, "-o", temp_input]
         res = subprocess.run(dl_cmd)
-        
+
         if res.returncode == 0 and os.path.exists(temp_input) and os.path.getsize(temp_input) > 50000:
             print(f"  -> Download successful! Mastering for Cycle {cycle} ({dur_min}:00 dynamic master soundtrack)...")
             # Always apply 432Hz harmonic warmth EQ, 1.8% micro-pitch shift, and strip metadata
@@ -169,24 +191,24 @@ def mix_soundtrack(duration_sec=900):
             ]
             subprocess.run(master_cmd, check=True)
 
-            # Record used URL and update queue
-            with open(SUNO_USED_URLS_FILE, "a", encoding="utf-8") as f:
+            # Record used URL and update active queue
+            with open(active_used_file, "a", encoding="utf-8") as f:
                 f.write(chosen_url + "\n")
-            with open(SUNO_URLS_FILE, "w", encoding="utf-8") as f:
-                f.write("\n".join(suno_urls) + "\n")
-                
+            with open(active_urls_file, "w", encoding="utf-8") as f:
+                f.write("\n".join(chosen_urls) + "\n")
+
             try:
                 os.remove(temp_input)
             except Exception:
                 pass
-                
-            print(f"  -> ✅ {dur_min}-Minute Master Soundtrack ready from Suno AI ({duration_sec}s): {TEMP_AUDIO}")
+
+            print(f"  -> ✅ {dur_min}-Minute Master Soundtrack ready from {source_type} ({duration_sec}s): {TEMP_AUDIO}")
             return
         else:
             print(f"  ⚠️ Warning: Failed to download {chosen_url}, trying next track...")
 
-    # Strict rule: NEVER touch Auto-Insta-Krishna/music/ folder. Always reload Suno tracks.
-    raise RuntimeError("No valid Suno AI tracks could be downloaded from queue. Auto-Insta-Krishna/music/ is strictly forbidden.")
+    # Strict rule: NEVER touch Auto-Insta-Krishna/music/ folder. Always reload Suno/Treblo tracks.
+    raise RuntimeError("No valid Suno/Treblo tracks could be downloaded from queue. Auto-Insta-Krishna/music/ is strictly forbidden.")
 
 
 LOGO_PATH = os.path.join(BASE_DIR, "website", "public", "assets", "logo.png")
@@ -1098,7 +1120,8 @@ def upload_to_youtube(theme, duration_sec=900):
         },
         "status": {
             "privacyStatus": "public",
-            "selfDeclaredMadeForKids": False
+            "selfDeclaredMadeForKids": False,
+            "containsSyntheticMedia": True
         }
     }
 

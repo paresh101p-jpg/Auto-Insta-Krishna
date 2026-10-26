@@ -541,7 +541,8 @@ def upload_short_to_youtube(video_path, title, description, tags):
             "privacyStatus": "public",
             "selfDeclaredMadeForKids": False,
             "embeddable": True,
-            "license": "youtube"
+            "license": "youtube",
+            "containsSyntheticMedia": True
         }
     }
 
