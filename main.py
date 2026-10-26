@@ -515,7 +515,7 @@ def generate_caption(media_path):
 Aise hi divya darshan aur suvichar ke liye jude rahein! 🙏🌸
 Like 👍 | Comment 💬 | Share 🚀 | Save 📌
 
-#krishna #radheradhe #harekrishna #bhagavadgita #vrindavan #suvichar #PareshPadsala_""")
+#krishna #radheradhe #harekrishna #bhagavadgita #vrindavan #suvichar #krishnavibez""")
 
 def get_ig_account_id():
     url = f"https://graph.facebook.com/v20.0/{FB_PAGE_ID}?fields=instagram_business_account&access_token={FB_ACCESS_TOKEN}"

@@ -45,7 +45,8 @@ OFFICIAL_LINKS = {
     "youtube": "https://www.youtube.com/@KrishnaVibezofficial",
     "whatsapp": "https://whatsapp.com/channel/0029VbDxJHk30LKNtj4Er62J",
     "telegram": "https://t.me/krishnavibezz",
-    "instagram": "https://www.instagram.com/pareshpadsala_/",
+    "instagram": "https://www.instagram.com/krishnavibez/",
+    "threads": "https://www.threads.net/@krishnavibez",
     "facebook": "https://www.facebook.com/1808917602588221",
     "pinterest": "https://in.pinterest.com/MojiloMart/",
     "amazon_shop": "https://www.amazon.in/shop/myhappybirthday"

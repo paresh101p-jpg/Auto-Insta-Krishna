@@ -107,9 +107,9 @@ Presented with utmost devotion by Krishna Vibez — your sacred sanctuary for co
 ▶️ Official YouTube: https://www.youtube.com/@KrishnaVibezofficial
 📱 WhatsApp Channel: https://whatsapp.com/channel/0029VbDxJHk30LKNtj4Er62J
 ✈️ Telegram Channel: https://t.me/krishnavibezz
-📷 Instagram: https://www.instagram.com/pareshpadsala_/
+📷 Instagram: https://www.instagram.com/krishnavibez/
 📘 Facebook Page: https://www.facebook.com/1808917602588221
-🧵 Threads: https://www.threads.net/@pareshpadsala_
+🧵 Threads: https://www.threads.net/@krishnavibez
 📌 Pinterest: https://in.pinterest.com/MojiloMart/
 
 🛍️ Divine Recommendations (Amazon Storefront):

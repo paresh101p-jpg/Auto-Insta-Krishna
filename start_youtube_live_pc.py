@@ -36,7 +36,7 @@ def run_stream():
     print(f"🎬 Video Source  : {os.path.basename(BASE_VIDEO)} (1080p Animated Loop)")
     print(f"🎵 Audio Source  : 64 Treblo AI Bansuri Flute Tracks")
     print(f"📡 Target Ingest : rtmp://a.rtmp.youtube.com/live2/••••{STREAM_KEY[-4:]}")
-    print("⚙️ Video Mode    : -c:v copy (ZERO CPU load)")
+    print("⚙️ Video Mode    : 1080p25 libx264 (4500k, 2.0s Keyframe GOP)")
     print("⚙️ Audio Mode    : AAC 192k 44.1kHz Studio Quality")
     print("=================================================================")
 
@@ -50,7 +50,15 @@ def run_stream():
         "-i", AUDIO_PLAYLIST,
         "-map", "0:v:0",
         "-map", "1:a:0",
-        "-c:v", "copy",
+        "-c:v", "libx264",
+        "-preset", "veryfast",
+        "-tune", "zerolatency",
+        "-b:v", "4500k",
+        "-maxrate", "5000k",
+        "-bufsize", "9000k",
+        "-pix_fmt", "yuv420p",
+        "-g", "50",
+        "-keyint_min", "50",
         "-c:a", "aac",
         "-b:a", "192k",
         "-ar", "44100",

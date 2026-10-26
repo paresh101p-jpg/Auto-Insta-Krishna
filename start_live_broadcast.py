@@ -51,7 +51,8 @@ def start_new_broadcast():
                 "🌐 Website: https://krishnavibez.in/\n"
                 "📱 WhatsApp Channel: https://whatsapp.com/channel/0029VbDxJHk30LKNtj4Er62J\n"
                 "✈️ Telegram: https://t.me/krishnavibezz\n"
-                "📸 Instagram: @pareshpadsala_\n\n"
+                "📸 Instagram: @krishnavibez\n"
+                "🧵 Threads: @krishnavibez\n\n"
                 "#Krishna #RadheKrishna #LiveStream #MeditationMusic #FluteMusic #Bansuri #DeepSleep #Peaceful #KrishnaVibez"
             ),
             "scheduledStartTime": now_iso

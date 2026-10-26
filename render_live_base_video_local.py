@@ -329,8 +329,10 @@ def generate_feather_configs(seed=108):
 
 
 def render_all():
-    slides = sorted(glob.glob(os.path.join(IMAGES_DIR, "*.jpg")))[:16]
-    print(f"Selected {len(slides)} diverse slides for 4-minute 24/7 Live base loop. Starting high-speed render...")
+    slides = sorted(glob.glob(os.path.join(IMAGES_DIR, "*.jpg")))
+    total_slides = len(slides)
+    total_minutes = (total_slides * 15) / 60.0
+    print(f"Selected all {total_slides} slides for ~{total_minutes:.1f}-minute 24/7 Live base loop. Starting high-speed render...")
     logo_badge = create_corner_logo_badge(size=120)
     feather_frames = load_and_key_feather_frames()
     
@@ -343,7 +345,13 @@ def render_all():
     for idx, slide_path in enumerate(slides):
         clip_path = os.path.join(CLIPS_DIR, f"clip_{idx+1:02d}.mp4")
         clip_paths.append(clip_path)
-        print(f"[{idx+1}/{len(slides)}] Rendering Slide {os.path.basename(slide_path)}...")
+        
+        # Resume cache: skip clips that are already fully rendered (>1MB)
+        if os.path.exists(clip_path) and os.path.getsize(clip_path) > 1000000:
+            print(f"[{idx+1}/{total_slides}] Clip already rendered: {os.path.basename(clip_path)} (Reusing)")
+            continue
+            
+        print(f"[{idx+1}/{total_slides}] Rendering Slide {os.path.basename(slide_path)}...")
         
         src_img = cv2.imread(slide_path)
         src_img = cv2.resize(src_img, (1920, 1080), interpolation=cv2.INTER_LANCZOS4)

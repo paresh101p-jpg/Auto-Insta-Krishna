@@ -378,9 +378,9 @@ Whenever power cuts, system reboots, or execution stops, the entire pipeline is 
    - **Active Pending Queue (Current)**: **743 Tracks** (`suno_music_urls.txt`).
    - **Initial Uploaded/Used**: **7 Tracks** (`suno_music_used_urls.txt`).
    - **User Shared Backlog Pool**: **461 Tracks** (`ALL_USER_SUNO_TRACKS_300_PLUS.txt`).
-2. **Treblo AI Music (Sequential Fallback & Integration Rule)**:
-   - Folder: `Auto-Insta-Krishna/Treblo Music/` and `Auto-Insta-Krishna/Treblo Music/uploaded/`.
-   - Dedicated Queues: `treblo_music_urls.txt`, `treblo_music_urls_backup.txt`, `treblo_music_used_urls.txt`.
+2. **Treblo AI Music Inventory (Sequential Fallback & 24/7 Live Stream)**:
+   - Folder: `Auto-Insta-Krishna/Treblo Music/` (0 loose files in inbox) and `Auto-Insta-Krishna/Treblo Music/uploaded/` (Archived).
+   - Dedicated Queues: `treblo_music_urls.txt` (Active: **208 Tracks**), `treblo_music_urls_backup.txt` (Master Pool: **208 Tracks**), `treblo_music_used_urls.txt`.
    - **Sequential Priority Rule**:
      - **Tier 1 (Primary)**: Always prioritize and play through Suno AI tracks (`suno_music_urls.txt`).
      - **Tier 2 (Treblo Takeover)**: When Suno music queue runs out / is depleted (`not suno_urls`), the pipeline automatically transitions seamlessly to Treblo music tracks (`treblo_music_urls.txt`).

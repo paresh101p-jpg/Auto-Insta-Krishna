@@ -19,7 +19,7 @@ CAPTIONS = [
 Aise hi divya darshan aur suvichar ke liye jude rahein! 🙏🌸
 Like 👍 | Comment 💬 | Share 🚀 | Save 📌
 
-#krishna #radheradhe #harekrishna #bhagavadgita #vrindavan #suvichar #krishnavibez #PareshPadsala_""",
+#krishna #radheradhe #harekrishna #bhagavadgita #vrindavan #suvichar #krishnavibez""",
 
     """✨ "संसार की हर उलझन का समाधान, श्री कृष्ण के चरणों में ध्यान।" ✨
 
@@ -33,7 +33,7 @@ Like 👍 | Comment 💬 | Share 🚀 | Save 📌
 Aise hi divya darshan aur suvichar ke liye jude rahein! 🙏🌸
 Like 👍 | Comment 💬 | Share 🚀 | Save 📌
 
-#krishnaconsciousness #iskcon #lordkrishna #gitaquotes #spiritualjourney #dailyquotes #radhakrishna #PareshPadsala_""",
+#krishnaconsciousness #iskcon #lordkrishna #gitaquotes #spiritualjourney #dailyquotes #radhakrishna #krishnavibez""",
 
     """✨ "विश्वास वह पावन शक्ति है, जिससे उजड़ी हुई दुनिया में भी प्रकाश आ सकता है।" ✨
 
@@ -47,7 +47,7 @@ Like 👍 | Comment 💬 | Share 🚀 | Save 📌
 Aise hi divya darshan aur suvichar ke liye jude rahein! 🙏🌸
 Like 👍 | Comment 💬 | Share 🚀 | Save 📌
 
-#shrikrishna #krishnabhakti #radharani #divinewisdom #peacefulmind #motivationalquotes #hinduism #PareshPadsala_""",
+#shrikrishna #krishnabhakti #radharani #divinewisdom #peacefulmind #motivationalquotes #hinduism #krishnavibez""",
 
     """✨ "परिवर्तन ही संसार का नियम है, जो कल किसी और का था, आज तुम्हारा है, कल किसी और का होगा।" ✨
 
@@ -61,7 +61,7 @@ Like 👍 | Comment 💬 | Share 🚀 | Save 📌
 Aise hi divya darshan aur suvichar ke liye jude rahein! 🙏🌸
 Like 👍 | Comment 💬 | Share 🚀 | Save 📌
 
-#gitaupdesh #krishnalove #kanha #vrindavandham #sanatandharma #positivevibes #spiritualawakening #PareshPadsala_""",
+#gitaupdesh #krishnalove #kanha #vrindavandham #sanatandharma #positivevibes #spiritualawakening #krishnavibez""",
 
     """✨ "सच्चा समर्पण वह है, जहाँ 'मैं' समाप्त हो जाए और केवल 'श्री कृष्ण' शेष रहें।" ✨
 
@@ -75,7 +75,7 @@ Like 👍 | Comment 💬 | Share 🚀 | Save 📌
 Aise hi divya darshan aur suvichar ke liye jude rahein! 🙏🌸
 Like 👍 | Comment 💬 | Share 🚀 | Save 📌
 
-#krishnaprem #radheyradhey #bankeybihari #mathura #bhaktimarg #lifelessons #divinelove #PareshPadsala_"""
+#krishnaprem #radheyradhey #bankeybihari #mathura #bhaktimarg #lifelessons #divinelove #krishnavibez"""
 ]
 
 def get_random_caption():

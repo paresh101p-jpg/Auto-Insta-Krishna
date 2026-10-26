@@ -3,7 +3,7 @@
 [![Website Status](https://img.shields.io/website?url=https%3A%2F%2Fkrishnavibez.in&label=krishnavibez.in&logo=googlechrome&logoColor=white)](https://krishnavibez.in/)
 [![WhatsApp Channel](https://img.shields.io/badge/WhatsApp-Krishna%20Vibez-25D366?logo=whatsapp&logoColor=white)](https://whatsapp.com/channel/0029VbDxJHk30LKNtj4Er62J)
 [![Telegram Channel](https://img.shields.io/badge/Telegram-@krishnavibezz-2CA5E0?logo=telegram&logoColor=white)](https://t.me/krishnavibezz)
-[![Meta Threads](https://img.shields.io/badge/Threads-@pareshpadsala__-000000?logo=threads&logoColor=white)](https://www.threads.net/@pareshpadsala_/)
+[![Meta Threads](https://img.shields.io/badge/Threads-@krishnavibez-000000?logo=threads&logoColor=white)](https://www.threads.net/@krishnavibez)
 [![Pinterest](https://img.shields.io/badge/Pinterest-KrishnaVibez-BD081C?logo=pinterest&logoColor=white)](https://krishnavibez.in/rss.xml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-gold.svg)](https://opensource.org/licenses/MIT)
 

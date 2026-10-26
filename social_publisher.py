@@ -83,7 +83,8 @@ def publish_to_telegram(media_url, caption, post_url, is_video=False):
             f"🕊️ हमारे आधिकारिक परिवार से जुड़ें:\n"
             f"🟢 WhatsApp: {whatsapp_channel}\n"
             f"▶️ YouTube: https://youtube.com/@krishnavibezofficial\n"
-            f"📸 Insta: https://www.instagram.com/pareshpadsala_/\n"
+            f"📸 Insta: https://www.instagram.com/krishnavibez/\n"
+            f"🧵 Threads: https://www.threads.net/@krishnavibez\n"
             f"📘 FB: https://www.facebook.com/1808917602588221\n\n"
             f"जय श्री राधे कृष्ण! हे गोविंद, कल्याण करें। 🙏✨\n\n"
             f"#Krishna #RadheKrishna #BhagavadGita #KrishnaQuotes #KrishnaVibez"
@@ -123,7 +124,7 @@ def publish_to_telegram(media_url, caption, post_url, is_video=False):
                     {"text": "🌐 Visit Website", "url": "https://krishnavibez.in/"}
                 ],
                 [
-                    {"text": "📸 Follow Instagram", "url": "https://www.instagram.com/pareshpadsala_/"},
+                    {"text": "📸 Follow Instagram", "url": "https://www.instagram.com/krishnavibez/"},
                     {"text": "📘 Follow Facebook", "url": "https://www.facebook.com/1808917602588221"}
                 ],
                 [

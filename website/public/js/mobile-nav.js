@@ -151,7 +151,7 @@
               <a href="https://t.me/krishnavibezz" target="_blank" rel="noopener noreferrer" class="d-soc-btn telegram">
                 <span>Telegram</span>
               </a>
-              <a href="https://www.instagram.com/pareshpadsala_/" target="_blank" rel="noopener noreferrer" class="d-soc-btn instagram">
+              <a href="https://www.instagram.com/krishnavibez/" target="_blank" rel="noopener noreferrer" class="d-soc-btn instagram">
                 <span>Instagram</span>
               </a>
               <a href="https://www.facebook.com/1808917602588221" target="_blank" rel="noopener noreferrer" class="d-soc-btn facebook">
