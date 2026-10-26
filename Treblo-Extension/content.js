@@ -18,32 +18,27 @@ function getActiveProjectId() {
 window.addEventListener("message", (event) => {
   if (event.data && event.data.type === "TREBLO_BRIDGE_TRACKS") {
     bridgeTracks = event.data.tracks || [];
-    const activeProject = getActiveProjectId();
     bridgeTracks.forEach(t => {
       if (t && t.url) {
-        if (activeProject && t.projectId && t.projectId !== activeProject) return;
         allDiscoveredMap.set(t.url, t);
       }
     });
-    console.log(`[Treblo Content] Active project has ${allDiscoveredMap.size} tracks.`);
+    console.log(`[Treblo Content] Received ${bridgeTracks.length} tracks from bridge.`);
   }
 });
 
 // Accurate scanner strictly for CURRENT active project
 async function scanAllTracks() {
-  allDiscoveredMap.clear(); // Always start fresh - never accumulate dead/old tracks
+  allDiscoveredMap.clear();
   bridgeTracks = [];
 
   // 1. Trigger fresh bridge scan in MAIN world
   window.postMessage({ type: "TREBLO_SCAN_NOW" }, "*");
-  await new Promise(r => setTimeout(r, 450));
+  await new Promise(r => setTimeout(r, 600));
 
-  const activeProject = getActiveProjectId();
-
-  // 2. Add bridge tracks (matching current project)
+  // 2. Add bridge tracks
   bridgeTracks.forEach(t => {
     if (t && t.url) {
-      if (activeProject && t.projectId && t.projectId !== activeProject) return;
       allDiscoveredMap.set(t.url, t);
     }
   });
@@ -78,6 +73,8 @@ async function scanAllTracks() {
   });
 
   const trackList = Array.from(allDiscoveredMap.values());
+  const activeProject = getActiveProjectId();
+
   return {
     tracks: trackList,
     count: trackList.length,
@@ -109,7 +106,7 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     try {
       const data = typeof request.json === "string" ? JSON.parse(request.json) : request.json;
       let added = 0;
-      allDiscoveredMap.clear(); // Clear old when importing new json
+      allDiscoveredMap.clear();
 
       if (data.entities && data.entities.tracks) {
         Object.values(data.entities.tracks).forEach(item => {

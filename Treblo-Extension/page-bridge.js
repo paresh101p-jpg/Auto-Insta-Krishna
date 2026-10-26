@@ -4,6 +4,7 @@
   console.log("[Treblo Bridge] Initialized in MAIN world context.");
 
   const capturedTracks = new Map();
+  const sessionFetchTracks = new Map();
 
   function getActiveProjectId() {
     const match = window.location.pathname.match(/\/editor\/([a-zA-Z0-9-]+)/);
@@ -15,12 +16,6 @@
 
     // Filter out deleted tracks
     if (obj.isDeleted || obj.deleted || obj.status === "DELETED") return null;
-
-    // Filter by project ID if present
-    const activeProject = getActiveProjectId();
-    if (activeProject && obj.projectId && obj.projectId !== activeProject) {
-      return null;
-    }
 
     // Check for songPath or audioUrl or generationId
     const songPath = obj.songPath || obj.audioUrl || obj.audio_url || obj.url;
@@ -42,79 +37,144 @@
       id: id,
       title: title,
       url: finalUrl,
-      projectId: obj.projectId || null,
+      projectId: obj.projectId || obj.project_id || null,
       duration: obj.duration || null,
       status: obj.status || "SUCCESS"
     };
   }
 
-  function extractTracksFromData(data, source) {
-    if (!data) return;
+  // Helper to extract tracks from any object
+  function extractTracksGeneric(data, targetMap) {
+    if (!data || typeof data !== "object") return;
     const activeProject = getActiveProjectId();
 
+    function deep(obj, depth = 0) {
+      if (!obj || depth > 6) return;
+      if (typeof obj !== "object") return;
+
+      if (obj.songPath || obj.generationId || (obj.audioUrl && typeof obj.audioUrl === "string")) {
+        const t = parseTrackObject(obj);
+        if (t && (!activeProject || !t.projectId || t.projectId === activeProject)) {
+          if (!targetMap.has(t.url)) {
+            targetMap.set(t.url, t);
+          }
+        }
+      }
+
+      if (Array.isArray(obj)) {
+        obj.forEach(x => deep(x, depth + 1));
+      } else {
+        Object.values(obj).forEach(x => deep(x, depth + 1));
+      }
+    }
+
+    deep(data);
+  }
+
+  // Priority 1: Scan DOM React Fibers of currently visible track cards on screen
+  function scanDomReactFibers() {
+    const found = new Map();
     try {
-      // 1. Structure: { entities: { tracks: { [id]: trackObj } } }
-      if (data.entities && data.entities.tracks) {
-        Object.values(data.entities.tracks).forEach(item => {
-          if (activeProject && item.projectId && item.projectId !== activeProject) return;
-          const t = parseTrackObject(item);
-          if (t && !capturedTracks.has(t.url)) {
-            capturedTracks.set(t.url, t);
-          }
-        });
-      }
+      const elements = document.querySelectorAll('button, [role="row"], [role="listitem"], div[class*="track"], div[class*="item"], div[class*="row"], div[class*="card"], li, div');
+      for (const el of elements) {
+        const fiberKey = Object.keys(el).find(k => k.startsWith("__reactFiber"));
+        if (!fiberKey) continue;
 
-      // 2. Structure: { data: { tracks: [...] } } or { tracks: [...] }
-      const trackList = (data.data && (data.data.tracks || data.data.items)) || data.tracks || data.items;
-      if (Array.isArray(trackList)) {
-        trackList.forEach(item => {
-          if (activeProject && item.projectId && item.projectId !== activeProject) return;
-          const t = parseTrackObject(item);
-          if (t && !capturedTracks.has(t.url)) {
-            capturedTracks.set(t.url, t);
-          }
-        });
-      }
-
-      // 3. Scan for any generation objects matching current active project
-      if (typeof data === "object") {
-        function deepScan(obj, depth = 0) {
-          if (!obj || depth > 5) return;
-          if (typeof obj !== "object") return;
-
-          if (obj.songPath || obj.generationId) {
-            if (!activeProject || !obj.projectId || obj.projectId === activeProject) {
-              const t = parseTrackObject(obj);
-              if (t && !capturedTracks.has(t.url)) {
-                capturedTracks.set(t.url, t);
+        let fiber = el[fiberKey];
+        let depth = 0;
+        while (fiber && depth < 8) {
+          const props = fiber.memoizedProps;
+          if (props && typeof props === "object") {
+            const candidates = [props.track, props.song, props.item, props.generation, props.data, props.entity];
+            for (const cand of candidates) {
+              if (cand && typeof cand === "object") {
+                if (cand.songPath || cand.generationId || cand.audioUrl) {
+                  const t = parseTrackObject(cand);
+                  if (t && !found.has(t.url)) {
+                    found.set(t.url, t);
+                  }
+                }
               }
             }
           }
-
-          if (Array.isArray(obj)) {
-            obj.forEach(item => deepScan(item, depth + 1));
-          } else {
-            Object.values(obj).forEach(val => deepScan(val, depth + 1));
-          }
+          fiber = fiber.return;
+          depth++;
         }
-        deepScan(data);
       }
-
-      notifyContentScript();
     } catch (e) {
-      console.warn("[Treblo Bridge] Parse error:", e);
+      console.warn("[Treblo Bridge] DOM fiber scan error:", e);
     }
+    return found;
   }
 
-  // 1. Monkey-patch window.fetch to capture active project network API responses
+  // Priority 2: Scan Storage STRICTLY for the active project
+  function scanStorageForProject() {
+    const activeProjectId = getActiveProjectId();
+    const found = new Map();
+
+    try {
+      [localStorage, sessionStorage].forEach(store => {
+        for (let i = 0; i < store.length; i++) {
+          const key = store.key(i);
+          const val = store.getItem(key);
+          if (!val || (!val.includes("songPath") && !val.includes("audio_") && !val.includes("cdn.treblo.com"))) continue;
+
+          try {
+            const data = JSON.parse(val);
+
+            // A. Check entities.projects[activeProjectId]
+            if (activeProjectId && data.entities && data.entities.projects && data.entities.projects[activeProjectId]) {
+              const proj = data.entities.projects[activeProjectId];
+              const tIds = proj.tracks || proj.trackIds || proj.items;
+              if (Array.isArray(tIds) && data.entities.tracks) {
+                tIds.forEach(id => {
+                  const item = data.entities.tracks[id] || (typeof id === "object" ? id : null);
+                  if (item) {
+                    const t = parseTrackObject(item);
+                    if (t && !found.has(t.url)) found.set(t.url, t);
+                  }
+                });
+                if (found.size > 0) return found;
+              }
+            }
+
+            // B. Check if data is project object itself
+            if (activeProjectId && (data.id === activeProjectId || data.projectId === activeProjectId)) {
+              extractTracksGeneric(data, found);
+              if (found.size > 0) return found;
+            }
+
+            // C. Filter by projectId on items
+            if (activeProjectId && data.entities && data.entities.tracks) {
+              Object.values(data.entities.tracks).forEach(item => {
+                if (item && (item.projectId === activeProjectId || item.project_id === activeProjectId)) {
+                  const t = parseTrackObject(item);
+                  if (t && !found.has(t.url)) found.set(t.url, t);
+                }
+              });
+              if (found.size > 0) return found;
+            }
+
+          } catch (e) {}
+        }
+      });
+    } catch (e) {}
+    return found;
+  }
+
+  // 1. Monkey-patch window.fetch to capture live network API responses
   const originalFetch = window.fetch;
   window.fetch = async function(...args) {
     const response = await originalFetch.apply(this, args);
     try {
-      const url = typeof args[0] === "string" ? args[0] : (args[0] && args[0].url);
       const clone = response.clone();
       clone.json().then(data => {
-        extractTracksFromData(data, url || "fetch");
+        extractTracksGeneric(data, sessionFetchTracks);
+        // Also update capturedTracks if matching project
+        sessionFetchTracks.forEach((t, url) => {
+          capturedTracks.set(url, t);
+        });
+        notifyContentScript();
       }).catch(() => {});
     } catch (e) {}
     return response;
@@ -132,43 +192,16 @@
       try {
         if (this.responseText && (this.responseText.includes("songPath") || this.responseText.includes("audio_"))) {
           const data = JSON.parse(this.responseText);
-          extractTracksFromData(data, this._url || "xhr");
+          extractTracksGeneric(data, sessionFetchTracks);
+          sessionFetchTracks.forEach((t, url) => {
+            capturedTracks.set(url, t);
+          });
+          notifyContentScript();
         }
       } catch (e) {}
     });
     return origSend.apply(this, arguments);
   };
-
-  // 3. Scan React Fiber tree of active page
-  function scanReactFibers() {
-    try {
-      const rootEl = document.querySelector("#root, #__next, body > div");
-      if (!rootEl) return;
-
-      const fiberKey = Object.keys(rootEl).find(k => k.startsWith("__reactFiber") || k.startsWith("__reactContainer"));
-      if (!fiberKey) return;
-
-      const visited = new Set();
-      function walkFiber(fiber, depth = 0) {
-        if (!fiber || depth > 40 || visited.has(fiber)) return;
-        visited.add(fiber);
-
-        if (fiber.memoizedProps) {
-          extractTracksFromData(fiber.memoizedProps, "fiberProps");
-        }
-        if (fiber.memoizedState) {
-          extractTracksFromData(fiber.memoizedState, "fiberState");
-        }
-
-        if (fiber.child) walkFiber(fiber.child, depth + 1);
-        if (fiber.sibling) walkFiber(fiber.sibling, depth + 1);
-      }
-
-      walkFiber(rootEl[fiberKey]);
-    } catch (err) {
-      console.warn("[Treblo Bridge] Fiber scan err:", err);
-    }
-  }
 
   function notifyContentScript() {
     const list = Array.from(capturedTracks.values());
@@ -179,22 +212,63 @@
     }, "*");
   }
 
+  function doFullScan() {
+    capturedTracks.clear();
+
+    // 1. Try DOM React Fibers of currently visible track cards
+    const domMap = scanDomReactFibers();
+    if (domMap.size > 0) {
+      console.log(`[Treblo Bridge] Found ${domMap.size} tracks from DOM cards.`);
+      domMap.forEach((t, url) => capturedTracks.set(url, t));
+    }
+
+    // 2. Try Storage strictly for active project
+    if (capturedTracks.size === 0) {
+      const storageMap = scanStorageForProject();
+      if (storageMap.size > 0) {
+        console.log(`[Treblo Bridge] Found ${storageMap.size} tracks from Project Storage.`);
+        storageMap.forEach((t, url) => capturedTracks.set(url, t));
+      }
+    }
+
+    // 3. Try session network fetches
+    if (capturedTracks.size === 0 && sessionFetchTracks.size > 0) {
+      console.log(`[Treblo Bridge] Found ${sessionFetchTracks.size} tracks from live session API.`);
+      sessionFetchTracks.forEach((t, url) => capturedTracks.set(url, t));
+    }
+
+    // 4. Fallback: If still 0, extract all tracks from storage as last resort
+    if (capturedTracks.size === 0) {
+      console.log("[Treblo Bridge] Fallback storage scan...");
+      try {
+        [localStorage, sessionStorage].forEach(store => {
+          for (let i = 0; i < store.length; i++) {
+            const val = store.getItem(store.key(i));
+            if (val && (val.includes("songPath") || val.includes("audio_"))) {
+              try { extractTracksGeneric(JSON.parse(val), capturedTracks); } catch (e) {}
+            }
+          }
+        });
+      } catch (e) {}
+    }
+
+    notifyContentScript();
+  }
+
   // Listen for scan & reset requests from content.js
   window.addEventListener("message", (event) => {
     if (event.data && event.data.type === "TREBLO_SCAN_NOW") {
-      capturedTracks.clear(); // Always start fresh on scan
-      scanReactFibers();
-      notifyContentScript();
+      doFullScan();
     } else if (event.data && event.data.type === "TREBLO_RESET_CACHE") {
       capturedTracks.clear();
+      sessionFetchTracks.clear();
       notifyContentScript();
     }
   });
 
   // Initial scan after page load
   setTimeout(() => {
-    scanReactFibers();
-    notifyContentScript();
+    doFullScan();
   }, 1000);
 
 })();
