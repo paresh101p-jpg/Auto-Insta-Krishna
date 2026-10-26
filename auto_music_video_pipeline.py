@@ -961,21 +961,36 @@ def generate_thumbnail(slides, theme):
             english_font_file = ec
             break
 
-    hindi_font_arg = hindi_font_file.replace("\\", "/").replace(":", "\\:")
-    english_font_arg = english_font_file.replace("\\", "/").replace(":", "\\:")
+    local_english = os.path.join(BASE_DIR, "arialbd.ttf")
+    if os.path.exists(local_english):
+        english_font_arg = "arialbd.ttf"
+    else:
+        english_font_arg = english_font_file.replace("\\", "/").replace(":", "\\:")
+
+    if os.path.exists(local_font):
+        hindi_font_arg = "NotoSansDevanagari-Bold.ttf"
+    else:
+        hindi_font_arg = hindi_font_file.replace("\\", "/").replace(":", "\\:")
+
     badge = theme["badge"]
     main_text = theme["hindi_main"]
     sub_text = theme["hindi_sub"]
 
+    hook_pill = "मन की शांति   |   गहरी नींद   |   चिंता मुक्ति"
     vf = (
         f"scale=1920:1080,"
         f"drawbox=y=0:h=180:color=black@0.45:t=fill,"
-        f"drawbox=y=630:h=450:color=black@0.75:t=fill,"
-        f"drawbox=x=80:y=50:w=680:h=75:color=goldenrod@0.95:t=fill,"
-        f"drawtext=fontfile='{english_font_arg}':text='{badge}':fontcolor=black:fontsize=42:x=115:y=68,"
-        f"drawtext=fontfile='{hindi_font_arg}':text='{main_text}':fontcolor=0xFFDF00:fontsize=100:x=80:y=680:borderw=6:bordercolor=black,"
-        f"drawtext=fontfile='{hindi_font_arg}':text='{sub_text}':fontcolor=white:fontsize=62:x=80:y=830:borderw=4:bordercolor=black,"
-        f"drawtext=fontfile='{english_font_arg}':text='KRISHNA VIBEZ':fontcolor=0xD4AF37:fontsize=36:x=1600:y=990:borderw=3:bordercolor=black"
+        f"drawbox=y=500:h=580:color=black@0.84:t=fill,"
+        f"drawbox=x=60:y=496:w=1800:h=5:color=goldenrod@0.90:t=fill,"
+        f"drawbox=x=70:y=45:w=720:h=90:color=0xFFB300@0.98:t=fill,"
+        f"drawbox=x=66:y=41:w=728:h=98:color=white@0.85:t=4,"
+        f"drawtext=fontfile={english_font_arg}:text='{badge}':fontcolor=black:fontsize=46:x=105:y=68,"
+        f"drawtext=fontfile={hindi_font_arg}:text='{main_text}':fontcolor=0xFFE600:fontsize=128:x=75:y=550:borderw=10:bordercolor=black,"
+        f"drawtext=fontfile={hindi_font_arg}:text='{sub_text}':fontcolor=white:fontsize=82:x=75:y=725:borderw=8:bordercolor=black,"
+        f"drawbox=x=75:y=850:w=1040:h=82:color=0x8B0000@0.95:t=fill,"
+        f"drawbox=x=71:y=846:w=1048:h=90:color=goldenrod@0.85:t=3,"
+        f"drawtext=fontfile={hindi_font_arg}:text='{hook_pill}':fontcolor=0xFFF8DC:fontsize=48:x=110:y=868:borderw=3:bordercolor=black,"
+        f"drawtext=fontfile={english_font_arg}:text='KRISHNA VIBEZ':fontcolor=0xFFD700:fontsize=46:x=1500:y=995:borderw=5:bordercolor=black"
     )
 
     cmd = [
