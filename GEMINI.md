@@ -333,8 +333,8 @@ Whenever power cuts, system reboots, or execution stops, the entire pipeline is 
 5. **Strict Prohibition on Old Local Audio (`Auto-Insta-Krishna/music/`)**:
    - NEVER use, pick, copy, or read any music files from `Auto-Insta-Krishna/music/` under ANY circumstance. Pre-existing tracks from this folder are 100% strictly forbidden. Every single track must be pure Suno AI flute dhun.
 
-6. **Twice-Daily (10:00 AM & 7:00 PM IST) Automated Cloud Publishing**:
-   - Runs twice daily at 10:00 AM IST and 07:00 PM IST via GitHub Actions (`krishna_music_video.yml`) and `cron-job.org` (`Krishna Music Video 1` and `Krishna Music Video 2`).
+6. **Thrice-Daily (07:00 AM, 01:00 PM & 07:00 PM IST) Automated Cloud Publishing**:
+   - Runs 3 times daily at 07:00 AM IST (01:30 UTC), 01:00 PM IST (07:30 UTC), and 07:00 PM IST (13:30 UTC) via GitHub Actions (`krishna_music_video.yml`) and `cron-job.org` (`Krishna Music Video 1`, `Krishna Music Video 2`, and `Krishna Music Video 3`).
    - Reads the top URL from `suno_music_urls.txt` (or fallback `treblo_music_urls.txt`) via native `curl`.
    - Loops and masters audio seamlessly to exact 15:00.00 flat duration with 3s fade-in, 4s fade-out, and 432 Hz harmonic warmth EQ.
    - Selects 12 random slides from the 50+ master clean image pool (`music_video_images/`), applying alternating Ken Burns Zoom-In, Pan, and Zoom-Out with 1.5s crossfades and floating golden sparkles (`golden_sparkles_loop.mp4`).
