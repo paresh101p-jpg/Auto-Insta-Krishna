@@ -983,6 +983,7 @@ def generate_thumbnail(slides, theme):
         "-i", selected_slide,
         "-vf", vf,
         "-frames:v", "1",
+        "-update", "1",
         "-q:v", "2",
         TEMP_THUMBNAIL
     ]
@@ -1098,22 +1099,27 @@ def upload_to_youtube(theme, duration_sec=900):
         "#Krishna #Flute #Bansuri #MeditationMusic #KrishnaMusic #DivineMusic #RadhaKrishna #RelaxingMusic #InnerPeace #432Hz #DeepSleep #BansuriTabla #KrishnaVibez #DailyMeditation"
     )
 
-    curated_tags = list(dict.fromkeys(
+    raw_candidates = list(dict.fromkeys(
         theme.get("tags", []) + [
-            "Krishna Flute", "Bansuri Dhun", "Krishna Meditation Music", "432Hz Music",
+            "Krishna Flute", "Bansuri Dhun", "Krishna Meditation Music",
             "Deep Sleep Music", "Stress Relief Music", "Radha Krishna Flute", "Bansuri Tabla",
             "Man Ki Shanti", "Subah Ki Flute", "Indian Classical Flute", "Morning Meditation",
             "Yoga Music", "Krishna Vibez", "Peaceful Instrumental", "Shri Krishna Bansuri",
             "Gehri Neend Music", "Healing Music", "Radhe Krishna", "Bhakti Music"
         ]
     ))
-    # Keep total tags string length strictly under 490 chars (YouTube 500 char limit)
+    # Accurately compute YouTube tag comma-separated length with quotes for multi-word tags
+    # Keep strictly under 380 chars (safe under 500-char YouTube API limit)
     final_tags = []
-    char_count = 0
-    for t in curated_tags:
-        if char_count + len(t) + 1 <= 485:
-            final_tags.append(t)
-            char_count += len(t) + 1
+    total_tag_chars = 0
+    for t in raw_candidates:
+        clean_t = t.replace("<", "").replace(">", "").replace(",", "").strip()
+        if not clean_t:
+            continue
+        effective_len = len(clean_t) + (2 if " " in clean_t else 0) + 1
+        if total_tag_chars + effective_len <= 380:
+            final_tags.append(clean_t)
+            total_tag_chars += effective_len
 
     metadata = {
         "snippet": {
@@ -1139,8 +1145,19 @@ def upload_to_youtube(theme, duration_sec=900):
 
     init_res = requests.post(upload_url, headers=headers, json=metadata)
     if init_res.status_code != 200:
+        print("[Notice] YouTube init returned:", init_res.status_code, init_res.text)
+        if "invalidTags" in init_res.text or "keyword" in init_res.text.lower():
+            print("  -> Retrying with basic verified tags...")
+            metadata["snippet"]["tags"] = ["Krishna Flute", "Bansuri Dhun", "Meditation Music", "Krishna Vibez"]
+            init_res = requests.post(upload_url, headers=headers, json=metadata)
+        if init_res.status_code != 200:
+            print("  -> Retrying with zero tags fallback...")
+            metadata["snippet"].pop("tags", None)
+            init_res = requests.post(upload_url, headers=headers, json=metadata)
+
+    if init_res.status_code != 200:
         print("[Error] YouTube resumable upload init failed:", init_res.text)
-        return
+        sys.exit(1)
 
     session_url = init_res.headers.get("Location")
     print("  -> Uploading video stream to YouTube...")
