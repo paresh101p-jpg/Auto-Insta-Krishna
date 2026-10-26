@@ -256,9 +256,11 @@ btnReloadTab.addEventListener("click", async () => {
   }
 
   if (activeTabId) {
+    chrome.tabs.sendMessage(activeTabId, { action: "RESET_CACHE" }, () => {});
+    renderTrackList([]);
     statusBadge.className = "badge checking";
     statusBadge.textContent = "Reloading...";
-    summaryNote.textContent = "Page reload ho raha hai, tracks capture kiye ja rahe hain...";
+    summaryNote.textContent = "Page reload ho raha hai, fresh tracks capture kiye ja rahe hain...";
 
     chrome.tabs.reload(activeTabId, {}, async () => {
       await sleep(2500);
@@ -275,7 +277,7 @@ btnDownloadAll.addEventListener("click", async () => {
   const targetFormat = isWav ? "WAV (Studio Quality)" : "OGG (Original)";
   const total = currentTracks.length;
 
-  const userConfirmed = confirm(`Aapke paas total ${total} music tracks hain.\nFormat: ${targetFormat}\n\nKya aap sabhi ${total} tracks ko 'Downloads/Treblo_Music/' folder me download karna chahte hain?`);
+  const userConfirmed = confirm(`Aapke paas total ${total} music tracks hain.\nFormat: ${targetFormat}\n\nKya aap sabhi ${total} tracks ko seedhe:\nE:\\Paresh\\Auto Post\\Auto-Insta-Krishna\\Treblo Music\nme download karna chahte hain?`);
   if (!userConfirmed) return;
 
   isDownloading = true;
@@ -376,6 +378,9 @@ btnDeleteList.addEventListener("click", () => {
 btnConfirmClearLocal.addEventListener("click", () => {
   renderTrackList([]);
   deleteModal.classList.add("hidden");
+  if (activeTabId) {
+    chrome.tabs.sendMessage(activeTabId, { action: "RESET_CACHE" }, () => {});
+  }
   summaryNote.innerHTML = `List clear kar di gayi hai. Naye tracks dekhne ke liye <strong>Reload & Scan</strong> dabayein.`;
 });
 

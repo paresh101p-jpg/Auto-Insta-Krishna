@@ -9,44 +9,46 @@ function sanitizeFilename(name) {
   return name.replace(/[\\/:*?"<>|]/g, "_").trim().substring(0, 100);
 }
 
+function getActiveProjectId() {
+  const match = window.location.pathname.match(/\/editor\/([a-zA-Z0-9-]+)/);
+  return match ? match[1] : null;
+}
+
 // Listen for messages from page-bridge.js (MAIN world)
 window.addEventListener("message", (event) => {
   if (event.data && event.data.type === "TREBLO_BRIDGE_TRACKS") {
     bridgeTracks = event.data.tracks || [];
+    const activeProject = getActiveProjectId();
     bridgeTracks.forEach(t => {
       if (t && t.url) {
+        if (activeProject && t.projectId && t.projectId !== activeProject) return;
         allDiscoveredMap.set(t.url, t);
       }
     });
-    console.log(`[Treblo Content] Received ${bridgeTracks.length} tracks from page-bridge.`);
+    console.log(`[Treblo Content] Active project has ${allDiscoveredMap.size} tracks.`);
   }
 });
 
-// Comprehensive scanner across DOM, Network, Storage, and Bridge
+// Accurate scanner strictly for CURRENT active project
 async function scanAllTracks() {
-  // 1. Trigger bridge scan in MAIN world
+  allDiscoveredMap.clear(); // Always start fresh - never accumulate dead/old tracks
+  bridgeTracks = [];
+
+  // 1. Trigger fresh bridge scan in MAIN world
   window.postMessage({ type: "TREBLO_SCAN_NOW" }, "*");
-  await new Promise(r => setTimeout(r, 400));
+  await new Promise(r => setTimeout(r, 450));
 
-  // 2. Check Performance Resource Timings
-  try {
-    const resources = performance.getEntriesByType("resource");
-    for (const res of resources) {
-      const url = res.name;
-      if (url.includes("cdn.treblo.com") || url.match(/\.(ogg|mp3|wav)(\?|$)/i)) {
-        if (!allDiscoveredMap.has(url)) {
-          const filename = url.split("/").pop().split("?")[0];
-          allDiscoveredMap.set(url, {
-            id: url,
-            title: filename.replace(/\.(ogg|mp3|wav)$/i, ""),
-            url: url
-          });
-        }
-      }
+  const activeProject = getActiveProjectId();
+
+  // 2. Add bridge tracks (matching current project)
+  bridgeTracks.forEach(t => {
+    if (t && t.url) {
+      if (activeProject && t.projectId && t.projectId !== activeProject) return;
+      allDiscoveredMap.set(t.url, t);
     }
-  } catch (err) {}
+  });
 
-  // 3. Scan DOM for audio tags
+  // 3. Scan DOM for audio tags in currently rendered active view
   const audioElements = document.querySelectorAll("audio, audio source");
   audioElements.forEach((el, index) => {
     const src = el.src || el.getAttribute("src");
@@ -61,7 +63,7 @@ async function scanAllTracks() {
     }
   });
 
-  // 4. Scan DOM for download or media links
+  // 4. Scan DOM for download or media links in active view
   const links = document.querySelectorAll('a[href*=".ogg"], a[href*=".mp3"], a[href*="cdn.treblo.com"]');
   links.forEach((a, index) => {
     const href = a.href;
@@ -75,18 +77,11 @@ async function scanAllTracks() {
     }
   });
 
-  // Extract project ID from URL if present
-  let projectId = null;
-  const match = window.location.pathname.match(/\/editor\/([a-zA-Z0-9-]+)/);
-  if (match) {
-    projectId = match[1];
-  }
-
   const trackList = Array.from(allDiscoveredMap.values());
   return {
     tracks: trackList,
     count: trackList.length,
-    projectId: projectId,
+    projectId: activeProject,
     currentUrl: window.location.href
   };
 }
@@ -102,12 +97,20 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     return true; // async
   }
 
+  if (request.action === "RESET_CACHE") {
+    allDiscoveredMap.clear();
+    bridgeTracks = [];
+    window.postMessage({ type: "TREBLO_RESET_CACHE" }, "*");
+    sendResponse({ success: true, count: 0, tracks: [] });
+    return true;
+  }
+
   if (request.action === "IMPORT_JSON") {
     try {
       const data = typeof request.json === "string" ? JSON.parse(request.json) : request.json;
       let added = 0;
+      allDiscoveredMap.clear(); // Clear old when importing new json
 
-      // Extract entities.tracks
       if (data.entities && data.entities.tracks) {
         Object.values(data.entities.tracks).forEach(item => {
           const url = item.songPath || item.audioUrl || (item.generationId ? `https://cdn.treblo.com/generations3/audio_${item.generationId}_${item.index || 0}.ogg` : null);
