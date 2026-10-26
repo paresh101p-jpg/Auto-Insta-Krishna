@@ -50,27 +50,32 @@ def prepare_treblo_music_pool():
     treblo_music_dir = os.path.join(MUSIC_DIR, "treblo")
     os.makedirs(treblo_music_dir, exist_ok=True)
     
-    # Check and sync Treblo URLs if needed
-    treblo_urls = []
-    for fpath in [TREBLO_URLS_FILE, TREBLO_BACKUP_URLS]:
-        if os.path.exists(fpath):
-            with open(fpath, "r", encoding="utf-8") as f:
-                treblo_urls.extend([l.strip() for l in f if l.strip() and l.strip().startswith("http")])
-    treblo_urls = list(dict.fromkeys(treblo_urls))
-    
-    # Download any missing Treblo tracks
-    for idx, url in enumerate(treblo_urls, 1):
-        filename = f"treblo_track_{idx:03d}.ogg"
-        if ".mp3" in url:
-            filename = f"treblo_track_{idx:03d}.mp3"
-        elif ".wav" in url:
-            filename = f"treblo_track_{idx:03d}.wav"
-        dest = os.path.join(treblo_music_dir, filename)
-        if not os.path.exists(dest) or os.path.getsize(dest) < 50000:
-            try:
-                subprocess.run(["curl", "-s", "-L", "-f", "--retry", "3", url, "-o", dest], timeout=60)
-            except Exception:
-                pass
+    # Check if tracks already exist in treblo_music_dir
+    existing_tracks = [f for f in glob.glob(os.path.join(treblo_music_dir, "*")) if os.path.isfile(f) and os.path.getsize(f) > 50000]
+    if len(existing_tracks) >= 50:
+        print(f"  -> Found {len(existing_tracks)} valid tracks already downloaded in {treblo_music_dir}. Reusing immediately.")
+    else:
+        # Check and sync Treblo URLs if needed
+        treblo_urls = []
+        for fpath in [TREBLO_URLS_FILE, TREBLO_BACKUP_URLS]:
+            if os.path.exists(fpath):
+                with open(fpath, "r", encoding="utf-8") as f:
+                    treblo_urls.extend([l.strip() for l in f if l.strip() and l.strip().startswith("http")])
+        treblo_urls = list(dict.fromkeys(treblo_urls))
+        
+        # Download any missing Treblo tracks
+        for idx, url in enumerate(treblo_urls, 1):
+            filename = f"treblo_track_{idx:03d}.ogg"
+            if ".mp3" in url:
+                filename = f"treblo_track_{idx:03d}.mp3"
+            elif ".wav" in url:
+                filename = f"treblo_track_{idx:03d}.wav"
+            dest = os.path.join(treblo_music_dir, filename)
+            if not os.path.exists(dest) or os.path.getsize(dest) < 50000:
+                try:
+                    subprocess.run(["curl", "-s", "-L", "-f", "--retry", "3", url, "-o", dest], timeout=60)
+                except Exception:
+                    pass
 
     # Gather strictly Treblo tracks only
     all_tracks = []
@@ -445,7 +450,7 @@ def start_live_stream():
         "-i", AUDIO_PLAYLIST,
         "-map", "0:v:0",
         "-map", "1:a:0",
-        "-c:v", "copy", # DIRECT STREAM COPY = ZERO CPU LOAD!
+        "-c:v", "copy",
         "-c:a", "aac",
         "-b:a", "192k",
         "-ar", "44100",
@@ -476,7 +481,10 @@ def main():
     print("KRISHNA VIBEZ — 24/7 YOUTUBE LIVE STREAMING ENGINE")
     print("=================================================================")
     prepare_treblo_music_pool()
-    render_seamless_video_loop(slides_count=8, clip_duration=25)
+    if not (os.path.exists(BASE_VIDEO_FILE) and os.path.getsize(BASE_VIDEO_FILE) > 50000000):
+        render_seamless_video_loop(slides_count=8, clip_duration=25)
+    else:
+        print(f"🎬 Existing base video loop found: {BASE_VIDEO_FILE} ({os.path.getsize(BASE_VIDEO_FILE)//(1024*1024)}MB). Reusing instantly.")
     start_live_stream()
 
 if __name__ == "__main__":

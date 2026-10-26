@@ -67,11 +67,12 @@ def upload_file_to_catbox(file_path, retries=3):
 def clean_treblo_audio(input_path, output_path):
     """
     Cleans audio:
-    - Strips all ID3/RIFF metadata (-map_metadata -1)
-    - Applies 432Hz harmonic EQ for deep relaxation
+    - Strips 100% ID3/RIFF metadata (-map_metadata -1)
+    - Applies 1.5% micro-tempo shift (atempo=1.015) to guarantee unique acoustic waveform fingerprint
+    - Applies 432Hz harmonic meditation EQ & flute studio presence
     - Encodes to broadcast-grade 320kbps MP3
     """
-    filter_str = "equalizer=f=432:t=q:w=1.2:g=2,equalizer=f=3200:t=q:w=1.5:g=1.2,volume=1.05"
+    filter_str = "atempo=1.015,equalizer=f=432:t=q:w=1.2:g=2,equalizer=f=3200:t=q:w=1.5:g=1.2,volume=1.04"
     cmd = [
         FFMPEG_EXE, "-y",
         "-i", input_path,
@@ -92,23 +93,33 @@ def process_all_treblo_music():
     print("=" * 65)
 
     supported_exts = (".wav", ".mp3", ".ogg", ".flac", ".m4a")
-    files = [
-        f for f in os.listdir(TREBLO_DIR)
-        if os.path.isfile(os.path.join(TREBLO_DIR, f)) and f.lower().endswith(supported_exts)
-    ]
+    tracker_file = os.path.join(TREBLO_DIR, "treblo_uploaded_tracker.txt")
+    already_uploaded = set()
+    if os.path.exists(tracker_file):
+        with open(tracker_file, "r", encoding="utf-8") as tf:
+            already_uploaded = {l.strip() for l in tf if l.strip()}
 
-    if not files:
-        print("[INFO] No pending tracks found in 'Treblo Music/'.")
+    candidates = []
+    # Scan both inbox and uploaded folder for any pending tracks not yet recorded in tracker
+    for folder in [TREBLO_DIR, TREBLO_UPLOADED_DIR]:
+        if os.path.exists(folder):
+            for f in sorted(os.listdir(folder)):
+                full_p = os.path.join(folder, f)
+                if os.path.isfile(full_p) and f.lower().endswith(supported_exts) and f not in already_uploaded:
+                    if not any(c[0] == f for c in candidates):
+                        candidates.append((f, full_p))
+
+    if not candidates:
+        print("[INFO] No pending tracks found in 'Treblo Music/' or 'uploaded/'. All tracks already processed!")
         return []
 
-    print(f"[FOUND] {len(files)} Treblo music track(s) ready to process.")
+    print(f"[FOUND] {len(candidates)} new Treblo music track(s) ready to process.")
     uploaded_urls = []
 
-    for idx, fname in enumerate(files, 1):
-        raw_path = os.path.join(TREBLO_DIR, fname)
+    for idx, (fname, raw_path) in enumerate(candidates, 1):
         temp_clean = os.path.join(TREBLO_DIR, f"temp_clean_{int(time.time())}_{idx}.mp3")
-        print(f"\n[{idx}/{len(files)}] Processing Treblo track: {fname}")
-        print(f"  --> Stripping metadata & applying 432Hz harmonic mastering...")
+        print(f"\n[{idx}/{len(candidates)}] Processing Treblo track: {fname}")
+        print(f"  --> Stripping metadata & applying 432Hz harmonic fingerprint modulation...")
 
         if not clean_treblo_audio(raw_path, temp_clean):
             print(f"  ❌ FFmpeg cleaning failed for: {fname}")
@@ -132,17 +143,22 @@ def process_all_treblo_music():
             with open(TREBLO_BACKUP_URLS_FILE, "a", encoding="utf-8") as f:
                 f.write(url + "\n")
 
-            # Move original raw file to uploaded folder
-            dest = os.path.join(TREBLO_UPLOADED_DIR, fname)
-            if os.path.exists(dest):
-                base_name, ext = os.path.splitext(fname)
-                dest = os.path.join(TREBLO_UPLOADED_DIR, f"{base_name}_{int(time.time())}{ext}")
-            shutil.move(raw_path, dest)
-            print(f"  --> Original archived to: Treblo Music/uploaded/")
+            # Move raw file to uploaded folder so Treblo Music stays clean
+            dest_archive = os.path.join(TREBLO_UPLOADED_DIR, fname)
+            if os.path.exists(dest_archive):
+                try: os.remove(dest_archive)
+                except Exception: pass
+            try:
+                shutil.move(raw_path, dest_archive)
+                print(f"  --> Archived to Treblo Music/uploaded/ (Folder remains clean)")
+            except Exception as e:
+                print(f"  --> Move failed: {e}")
         else:
             print(f"  ❌ Catbox upload failed for: {fname}")
 
         if os.path.exists(temp_clean):
+            try: os.remove(temp_clean)
+            except Exception: pass
             try: os.remove(temp_clean)
             except Exception: pass
 
