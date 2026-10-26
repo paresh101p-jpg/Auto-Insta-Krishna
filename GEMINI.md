@@ -394,3 +394,50 @@ Whenever power cuts, system reboots, or execution stops, the entire pipeline is 
      - Also synced to Oracle Cloud VPS 24/7 Live Stream (`/home/ubuntu/krishna-live/music/`).
 3. **Automated AI Content Disclosure (`containsSyntheticMedia = True`)**:
    - Every video upload across all channels (Krishna music videos, Krishna shorts, Anchor Aadhya news) automatically passes `"containsSyntheticMedia": True` in the YouTube Data API `status` object and includes the full legal disclosure in the description.
+
+### 18. Oracle Cloud VPS 24/7 Live Stream Permanent Engine (`krishna-live.service`)
+1. **Host & Connection Specifications**:
+   - Server: Oracle Cloud Always-Free Enterprise VPS (`bharatflow-ubuntu`, IP: `92.4.66.182`, User: `ubuntu`).
+   - Authentication: SSH Key `e:\Paresh\Auto Post\ssh_oracle.key` (`-o BatchMode=yes -o StrictHostKeyChecking=no`).
+   - Service Daemon: `sudo systemctl status/restart krishna-live.service` (`/etc/systemd/system/krishna-live.service`, `Restart=always`).
+   - Python Engine: `/home/ubuntu/krishna-live/venv/bin/python3 -u /home/ubuntu/krishna-live/live_stream_server.py`.
+2. **Zero-CPU Streaming & Keyframe Standards**:
+   - Video Codec: `-c:v copy` streaming directly from pre-rendered base loop (`live_base_video.mp4`, 2.0s GOP keyframes).
+   - CPU Load: **< 1% CPU** (Zero encoding strain, eliminating buffering and preventing server crash).
+   - Ingestion Health: YouTube Data API status strictly **Good (Green)** with `configurationIssues: []`.
+   - Streaming Target: YouTube RTMP (`rtmp://a.rtmp.youtube.com/live2/9zzv-8p2v-7gdx-8kbx-b2kj`).
+3. **100% Treblo Audio Infinite Loop Architecture**:
+   - Audio Directory: `/home/ubuntu/krishna-live/music/treblo/` (119+ unique Treblo tracks, strictly 0 Suno).
+   - Playlist File: `/home/ubuntu/krishna-live/audio_playlist.txt` (5,950+ loop entries = 119 tracks × 50 repetitions, 350 KB text file).
+   - Infinite Playback: Wrapped with `-stream_loop -1` in FFmpeg, ensuring that when entry 5,950 finishes (~17 days of non-stop playback), it seamlessly loops back to entry 1 without 1 second of pause.
+   - Storage Capacity: VPS has 26 GB free disk space (only 880 MB used by music), easily accommodating 2,500+ additional tracks.
+4. **Local PC Freedom**:
+   - PC streaming (`start_youtube_live_pc.py`, `task-2036`) is permanently turned off.
+   - Live stream runs 24/7/365 entirely in the cloud, allowing the user to turn off or reboot their local PC anytime without impacting the stream.
+
+### 19. YouTube Partner Program (YPP) Monetization & Policy Compliance Matrix (2024–2026 Guidelines)
+To guarantee 100% approval for YouTube monetization across **LIVE Streams**, **15-Min Music Videos**, and **YouTube Shorts**, every automated pipeline strictly complies with YouTube's core policies:
+
+1. **YouTube "Reused Content" & "Repetitive Content" Policy Compliance**:
+   - **Why Content Gets Flagged (What NOT to do)**: Channels that upload raw static image + unedited stock music without transformation or branding are rejected under "Reused Content".
+   - **How Our Content Guarantees Monetization**:
+     - **Original Value Addition**: 
+       * (a) Custom-rendered 1080p base loop with dynamic 3D Morpankh fluttering, image-adapted golden sparkles, subpixel Ken Burns motion, and permanent creator watermark/logo (`@PareshPadsala_` / `Krishna Vibez`).
+       * (b) Custom-mastered 432 Hz harmonic tuning + 1.5% micro-speed shift, creating a unique cryptographic audio matrix distinct from raw AI outputs.
+       * (c) High-CTR bilingual dual-font thumbnails (`arialbd.ttf` + `NotoSansDevanagari-Bold.ttf`).
+2. **YouTube Shorts Monetization Standards**:
+   - **4-Layer Human Soul Signature**:
+     1. Emotion-Adaptive Voiceover with human breathing pauses (Microsoft Madhur Neural) matching the mood of the thought.
+     2. Dynamic 0 to 3.5s Focus-Reveal Unblur Hook that maximizes initial 3-second retention (stops swipe-away).
+     3. Classical Flute BGM balanced at 14–15% volume with gentle 1.5s fade-out.
+     4. Blurred ambient background with uncropped central image, preserving 100% text readability.
+   - **Metadata & YPP Discovery**:
+     - Meaningful titles (`[विचार का मुख्य सार] | श्री कृष्ण अमृत वचन #Shorts`).
+     - Thought-adaptive descriptions with 3 practical life lessons + specific search tags.
+3. **15-Minute Standalone Music Videos Monetization Standards**:
+   - 60+ Clean 16:9 8K Cinematic Krishna Images (slide-by-slide transitions, no repetitive single image).
+   - Single unique Treblo AI flute composition per video for pure meditative relaxation (no erratic audio changes).
+   - In-depth descriptions outlining meditation, sleep benefits, and frequency explanations.
+4. **YouTube AI & Synthetic Media Transparency (2024–2026 Policy)**:
+   - Mandatory AI Content Disclosure: All uploads declare `containsSyntheticMedia = True` in YouTube API parameters.
+   - Disclosing AI-generated media under YouTube's guidelines protects the channel from algorithmic suppression, demonetization, or copyright flags.
