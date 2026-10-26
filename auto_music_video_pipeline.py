@@ -961,16 +961,15 @@ def generate_thumbnail(slides, theme):
             english_font_file = ec
             break
 
-    local_english = os.path.join(BASE_DIR, "arialbd.ttf")
     if os.path.exists(local_english):
-        english_font_arg = "arialbd.ttf"
+        english_font_arg = os.path.abspath(local_english).replace("\\", "/").replace(":", "\\:")
     else:
-        english_font_arg = english_font_file.replace("\\", "/").replace(":", "\\:")
+        english_font_arg = os.path.abspath(english_font_file).replace("\\", "/").replace(":", "\\:")
 
     if os.path.exists(local_font):
-        hindi_font_arg = "NotoSansDevanagari-Bold.ttf"
+        hindi_font_arg = os.path.abspath(local_font).replace("\\", "/").replace(":", "\\:")
     else:
-        hindi_font_arg = hindi_font_file.replace("\\", "/").replace(":", "\\:")
+        hindi_font_arg = os.path.abspath(hindi_font_file).replace("\\", "/").replace(":", "\\:")
 
     badge = theme["badge"]
     main_text = theme["hindi_main"]
@@ -984,13 +983,13 @@ def generate_thumbnail(slides, theme):
         f"drawbox=x=60:y=496:w=1800:h=5:color=goldenrod@0.90:t=fill,"
         f"drawbox=x=70:y=45:w=720:h=90:color=0xFFB300@0.98:t=fill,"
         f"drawbox=x=66:y=41:w=728:h=98:color=white@0.85:t=4,"
-        f"drawtext=fontfile={english_font_arg}:text='{badge}':fontcolor=black:fontsize=46:x=105:y=68,"
-        f"drawtext=fontfile={hindi_font_arg}:text='{main_text}':fontcolor=0xFFE600:fontsize=128:x=75:y=550:borderw=10:bordercolor=black,"
-        f"drawtext=fontfile={hindi_font_arg}:text='{sub_text}':fontcolor=white:fontsize=82:x=75:y=725:borderw=8:bordercolor=black,"
+        f"drawtext=fontfile='{english_font_arg}':text='{badge}':fontcolor=black:fontsize=46:x=105:y=68,"
+        f"drawtext=fontfile='{hindi_font_arg}':text='{main_text}':fontcolor=0xFFE600:fontsize=128:x=75:y=550:borderw=10:bordercolor=black,"
+        f"drawtext=fontfile='{hindi_font_arg}':text='{sub_text}':fontcolor=white:fontsize=82:x=75:y=725:borderw=8:bordercolor=black,"
         f"drawbox=x=75:y=850:w=1040:h=82:color=0x8B0000@0.95:t=fill,"
         f"drawbox=x=71:y=846:w=1048:h=90:color=goldenrod@0.85:t=3,"
-        f"drawtext=fontfile={hindi_font_arg}:text='{hook_pill}':fontcolor=0xFFF8DC:fontsize=48:x=110:y=868:borderw=3:bordercolor=black,"
-        f"drawtext=fontfile={english_font_arg}:text='KRISHNA VIBEZ':fontcolor=0xFFD700:fontsize=46:x=1500:y=995:borderw=5:bordercolor=black"
+        f"drawtext=fontfile='{hindi_font_arg}':text='{hook_pill}':fontcolor=0xFFF8DC:fontsize=48:x=110:y=868:borderw=3:bordercolor=black,"
+        f"drawtext=fontfile='{english_font_arg}':text='KRISHNA VIBEZ':fontcolor=0xFFD700:fontsize=46:x=1500:y=995:borderw=5:bordercolor=black"
     )
 
     cmd = [
@@ -1002,8 +1001,12 @@ def generate_thumbnail(slides, theme):
         "-q:v", "2",
         TEMP_THUMBNAIL
     ]
-    subprocess.run(cmd, check=True)
+    subprocess.run(cmd, cwd=BASE_DIR, check=True)
     print(f"  -> Thumbnail Created: {TEMP_THUMBNAIL}")
+    # Also save master sample thumbnail
+    import shutil
+    sample_thumb = os.path.join(BASE_DIR, "MUSIC_VIDEO_HIGH_CTR_SAMPLE_THUMBNAIL.jpg")
+    shutil.copy2(TEMP_THUMBNAIL, sample_thumb)
     return TEMP_THUMBNAIL
 
 def upload_to_youtube(theme, duration_sec=900):
