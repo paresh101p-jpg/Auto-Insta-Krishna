@@ -118,44 +118,47 @@ def mix_soundtrack(duration_sec=900):
         except Exception:
             cycle = 1
 
-    # 2. Check if User Suno AI Music URLs are available (Tier 1 Primary)
-    suno_urls = []
-    if os.path.exists(SUNO_URLS_FILE):
-        with open(SUNO_URLS_FILE, "r", encoding="utf-8") as f:
-            suno_urls = [line.strip() for line in f if line.strip() and line.strip().startswith("http")]
+    # 2. Check Treblo AI Music URLs (Tier 1 PRIMARY — Treblo First Rule)
+    treblo_urls = []
+    if os.path.exists(TREBLO_URLS_FILE):
+        with open(TREBLO_URLS_FILE, "r", encoding="utf-8") as f:
+            treblo_urls = [line.strip() for line in f if line.strip() and line.strip().startswith("http")]
 
-    source_type = "Suno AI"
-    chosen_urls = suno_urls
-    active_urls_file = SUNO_URLS_FILE
-    active_used_file = SUNO_USED_URLS_FILE
+    if treblo_urls:
+        source_type = "Treblo"
+        chosen_urls = treblo_urls
+        active_urls_file = TREBLO_URLS_FILE
+        active_used_file = TREBLO_USED_URLS_FILE
+        print(f"  -> 🎵 Active Music Engine: Treblo AI (Tier 1 Primary - {len(treblo_urls)} tracks remaining in queue)")
+    else:
+        # Tier 2 Sequential Fallback: If Treblo songs are finished, switch to Suno Music queue!
+        suno_urls = []
+        if os.path.exists(SUNO_URLS_FILE):
+            with open(SUNO_URLS_FILE, "r", encoding="utf-8") as f:
+                suno_urls = [line.strip() for line in f if line.strip() and line.strip().startswith("http")]
 
-    # Tier 2 Sequential Fallback: If Suno songs are finished, switch to Treblo Music queue!
-    if not chosen_urls:
-        treblo_urls = []
-        if os.path.exists(TREBLO_URLS_FILE):
-            with open(TREBLO_URLS_FILE, "r", encoding="utf-8") as f:
-                treblo_urls = [line.strip() for line in f if line.strip() and line.strip().startswith("http")]
-        if treblo_urls:
-            print("  -> 🎵 Suno queue finished! Seamlessly switching to Treblo Music queue!")
-            source_type = "Treblo"
-            chosen_urls = treblo_urls
-            active_urls_file = TREBLO_URLS_FILE
-            active_used_file = TREBLO_USED_URLS_FILE
-        elif os.path.exists(SUNO_BACKUP_URLS_FILE):
-            # Auto-recycle from backup if both queues empty (Unlimited Infinite Loop)
-            with open(SUNO_BACKUP_URLS_FILE, "r", encoding="utf-8") as f:
+        if suno_urls:
+            print("  -> 🎵 Treblo queue finished! Seamlessly switching to Suno Music queue (Tier 2 Fallback)!")
+            source_type = "Suno AI"
+            chosen_urls = suno_urls
+            active_urls_file = SUNO_URLS_FILE
+            active_used_file = SUNO_USED_URLS_FILE
+        elif os.path.exists(TREBLO_BACKUP_URLS_FILE):
+            # Auto-recycle from Treblo master backup pool (Unlimited Infinite Loop)
+            with open(TREBLO_BACKUP_URLS_FILE, "r", encoding="utf-8") as f:
                 backup_urls = [line.strip() for line in f if line.strip() and line.strip().startswith("http")]
             if backup_urls:
                 cycle += 1
                 with open(SUNO_CYCLE_TRACKER, "w", encoding="utf-8") as f:
                     f.write(str(cycle))
-                print(f"  -> 🔄 Unlimited Loop Active: Queue reloaded from master backup pool! (Starting Cycle {cycle})")
+                print(f"  -> 🔄 Unlimited Loop Active: Treblo queue reloaded from master backup pool! (Starting Cycle {cycle})")
                 random.shuffle(backup_urls)
                 chosen_urls = backup_urls[:]
-                with open(SUNO_URLS_FILE, "w", encoding="utf-8") as f:
+                with open(TREBLO_URLS_FILE, "w", encoding="utf-8") as f:
                     f.write("\n".join(chosen_urls) + "\n")
-                active_urls_file = SUNO_URLS_FILE
-                active_used_file = SUNO_USED_URLS_FILE
+                source_type = "Treblo"
+                active_urls_file = TREBLO_URLS_FILE
+                active_used_file = TREBLO_USED_URLS_FILE
 
     # Download via curl and loop/master to duration_sec
     while chosen_urls:

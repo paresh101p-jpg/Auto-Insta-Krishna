@@ -35,8 +35,8 @@ CLIPS_DIR = os.path.join(BASE_DIR, "clips")
 IMAGES_DIR = os.path.join(REPO_DIR, "music_video_images")
 LOGO_PATH = os.path.join(REPO_DIR, "website", "public", "assets", "logo.png")
 FEATHER_GREEN_SCREEN = os.path.join(REPO_DIR, "morpankh_green_screen.mp4")
-SUNO_URLS_FILE = os.path.join(REPO_DIR, "suno_music_urls.txt")
-SUNO_BACKUP_URLS = os.path.join(REPO_DIR, "suno_music_urls_backup.txt")
+TREBLO_URLS_FILE = os.path.join(REPO_DIR, "treblo_music_urls.txt")
+TREBLO_BACKUP_URLS = os.path.join(REPO_DIR, "treblo_music_urls_backup.txt")
 STREAM_KEY_FILE = os.path.join(BASE_DIR, "stream_key.txt")
 BASE_VIDEO_FILE = os.path.join(BASE_DIR, "live_base_video.mp4")
 AUDIO_PLAYLIST = os.path.join(BASE_DIR, "audio_playlist.txt")
@@ -44,36 +44,58 @@ AUDIO_PLAYLIST = os.path.join(BASE_DIR, "audio_playlist.txt")
 os.makedirs(MUSIC_DIR, exist_ok=True)
 os.makedirs(CLIPS_DIR, exist_ok=True)
 
-# 1. Prepare Suno AI Music Pool (strictly Suno AI, zero local ragas)
-def prepare_suno_music_pool():
-    print("[1/4] Preparing Suno AI Music Pool...")
-    # Find all valid Suno mp3, m4a, and wav in MUSIC_DIR (> 1MB)
+# 1. Prepare Treblo AI Music Pool (strictly Treblo AI Only, zero Suno)
+def prepare_treblo_music_pool():
+    print("[1/4] Preparing Treblo AI Music Pool (100% Treblo Only)...")
+    treblo_music_dir = os.path.join(MUSIC_DIR, "treblo")
+    os.makedirs(treblo_music_dir, exist_ok=True)
+    
+    # Check and sync Treblo URLs if needed
+    treblo_urls = []
+    for fpath in [TREBLO_URLS_FILE, TREBLO_BACKUP_URLS]:
+        if os.path.exists(fpath):
+            with open(fpath, "r", encoding="utf-8") as f:
+                treblo_urls.extend([l.strip() for l in f if l.strip() and l.strip().startswith("http")])
+    treblo_urls = list(dict.fromkeys(treblo_urls))
+    
+    # Download any missing Treblo tracks
+    for idx, url in enumerate(treblo_urls, 1):
+        filename = f"treblo_track_{idx:03d}.ogg"
+        if ".mp3" in url:
+            filename = f"treblo_track_{idx:03d}.mp3"
+        elif ".wav" in url:
+            filename = f"treblo_track_{idx:03d}.wav"
+        dest = os.path.join(treblo_music_dir, filename)
+        if not os.path.exists(dest) or os.path.getsize(dest) < 50000:
+            try:
+                subprocess.run(["curl", "-s", "-L", "-f", "--retry", "3", url, "-o", dest], timeout=60)
+            except Exception:
+                pass
+
+    # Gather strictly Treblo tracks only
     all_tracks = []
-    for ext in ["*.mp3", "*.m4a", "*.wav"]:
-        for fpath in sorted(glob.glob(os.path.join(MUSIC_DIR, ext))):
-            if os.path.exists(fpath) and os.path.getsize(fpath) > 1000000:
-                # Exclude corrupt legacy files if any
-                if "suno_track_" in fpath:
-                    continue
+    for ext in ["*.mp3", "*.ogg", "*.wav", "*.m4a"]:
+        for fpath in sorted(glob.glob(os.path.join(treblo_music_dir, ext))):
+            if os.path.exists(fpath) and os.path.getsize(fpath) > 50000:
                 all_tracks.append(fpath)
-                
+
+    # Fallback to general music dir if treblo subdir empty (exclude suno)
     if not all_tracks:
-        # Fallback to any tracks in music dir > 1MB
-        for ext in ["*.mp3", "*.m4a", "*.wav"]:
+        for ext in ["*.mp3", "*.ogg", "*.wav", "*.m4a"]:
             for fpath in sorted(glob.glob(os.path.join(MUSIC_DIR, ext))):
-                if os.path.exists(fpath) and os.path.getsize(fpath) > 1000000:
+                if os.path.exists(fpath) and os.path.getsize(fpath) > 50000 and "suno" not in os.path.basename(fpath).lower():
                     all_tracks.append(fpath)
-                    
-    print(f"  -> Found {len(all_tracks)} verified Suno AI tracks ready:")
+
+    print(f"  -> Found {len(all_tracks)} verified Treblo AI tracks ready for Live Stream:")
     for t in all_tracks:
         print(f"     🎵 {os.path.basename(t)} ({os.path.getsize(t)//1024} KB)")
-        
-    # Write concat playlist repeating 30 times (ensures seamless 24/7 continuous looping without end)
+
+    # Write concat playlist repeating 50 times (ensures seamless 24/7 continuous looping without end)
     with open(AUDIO_PLAYLIST, "w", encoding="utf-8") as f:
-        for _ in range(30):
+        for _ in range(50):
             for t in all_tracks:
                 f.write(f"file '{t}'\n")
-    print(f"  -> Audio playlist created with {len(all_tracks)} unique tracks ({len(all_tracks)*30} playlist entries).")
+    print(f"  -> Audio playlist created with {len(all_tracks)} unique Treblo tracks ({len(all_tracks)*50} playlist entries).")
     return all_tracks
 
 
@@ -453,7 +475,7 @@ def main():
     print("=================================================================")
     print("KRISHNA VIBEZ — 24/7 YOUTUBE LIVE STREAMING ENGINE")
     print("=================================================================")
-    prepare_suno_music_pool()
+    prepare_treblo_music_pool()
     render_seamless_video_loop(slides_count=8, clip_duration=25)
     start_live_stream()
 

@@ -95,14 +95,10 @@ Whenever you are generating video reels or YouTube Shorts from images (whether b
   - MUST split into natural breathing clauses at conjunctions (`जब... तब...`, `लेकिन...`, `क्योंकि...`, `और...`, commas) with `...` and 350ms–500ms pauses between thoughts.
   - Audio Mastering: Apply studio warmth (`bass=g=3:f=160,treble=g=2:f=3200`) and subtle divine room ambiance (`aecho=0.8:0.7:30:0.10`).
 
-### 4. Background Music & AI Music Generation Rules (Strict Negative Constraint)
+### 4. Background Music & AI Music Generation Rules (Treblo AI First & Live Stream Rule)
+- **TREBLO AI MUSIC FIRST (Tier 1 Primary)**: All standalone 15-minute Krishna music videos strictly prioritize Treblo AI music (`treblo_music_urls.txt`) first. Only when the Treblo queue is 100% finished will it fall back to Suno AI music (`suno_music_urls.txt`). When both queues finish, it auto-recycles from Treblo backup pool.
+- **24/7 YOUTUBE LIVE STREAM (100% TREBLO ONLY)**: The 24/7 YouTube live meditation stream on Oracle Cloud VPS strictly uses 100% Treblo AI music in an infinite seamless loop (`-stream_loop -1`). All Suno AI tracks are completely removed from the live stream playlist.
 - **STRICT PROHIBITION ON `Auto-Insta-Krishna/music/`**: NEVER use, pick, copy, or read any music files from `Auto-Insta-Krishna/music/` under ANY circumstance. Using pre-existing tracks from this folder is 100% STRICTLY FORBIDDEN.
-- **ALWAYS USE SUNO AI MUSIC (Zero Local Ragas)**: Every single music video or BGM track MUST strictly use Suno AI generated tracks (`suno_music_urls.txt` / `user_suno_music/uploaded/`). Never reuse old pre-recorded Indian raga files from `music/`.
-- **UNIFIED SUNO URLS AUTO-SYNC RULE (Music Videos + 24/7 Live Stream)**: Whenever the user provides new Suno AI URLs or adds tracks, ALWAYS automatically use them for BOTH:
-  1. Standalone full-length 15-minute Krishna Music Videos.
-  2. 24/7 YouTube Live Meditation Stream on Oracle Cloud (`/home/ubuntu/krishna-live/music/` and `audio_playlist.txt`).
-  The user does NOT need to ask or say "live me add karo" — it must happen simultaneously and automatically.
-- **ZERO-REFUSAL SUNO URL AUTO-EXTRACTION (Never Say "MP3 Nahi Hogi")**: Whenever the user shares any Suno links (`suno.com/s/...` or `suno.com/song/...`), NEVER refuse or ask the user to download manually. ALWAYS use the automated extractor engine (`resolve_suno_urls.py` / `batch_process_all_suno_urls.py`) with dynamic rotating `Fingerprint-Id` to automatically extract pristine MP3s, strip all Suno IDs (`-map_metadata -1`), apply 432Hz harmonic EQ, upload to Catbox CDN, push to GitHub `master`, sync to Oracle VPS live stream, and immediately delete local temporary files from PC to keep local storage at 0% waste.
 - **SINGLE TRACK PER MUSIC VIDEO RULE**: In every standalone 15-minute Krishna music video, strictly use **1 unique track** looped seamlessly with `-stream_loop -1` and smooth fade-in/fade-out to maintain deep meditative focus. Never mix or mash up different tracks within the same video.
 - **True Melody & Rhythm (Taal & Dhun)**: AI music must have authentic Indian classical Bansuri flute melody and real Tabla beats/rhythm. Never produce empty or robotic monotone beeps.
 - **Clean Visuals (No Quotes/Thoughts)**: For dedicated music videos and live streams, NEVER use Instagram quote/thought images. Always use clean, 100% text-free, 16:9 cinematic Lord Krishna images without any written text, quotes, or thoughts.

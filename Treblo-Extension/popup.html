@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Treblo Music Manager</title>
+  <link rel="stylesheet" href="popup.css">
+</head>
+<body>
+  <div class="container">
+    <!-- Header -->
+    <header class="header">
+      <div class="logo-box">
+        <span class="logo-icon">🎵</span>
+        <div class="logo-text">
+          <h1>Treblo Downloader</h1>
+          <span class="sub-text">100% Safe & Personal Tool</span>
+        </div>
+      </div>
+      <span id="statusBadge" class="badge checking">Checking...</span>
+    </header>
+
+    <!-- Track Summary Box -->
+    <section class="summary-card">
+      <div class="summary-row">
+        <span class="summary-label">Total Tracks Found:</span>
+        <span id="trackCount" class="summary-val">0</span>
+      </div>
+      <div class="summary-note" id="summaryNote">
+        Scanning Treblo editor...
+      </div>
+      <!-- Project ID indicator if detected -->
+      <div id="projectIdRow" class="project-id-row hidden">
+        <span class="meta-label">Project:</span>
+        <span id="projectIdText" class="meta-value">-</span>
+      </div>
+    </section>
+
+    <!-- Format Selector (WAV vs OGG) -->
+    <section class="format-card">
+      <span class="format-title">Audio Format:</span>
+      <div class="format-options">
+        <label class="radio-label">
+          <input type="radio" name="audioFormat" value="wav" id="fmtWav" checked>
+          <span class="radio-badge">🎵 .WAV (Studio Quality)</span>
+        </label>
+        <label class="radio-label">
+          <input type="radio" name="audioFormat" value="ogg" id="fmtOgg">
+          <span class="radio-badge">⚡ .OGG (Original Fast)</span>
+        </label>
+      </div>
+    </section>
+
+    <!-- Progress Indicator -->
+    <div id="progressContainer" class="progress-container hidden">
+      <div class="progress-bar-bg">
+        <div id="progressBar" class="progress-bar-fill"></div>
+      </div>
+      <div class="progress-text" id="progressText">Processing 0 / 0...</div>
+    </div>
+
+    <!-- Main Action Buttons -->
+    <section class="actions">
+      <!-- Button 1: Download All -->
+      <button id="btnDownloadAll" class="btn btn-primary" disabled>
+        <span class="btn-icon">⬇️</span>
+        <span class="btn-title">Download All (.WAV)</span>
+        <span class="btn-badge" id="btnCountBadge">0</span>
+      </button>
+
+      <!-- Button 2: Delete / Clear List -->
+      <button id="btnDeleteList" class="btn btn-danger" disabled>
+        <span class="btn-icon">🗑️</span>
+        <span class="btn-title">Clear / Delete List</span>
+      </button>
+    </section>
+
+    <!-- Secondary Utilities -->
+    <div class="secondary-actions">
+      <button id="btnReloadTab" class="btn-secondary" title="Reload Treblo tab to catch all tracks">🔄 Reload & Scan</button>
+      <button id="btnCopyLinks" class="btn-secondary" disabled>📋 Copy Links</button>
+      <button id="btnToggleImport" class="btn-secondary">📥 Paste JSON</button>
+    </div>
+
+    <!-- Optional JSON Paste Box (Collapsible) -->
+    <div id="importBox" class="import-box hidden">
+      <textarea id="jsonInput" placeholder="Paste Treblo network JSON response here..." rows="3"></textarea>
+      <button id="btnImportJsonSubmit" class="btn btn-secondary">Load Pasted Tracks</button>
+    </div>
+
+    <!-- Track List Preview -->
+    <section class="preview-section">
+      <div class="preview-header">
+        <span>Track List Preview</span>
+        <span id="listCounter" class="counter-text">0 items</span>
+      </div>
+      <div id="trackList" class="track-list">
+        <div class="empty-state">
+          No tracks detected yet.<br>
+          <small style="color:#38bdf8; cursor:pointer;" id="linkReloadTip">Tip: Click <strong>"Reload & Scan"</strong> above</small>
+        </div>
+      </div>
+    </section>
+
+    <!-- Legality & Safety Guarantee Notice -->
+    <footer class="footer">
+      <div class="legal-badge">
+        <span class="legal-icon">🛡️</span>
+        <span class="legal-text"><strong>100% Legal & Safe:</strong> Converts to uncompressed 16-bit PCM WAV. Zero bot risk.</span>
+      </div>
+    </footer>
+  </div>
+
+  <!-- Delete Modal Confirmation -->
+  <div id="deleteModal" class="modal hidden">
+    <div class="modal-content">
+      <h3>⚠️ Safety Confirmation</h3>
+      <p>Aapki list me <strong id="modalTrackCount">0</strong> tracks hain.</p>
+      <p class="modal-warning">
+        Server se permanently delete karne se aapke generated tracks wapas nahi milenge!
+      </p>
+      <div class="modal-options">
+        <button id="btnConfirmClearLocal" class="btn btn-secondary">Sirf Local List Clear Karein (Safe)</button>
+        <button id="btnCancelModal" class="btn btn-outline">Cancel</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="popup.js"></script>
+</body>
+</html>
