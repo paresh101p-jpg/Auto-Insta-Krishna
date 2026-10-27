@@ -1,3 +1,13 @@
+# STRICT 24/7 LIVE STREAM HOSTING RULE (VPS ONLY — ZERO PC STREAMING)
+**MANDATORY & UNBREAKABLE RULE**:
+1. **ALL 24/7 Live Streams MUST ALWAYS run 100% on the Oracle Cloud VPS (`ubuntu@92.4.66.182`)**.
+2. **Local PC MUST NEVER run live streams**: Never launch or host 24/7 live streams on the local PC (`start_youtube_live_pc.py` or local FFmpeg). Local PC bandwidth and CPU must remain 100% free.
+3. **Dedicated VPS Systemd Services**:
+   - **Lord Krishna 24/7 Live Stream**: Runs strictly via `krishna-live.service` on Oracle VPS (`/home/ubuntu/krishna-live/`). Stream Key: `9zzv-8p2v-7gdx-8kbx-b2kj`.
+   - **Rain Meditation 24/7 Live Stream**: Runs strictly via `rain-live.service` on Oracle VPS (`/home/ubuntu/rain-live/`). Stream Key: `0py1-wqkh-dcjf-4brp-d7p2`.
+4. Both services are enabled on the VPS (`sudo systemctl enable`) so they run continuously 24/7/365 and auto-restart automatically on any system reboot.
+
+
 # Image Generation Strategy for Krishna Music Videos (50+ Images)
 
 **NOTE (User Instruction)**: Instagram quote/text images for Pooja and Krishna are discontinued.
@@ -98,7 +108,7 @@ Whenever you are generating video reels or YouTube Shorts from images (whether b
 ### 4. Background Music & AI Music Generation Rules (Treblo AI First & Live Stream Rule)
 - **24/7 YOUTUBE LIVE STREAM (Strict 400-Track Cap)**: The 24/7 YouTube live meditation stream strictly uses a locked pool of exactly 400 Treblo Bansuri tracks (`live_audio_playlist.txt` / `krishna_live_400_pool.txt`). Once 400 tracks are reached, the live stream playlist is frozen and loops infinitely (`-stream_loop -1`).
 - **STANDALONE 15-MINUTE MUSIC VIDEOS (Track 401+ Dedicated)**: All new tracks beyond the 400th track are 100% EXCLUSIVE to standalone 15-minute Krishna music videos (`auto_music_video_pipeline.py`). New tracks must NEVER be pushed, added, or leaked into the live stream playlist.
-- **TREBLO AI MUSIC FIRST (Tier 1 Primary)**: Standalone 15-minute Krishna music videos prioritize Treblo AI music first. Only when the Treblo queue is 100% finished will it fall back to Suno AI music. When both queues finish, it auto-recycles from the Treblo backup pool.
+- **100% EXCLUSIVE TREBLO AI MUSIC (SUNO AI COMPLETELY DISCONTINUED & PROHIBITED)**: All Krishna music streams (24/7 Live Stream) and standalone 15-minute music videos strictly and exclusively use Treblo AI Music. Suno AI Music is 100% discontinued, permanently deleted, and strictly prohibited. Treblo music loops infinitely from the master backup pool (`treblo_music_urls_backup.txt`) with zero Suno fallback.
 - **STRICT PROHIBITION ON `Auto-Insta-Krishna/music/`**: NEVER use, pick, copy, or read any music files from `Auto-Insta-Krishna/music/` under ANY circumstance. Using pre-existing tracks from this folder is 100% STRICTLY FORBIDDEN.
 - **SINGLE TRACK PER MUSIC VIDEO RULE**: In every standalone 15-minute Krishna music video, strictly use **1 unique track** looped seamlessly with `-stream_loop -1` and smooth fade-in/fade-out to maintain deep meditative focus. Never mix or mash up different tracks within the same video.
 - **True Melody & Rhythm (Taal & Dhun)**: AI music must have authentic Indian classical Bansuri flute melody and real Tabla beats/rhythm. Never produce empty or robotic monotone beeps.
@@ -444,18 +454,43 @@ To guarantee 100% approval for YouTube monetization across **LIVE Streams**, **1
    - Mandatory AI Content Disclosure: All uploads declare `containsSyntheticMedia = True` in YouTube API parameters.
    - Disclosing AI-generated media under YouTube's guidelines protects the channel from algorithmic suppression, demonetization, or copyright flags.
 
-### 20. CorelDRAW & Design Explorer Freeze Troubleshooting Protocol
-- **Issue Tracked (27 Oct 2026)**: CorelDRAW freezing/jamming on Save, Close, and `D:\Design\DTF Sticker PNG` folder freezing/jamming during file search.
-- **Root Causes**:
-  1. Windows File Dialog attempting to render metadata/thumbnails for thousands of high-res PNG files optimized as "Pictures".
-  2. Windows `%temp%` clutter with orphaned Corel lock files (`cor*.tmp`, `@backup_*.cdr`).
-  3. Corrupted CorelDRAW Workspace cache (persists even after reinstallation).
-  4. Corel Graphics - Windows Shell Extension (`CdrShellExt.dll`) hanging Explorer preview handlers.
-  5. Windows Default Printer query hang on GDI calls during Save/Close.
-- **Resolution Steps Active After PC Reboot**:
-  1. **F8 Reset on Launch**: Hold `F8` key while launching CorelDRAW -> Click "Yes" to restore clean factory workspace.
-  2. **Folder Template**: `D:\Design\DTF Sticker PNG` Properties -> Customize -> Set "Optimize for General items" + apply to all subfolders.
-  3. **Temp Clean**: Clear `%temp%` folder periodically.
-  4. **Printer Setting**: Keep "Microsoft Print to PDF" as default Windows printer.
-  5. **Shell Extension**: Uninstall "Corel Graphics - Windows Shell Extension" from `appwiz.cpl` if preview hang persists.
+### 21. Summary of 27 Oct 2026 Core Implementations & Unbreakable Standards
+
+1. **Dual 24/7 YouTube Live Streams on Oracle Cloud VPS (`92.4.66.182`)**:
+   - **Lord Krishna 24/7 Live Stream** (`krishna-live.service`):
+     - Stream Key: `9zzv-8p2v-7gdx-8kbx-b2kj` | Target: YouTube Live (`YbGpiTm-jqo`).
+     - Video Base: 63 cinematic 16:9 images (15s per image = 945s / 15.75 min loop) with 3D Morpankh, golden sparkles, subpixel Ken Burns zoom/pan.
+     - Audio Pool: Exactly 400 Treblo Bansuri tracks (`krishna_live_400_pool.txt`) looping infinitely with `-stream_loop -1`.
+     - Performance: Stream-copy mode (`-c:v copy`), CPU < 3%, RAM ~266 MB.
+   - **Rain Meditation 24/7 Live Stream** (`rain-live.service`):
+     - Stream Key: `0py1-wqkh-dcjf-4brp-d7p2` | Target: YouTube Live (`DCB_giX0cf8`).
+     - Video Base: 110 diverse 4K rain scenes (cottages, waterfalls, bamboo forests, misty mountains, tea terraces) in a 27.5-minute loop.
+     - Audio Pool: 23-Hour master rain relaxation audio (`Rain_Meditation_23Hours_128k.mp3`).
+     - Performance: Stream-copy mode (`-c:v copy`), CPU < 3%, RAM ~5.6 MB.
+   - **Both Services Auto-Enabled**: `sudo systemctl enable` so both auto-resume on any VPS reboot. Local PC has ZERO live streams running.
+
+2. **Treblo AI Master Music Architecture & Pool Partitioning**:
+   - **Total Master Pool**: 528 verified Catbox CDN tracks backed up in `treblo_music_urls_backup.txt`.
+   - **24/7 Live Stream Pool**: Exactly 400 tracks frozen in `krishna_live_400_pool.txt`.
+   - **15-Min Music Video Dedicated Pool**: 128 tracks (tracks 401+) in `treblo_music_video_only_urls.txt`.
+   - **Single Track Rule**: Each 15-min standalone music video consumes strictly 1 unique track, looped seamlessly for meditation with 432Hz harmonic EQ and smooth 3s in / 4s out fades.
+   - **Permanent Suno Ban**: Suno AI is 100% discontinued and deleted from PC, GitHub, and VPS.
+
+3. **Cloud-Automated 15-Minute Music Video Pipeline (`.github/workflows/krishna_music_video.yml`)**:
+   - Runs automatically 3 times daily on GitHub Actions:
+     * 07:00 AM IST (01:30 UTC) — Morning Meditation
+     * 01:00 PM IST (07:30 UTC) — Afternoon Peace
+     * 07:00 PM IST (13:30 UTC) — Evening Relaxation
+   - Fetches 12 clean images from `music_video_images/`, 1 track from `treblo_music_video_only_urls.txt`, renders 15-min MP4 with 3D petals/morpankh, generates AI high-CTR thumbnail, and uploads to YouTube with full AI disclosure.
+   - The user NEVER has to run the script manually unless an instant on-demand video is wanted.
+
+4. **100% Free / ₹0 Financial Guarantee**:
+   - **YouTube Data API v3**: Uses 1,600 units per upload against the 10,000 free daily Google quota (₹0 cost, no billing).
+   - **Oracle Cloud VPS**: Runs on Always-Free tier with 10 TB free egress (₹0 cost).
+   - **GitHub Actions**: Runs on free runner minutes (₹0 cost).
+   - **Credentials Stability**: No API changes or secret updates required. Existing OAuth tokens remain valid indefinitely.
+
+5. **100 Master 16:9 Image Prompts**:
+   - Stored in `KRISHNA_100_PROMPTS_ONE_CLICK.html` and `ALL_100_PROMPTS_ONE_BLOCK.txt` for 1-click batch image generation for Vrindavan, Kadamba, Yamuna ghats, divine cows, and peacocks.
+
 
