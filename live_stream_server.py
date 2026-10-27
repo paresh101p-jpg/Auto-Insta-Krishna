@@ -438,26 +438,61 @@ def start_live_stream():
     rtmp_url = f"rtmp://a.rtmp.youtube.com/live2/{stream_key}"
     print(f"  -> Ingest Target: rtmp://a.rtmp.youtube.com/live2/••••{stream_key[-4:]}")
     
+    # Read optional Facebook Stream Key for Dual-Streaming
+    fb_key = None
+    for p in [os.path.join(REPO_DIR, "fb_stream_key.txt"), os.path.join(BASE_DIR, "fb_stream_key.txt")]:
+        if os.path.exists(p):
+            with open(p, "r", encoding="utf-8") as f:
+                content = f.read().strip()
+                if content:
+                    fb_key = content
+                    break
+
+    yt_target = f"[f=flv:flvflags=no_duration_filesize]rtmp://a.rtmp.youtube.com/live2/{stream_key}"
+    
     print("[4/4] 🚀 Launching 24/7 Zero-CPU Live Stream...")
-    # Stream-Copy Command: 0% CPU transcoding load!
-    stream_cmd = [
-        "ffmpeg",
-        "-re",
-        "-stream_loop", "-1",
-        "-i", BASE_VIDEO_FILE,
-        "-stream_loop", "-1",
-        "-f", "concat", "-safe", "0",
-        "-i", AUDIO_PLAYLIST,
-        "-map", "0:v:0",
-        "-map", "1:a:0",
-        "-c:v", "copy",
-        "-c:a", "aac",
-        "-b:a", "192k",
-        "-ar", "44100",
-        "-flvflags", "no_duration_filesize",
-        "-f", "flv",
-        rtmp_url
-    ]
+    if fb_key:
+        print(f"  -> Dual-Streaming Active: YouTube + Facebook (••••{fb_key[-4:]}) simultaneously!")
+        fb_target = f"[f=flv:flvflags=no_duration_filesize:onfail=ignore]rtmps://live-api-s.facebook.com:443/rtmp/{fb_key}"
+        tee_target = f"{yt_target}|{fb_target}"
+        stream_cmd = [
+            "ffmpeg",
+            "-re",
+            "-stream_loop", "-1",
+            "-i", BASE_VIDEO_FILE,
+            "-stream_loop", "-1",
+            "-f", "concat", "-safe", "0",
+            "-i", AUDIO_PLAYLIST,
+            "-map", "0:v:0",
+            "-map", "1:a:0",
+            "-c:v", "copy",
+            "-c:a", "aac",
+            "-b:a", "192k",
+            "-ar", "44100",
+            "-flags", "+global_header",
+            "-f", "tee",
+            tee_target
+        ]
+    else:
+        print("  -> Single Target: YouTube Channel")
+        stream_cmd = [
+            "ffmpeg",
+            "-re",
+            "-stream_loop", "-1",
+            "-i", BASE_VIDEO_FILE,
+            "-stream_loop", "-1",
+            "-f", "concat", "-safe", "0",
+            "-i", AUDIO_PLAYLIST,
+            "-map", "0:v:0",
+            "-map", "1:a:0",
+            "-c:v", "copy",
+            "-c:a", "aac",
+            "-b:a", "192k",
+            "-ar", "44100",
+            "-flvflags", "no_duration_filesize",
+            "-f", "flv",
+            rtmp_url
+        ]
     
     print("-----------------------------------------------------------------")
     print("LIVE BROADCAST ACTIVE! Streaming 24/7 to YouTube Channel...")
