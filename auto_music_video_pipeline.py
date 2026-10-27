@@ -936,6 +936,7 @@ def generate_thumbnail(slides, theme):
     selected_slide = random.choice(slides)
     
     local_font = os.path.join(BASE_DIR, "NotoSansDevanagari-Bold.ttf")
+    local_english = os.path.join(BASE_DIR, "arialbd.ttf")
     if not os.path.exists("C:/Windows/Fonts/Nirmala.ttc") and not os.path.exists(local_font):
         try:
             f_url = "https://github.com/googlefonts/noto-fonts/raw/main/hinted/ttf/NotoSansDevanagari/NotoSansDevanagari-Bold.ttf"
