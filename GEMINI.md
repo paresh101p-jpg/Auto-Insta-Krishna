@@ -344,7 +344,7 @@ Whenever power cuts, system reboots, or execution stops, the entire pipeline is 
    - The 24/7 Live Stream description (`update_live_stream_seo.py`) must NEVER be a short stub. It must always be comprehensive (~1,800 to 2,000 chars) with:
      - Divine Hook & spiritual meditation narrative.
      - Comprehensive "Ideal For" points (Deep Meditation, Dhyan, Yoga, Stress Relief, Deep Sleep, Insomnia, Work/Study Focus).
-     - Full official ecosystem links: Website (`https://krishnavibez.in/`), YouTube (`@KrishnaVibezofficial`), WhatsApp Channel, Telegram, Instagram (`@pareshpadsala_`), Facebook Page (`1808917602588221`), Threads (`@pareshpadsala_`), and Pinterest (`MojiloMart`).
+     - Full official ecosystem links: Website (`https://krishnavibez.in/`), YouTube (`@KrishnaVibezMusic`), WhatsApp Channel, Telegram, Instagram (`@pareshpadsala_`), Facebook Page (`1808917602588221`), Threads (`@pareshpadsala_`), and Pinterest (`MojiloMart`).
      - Amazon Storefront section: `https://www.amazon.in/shop/myhappybirthday` with official Amazon Associate legal disclosure.
      - Long-tail search keywords block & top devotional hashtags.
 2. **Weekly Rotation**: Rotates through 4 weekly theme hooks and titles automatically via `update_live_stream_seo.py` without stopping or interrupting the stream.

@@ -42,7 +42,7 @@ TEMP_FRAME = os.path.join(BASE_DIR, "temp_frame.jpg")
 # Official Social & Platform Links (Clickable in YouTube description)
 OFFICIAL_LINKS = {
     "website": "https://krishnavibez.in/",
-    "youtube": "https://www.youtube.com/@KrishnaVibezofficial",
+    "youtube": "https://www.youtube.com/@KrishnaVibezMusic",
     "whatsapp": "https://whatsapp.com/channel/0029VbDxJHk30LKNtj4Er62J",
     "telegram": "https://t.me/krishnavibezz",
     "instagram": "https://www.instagram.com/krishnavibez/",

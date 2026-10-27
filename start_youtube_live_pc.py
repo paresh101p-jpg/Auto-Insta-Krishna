@@ -36,19 +36,21 @@ def run_stream():
     print(f"🎬 Video Source  : {os.path.basename(BASE_VIDEO)} (1080p Animated Loop)")
     print(f"🎵 Audio Source  : 64 Treblo AI Bansuri Flute Tracks")
     print(f"📡 Target Ingest : rtmp://a.rtmp.youtube.com/live2/••••{STREAM_KEY[-4:]}")
-    print("⚙️ Video Mode    : 1080p25 libx264 (4500k, 2.0s Keyframe GOP)")
+    print("⚙️ Video Mode    : 720p25 libx264 (1200k, 2.0s Keyframe GOP)")
+    print("⚙️ Audio Mode    : AAC 128k 44.1kHz Studio Quality")
+    print("=================================================================")
     FB_KEY_FILE = os.path.join(BASE_DIR, "fb_stream_key.txt")
     fb_key = None
     if os.path.exists(FB_KEY_FILE):
         with open(FB_KEY_FILE, "r", encoding="utf-8") as f:
             fb_key = f.read().strip()
 
-    yt_target = f"[f=flv:flvflags=no_duration_filesize]{RTMP_URL}"
+    yt_target = f"[f=flv:onfail=ignore]{RTMP_URL}"
     
     if fb_key:
         print(f"📡 FB Target     : rtmps://live-api-s.facebook.com:443/rtmp/••••{fb_key[-4:]}")
         print("⚡ Mode          : Dual-Streaming Active (YouTube + Facebook simultaneously)")
-        fb_target = f"[f=flv:flvflags=no_duration_filesize:onfail=ignore]rtmps://live-api-s.facebook.com:443/rtmp/{fb_key}"
+        fb_target = f"[f=flv:onfail=ignore]rtmps://live-api-s.facebook.com:443/rtmp/{fb_key}"
         tee_target = f"{yt_target}|{fb_target}"
         stream_cmd = [
             FFMPEG_EXE,
@@ -60,17 +62,18 @@ def run_stream():
             "-i", AUDIO_PLAYLIST,
             "-map", "0:v:0",
             "-map", "1:a:0",
+            "-s", "1280x720",
             "-c:v", "libx264",
             "-preset", "veryfast",
             "-tune", "zerolatency",
-            "-b:v", "4500k",
-            "-maxrate", "5000k",
-            "-bufsize", "9000k",
+            "-b:v", "1200k",
+            "-maxrate", "1350k",
+            "-bufsize", "2400k",
             "-pix_fmt", "yuv420p",
             "-g", "50",
             "-keyint_min", "50",
             "-c:a", "aac",
-            "-b:a", "192k",
+            "-b:a", "128k",
             "-ar", "44100",
             "-flags", "+global_header",
             "-f", "tee",
@@ -87,17 +90,18 @@ def run_stream():
             "-i", AUDIO_PLAYLIST,
             "-map", "0:v:0",
             "-map", "1:a:0",
+            "-s", "1280x720",
             "-c:v", "libx264",
             "-preset", "veryfast",
             "-tune", "zerolatency",
-            "-b:v", "4500k",
-            "-maxrate", "5000k",
-            "-bufsize", "9000k",
+            "-b:v", "1200k",
+            "-maxrate", "1350k",
+            "-bufsize", "2400k",
             "-pix_fmt", "yuv420p",
             "-g", "50",
             "-keyint_min", "50",
             "-c:a", "aac",
-            "-b:a", "192k",
+            "-b:a", "128k",
             "-ar", "44100",
             "-flvflags", "no_duration_filesize",
             "-f", "flv",

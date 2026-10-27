@@ -104,7 +104,7 @@ Presented with utmost devotion by Krishna Vibez — your sacred sanctuary for co
 
 ✨ Official Platforms & Community (Krishna Vibez):
 🌐 Official Website: https://krishnavibez.in/
-▶️ Official YouTube: https://www.youtube.com/@KrishnaVibezofficial
+▶️ Official YouTube: https://www.youtube.com/@KrishnaVibezMusic
 📱 WhatsApp Channel: https://whatsapp.com/channel/0029VbDxJHk30LKNtj4Er62J
 ✈️ Telegram Channel: https://t.me/krishnavibezz
 📷 Instagram: https://www.instagram.com/krishnavibez/
