@@ -384,19 +384,28 @@ def render_all():
         
         for i in range(total_frames):
             t = i / float(fps)
-            mode = idx % 3
+            mode = idx % 4
+            prog = t / float(clip_duration)
             if mode == 0:
-                zoom = 1.0 + 0.06 * (t / float(clip_duration))
-                pan_x = 18.0 * (t / float(clip_duration))
-                pan_y = 10.0 * (t / float(clip_duration))
+                # Mode 0: Cinematic Gentle Push-In with Soft Right Drift
+                zoom = 1.0 + 0.14 * prog
+                pan_x = 70.0 * prog
+                pan_y = 40.0 * prog
             elif mode == 1:
-                zoom = 1.06 - 0.05 * (t / float(clip_duration))
-                pan_x = -15.0 * (t / float(clip_duration))
-                pan_y = 8.0 * (t / float(clip_duration))
+                # Mode 1: Majestic Pull-Out with Soft Left Drift
+                zoom = 1.15 - 0.12 * prog
+                pan_x = -65.0 * prog
+                pan_y = 30.0 * prog
+            elif mode == 2:
+                # Mode 2: Sweeping Horizontal Pan with Breathing Zoom
+                zoom = 1.08 + 0.06 * math.sin(prog * math.pi)
+                pan_x = 80.0 * (prog - 0.5)
+                pan_y = -35.0 * math.cos(prog * math.pi)
             else:
-                zoom = 1.0 + 0.05 * (t / float(clip_duration))
-                pan_x = 20.0 * math.sin((t / float(clip_duration)) * math.pi)
-                pan_y = -8.0 * (t / float(clip_duration))
+                # Mode 3: Diagonal Glide & Depth Focus
+                zoom = 1.03 + 0.12 * prog
+                pan_x = -60.0 * prog
+                pan_y = -40.0 * prog
                 
             cx, cy = 960.0, 540.0
             M = np.array([
