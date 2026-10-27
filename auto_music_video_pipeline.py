@@ -37,6 +37,7 @@ OUTPUT_VIDEO = os.path.join(BASE_DIR, "temp_music_video_render.mp4")
 TEMP_AUDIO = os.path.join(BASE_DIR, "temp_music_video_audio.mp3")
 TEMP_THUMBNAIL = os.path.join(BASE_DIR, "temp_music_thumbnail.jpg")
 TREBLO_URLS_FILE = os.path.join(BASE_DIR, "treblo_music_urls.txt")
+TREBLO_VIDEO_ONLY_URLS = os.path.join(BASE_DIR, "treblo_music_video_only_urls.txt")
 TREBLO_BACKUP_URLS_FILE = os.path.join(BASE_DIR, "treblo_music_urls_backup.txt")
 TREBLO_USED_URLS_FILE = os.path.join(BASE_DIR, "treblo_music_used_urls.txt")
 TREBLO_CYCLE_TRACKER = os.path.join(BASE_DIR, "treblo_music_cycle_tracker.txt")
@@ -115,18 +116,29 @@ def mix_soundtrack(duration_sec=900):
         except Exception:
             cycle = 1
 
-    # 2. Treblo AI Music URLs (100% Exclusive — Suno Prohibited)
+    # 2. Treblo AI Music URLs (100% Exclusive — Prioritizing Video-Dedicated Pool Track 401+)
     treblo_urls = []
-    if os.path.exists(TREBLO_URLS_FILE):
+    active_urls_file = TREBLO_URLS_FILE
+    active_used_file = TREBLO_USED_URLS_FILE
+
+    if os.path.exists(TREBLO_VIDEO_ONLY_URLS):
+        with open(TREBLO_VIDEO_ONLY_URLS, "r", encoding="utf-8") as f:
+            v_urls = [line.strip() for line in f if line.strip() and line.strip().startswith("http")]
+        if v_urls:
+            treblo_urls = v_urls
+            active_urls_file = TREBLO_VIDEO_ONLY_URLS
+            print(f"  -> 🎵 Active Music Engine: Treblo Video-Dedicated Pool (Track 401+ - {len(treblo_urls)} tracks remaining)")
+
+    if not treblo_urls and os.path.exists(TREBLO_URLS_FILE):
         with open(TREBLO_URLS_FILE, "r", encoding="utf-8") as f:
             treblo_urls = [line.strip() for line in f if line.strip() and line.strip().startswith("http")]
+        active_urls_file = TREBLO_URLS_FILE
 
     if treblo_urls:
         source_type = "Treblo"
         chosen_urls = treblo_urls
-        active_urls_file = TREBLO_URLS_FILE
-        active_used_file = TREBLO_USED_URLS_FILE
-        print(f"  -> 🎵 Active Music Engine: Treblo AI (100% Exclusive - {len(treblo_urls)} tracks remaining in queue)")
+        if active_urls_file != TREBLO_VIDEO_ONLY_URLS:
+            print(f"  -> 🎵 Active Music Engine: Treblo AI (100% Exclusive - {len(treblo_urls)} tracks remaining in queue)")
     elif os.path.exists(TREBLO_BACKUP_URLS_FILE):
         # Auto-recycle from Treblo master backup pool (Unlimited Infinite Loop)
         with open(TREBLO_BACKUP_URLS_FILE, "r", encoding="utf-8") as f:
