@@ -36,14 +36,10 @@ IMAGES_DIR = os.path.join(BASE_DIR, "music_video_images")
 OUTPUT_VIDEO = os.path.join(BASE_DIR, "temp_music_video_render.mp4")
 TEMP_AUDIO = os.path.join(BASE_DIR, "temp_music_video_audio.mp3")
 TEMP_THUMBNAIL = os.path.join(BASE_DIR, "temp_music_thumbnail.jpg")
-SPARKLES_LOOP = os.path.join(BASE_DIR, "golden_sparkles_loop.mp4")
-SUNO_URLS_FILE = os.path.join(BASE_DIR, "suno_music_urls.txt")
-SUNO_BACKUP_URLS_FILE = os.path.join(BASE_DIR, "suno_music_urls_backup.txt")
-SUNO_USED_URLS_FILE = os.path.join(BASE_DIR, "suno_music_used_urls.txt")
-SUNO_CYCLE_TRACKER = os.path.join(BASE_DIR, "suno_music_cycle_tracker.txt")
 TREBLO_URLS_FILE = os.path.join(BASE_DIR, "treblo_music_urls.txt")
 TREBLO_BACKUP_URLS_FILE = os.path.join(BASE_DIR, "treblo_music_urls_backup.txt")
 TREBLO_USED_URLS_FILE = os.path.join(BASE_DIR, "treblo_music_used_urls.txt")
+TREBLO_CYCLE_TRACKER = os.path.join(BASE_DIR, "treblo_music_cycle_tracker.txt")
 
 # Detect FFmpeg executable
 FFMPEG_EXE = "ffmpeg"
@@ -112,14 +108,14 @@ def mix_soundtrack(duration_sec=900):
     
     # 1. Check current cycle
     cycle = 1
-    if os.path.exists(SUNO_CYCLE_TRACKER):
+    if os.path.exists(TREBLO_CYCLE_TRACKER):
         try:
-            with open(SUNO_CYCLE_TRACKER, "r", encoding="utf-8") as f:
+            with open(TREBLO_CYCLE_TRACKER, "r", encoding="utf-8") as f:
                 cycle = int(f.read().strip())
         except Exception:
             cycle = 1
 
-    # 2. Check Treblo AI Music URLs (Tier 1 PRIMARY — Treblo First Rule)
+    # 2. Treblo AI Music URLs (100% Exclusive — Suno Prohibited)
     treblo_urls = []
     if os.path.exists(TREBLO_URLS_FILE):
         with open(TREBLO_URLS_FILE, "r", encoding="utf-8") as f:
@@ -130,36 +126,25 @@ def mix_soundtrack(duration_sec=900):
         chosen_urls = treblo_urls
         active_urls_file = TREBLO_URLS_FILE
         active_used_file = TREBLO_USED_URLS_FILE
-        print(f"  -> 🎵 Active Music Engine: Treblo AI (Tier 1 Primary - {len(treblo_urls)} tracks remaining in queue)")
+        print(f"  -> 🎵 Active Music Engine: Treblo AI (100% Exclusive - {len(treblo_urls)} tracks remaining in queue)")
+    elif os.path.exists(TREBLO_BACKUP_URLS_FILE):
+        # Auto-recycle from Treblo master backup pool (Unlimited Infinite Loop)
+        with open(TREBLO_BACKUP_URLS_FILE, "r", encoding="utf-8") as f:
+            backup_urls = [line.strip() for line in f if line.strip() and line.strip().startswith("http")]
+        if backup_urls:
+            cycle += 1
+            with open(TREBLO_CYCLE_TRACKER, "w", encoding="utf-8") as f:
+                f.write(str(cycle))
+            print(f"  -> 🔄 Unlimited Loop Active: Treblo queue reloaded from master backup pool! (Starting Cycle {cycle})")
+            random.shuffle(backup_urls)
+            chosen_urls = backup_urls[:]
+            with open(TREBLO_URLS_FILE, "w", encoding="utf-8") as f:
+                f.write("\n".join(chosen_urls) + "\n")
+            source_type = "Treblo"
+            active_urls_file = TREBLO_URLS_FILE
+            active_used_file = TREBLO_USED_URLS_FILE
     else:
-        # Tier 2 Sequential Fallback: If Treblo songs are finished, switch to Suno Music queue!
-        suno_urls = []
-        if os.path.exists(SUNO_URLS_FILE):
-            with open(SUNO_URLS_FILE, "r", encoding="utf-8") as f:
-                suno_urls = [line.strip() for line in f if line.strip() and line.strip().startswith("http")]
-
-        if suno_urls:
-            print("  -> 🎵 Treblo queue finished! Seamlessly switching to Suno Music queue (Tier 2 Fallback)!")
-            source_type = "Suno AI"
-            chosen_urls = suno_urls
-            active_urls_file = SUNO_URLS_FILE
-            active_used_file = SUNO_USED_URLS_FILE
-        elif os.path.exists(TREBLO_BACKUP_URLS_FILE):
-            # Auto-recycle from Treblo master backup pool (Unlimited Infinite Loop)
-            with open(TREBLO_BACKUP_URLS_FILE, "r", encoding="utf-8") as f:
-                backup_urls = [line.strip() for line in f if line.strip() and line.strip().startswith("http")]
-            if backup_urls:
-                cycle += 1
-                with open(SUNO_CYCLE_TRACKER, "w", encoding="utf-8") as f:
-                    f.write(str(cycle))
-                print(f"  -> 🔄 Unlimited Loop Active: Treblo queue reloaded from master backup pool! (Starting Cycle {cycle})")
-                random.shuffle(backup_urls)
-                chosen_urls = backup_urls[:]
-                with open(TREBLO_URLS_FILE, "w", encoding="utf-8") as f:
-                    f.write("\n".join(chosen_urls) + "\n")
-                source_type = "Treblo"
-                active_urls_file = TREBLO_URLS_FILE
-                active_used_file = TREBLO_USED_URLS_FILE
+        raise RuntimeError("No Treblo music tracks available in queue or backup pool!")
 
     # Download via curl and loop/master to duration_sec
     while chosen_urls:

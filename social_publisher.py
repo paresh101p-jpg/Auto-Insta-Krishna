@@ -125,10 +125,11 @@ def publish_to_telegram(media_url, caption, post_url, is_video=False):
                 ],
                 [
                     {"text": "📸 Follow Instagram", "url": "https://www.instagram.com/krishnavibez/"},
-                    {"text": "📘 Follow Facebook", "url": "https://www.facebook.com/1808917602588221"}
+                    {"text": "🧵 Follow Threads", "url": "https://www.threads.net/@krishnavibez"}
                 ],
                 [
-                    {"text": "▶️ Follow YouTube", "url": "https://youtube.com/@krishnavibezofficial"}
+                    {"text": "▶️ Follow YouTube", "url": "https://youtube.com/@krishnavibezofficial"},
+                    {"text": "📘 Follow Facebook", "url": "https://www.facebook.com/1808917602588221"}
                 ]
             ]
         }

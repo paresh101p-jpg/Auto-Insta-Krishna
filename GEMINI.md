@@ -6,7 +6,7 @@ All future image generation is dedicated strictly to **Krishna 16:9 Cinematic Mu
 1. **Aspect Ratio**: Always 16:9 Landscape (1920x1080 / 4K / 8K cinematic).
 2. **Clean Visuals (No Text / No Quotes)**: Absolutely ZERO quotes, text, watermarks, or typography on the images.
 3. **Themes**: Ultra-realistic cinematic Lord Krishna in Vrindavan, playing flute under Kadamba tree, divine cows, Yamuna river ghats, sunrise/sunset golden hour lighting, peacocks, lotus ponds, and majestic divine scenery.
-4. **Target Pool**: Minimum 50+ high-quality images stored in `Auto-Insta-Krishna/music_video_images/` for the automated 15-minute music video pipeline.
+4. **Target Pool & Dual Sharing**: All 16:9 cinematic Krishna images stored in `Auto-Insta-Krishna/music_video_images/` (both existing 83+ images and newly generated ones) are SHARED across BOTH: (a) 24/7 Live Stream slideshow and (b) 15-minute Standalone Music Videos.
 
 
 # Strict Account Separation & Content Segregation Rule (Krishna vs Pooja)
@@ -96,8 +96,9 @@ Whenever you are generating video reels or YouTube Shorts from images (whether b
   - Audio Mastering: Apply studio warmth (`bass=g=3:f=160,treble=g=2:f=3200`) and subtle divine room ambiance (`aecho=0.8:0.7:30:0.10`).
 
 ### 4. Background Music & AI Music Generation Rules (Treblo AI First & Live Stream Rule)
-- **TREBLO AI MUSIC FIRST (Tier 1 Primary)**: All standalone 15-minute Krishna music videos strictly prioritize Treblo AI music (`treblo_music_urls.txt`) first. Only when the Treblo queue is 100% finished will it fall back to Suno AI music (`suno_music_urls.txt`). When both queues finish, it auto-recycles from Treblo backup pool.
-- **24/7 YOUTUBE LIVE STREAM (100% TREBLO ONLY)**: The 24/7 YouTube live meditation stream on Oracle Cloud VPS strictly uses 100% Treblo AI music in an infinite seamless loop (`-stream_loop -1`). All Suno AI tracks are completely removed from the live stream playlist.
+- **24/7 YOUTUBE LIVE STREAM (Strict 400-Track Cap)**: The 24/7 YouTube live meditation stream strictly uses a locked pool of exactly 400 Treblo Bansuri tracks (`live_audio_playlist.txt` / `krishna_live_400_pool.txt`). Once 400 tracks are reached, the live stream playlist is frozen and loops infinitely (`-stream_loop -1`).
+- **STANDALONE 15-MINUTE MUSIC VIDEOS (Track 401+ Dedicated)**: All new tracks beyond the 400th track are 100% EXCLUSIVE to standalone 15-minute Krishna music videos (`auto_music_video_pipeline.py`). New tracks must NEVER be pushed, added, or leaked into the live stream playlist.
+- **TREBLO AI MUSIC FIRST (Tier 1 Primary)**: Standalone 15-minute Krishna music videos prioritize Treblo AI music first. Only when the Treblo queue is 100% finished will it fall back to Suno AI music. When both queues finish, it auto-recycles from the Treblo backup pool.
 - **STRICT PROHIBITION ON `Auto-Insta-Krishna/music/`**: NEVER use, pick, copy, or read any music files from `Auto-Insta-Krishna/music/` under ANY circumstance. Using pre-existing tracks from this folder is 100% STRICTLY FORBIDDEN.
 - **SINGLE TRACK PER MUSIC VIDEO RULE**: In every standalone 15-minute Krishna music video, strictly use **1 unique track** looped seamlessly with `-stream_loop -1` and smooth fade-in/fade-out to maintain deep meditative focus. Never mix or mash up different tracks within the same video.
 - **True Melody & Rhythm (Taal & Dhun)**: AI music must have authentic Indian classical Bansuri flute melody and real Tabla beats/rhythm. Never produce empty or robotic monotone beeps.
@@ -194,7 +195,7 @@ Whenever power cuts, system reboots, or execution stops, the entire pipeline is 
    - **Open Graph (OG) Thumbnail Card**: WhatsApp crawler strictly rejects `og:image` files > 300 KB or non-image formats. ALWAYS use the optimized JPEG `https://krishnavibez.in/assets/krishna-og.jpg` (1200x630, ~100 KB) in `post.html` and `share.html`. Never set `og:image` to `.mp4` video files.
 
 2. **Meta Threads Automated Broadcasting**:
-   - Meta Threads API is 100% active and integrated under `@pareshpadsala_` (Threads User ID: `29921796124076935`).
+   - Meta Threads API is 100% active and integrated under `@krishnavibez` (Threads User ID: `29921796124076935`).
    - Every daily scheduled post and reel automatically broadcasts simultaneously to Meta Threads via GitHub Actions (`schedule.yml`) without manual intervention.
 
 3. **Dailyhunt (DH Creator) Syndication & Monetization**:
@@ -265,7 +266,8 @@ Whenever power cuts, system reboots, or execution stops, the entire pipeline is 
 2. **Clickable Contact Details**:
    - Support Email: `mailto:support@krishnavibez.in` (opens mail client).
    - Website: `https://krishnavibez.in` (opens in new tab).
-   - Instagram: direct link to `https://www.instagram.com/pareshpadsala_/`.
+   - Instagram: direct link to `https://www.instagram.com/krishnavibez/`.
+   - Threads: direct link to `https://www.threads.net/@krishnavibez`.
    - Facebook: direct link to `https://www.facebook.com/1808917602588221`.
    - Styled with gold hover highlights and smooth transitions.
 
@@ -344,7 +346,7 @@ Whenever power cuts, system reboots, or execution stops, the entire pipeline is 
    - The 24/7 Live Stream description (`update_live_stream_seo.py`) must NEVER be a short stub. It must always be comprehensive (~1,800 to 2,000 chars) with:
      - Divine Hook & spiritual meditation narrative.
      - Comprehensive "Ideal For" points (Deep Meditation, Dhyan, Yoga, Stress Relief, Deep Sleep, Insomnia, Work/Study Focus).
-     - Full official ecosystem links: Website (`https://krishnavibez.in/`), YouTube (`@KrishnaVibezMusic`), WhatsApp Channel, Telegram, Instagram (`@pareshpadsala_`), Facebook Page (`1808917602588221`), Threads (`@pareshpadsala_`), and Pinterest (`MojiloMart`).
+     - Full official ecosystem links: Website (`https://krishnavibez.in/`), YouTube (`@KrishnaVibezMusic`), WhatsApp Channel, Telegram, Instagram (`@krishnavibez`), Facebook Page (`1808917602588221`), Threads (`@krishnavibez`), and Pinterest (`MojiloMart`).
      - Amazon Storefront section: `https://www.amazon.in/shop/myhappybirthday` with official Amazon Associate legal disclosure.
      - Long-tail search keywords block & top devotional hashtags.
 2. **Weekly Rotation**: Rotates through 4 weekly theme hooks and titles automatically via `update_live_stream_seo.py` without stopping or interrupting the stream.
