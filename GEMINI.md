@@ -441,3 +441,19 @@ To guarantee 100% approval for YouTube monetization across **LIVE Streams**, **1
 4. **YouTube AI & Synthetic Media Transparency (2024–2026 Policy)**:
    - Mandatory AI Content Disclosure: All uploads declare `containsSyntheticMedia = True` in YouTube API parameters.
    - Disclosing AI-generated media under YouTube's guidelines protects the channel from algorithmic suppression, demonetization, or copyright flags.
+
+### 20. CorelDRAW & Design Explorer Freeze Troubleshooting Protocol
+- **Issue Tracked (27 Oct 2026)**: CorelDRAW freezing/jamming on Save, Close, and `D:\Design\DTF Sticker PNG` folder freezing/jamming during file search.
+- **Root Causes**:
+  1. Windows File Dialog attempting to render metadata/thumbnails for thousands of high-res PNG files optimized as "Pictures".
+  2. Windows `%temp%` clutter with orphaned Corel lock files (`cor*.tmp`, `@backup_*.cdr`).
+  3. Corrupted CorelDRAW Workspace cache (persists even after reinstallation).
+  4. Corel Graphics - Windows Shell Extension (`CdrShellExt.dll`) hanging Explorer preview handlers.
+  5. Windows Default Printer query hang on GDI calls during Save/Close.
+- **Resolution Steps Active After PC Reboot**:
+  1. **F8 Reset on Launch**: Hold `F8` key while launching CorelDRAW -> Click "Yes" to restore clean factory workspace.
+  2. **Folder Template**: `D:\Design\DTF Sticker PNG` Properties -> Customize -> Set "Optimize for General items" + apply to all subfolders.
+  3. **Temp Clean**: Clear `%temp%` folder periodically.
+  4. **Printer Setting**: Keep "Microsoft Print to PDF" as default Windows printer.
+  5. **Shell Extension**: Uninstall "Corel Graphics - Windows Shell Extension" from `appwiz.cpl` if preview hang persists.
+
