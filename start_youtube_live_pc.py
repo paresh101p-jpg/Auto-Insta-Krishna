@@ -38,75 +38,36 @@ def run_stream():
     print(f"📡 Target Ingest : rtmp://a.rtmp.youtube.com/live2/••••{STREAM_KEY[-4:]}")
     print("⚙️ Video Mode    : 720p25 libx264 (1200k, 2.0s Keyframe GOP)")
     print("⚙️ Audio Mode    : AAC 128k 44.1kHz Studio Quality")
+    print("⚡ Engine        : 100% Dedicated 24/7/365 YouTube Live Stream")
     print("=================================================================")
-    FB_KEY_FILE = os.path.join(BASE_DIR, "fb_stream_key.txt")
-    fb_key = None
-    if os.path.exists(FB_KEY_FILE):
-        with open(FB_KEY_FILE, "r", encoding="utf-8") as f:
-            fb_key = f.read().strip()
-
-    yt_target = f"[f=flv:onfail=ignore]{RTMP_URL}"
-    
-    if fb_key:
-        print(f"📡 FB Target     : rtmps://live-api-s.facebook.com:443/rtmp/••••{fb_key[-4:]}")
-        print("⚡ Mode          : Dual-Streaming Active (YouTube + Facebook simultaneously)")
-        fb_target = f"[f=flv:onfail=ignore]rtmps://live-api-s.facebook.com:443/rtmp/{fb_key}"
-        tee_target = f"{yt_target}|{fb_target}"
-        stream_cmd = [
-            FFMPEG_EXE,
-            "-re",
-            "-stream_loop", "-1",
-            "-i", BASE_VIDEO,
-            "-stream_loop", "-1",
-            "-f", "concat", "-safe", "0",
-            "-i", AUDIO_PLAYLIST,
-            "-map", "0:v:0",
-            "-map", "1:a:0",
-            "-s", "1280x720",
-            "-c:v", "libx264",
-            "-preset", "veryfast",
-            "-tune", "zerolatency",
-            "-b:v", "1200k",
-            "-maxrate", "1350k",
-            "-bufsize", "2400k",
-            "-pix_fmt", "yuv420p",
-            "-g", "50",
-            "-keyint_min", "50",
-            "-c:a", "aac",
-            "-b:a", "128k",
-            "-ar", "44100",
-            "-flags", "+global_header",
-            "-f", "tee",
-            tee_target
-        ]
-    else:
-        stream_cmd = [
-            FFMPEG_EXE,
-            "-re",
-            "-stream_loop", "-1",
-            "-i", BASE_VIDEO,
-            "-stream_loop", "-1",
-            "-f", "concat", "-safe", "0",
-            "-i", AUDIO_PLAYLIST,
-            "-map", "0:v:0",
-            "-map", "1:a:0",
-            "-s", "1280x720",
-            "-c:v", "libx264",
-            "-preset", "veryfast",
-            "-tune", "zerolatency",
-            "-b:v", "1200k",
-            "-maxrate", "1350k",
-            "-bufsize", "2400k",
-            "-pix_fmt", "yuv420p",
-            "-g", "50",
-            "-keyint_min", "50",
-            "-c:a", "aac",
-            "-b:a", "128k",
-            "-ar", "44100",
-            "-flvflags", "no_duration_filesize",
-            "-f", "flv",
-            RTMP_URL
-        ]
+    stream_cmd = [
+        FFMPEG_EXE,
+        "-re",
+        "-stream_loop", "-1",
+        "-i", BASE_VIDEO,
+        "-stream_loop", "-1",
+        "-f", "concat", "-safe", "0",
+        "-i", AUDIO_PLAYLIST,
+        "-map", "0:v:0",
+        "-map", "1:a:0",
+        "-s", "1280x720",
+        "-c:v", "libx264",
+        "-preset", "veryfast",
+        "-tune", "zerolatency",
+        "-b:v", "1200k",
+        "-maxrate", "1350k",
+        "-bufsize", "2400k",
+        "-pix_fmt", "yuv420p",
+        "-g", "50",
+        "-keyint_min", "50",
+        "-x264opts", "scenecut=0",
+        "-c:a", "aac",
+        "-b:a", "128k",
+        "-ar", "44100",
+        "-flvflags", "no_duration_filesize",
+        "-f", "flv",
+        RTMP_URL
+    ]
 
     reconnect_count = 0
     while True:
