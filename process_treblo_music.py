@@ -27,6 +27,7 @@ BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 TREBLO_DIR = os.path.join(BASE_DIR, "Treblo Music")
 TREBLO_UPLOADED_DIR = os.path.join(TREBLO_DIR, "uploaded")
 TREBLO_URLS_FILE = os.path.join(BASE_DIR, "treblo_music_urls.txt")
+TREBLO_VIDEO_ONLY_URLS = os.path.join(BASE_DIR, "treblo_music_video_only_urls.txt")
 TREBLO_BACKUP_URLS_FILE = os.path.join(BASE_DIR, "treblo_music_urls_backup.txt")
 TREBLO_USED_URLS_FILE = os.path.join(BASE_DIR, "treblo_music_used_urls.txt")
 
@@ -145,6 +146,8 @@ def process_all_treblo_music():
 
             # Append to queues
             with open(TREBLO_URLS_FILE, "a", encoding="utf-8") as f:
+                f.write(url + "\n")
+            with open(TREBLO_VIDEO_ONLY_URLS, "a", encoding="utf-8") as f:
                 f.write(url + "\n")
             with open(TREBLO_BACKUP_URLS_FILE, "a", encoding="utf-8") as f:
                 f.write(url + "\n")
