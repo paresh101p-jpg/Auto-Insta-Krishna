@@ -26,6 +26,7 @@ import glob
 
 if sys.platform == "win32":
     sys.stdout.reconfigure(encoding="utf-8")
+import shutil
 import math
 import cv2
 import numpy as np
@@ -33,6 +34,8 @@ import numpy as np
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 MUSIC_DIR = os.path.join(BASE_DIR, "music")
 IMAGES_DIR = os.path.join(BASE_DIR, "music_video_images")
+USED_IMAGES_DIR = os.path.join(IMAGES_DIR, "used")
+USED_IMAGES_TRACKER = os.path.join(BASE_DIR, "used_music_images_tracker.txt")
 OUTPUT_VIDEO = os.path.join(BASE_DIR, "temp_music_video_render.mp4")
 TEMP_AUDIO = os.path.join(BASE_DIR, "temp_music_video_audio.mp3")
 TEMP_THUMBNAIL = os.path.join(BASE_DIR, "temp_music_thumbnail.jpg")
@@ -519,13 +522,67 @@ Return a JSON object with EXACTLY these keys:
     return raw_theme
 
 
-def ensure_images():
-    """Ensures 12 clean golden theme images exist in music_video_images/."""
+def ensure_images(num_needed=12):
+    """
+    Ensures clean 16:9 cinematic Krishna images exist in music_video_images/.
+    Only selects from unused images. If all images are exhausted, auto-recycles
+    from used/ so the pipeline runs in an infinite, uninterrupted loop.
+    """
     os.makedirs(IMAGES_DIR, exist_ok=True)
-    slides = [os.path.join(IMAGES_DIR, f) for f in os.listdir(IMAGES_DIR) if f.lower().endswith(('.jpg', '.jpeg', '.png'))]
+    os.makedirs(USED_IMAGES_DIR, exist_ok=True)
+
+    # 1. Get unused images directly in IMAGES_DIR
+    slides = [
+        os.path.join(IMAGES_DIR, f) 
+        for f in os.listdir(IMAGES_DIR) 
+        if os.path.isfile(os.path.join(IMAGES_DIR, f)) and f.lower().endswith(('.jpg', '.jpeg', '.png', '.webp'))
+    ]
+
+    # 2. If fewer than num_needed remain, auto-recycle from used/ folder (Infinite Loop)
+    if len(slides) < num_needed:
+        used_files = [
+            os.path.join(USED_IMAGES_DIR, f)
+            for f in os.listdir(USED_IMAGES_DIR)
+            if os.path.isfile(os.path.join(USED_IMAGES_DIR, f)) and f.lower().endswith(('.jpg', '.jpeg', '.png', '.webp'))
+        ]
+        if used_files:
+            print(f"  -> 🔄 Auto-Recycle: All {len(used_files)} images used! Moving back to active pool for new cycle...")
+            for uf in used_files:
+                dest = os.path.join(IMAGES_DIR, os.path.basename(uf))
+                try:
+                    shutil.move(uf, dest)
+                except Exception:
+                    pass
+            slides = [
+                os.path.join(IMAGES_DIR, f) 
+                for f in os.listdir(IMAGES_DIR) 
+                if os.path.isfile(os.path.join(IMAGES_DIR, f)) and f.lower().endswith(('.jpg', '.jpeg', '.png', '.webp'))
+            ]
+
     if not slides:
         raise FileNotFoundError(f"No images found in {IMAGES_DIR}")
-    return sorted(slides)
+
+    random.shuffle(slides)
+    selected = slides[:num_needed]
+    print(f"  -> 🖼️ Selected {len(selected)} unique, fresh 16:9 images from active pool of {len(slides)} available images.")
+    return selected
+
+
+def archive_used_images(used_slides):
+    """Moves used images to music_video_images/used/ so they are never repeated in future videos."""
+    os.makedirs(USED_IMAGES_DIR, exist_ok=True)
+    moved_count = 0
+    for s in used_slides:
+        if os.path.exists(s):
+            dest = os.path.join(USED_IMAGES_DIR, os.path.basename(s))
+            try:
+                shutil.move(s, dest)
+                moved_count += 1
+                with open(USED_IMAGES_TRACKER, "a", encoding="utf-8") as f:
+                    f.write(f"{os.path.basename(s)}\n")
+            except Exception as e:
+                print(f"  Warning: could not move {s} to used/: {e}")
+    print(f"  -> 📁 Archived {moved_count} used images to music_video_images/used/ (Will not repeat until entire pool is used).")
 
 def mix_soundtrack(duration_sec=900):
     """Assembles Dynamic Flute & Tabla Master Audio (12-20 Mins), prioritizing fresh Suno AI tracks from Catbox."""
@@ -1685,10 +1742,7 @@ def cleanup():
     print("[Cleanup] All temporary media deleted. Workspace is clean and light.")
 
 def main():
-    slides = ensure_images()
-    random.shuffle(slides)
-    if len(slides) > 12:
-        slides = slides[:12]
+    slides = ensure_images(num_needed=12)
         
     # User rule: Dynamic duration between 12 and 50 minutes (randomized per run, e.g. 12:30, 15:06, 40:47)
     dur_min = random.randint(12, 50)
@@ -1707,6 +1761,7 @@ def main():
     render_video(slides, duration_sec=dur_sec)
     generate_thumbnail(slides, theme)
     upload_to_youtube(theme, duration_sec=dur_sec)
+    archive_used_images(slides)
     cleanup()
 
 if __name__ == "__main__":
