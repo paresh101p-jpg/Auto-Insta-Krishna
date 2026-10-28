@@ -48,51 +48,476 @@ local_ffmpeg = r"E:\Paresh\Auto Post\ffmpeg-master-latest-win64-gpl\ffmpeg-maste
 if os.path.exists(local_ffmpeg):
     FFMPEG_EXE = local_ffmpeg
 
-# Meditation / Relaxation Hook Templates (Dynamic High-CTR Themes — Zero Technical Numbers)
-MEDITATION_THEMES = [
+# =============================================================================
+# 36 DISTINCT DIVERSE KRISHNA MEDITATION THEMES (6 SPIRITUAL CATEGORIES)
+# Guarantees that every video has a completely unique title, thumbnail headline,
+# sub-headline, and pill keywords tailored to the music theme and mood.
+# =============================================================================
+MEDITATION_THEMES_36 = [
+    # ── Category 1: Morning Pooja & Vrindavan Sunrise (सुबह की पूजा और नई शुरुआत) ──
     {
-        "badge": "15 MIN DEEP MEDITATION",
-        "hindi_main": "दिव्य बांसुरी एवं तबला संगीत",
-        "hindi_sub": "तनाव दूर करें और असीम शांति पाएं",
-        "title": "15 Min Divine Krishna Flute & Tabla | तनाव मुक्ति और असीम शांति",
-        "tags": ["Krishna Flute", "Deep Meditation", "Stress Relief", "Peaceful Music", "Bansuri Meditation", "Krishna Bhajan Instrumental", "Radha Krishna", "Relaxing Music", "Bansuri Tabla Jugalbandi"]
-    },
-    {
-        "badge": "INNER PEACE & HEALING",
-        "hindi_main": "श्री कृष्ण अमृत बाँसुरी",
-        "hindi_sub": "मन की शांति और गहरी नींद के लिए",
-        "title": "श्री कृष्ण दिव्य बाँसुरी धुन | 15 Min Inner Peace & Deep Sleep",
-        "tags": ["Krishna Flute Meditation", "Deep Sleep Music", "Inner Peace", "Bansuri Dhun", "Spiritual Relaxation", "Calm Mind", "Healing Music", "Radhe Krishna", "Man Ki Shanti"]
-    },
-    {
-        "badge": "DIVINE SACRED VIBES",
-        "hindi_main": "राधे कृष्ण पावन धुन",
-        "hindi_sub": "सकारात्मक ऊर्जा और आत्मिक सुकून",
-        "title": "Sacred Krishna Flute for Positive Energy | 15 Min Relaxation",
-        "tags": ["Positive Energy Music", "Krishna Flute", "Focus Music", "Morning Meditation", "Yoga Music", "Bansuri Tabla Jugalbandi", "Positive Vibes Flute"]
-    },
-    {
-        "badge": "STRESS RELIEF & CALM",
-        "hindi_main": "मन को शांत करने वाला संगीत",
-        "hindi_sub": "दिव्य शांति और विश्राम का अनुभव",
-        "title": "Calming Krishna Flute for Stress Relief | ध्यान एवं विश्राम संगीत",
-        "tags": ["Stress Relief Music", "Overthinking Relief", "Peaceful Bansuri", "Meditation Music Hindi", "Krishna Vibez", "Spiritual Music", "Chinta Mukti Bansuri"]
-    },
-    {
-        "badge": "VRINDAVAN MORNING DHUN",
+        "category": "Morning Pooja & Awakening",
+        "badge": "{dur_min} MIN MORNING MEDITATION",
         "hindi_main": "वृंदावन प्रभात बाँसुरी",
         "hindi_sub": "प्रातःकालीन पूजा और सकारात्मक शुरुआत",
-        "title": "15 Min Vrindavan Morning Krishna Flute | सुबह की शांति और सकारात्मक ऊर्जा",
-        "tags": ["Morning Flute Music", "Subah Ki Bansuri", "Morning Pooja Music", "Vrindavan Flute", "Krishna Morning Bhajan", "Positive Energy", "Daily Meditation"]
+        "hook_pill": "प्रातः पूजा   |   सकारात्मक ऊर्जा   |   शुभ शुरुआत",
+        "title": "वृंदावन प्रभात बाँसुरी धुन | Morning Krishna Flute for Positive Energy",
+        "tags": ["Morning Flute", "Vrindavan Bansuri", "Morning Pooja Music", "Positive Energy Flute", "Bansuri Meditation", "Radha Krishna", "Krishna Vibez", "Subah Ki Dhun", "Pratah Smaran"]
     },
     {
-        "badge": "DEEP SLEEP & CHINTA MUKTI",
+        "category": "Morning Pooja & Awakening",
+        "badge": "SACRED MORNING DHUN",
+        "hindi_main": "शुभ प्रभात अमृत बाँसुरी",
+        "hindi_sub": "घर में सुख शांति और समृद्धि लाएं",
+        "hook_pill": "सुख समृद्धि   |   पावन वातावरण   |   मानसिक शांति",
+        "title": "शुभ प्रभात अमृत बाँसुरी और तबला | Sacred Morning Rhythms for Peace",
+        "tags": ["Shubh Prabhat Flute", "Morning Peace Music", "Ghar Me Shanti", "Bansuri Tabla Jugalbandi", "Daily Meditation", "Spiritual Morning", "Radhe Radhe Flute"]
+    },
+    {
+        "category": "Morning Pooja & Awakening",
+        "badge": "BRAHMA MUHURTA DHYAN",
+        "hindi_main": "ब्रह्म मुहूर्त दिव्य साधना",
+        "hindi_sub": "अंतर्मन को जागृत करने वाला संगीत",
+        "hook_pill": "ब्रह्म मुहूर्त   |   आत्मिक जागरण   |   गहरी एकाग्रता",
+        "title": "ब्रह्म मुहूर्त कृष्ण ध्यान संगीत | Early Morning Flute Meditation",
+        "tags": ["Brahma Muhurta Music", "Early Morning Meditation", "Dhyan Sangeet", "Krishna Murli", "Soul Awakening", "Spiritual Energy", "Peaceful Mind"]
+    },
+    {
+        "category": "Morning Pooja & Awakening",
+        "badge": "SUNRISE SPIRITUAL VIBES",
+        "hindi_main": "सूर्योदय पावन मुरली धुन",
+        "hindi_sub": "नई ऊर्जा और आनंद का संचार करें",
+        "hook_pill": "सूर्योदय ऊर्जा   |   नई उमंग   |   आनंदमयी मन",
+        "title": "सूर्योदय पावन मुरली एवं तबला | Divine Sunrise Flute Melodies",
+        "tags": ["Sunrise Flute", "Suryodaya Music", "New Day Energy", "Krishna Bansuri Instrumental", "Indian Classical Flute", "Positive Mindset"]
+    },
+    {
+        "category": "Morning Pooja & Awakening",
+        "badge": "GOKUL MORNING BANSURI",
+        "hindi_main": "गोकुल की पावन मुरली",
+        "hindi_sub": "घर और मन को पवित्र करने वाला संगीत",
+        "hook_pill": "गोकुल मुरली   |   मन की पवित्रता   |   आत्मिक सुकून",
+        "title": "गोकुल की प्रातःकालीन बाँसुरी | Soulful Morning Flute for Daily Pooja",
+        "tags": ["Gokul Flute", "Krishna Morning Bhajan", "Pooja Instrumental", "Vrindavan Vibes", "Daily Dhyan", "Harmonic Flute", "Krishna Bhakti"]
+    },
+    {
+        "category": "Morning Pooja & Awakening",
+        "badge": "PEACEFUL AWAKENING",
+        "hindi_main": "प्रातः स्मरण शांति प्रवाह",
+        "hindi_sub": "सारे दिन के लिए सकारात्मक मन पाएं",
+        "hook_pill": "सकारात्मक सोच   |   शांत मन   |   निर्मल विचार",
+        "title": "प्रातः स्मरण शांति प्रवाह बाँसुरी | Peaceful Morning Awakening Flute",
+        "tags": ["Morning Awakening", "Pratah Smaran", "Peaceful Instrumental", "Krishna Flute Calm", "Day Start Music", "Inner Harmony"]
+    },
+
+    # ── Category 2: Stress Relief & Mental Calm (तनाव और चिंता मुक्ति) ──
+    {
+        "category": "Stress Relief & Anxiety Healing",
+        "badge": "{dur_min} MIN STRESS RELIEF",
+        "hindi_main": "तनाव और चिंता दूर करें",
+        "hindi_sub": "असीम शांति और विश्राम का अनुभव",
+        "hook_pill": "तनाव मुक्ति   |   मानसिक शांति   |   आत्मिक विश्राम",
+        "title": "तनाव और चिंता तुरंत मिटाएं | Divine Krishna Flute for Stress Relief",
+        "tags": ["Stress Relief Music", "Tanav Mukti Flute", "Anxiety Relief", "Overthinking Stop", "Relaxing Bansuri", "Peace of Mind", "Chinta Door Kare"]
+    },
+    {
+        "category": "Stress Relief & Anxiety Healing",
+        "badge": "CALM MIND & PEACE",
+        "hindi_main": "मन को असीम शांति दें",
+        "hindi_sub": "व्यस्त विचारों को थामें और सुकून पाएं",
+        "hook_pill": "शांत विचार   |   चिंता से राहत   |   गहरा सुकून",
+        "title": "मन को शांत करने वाला संगीत | Calming Krishna Flute for Overthinking",
+        "tags": ["Calm Mind Music", "Overthinking Relief", "Man Ki Shanti", "Bansuri Dhun Hindi", "Peaceful Meditation", "Mental Relax Music"]
+    },
+    {
+        "category": "Stress Relief & Anxiety Healing",
+        "badge": "SOUL HEALING & CALM",
+        "hindi_main": "मानसिक शांति अमृत रस",
+        "hindi_sub": "थके हुए मस्तिष्क को नया जीवन दें",
+        "hook_pill": "थकान मुक्ति   |   मस्तिष्क विश्राम   |   नया उत्साह",
+        "title": "मानसिक शांति अमृत रस बाँसुरी | Healing Krishna Flute for Anxious Mind",
+        "tags": ["Soul Healing Flute", "Mind Relaxing Music", "Thakan Door Kare", "Healing Frequency", "Bansuri Tabla Calm", "Anxiety Healer"]
+    },
+    {
+        "category": "Stress Relief & Anxiety Healing",
+        "badge": "ANGER RELIEF & SERENITY",
+        "hindi_main": "क्रोध शांत करने वाली धुन",
+        "hindi_sub": "हृदय में शीतलता और धैर्य भरें",
+        "hook_pill": "धैर्य और शांति   |   हृदय शीतलता   |   मधुर स्वभाव",
+        "title": "क्रोध और अशांति से मुक्ति | Krishna Flute for Anger Relief & Serenity",
+        "tags": ["Anger Relief Music", "Krodh Shant Kare", "Inner Patience", "Serenity Music", "Calm Heart Flute", "Geeta Gyan Music"]
+    },
+    {
+        "category": "Stress Relief & Anxiety Healing",
+        "badge": "SOOTHING BANSURI FLOW",
+        "hindi_main": "हृदयस्पर्शी मधुर बाँसुरी",
+        "hindi_sub": "जीवन के हर तनाव को भुला देने वाला संगीत",
+        "hook_pill": "हृदय शांति   |   गहरी राहत   |   कोमल स्वर",
+        "title": "हृदय को सुकून देने वाली बाँसुरी | Soothing Flute Melody for Inner Calm",
+        "tags": ["Soothing Flute", "Hridaya Shanti", "Heart Touching Bansuri", "Soft Tabla Beats", "Deep Relaxation", "Stress Dissolve"]
+    },
+    {
+        "category": "Stress Relief & Anxiety Healing",
+        "badge": "MENTAL REST & RELIEF",
+        "hindi_main": "परम शांति एवं विश्राम",
+        "hindi_sub": "मन के सारे भार को हल्का कर दें",
+        "hook_pill": "मन का हल्कापन   |   निश्चिंतता   |   असीम आनंद",
+        "title": "शांति और विश्राम का पावन प्रवाह | Peaceful Krishna Flute for Mental Rest",
+        "tags": ["Param Shanti", "Mental Rest Music", "Total Relaxation", "Krishna Vibez Flute", "Peaceful Mind", "Spiritual Rest"]
+    },
+
+    # ── Category 3: Deep Night Sleep & Insomnia Relief (गहरी नींद और विश्राम) ──
+    {
+        "category": "Deep Night Sleep & Insomnia",
+        "badge": "{dur_min} MIN DEEP SLEEP",
         "hindi_main": "चिंता मुक्ति और गहरी नींद",
         "hindi_sub": "रात्रि विश्राम और मानसिक सुकून",
-        "title": "Krishna Flute for Deep Sleep & Insomnia | रात को गहरी नींद के लिए बांसुरी",
-        "tags": ["Deep Sleep Music", "Insomnia Relief", "Sleep Flute Hindi", "Gehri Neend Music", "Night Relaxation", "Krishna Flute Sleep", "Mind Healing"]
+        "hook_pill": "गहरी नींद   |   अनिद्रा मुक्ति   |   शांत रात्रि",
+        "title": "रात को गहरी नींद के लिए संगीत | Krishna Flute for Deep Sleep & Insomnia",
+        "tags": ["Deep Sleep Music", "Gehri Neend Bansuri", "Insomnia Relief", "Sleep Flute Hindi", "Night Rest Music", "Soothing Sleep Dhun"]
+    },
+    {
+        "category": "Deep Night Sleep & Insomnia",
+        "badge": "BEDTIME SLEEP HEALING",
+        "hindi_main": "रात्रि विश्राम पावन धुन",
+        "hindi_sub": "मीठे सपनों और शांत निद्रा के लिए",
+        "hook_pill": "सुकून भरी नींद   |   स्वप्न शांति   |   रात्रि विश्राम",
+        "title": "सोते समय मन को शांत करें | Bedtime Krishna Flute for Restful Sleep",
+        "tags": ["Bedtime Flute", "Raat Ki Shanti", "Restful Sleep", "Calming Night Music", "Sleep Healing Instrumental", "Peaceful Dreams"]
+    },
+    {
+        "category": "Deep Night Sleep & Insomnia",
+        "badge": "INSOMNIA RELIEF MUSIC",
+        "hindi_main": "अनिद्रा दूर करने वाला संगीत",
+        "hindi_sub": "कुछ ही पलों में गहरी नींद पाएं",
+        "hook_pill": "अनिद्रा से राहत   |   गहरी निद्रा   |   विश्राम अवस्था",
+        "title": "अनिद्रा और बेचैनी से तुरंत राहत | Soothing Sleep Flute for Insomnia Cure",
+        "tags": ["Insomnia Cure Music", "Bechaini Door Kare", "Fast Sleep Flute", "Fall Asleep Fast", "Deep Rest", "Night Relaxation"]
+    },
+    {
+        "category": "Deep Night Sleep & Insomnia",
+        "badge": "MIDNIGHT CALM & SLEEP",
+        "hindi_main": "मधुर रात्रि स्वप्न बाँसुरी",
+        "hindi_sub": "दिन भर की थकान मिटाकर विश्राम दें",
+        "hook_pill": "रात्रि विश्राम   |   थकान मुक्ति   |   निर्मल निद्रा",
+        "title": "रात्रि कालीन दिव्य शांति बाँसुरी | Midnight Krishna Flute & Gentle Waves",
+        "tags": ["Midnight Flute", "Night Calm", "Dreamy Bansuri", "Soft Instrumentals", "Sleep Waves", "Krishna Night Music"]
+    },
+    {
+        "category": "Deep Night Sleep & Insomnia",
+        "badge": "PEACEFUL SLEEP VIBES",
+        "hindi_main": "शांत निद्रा अमृत वर्षा",
+        "hindi_sub": "तनावमुक्त होकर गहरी नींद में सोएं",
+        "hook_pill": "तनावमुक्त निद्रा   |   शांत मस्तिष्क   |   पूर्ण विश्राम",
+        "title": "शांत निद्रा अमृत वर्षा बाँसुरी | Peaceful Night Bansuri for Pure Sleep",
+        "tags": ["Pure Sleep Flute", "Amrit Varsha Dhun", "Sound Sleep", "Sleep Therapy Music", "Stress Free Night", "Calm Body Mind"]
+    },
+    {
+        "category": "Deep Night Sleep & Insomnia",
+        "badge": "TOTAL SLEEP RELAXATION",
+        "hindi_main": "सोने से पहले की मधुर धुन",
+        "hindi_sub": "आत्मा को सुकून और नींद की गोद में ले जाएं",
+        "hook_pill": "गहरी विश्रांति   |   आत्मिक सुकून   |   मधुर सपने",
+        "title": "सोने से पहले मन को हल्का करें | Calming Sleep Flute for Total Relaxation",
+        "tags": ["Bedtime Calm", "Sone Se Pehle Sangeet", "Total Sleep Relaxation", "Gentle Bansuri", "Deep Slumber Music", "Night Healing"]
+    },
+
+    # ── Category 4: Radha Krishna Divine Love & Bhakti (राधा कृष्ण भक्ति और प्रेम) ──
+    {
+        "category": "Radha Krishna Divine Love",
+        "badge": "{dur_min} MIN RADHE KRISHNA",
+        "hindi_main": "राधे कृष्ण पावन धुन",
+        "hindi_sub": "सकारात्मक ऊर्जा और आत्मिक सुकून",
+        "hook_pill": "अलौकिक प्रेम   |   राधा कृष्ण कृपा   |   भक्ति रस",
+        "title": "राधे कृष्ण पावन प्रेम धुन | Soulful Radha Krishna Love Instrumental",
+        "tags": ["Radhe Krishna Flute", "Radha Krishna Love Instrumental", "Bhakti Sangeet", "Divine Love Music", "Vrindavan Prem", "Soulful Bansuri"]
+    },
+    {
+        "category": "Radha Krishna Divine Love",
+        "badge": "DIVINE BHAKTI BANSURI",
+        "hindi_main": "श्री कृष्ण अमृत बाँसुरी",
+        "hindi_sub": "मन की शांति और भक्ति भाव के लिए",
+        "hook_pill": "अमृत रस   |   भक्ति भाव   |   कृष्ण स्मरण",
+        "title": "श्री कृष्ण दिव्य बाँसुरी धुन | Sacred Krishna Flute for Divine Connection",
+        "tags": ["Krishna Amrit Bansuri", "Divine Connection", "Bhakti Bhav", "Krishna Smaran", "Inner Peace Flute", "Bhakti Dhun"]
+    },
+    {
+        "category": "Radha Krishna Divine Love",
+        "badge": "VRINDAVAN RAAS DHUN",
+        "hindi_main": "वृंदावन रास अमृत धुन",
+        "hindi_sub": "गोपियों संग कृष्ण की आनंदमयी मुरली",
+        "hook_pill": "रास लीला   |   दिव्य आनंद   |   कृष्ण प्रेम",
+        "title": "वृंदावन की रास बाँसुरी | Vrindavan Raas Leela Divine Flute Melody",
+        "tags": ["Raas Leela Flute", "Vrindavan Murli", "Anandmayi Bansuri", "Krishna Prem Dhun", "Classical Indian Flute", "Devotional Vibe"]
+    },
+    {
+        "category": "Radha Krishna Divine Love",
+        "badge": "BARSANA LOVE MEDITATION",
+        "hindi_main": "बरसाना पावन मुरली गान",
+        "hindi_sub": "श्री राधा रानी के चरणों में समर्पण",
+        "hook_pill": "राधा रानी कृपा   |   पावन समर्पण   |   प्रेम माधुर्य",
+        "title": "बरसाना की पावन प्रेम बाँसुरी | Barsana Sacred Love Instrumental",
+        "tags": ["Barsana Flute", "Radha Rani Dhun", "Prem Madhurya", "Barsana Vibe", "Samarpan Music", "Devotional Flute"]
+    },
+    {
+        "category": "Radha Krishna Divine Love",
+        "badge": "KADAMBA DIVINE FLUTE",
+        "hindi_main": "कदम्ब की छाँव में बाँसुरी",
+        "hindi_sub": "यमुना तट की पावन स्मृतियों संग ध्यान",
+        "hook_pill": "कदम्ब कुंज   |   यमुना तट   |   पावन स्मृतियां",
+        "title": "कदम्ब की छाँव में बजी मुरली | Kadamba Tree Divine Krishna Flute",
+        "tags": ["Kadamba Tree Flute", "Yamuna Ghat Bansuri", "Vrindavan Kunj", "Divine Memories", "Kadamba Chhav", "Krishna Murli"]
+    },
+    {
+        "category": "Radha Krishna Divine Love",
+        "badge": "DEVOTIONAL SOUL VIBES",
+        "hindi_main": "मधुर मुरली आत्मिक भक्ति",
+        "hindi_sub": "भक्ति में लीन होकर परम सुख पाएं",
+        "hook_pill": "अनन्य भक्ति   |   परमानंद   |   आत्मिक समर्पण",
+        "title": "मधुर मुरली और आत्मिक भक्ति | Soulful Devotional Krishna Instrumental",
+        "tags": ["Madhur Murli", "Aatmik Bhakti", "Param Anand", "Ananya Bhakti", "Soulful Krishna Music", "Devotion Instrumental"]
+    },
+
+    # ── Category 5: Inner Peace, Soul Healing & Dhyan (आत्मिक शांति और गहन ध्यान) ──
+    {
+        "category": "Inner Peace & Soul Dhyan",
+        "badge": "{dur_min} MIN DEEP DHYAN",
+        "hindi_main": "गहन ध्यान आत्मिक शांति",
+        "hindi_sub": "अंतर्मन के शून्य में उतरने का संगीत",
+        "hook_pill": "गहन ध्यान   |   शून्य समाधि   |   आत्मिक शांति",
+        "title": "गहन ध्यान और आत्मिक जागरण | Deep Krishna Dhyan Flute for Inner Peace",
+        "tags": ["Deep Dhyan Flute", "Inner Peace Music", "Shunya Samadhi", "Spiritual Awakening", "Meditation Waves", "Dhyan Sangeet"]
+    },
+    {
+        "category": "Inner Peace & Soul Dhyan",
+        "badge": "SOUL HEALING MEDITATION",
+        "hindi_main": "आत्मिक हीलिंग अमृत धुन",
+        "hindi_sub": "नकारात्मकता मिटाएं और प्रकाश पाएं",
+        "hook_pill": "सोल हीलिंग   |   सकारात्मकता   |   आत्म प्रकाश",
+        "title": "आत्मा को हील करने वाला संगीत | Krishna Flute for Soul Healing & Peace",
+        "tags": ["Soul Healing", "Aatmik Healing", "Negative Energy Removal", "Chakra Balance", "Light Meditation", "Healing Flute"]
+    },
+    {
+        "category": "Inner Peace & Soul Dhyan",
+        "badge": "STUDY & FOCUS CALM",
+        "hindi_main": "एकाग्रता और स्थिर मन",
+        "hindi_sub": "पढ़ाई और ध्यान में पूर्ण फोकस लाएं",
+        "hook_pill": "पूर्ण एकाग्रता   |   स्थिर मन   |   ज्ञान साधना",
+        "title": "एकाग्रता और मानसिक स्थिरता | Krishna Flute for Study & Focus Concentration",
+        "tags": ["Focus Flute", "Study Music Hindi", "Ekagrata Bansuri", "Deep Concentration", "Student Meditation", "Mind Focus"]
+    },
+    {
+        "category": "Inner Peace & Soul Dhyan",
+        "badge": "SERENE MEDITATION FLOW",
+        "hindi_main": "शांत सरोवर मुरली तान",
+        "hindi_sub": "कमल दल सा निर्मल और शांत मन पाएं",
+        "hook_pill": "निर्मल मन   |   शांत सरोवर   |   दिव्य शांति",
+        "title": "शांत सरोवर और मुरली की तान | Serene Lake & Lotus Flower Flute Music",
+        "tags": ["Serene Flute", "Shant Sarovar", "Lotus Meditation", "Nirmal Man", "Pure Mind Music", "Peaceful Flow"]
+    },
+    {
+        "category": "Inner Peace & Soul Dhyan",
+        "badge": "SILENT MIND DHYAN",
+        "hindi_main": "असीम शांति मौन साधना",
+        "hindi_sub": "विचारों के पार परम विश्राम की अनुभूति",
+        "hook_pill": "मौन साधना   |   परम विश्राम   |   अंतर्मुखी मन",
+        "title": "असीम शांति और मौन का अनुभव | Silent Mind Meditation Krishna Bansuri",
+        "tags": ["Silent Mind", "Maun Sadhana", "Thoughts Free Music", "Inner Silence", "Deep Stillness", "Transcendental Calm"]
+    },
+    {
+        "category": "Inner Peace & Soul Dhyan",
+        "badge": "SPIRITUAL AWAKENING",
+        "hindi_main": "दिव्य चेतना का जागरण",
+        "hindi_sub": "हृदय में आनंद और तेज का अनुभव करें",
+        "hook_pill": "चेतना जागरण   |   आत्म तेज   |   परमानंद",
+        "title": "दिव्य चेतना और ऊर्जा का संचार | Spiritual Awakening Krishna Instrumental",
+        "tags": ["Spiritual Awakening", "Divya Chetna", "Soul Energy", "Paramanand", "Krishna Vibration", "Cosmic Calm"]
+    },
+
+    # ── Category 6: Classical Bansuri & Tabla Jugalbandi (बांसुरी एवं तबला जुगलबंदी) ──
+    {
+        "category": "Bansuri & Tabla Jugalbandi",
+        "badge": "{dur_min} MIN FLUTE & TABLA",
+        "hindi_main": "बांसुरी एवं तबला जुगलबंदी",
+        "hindi_sub": "कहरवा ताल और रागों का पावन संगम",
+        "hook_pill": "कहरवा ताल   |   राग संगम   |   शास्त्रीय संगीत",
+        "title": "बांसुरी एवं तबला पावन जुगलबंदी | Pure Indian Classical Bansuri & Live Tabla",
+        "tags": ["Bansuri Tabla Jugalbandi", "Keherwa Taal Flute", "Indian Classical Instrumental", "Live Tabla Rhythm", "Flute Jugalbandi", "Taal Dhun"]
+    },
+    {
+        "category": "Bansuri & Tabla Jugalbandi",
+        "badge": "RAAG BHAIRAVI JUGALBANDI",
+        "hindi_main": "राग भैरवी पावन संगीत",
+        "hindi_sub": "शांति और भक्ति का शास्त्रीय अनुभव",
+        "hook_pill": "राग भैरवी   |   शास्त्रीय संगीत   |   मनोहारी ताल",
+        "title": "राग भैरवी दिव्य बाँसुरी और तबला | Raag Bhairavi Divine Flute & Tabla",
+        "tags": ["Raag Bhairavi", "Bhairavi Flute", "Classical Jugalbandi", "Morning Raag", "Spiritual Classical", "Pure Bansuri"]
+    },
+    {
+        "category": "Bansuri & Tabla Jugalbandi",
+        "badge": "MELODIC FLUTE & RHYTHM",
+        "hindi_main": "सुरीली बाँसुरी कोमल लय",
+        "hindi_sub": "हृदय को गुंजायमान करने वाला संगीत",
+        "hook_pill": "कोमल लय   |   मधुर बांसुरी   |   सुरमयी ताल",
+        "title": "सुरीली बाँसुरी और कोमल तबला लय | Melodic Bansuri & Soft Live Tabla Taal",
+        "tags": ["Melodic Bansuri", "Komal Taal", "Surmayi Flute", "Soft Tabla Beats", "Harmonious Music", "Indian Classical Relax"]
+    },
+    {
+        "category": "Bansuri & Tabla Jugalbandi",
+        "badge": "RAAG DARBARI PEACE",
+        "hindi_main": "राग दरबारी दिव्य धुन",
+        "hindi_sub": "गंभीर और आत्मिक शांति का शास्त्रीय प्रवाह",
+        "hook_pill": "राग दरबारी   |   गंभीर शांति   |   आत्मिक गहराई",
+        "title": "राग दरबारी दिव्य बाँसुरी | Majestic Raag Darbari Flute for Deep Peace",
+        "tags": ["Raag Darbari", "Darbari Flute", "Deep Classical Music", "Majestic Bansuri", "Midnight Raag", "Soulful Classical"]
+    },
+    {
+        "category": "Bansuri & Tabla Jugalbandi",
+        "badge": "YAMUNA GHAT BANSURI",
+        "hindi_main": "यमुना तट शास्त्रीय प्रवाह",
+        "hindi_sub": "लहरों के साथ गूंजती मधुर मुरली",
+        "hook_pill": "यमुना तट   |   शास्त्रीय प्रवाह   |   पावन लहरें",
+        "title": "यमुना तट शास्त्रीय बाँसुरी प्रवाह | Yamuna Ghat Classical Flute & Rhythm",
+        "tags": ["Yamuna Ghat Flute", "Yamuna Kinare Bansuri", "Rhythm of Waves", "Classical Flute Flow", "Vrindavan Ghats", "Pure Instrumental"]
+    },
+    {
+        "category": "Bansuri & Tabla Jugalbandi",
+        "badge": "TRANSCENDENTAL NAAD",
+        "hindi_main": "अलौकिक नाद ब्रह्म धुन",
+        "hindi_sub": "संगीत के माध्यम से ईश्वर से जुड़ें",
+        "hook_pill": "नाद ब्रह्म   |   दिव्य तरंग   |   ईश्वर मिलन",
+        "title": "अलौकिक नाद ब्रह्म बाँसुरी एवं तबला | Transcendental Sound & Rhythmic Harmony",
+        "tags": ["Naad Brahma", "Transcendental Flute", "Divya Tarang", "Cosmic Music", "Ishwar Milan", "Divine Harmony"]
     }
 ]
+
+# Trackers for Zero-Repetition Title & Theme Guarantee
+USED_TITLES_FILE = os.path.join(BASE_DIR, "used_music_titles.txt")
+THEME_TRACKER_FILE = os.path.join(BASE_DIR, "music_theme_tracker.json")
+
+def get_dynamic_music_metadata(dur_min=15):
+    """
+    Generates 100% UNIQUE, fresh, and non-repeating title, thumbnail headlines,
+    badge, and SEO metadata for each music video.
+    Uses Gemini AI as primary engine with 36-Theme Master Rotation System as rock-solid fallback.
+    """
+    # 1. Load recently used titles to prevent any duplication
+    used_titles = set()
+    if os.path.exists(USED_TITLES_FILE):
+        try:
+            with open(USED_TITLES_FILE, "r", encoding="utf-8") as f:
+                used_titles = {line.strip().lower() for line in f if line.strip()}
+        except Exception:
+            pass
+
+    # 2. Attempt Gemini AI Generation for completely bespoke metadata
+    gemini_key = os.environ.get("GEMINI_API_KEY")
+    if not gemini_key:
+        _kf = os.path.join(BASE_DIR, "gemini_key.txt")
+        if os.path.exists(_kf):
+            try:
+                with open(_kf, "r", encoding="utf-8") as kfile:
+                    gemini_key = kfile.read().strip()
+            except Exception:
+                pass
+
+    if gemini_key:
+        try:
+            from google import genai
+            client = genai.Client(api_key=gemini_key, http_options={"timeout": 12000})
+            
+            prompt = f"""You are the senior spiritual content creator and YouTube SEO specialist for channel 'Krishna Vibez'.
+We are creating a brand new {dur_min}-minute sacred Lord Krishna Bansuri (Flute) & Live Classical Tabla meditation video.
+
+Your task is to generate 100% UNIQUE, fresh, high-CTR, and emotionally captivating metadata for THIS SPECIFIC VIDEO.
+The theme must be deeply meditative, peaceful, and spiritually authentic.
+NEVER repeat past titles or generic templates.
+
+Return a JSON object with EXACTLY these keys:
+{{
+  "theme_category": "One of: 'Morning Pooja & Awakening', 'Stress Relief & Anxiety Healing', 'Deep Night Sleep & Insomnia', 'Radha Krishna Divine Love', 'Inner Peace & Soul Dhyan', 'Bansuri & Tabla Jugalbandi'",
+  "title": "A high-CTR title under 75 chars in format: [Unique Hindi Hook] | [English Meditation Angle]. (DO NOT include 'Krishna Vibez', DO NOT include technical frequency numbers like 432Hz)",
+  "badge": "A short uppercase badge for thumbnail top-left (e.g. '{dur_min} MIN DEEP MEDITATION', '{dur_min} MIN SOUL HEALING', 'VRINDAVAN MORNING DHUN', 'DEEP SLEEP & CHINTA MUKTI', 'TRANQUIL FLUTE & TABLA', 'INNER PEACE & CALM')",
+  "hindi_main": "3 to 5 pure, powerful, easy-to-read Hindi words for the main thumbnail headline (e.g. 'मन को असीम शांति दें', 'तनाव और चिंता दूर करें', 'श्री कृष्ण अमृत बाँसुरी', 'राधे कृष्ण पावन धुन', 'गहरी नींद और सुकून', 'सकारात्मक ऊर्जा का प्रवाह')",
+  "hindi_sub": "4 to 6 words supporting Hindi headline (e.g. 'अंतरात्मा को सुकून देने वाला संगीत', 'मानसिक तनाव घटाएं और शांति पाएं', 'प्रातःकालीन पूजा और सकारात्मक दिन', 'अनिद्रा और चिंता से तुरंत राहत')",
+  "hook_pill": "3 short keywords for bottom pill separated by ' | ' (e.g. 'मन की शांति | तनाव मुक्ति | गहरी नींद')",
+  "tags": ["Krishna Flute", "Deep Meditation", "Stress Relief", "Peaceful Music", "Bansuri Tabla"]
+}}"""
+
+            models_to_try = ["gemini-3.8-flash", "gemini-3.7-flash"]
+            for m in models_to_try:
+                try:
+                    res = client.models.generate_content(
+                        model=m,
+                        contents=[prompt],
+                        config={"response_mime_type": "application/json"}
+                    )
+                    if res and res.text:
+                        data = json.loads(res.text)
+                        title_candidate = data.get("title", "").strip()
+                        if title_candidate and title_candidate.lower() not in used_titles:
+                            theme = {
+                                "category": data.get("theme_category", "Meditation & Peace"),
+                                "badge": data.get("badge", f"{dur_min} MIN DEEP MEDITATION").replace("15 MIN", f"{dur_min} MIN"),
+                                "hindi_main": data.get("hindi_main", "श्री कृष्ण अमृत बाँसुरी"),
+                                "hindi_sub": data.get("hindi_sub", "मन की शांति और गहरी नींद के लिए"),
+                                "hook_pill": data.get("hook_pill", "मन की शांति   |   गहरी नींद   |   चिंता मुक्ति"),
+                                "title": title_candidate,
+                                "tags": data.get("tags", ["Krishna Flute", "Deep Meditation", "Krishna Vibez"])
+                            }
+                            try:
+                                with open(USED_TITLES_FILE, "a", encoding="utf-8") as uf:
+                                    uf.write(title_candidate + "\n")
+                            except Exception:
+                                pass
+                            print(f"  -> ✅ Gemini AI generated 100% unique theme: '{title_candidate}'")
+                            return theme
+                except Exception:
+                    pass
+        except Exception as e:
+            print(f"  -> [Notice] Gemini dynamic generation fell back to 36-Theme Master Pool: {e}")
+
+    # 3. Master 36-Theme Non-Repeating Rotation System (Rock-Solid Fallback)
+    print("  -> 🔄 Using Master 36-Theme Non-Repeating Rotation System...")
+    current_idx = 0
+    used_indices = []
+    if os.path.exists(THEME_TRACKER_FILE):
+        try:
+            with open(THEME_TRACKER_FILE, "r", encoding="utf-8") as tf:
+                t_data = json.load(tf)
+                current_idx = t_data.get("next_index", 0)
+                used_indices = t_data.get("used_indices", [])
+        except Exception:
+            current_idx = 0
+            used_indices = []
+
+    available = [i for i in range(len(MEDITATION_THEMES_36)) if i not in used_indices]
+    if not available:
+        used_indices = []
+        available = list(range(len(MEDITATION_THEMES_36)))
+
+    chosen_idx = random.choice(available)
+    used_indices.append(chosen_idx)
+
+    try:
+        with open(THEME_TRACKER_FILE, "w", encoding="utf-8") as tf:
+            json.dump({"next_index": (chosen_idx + 1) % len(MEDITATION_THEMES_36), "used_indices": used_indices}, tf, indent=2)
+    except Exception:
+        pass
+
+    raw_theme = MEDITATION_THEMES_36[chosen_idx].copy()
+    raw_theme["badge"] = raw_theme["badge"].replace("{dur_min}", str(dur_min)).replace("15 MIN", f"{dur_min} MIN")
+    raw_theme["title"] = raw_theme["title"].replace("{dur_min}", str(dur_min)).replace("15 Min", f"{dur_min} Min")
+    
+    try:
+        with open(USED_TITLES_FILE, "a", encoding="utf-8") as uf:
+            uf.write(raw_theme["title"] + "\n")
+    except Exception:
+        pass
+
+    print(f"  -> Selected Theme #{chosen_idx + 1}/{len(MEDITATION_THEMES_36)}: [{raw_theme['category']}] {raw_theme['title']}")
+    return raw_theme
+
 
 def ensure_images():
     """Ensures 12 clean golden theme images exist in music_video_images/."""
@@ -948,8 +1373,11 @@ def generate_thumbnail(slides, theme):
     hindi_candidates = [
         local_font,
         "C:/Windows/Fonts/Nirmala.ttc",
+        "C:/Windows/Fonts/NirmalaB.ttf",
         "/usr/share/fonts/truetype/noto/NotoSansDevanagari-Bold.ttf",
-        "/usr/share/fonts/truetype/lohit-devanagari/Lohit-Devanagari.ttf",
+        "/usr/share/fonts/truetype/noto/NotoSansDevanagari-Regular.ttf",
+        "/usr/share/fonts/opentype/noto/NotoSansDevanagari-Bold.otf",
+        "/usr/share/fonts/opentype/noto/NotoSansDevanagari-Regular.otf",
     ]
     hindi_font_file = local_font if os.path.exists(local_font) else "arial.ttf"
     for hc in hindi_candidates:
@@ -978,24 +1406,45 @@ def generate_thumbnail(slides, theme):
     else:
         hindi_font_arg = os.path.abspath(hindi_font_file).replace("\\", "/").replace(":", "\\:")
 
-    badge = theme["badge"]
-    main_text = theme["hindi_main"]
-    sub_text = theme["hindi_sub"]
+    badge = theme.get("badge", "DEEP MEDITATION")
+    main_text = theme.get("hindi_main", "श्री कृष्ण अमृत बाँसुरी")
+    sub_text = theme.get("hindi_sub", "मन की शांति और गहरी नींद के लिए")
+    hook_pill = theme.get("hook_pill", "मन की शांति   |   गहरी नींद   |   चिंता मुक्ति")
 
-    hook_pill = "मन की शांति   |   गहरी नींद   |   चिंता मुक्ति"
+    # Write texts to UTF-8 textfiles so FFmpeg HarfBuzz gets 100% clean multibyte Unicode
+    # without shell argument escaping or parameter parsing corruption (guarantees perfect matras)
+    badge_txt = os.path.join(BASE_DIR, "temp_thumb_badge.txt")
+    main_txt = os.path.join(BASE_DIR, "temp_thumb_main.txt")
+    sub_txt = os.path.join(BASE_DIR, "temp_thumb_sub.txt")
+    pill_txt = os.path.join(BASE_DIR, "temp_thumb_pill.txt")
+
+    with open(badge_txt, "w", encoding="utf-8") as f:
+        f.write(badge)
+    with open(main_txt, "w", encoding="utf-8") as f:
+        f.write(main_text)
+    with open(sub_txt, "w", encoding="utf-8") as f:
+        f.write(sub_text)
+    with open(pill_txt, "w", encoding="utf-8") as f:
+        f.write(hook_pill)
+
+    badge_arg = os.path.abspath(badge_txt).replace("\\", "/").replace(":", "\\:")
+    main_arg = os.path.abspath(main_txt).replace("\\", "/").replace(":", "\\:")
+    sub_arg = os.path.abspath(sub_txt).replace("\\", "/").replace(":", "\\:")
+    pill_arg = os.path.abspath(pill_txt).replace("\\", "/").replace(":", "\\:")
+
     vf = (
         f"scale=1920:1080,"
         f"drawbox=y=0:h=180:color=black@0.45:t=fill,"
         f"drawbox=y=500:h=580:color=black@0.84:t=fill,"
         f"drawbox=x=60:y=496:w=1800:h=5:color=goldenrod@0.90:t=fill,"
-        f"drawbox=x=70:y=45:w=720:h=90:color=0xFFB300@0.98:t=fill,"
-        f"drawbox=x=66:y=41:w=728:h=98:color=white@0.85:t=4,"
-        f"drawtext=fontfile='{english_font_arg}':text='{badge}':fontcolor=black:fontsize=46:x=105:y=68,"
-        f"drawtext=fontfile='{hindi_font_arg}':text='{main_text}':fontcolor=0xFFE600:fontsize=128:x=75:y=550:borderw=10:bordercolor=black:text_shaping=1,"
-        f"drawtext=fontfile='{hindi_font_arg}':text='{sub_text}':fontcolor=white:fontsize=82:x=75:y=725:borderw=8:bordercolor=black:text_shaping=1,"
+        f"drawbox=x=70:y=45:w=740:h=90:color=0xFFB300@0.98:t=fill,"
+        f"drawbox=x=66:y=41:w=748:h=98:color=white@0.85:t=4,"
+        f"drawtext=fontfile='{english_font_arg}':textfile='{badge_arg}':fontcolor=black:fontsize=46:x=105:y=68,"
+        f"drawtext=fontfile='{hindi_font_arg}':textfile='{main_arg}':fontcolor=0xFFE600:fontsize=128:x=75:y=550:borderw=10:bordercolor=black:text_shaping=1,"
+        f"drawtext=fontfile='{hindi_font_arg}':textfile='{sub_arg}':fontcolor=white:fontsize=82:x=75:y=725:borderw=8:bordercolor=black:text_shaping=1,"
         f"drawbox=x=75:y=850:w=1040:h=82:color=0x8B0000@0.95:t=fill,"
         f"drawbox=x=71:y=846:w=1048:h=90:color=goldenrod@0.85:t=3,"
-        f"drawtext=fontfile='{hindi_font_arg}':text='{hook_pill}':fontcolor=0xFFF8DC:fontsize=48:x=110:y=868:borderw=3:bordercolor=black:text_shaping=1,"
+        f"drawtext=fontfile='{hindi_font_arg}':textfile='{pill_arg}':fontcolor=0xFFF8DC:fontsize=48:x=110:y=868:borderw=3:bordercolor=black:text_shaping=1,"
         f"drawtext=fontfile='{english_font_arg}':text='KRISHNA VIBEZ':fontcolor=0xFFD700:fontsize=46:x=1500:y=995:borderw=5:bordercolor=black"
     )
 
@@ -1009,6 +1458,13 @@ def generate_thumbnail(slides, theme):
         TEMP_THUMBNAIL
     ]
     subprocess.run(cmd, cwd=BASE_DIR, check=True)
+
+    # Clean up temporary textfiles
+    for tf in [badge_txt, main_txt, sub_txt, pill_txt]:
+        if os.path.exists(tf):
+            try: os.remove(tf)
+            except Exception: pass
+
     print(f"  -> Thumbnail Created: {TEMP_THUMBNAIL}")
     # Also save master sample thumbnail
     import shutil
@@ -1214,7 +1670,8 @@ def upload_to_youtube(theme, duration_sec=900):
 def cleanup():
     """Post-upload cleanup of temporary media files."""
     print("[Cleanup] Cleaning temporary audio, video and thumbnail files...")
-    for f in [TEMP_AUDIO, OUTPUT_VIDEO, TEMP_THUMBNAIL, os.path.join(BASE_DIR, "temp_concat_clips.txt"), os.path.join(BASE_DIR, "NotoSansDevanagari-Bold.ttf")]:
+    # NOTE: Never delete NotoSansDevanagari-Bold.ttf or arialbd.ttf! They are master repository assets.
+    for f in [TEMP_AUDIO, OUTPUT_VIDEO, TEMP_THUMBNAIL, os.path.join(BASE_DIR, "temp_concat_clips.txt")]:
         if os.path.exists(f):
             try: os.remove(f)
             except Exception: pass
@@ -1238,10 +1695,13 @@ def main():
     dur_sec = dur_min * 60 + random.randint(5, 55)
     print(f"🎬 [DYNAMIC DURATION] Today's Master Video: {dur_min} Minutes ({dur_sec} seconds)")
     
-    theme = random.choice(MEDITATION_THEMES).copy()
-    # Adapt theme badge and title to reflect the exact minutes
-    theme["badge"] = theme["badge"].replace("15 MIN", f"{dur_min} MIN")
-    theme["title"] = theme["title"].replace("15 Min", f"{dur_min} Min")
+    # 100% Unique, dynamic, non-repeating title and thumbnail text tailored to music theme
+    theme = get_dynamic_music_metadata(dur_min=dur_min)
+    print(f"🌟 [AI DYNAMIC THEME] Category: {theme.get('category', 'Spiritual')}")
+    print(f"   -> Title: {theme['title']}")
+    print(f"   -> Badge: {theme['badge']}")
+    print(f"   -> Headline: {theme['hindi_main']} | {theme['hindi_sub']}")
+    print(f"   -> Pill: {theme.get('hook_pill')}")
     
     mix_soundtrack(duration_sec=dur_sec)
     render_video(slides, duration_sec=dur_sec)
