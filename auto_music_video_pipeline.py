@@ -391,12 +391,60 @@ MEDITATION_THEMES_36 = [
         "hook_pill": "नाद ब्रह्म   |   दिव्य तरंग   |   ईश्वर मिलन",
         "title": "अलौकिक नाद ब्रह्म बाँसुरी एवं तबला | Transcendental Sound & Rhythmic Harmony",
         "tags": ["Naad Brahma", "Transcendental Flute", "Divya Tarang", "Cosmic Music", "Ishwar Milan", "Divine Harmony"]
+    },
+
+    # ── Category 7: Lo-Fi Chill & Night Relaxation (लो-फाई बांसुरी एवं शांत बीट्स) ──
+    {
+        "category": "Krishna Lo-Fi & Chill Beats",
+        "badge": "KRISHNA LO-FI CHILL",
+        "hindi_main": "कृष्ण लो-फाई पावन धुन",
+        "hindi_sub": "सुकून भरी रात और एकाग्र मन के लिए",
+        "hook_pill": "लो-फाई बांसुरी   |   सुकून भरी रात   |   एकाग्र मन",
+        "title": "कृष्ण लो-फाई बांसुरी संगीत | Peaceful Krishna Lo-Fi Flute & Chill Beats",
+        "tags": ["Krishna Lofi", "Lofi Flute", "Indian Lofi", "Krishna Lo-Fi Beats", "Peaceful Lofi", "Lofi Chill Music", "Bansuri Lofi", "Study Lofi Hindi", "Relaxing Lofi"]
+    },
+    {
+        "category": "Krishna Lo-Fi & Chill Beats",
+        "badge": "MIDNIGHT LO-FI VIBES",
+        "hindi_main": "आधी रात का लो-फाई सुकून",
+        "hindi_sub": "गहरी नींद और विचारों को विराम देने हेतु",
+        "hook_pill": "मध्यरात्रि सुकून   |   लो-फाई बीट्स   |   गहरी निद्रा",
+        "title": "आधी रात का कृष्ण लो-फाई सुकून | Midnight Krishna Lo-Fi Flute for Deep Sleep",
+        "tags": ["Midnight Lofi", "Krishna Lofi Beats", "Sleep Lofi", "Night Lofi Flute", "Insomnia Relief Lofi", "Chillhop Flute", "Calm Lofi"]
+    },
+    {
+        "category": "Krishna Lo-Fi & Chill Beats",
+        "badge": "STUDY & FOCUS LO-FI",
+        "hindi_main": "पढ़ाई और एकाग्रता लो-फाई",
+        "hindi_sub": "मन को शांत और केंद्रित रखने वाला संगीत",
+        "hook_pill": "पूर्ण फोकस   |   लो-फाई संगीत   |   स्थिर चित्त",
+        "title": "पढ़ाई और एकाग्रता हेतु लो-फाई बांसुरी | Krishna Lo-Fi Flute for Study & Focus",
+        "tags": ["Study Lofi", "Focus Lofi Flute", "Student Lofi", "Concentration Music", "Krishna Study Beats", "Background Lofi", "Indian Lofi Beats"]
+    },
+    {
+        "category": "Krishna Lo-Fi & Chill Beats",
+        "badge": "CHILL RAIN & LO-FI FLUTE",
+        "hindi_main": "बरसात और लो-फाई बाँसुरी",
+        "hindi_sub": "रिमझिम बारिश संग शांत बांसुरी की तान",
+        "hook_pill": "रिमझिम बारिश   |   लो-फाई धुन   |   परम शांति",
+        "title": "रिमझिम बारिश और लो-फाई बाँसुरी | Rainy Day Krishna Lo-Fi Flute & Calm Vibes",
+        "tags": ["Rain Lofi", "Krishna Rain Lofi", "Rainy Day Bansuri", "Lofi Flute Rain", "Cozy Lofi", "Relaxing Indian Lofi", "Calm Rain Beats"]
     }
 ]
 
 # Trackers for Zero-Repetition Title & Theme Guarantee
 USED_TITLES_FILE = os.path.join(BASE_DIR, "used_music_titles.txt")
 THEME_TRACKER_FILE = os.path.join(BASE_DIR, "music_theme_tracker.json")
+
+def sanitize_clean_text(text):
+    if not text:
+        return ""
+    import re
+    text = re.sub(r'\(?\s*\d+\s*[Hh][Zz](\s*[Rr]esonance)?\s*\)?', '', text, flags=re.IGNORECASE)
+    text = re.sub(r'\b\d+\s*[Hh][Zz]\b', '', text, flags=re.IGNORECASE)
+    text = re.sub(r'\b[Hh][Zz]\b', '', text, flags=re.IGNORECASE)
+    text = re.sub(r'\s{2,}', ' ', text).strip()
+    return text
 
 def get_dynamic_music_metadata(dur_min=15):
     """
@@ -430,7 +478,7 @@ def get_dynamic_music_metadata(dur_min=15):
             client = genai.Client(api_key=gemini_key, http_options={"timeout": 12000})
             
             prompt = f"""You are the senior spiritual content creator and YouTube SEO specialist for channel 'Krishna Vibez'.
-We are creating a brand new {dur_min}-minute sacred Lord Krishna Bansuri (Flute) & Live Classical Tabla meditation video.
+We are creating a brand new {dur_min}-minute sacred Lord Krishna Bansuri (Flute) & Live Classical Tabla / Lo-Fi meditation video.
 
 Your task is to generate 100% UNIQUE, fresh, high-CTR, and emotionally captivating metadata for THIS SPECIFIC VIDEO.
 The theme must be deeply meditative, peaceful, and spiritually authentic.
@@ -438,10 +486,10 @@ NEVER repeat past titles or generic templates.
 
 Return a JSON object with EXACTLY these keys:
 {{
-  "theme_category": "One of: 'Morning Pooja & Awakening', 'Stress Relief & Anxiety Healing', 'Deep Night Sleep & Insomnia', 'Radha Krishna Divine Love', 'Inner Peace & Soul Dhyan', 'Bansuri & Tabla Jugalbandi'",
-  "title": "A high-CTR title under 75 chars in format: [Unique Hindi Hook] | [English Meditation Angle]. (DO NOT include 'Krishna Vibez', DO NOT include technical frequency numbers like 432Hz)",
-  "badge": "A short uppercase badge for thumbnail top-left (e.g. '{dur_min} MIN DEEP MEDITATION', '{dur_min} MIN SOUL HEALING', 'VRINDAVAN MORNING DHUN', 'DEEP SLEEP & CHINTA MUKTI', 'TRANQUIL FLUTE & TABLA', 'INNER PEACE & CALM')",
-  "hindi_main": "3 to 5 pure, powerful, easy-to-read Hindi words for the main thumbnail headline (e.g. 'मन को असीम शांति दें', 'तनाव और चिंता दूर करें', 'श्री कृष्ण अमृत बाँसुरी', 'राधे कृष्ण पावन धुन', 'गहरी नींद और सुकून', 'सकारात्मक ऊर्जा का प्रवाह')",
+  "theme_category": "One of: 'Morning Pooja & Awakening', 'Stress Relief & Anxiety Healing', 'Deep Night Sleep & Insomnia', 'Radha Krishna Divine Love', 'Inner Peace & Soul Dhyan', 'Bansuri & Tabla Jugalbandi', 'Krishna Lo-Fi & Chill Beats'",
+  "title": "A high-CTR title under 75 chars in format: [Unique Hindi Hook] | [English Meditation Angle]. (STRICT RULES: NEVER include 'Krishna Vibez', NEVER include frequency numbers like 432Hz or Hz or Resonance. If theme is Lo-Fi, you MUST include 'Lo-Fi' or 'Lofi' in title)",
+  "badge": "A short uppercase badge for thumbnail top-left (e.g. '{dur_min} MIN DEEP MEDITATION', '{dur_min} MIN SOUL HEALING', 'VRINDAVAN MORNING DHUN', 'DEEP SLEEP & CHINTA MUKTI', 'KRISHNA LO-FI CHILL', 'INNER PEACE & CALM')",
+  "hindi_main": "3 to 5 pure, powerful, easy-to-read Hindi words for the main thumbnail headline (e.g. 'मन को असीम शांति दें', 'तनाव और चिंता दूर करें', 'श्री कृष्ण अमृत बाँसुरी', 'राधे कृष्ण पावन धुन', 'गहरी नींद और सुकून', 'कृष्ण लो-फाई पावन धुन')",
   "hindi_sub": "4 to 6 words supporting Hindi headline (e.g. 'अंतरात्मा को सुकून देने वाला संगीत', 'मानसिक तनाव घटाएं और शांति पाएं', 'प्रातःकालीन पूजा और सकारात्मक दिन', 'अनिद्रा और चिंता से तुरंत राहत')",
   "hook_pill": "3 short keywords for bottom pill separated by ' | ' (e.g. 'मन की शांति | तनाव मुक्ति | गहरी नींद')",
   "tags": ["Krishna Flute", "Deep Meditation", "Stress Relief", "Peaceful Music", "Bansuri Tabla"]
@@ -457,16 +505,16 @@ Return a JSON object with EXACTLY these keys:
                     )
                     if res and res.text:
                         data = json.loads(res.text)
-                        title_candidate = data.get("title", "").strip()
+                        title_candidate = sanitize_clean_text(data.get("title", "").strip())
                         if title_candidate and title_candidate.lower() not in used_titles:
                             theme = {
                                 "category": data.get("theme_category", "Meditation & Peace"),
-                                "badge": data.get("badge", f"{dur_min} MIN DEEP MEDITATION").replace("15 MIN", f"{dur_min} MIN"),
-                                "hindi_main": data.get("hindi_main", "श्री कृष्ण अमृत बाँसुरी"),
-                                "hindi_sub": data.get("hindi_sub", "मन की शांति और गहरी नींद के लिए"),
-                                "hook_pill": data.get("hook_pill", "मन की शांति   |   गहरी नींद   |   चिंता मुक्ति"),
+                                "badge": sanitize_clean_text(data.get("badge", f"{dur_min} MIN DEEP MEDITATION")).replace("15 MIN", f"{dur_min} MIN"),
+                                "hindi_main": sanitize_clean_text(data.get("hindi_main", "श्री कृष्ण अमृत बाँसुरी")),
+                                "hindi_sub": sanitize_clean_text(data.get("hindi_sub", "मन की शांति और गहरी नींद के लिए")),
+                                "hook_pill": sanitize_clean_text(data.get("hook_pill", "मन की शांति   |   गहरी नींद   |   चिंता मुक्ति")),
                                 "title": title_candidate,
-                                "tags": data.get("tags", ["Krishna Flute", "Deep Meditation", "Krishna Vibez"])
+                                "tags": [sanitize_clean_text(t) for t in data.get("tags", ["Krishna Flute", "Deep Meditation", "Krishna Vibez"]) if t]
                             }
                             try:
                                 with open(USED_TITLES_FILE, "a", encoding="utf-8") as uf:
@@ -1576,9 +1624,19 @@ def upload_to_youtube(theme, duration_sec=900):
 
     brand_suffix = " | Krishna Vibez"
     raw_title = theme.get("title", f"{dur_min} Min Divine Krishna Flute & Tabla")
-    # Guarantee zero technical frequency numbers in title
-    raw_title = raw_title.replace("432Hz", "").replace("432 Hz", "").replace("528Hz", "").strip()
+    
+    # Check if music is Lo-Fi
+    is_lofi = any(x in (theme.get("title", "") + " " + theme.get("category", "") + " " + theme.get("hindi_main", "")).lower() for x in ["lofi", "lo-fi"])
+    if is_lofi and "lofi" not in raw_title.lower() and "lo-fi" not in raw_title.lower():
+        raw_title = f"{raw_title} (Krishna Lo-Fi)"
+
+    # STRICT RULE: Completely eliminate '432Hz', 'Hz', '528Hz', '(432Hz Resonance)' or technical frequency numbers
+    import re
+    raw_title = re.sub(r'\(?\s*\d+\s*[Hh][Zz](\s*[Rr]esonance)?\s*\)?', '', raw_title, flags=re.IGNORECASE)
+    raw_title = re.sub(r'\b\d+\s*[Hh][Zz]\b', '', raw_title, flags=re.IGNORECASE)
+    raw_title = re.sub(r'\b[Hh][Zz]\b', '', raw_title, flags=re.IGNORECASE)
     raw_title = raw_title.replace("<", "").replace(">", "").strip()
+    raw_title = re.sub(r'\s{2,}', ' ', raw_title).strip()
 
     # Reserve space for brand_suffix so 'Krishna Vibez' is 100% guaranteed in title
     max_raw_len = 95 - len(brand_suffix)
@@ -1587,15 +1645,24 @@ def upload_to_youtube(theme, duration_sec=900):
 
     title = f"{raw_title}{brand_suffix}"
 
+    lofi_desc_block = ""
+    if is_lofi:
+        lofi_desc_block = (
+            "🎧 विशेष लो-फाई संगीत (Krishna Lo-Fi Chill Beats):\n"
+            "यह संगीत आधुनिक लो-फाई (Lo-Fi Chill Beats) और पारंपरिक दिव्य बाँसुरी का अत्यंत मधुर, शांत संगम है। "
+            "यह पढ़ने (Study), काम करने (Work Concentration) और सुकून भरी नींद के लिए सर्वोत्तम है।\n\n"
+        )
+
     description = (
         f"🌸 स्वागत है Krishna Vibez के पावन संगीत संसार में 🌸\n\n"
         f"Experience profound inner peace, deep tranquility, and divine healing with this {dur_min}-minute sacred "
-        f"Lord Krishna Flute (Bansuri) & authentic Live Tabla meditation music, mastered in sacred harmonic resonance.\n\n"
+        f"Lord Krishna Flute (Bansuri) & authentic Live Tabla meditation music.\n\n"
         f"🌿 आज का पावन प्रसंग (Theme): {theme['hindi_main']} — {theme['hindi_sub']}\n\n"
+        f"{lofi_desc_block}"
         "भगवान श्री कृष्ण की मधुर मुरली की यह दिव्य ध्वनि मन के समस्त तनाव, चिंता और नकारात्मकता को समाप्त कर अंतरात्मा को "
         "असीम शांति से भर देती है। इसके साथ बजती हुई तबले की कोमल ताल (कहरवा एवं तीन ताल) हृदय में एक सुखद लय और सकारात्मक ऊर्जा का संचार करती है।\n\n"
-        "✨ पावन हीलिंग ध्वनि का महत्व (Sacred Resonance & Mind Healing):\n"
-        "यह संगीत प्राकृतिक हीलिंग तरंगों पर आधारित है। यह मधुर संगीत मस्तिष्क की अल्फा तरंगों (Alpha Waves) को "
+        "✨ पावन संगीत का महत्व (Spiritual Peace & Mind Healing):\n"
+        "यह संगीत मन को शांत करने वाली तरंगों पर आधारित है। यह मधुर संगीत मस्तिष्क की अल्फा तरंगों (Alpha Waves) को "
         "सक्रिय करता है, मानसिक तनाव को घटाता है, हृदय स्पंदन को शांत करता है और गहरी नींद व आत्मिक सुकून प्रदान करता है।\n\n"
         "🧘 इस पावन संगीत के सर्वोत्तम उपयोग (Ideal For):\n"
         "• ध्यान, योग और दैनिक साधना (Deep Meditation, Dhyan & Daily Yoga)\n"
@@ -1614,7 +1681,7 @@ def upload_to_youtube(theme, duration_sec=900):
         "• Subah ki Shanti aur Positivity ke liye Morning Flute Music\n"
         "• Radha Krishna Peaceful Instrumental with Live Tabla Keherwa Taal\n"
         "• Raat ko gehri neend aane ka shant bansuri sangeet (Sleep Music)\n"
-        "• 432Hz Divine Healing Frequency Music for Anxiety and Mental Calm\n"
+        "• Divine Meditation Flute Music for Anxiety and Mental Calm\n"
         "• Vrindavan Divine Morning Bansuri Dhun by Krishna Vibez\n"
         "• Man ko shant karne wali flute dhun hindi me\n"
         "• Pure Indian Classical Bansuri Tabla Jugalbandi for Pooja and Yoga\n"
@@ -1635,11 +1702,13 @@ def upload_to_youtube(theme, duration_sec=900):
         "━━━━━━━━━━━━━━━━━━━━━━━━━━\n\n"
         "🙏 यदि इस संगीत ने आपके मन को शांति और सुकून दिया हो, तो वीडियो को लाइक करें, अपने परिजनों के साथ साझा करें और चैनल को सब्सक्राइब अवश्य करें।\n\n"
         "जय श्री राधे कृष्ण! 🪷✨\n\n"
-        "#Krishna #Flute #Bansuri #MeditationMusic #KrishnaMusic #DivineMusic #RadhaKrishna #RelaxingMusic #InnerPeace #432Hz #DeepSleep #BansuriTabla #KrishnaVibez #DailyMeditation"
+        + ("#KrishnaLofi #LofiFlute #LofiBeats #LofiMusic #Krishna #Flute #Bansuri #MeditationMusic #KrishnaMusic #RelaxingMusic #InnerPeace #DeepSleep #BansuriTabla #KrishnaVibez #DailyMeditation" if is_lofi else
+           "#Krishna #Flute #Bansuri #MeditationMusic #KrishnaMusic #DivineMusic #RadhaKrishna #RelaxingMusic #InnerPeace #DeepSleep #BansuriTabla #KrishnaVibez #DailyMeditation")
     )
 
+    lofi_tags = ["Krishna Lofi", "Lofi Flute", "Indian Lofi", "Lofi Beats", "Krishna Chill", "Relaxing Lofi"] if is_lofi else []
     raw_candidates = list(dict.fromkeys(
-        theme.get("tags", []) + [
+        lofi_tags + theme.get("tags", []) + [
             "Krishna Flute", "Bansuri Dhun", "Krishna Meditation Music",
             "Deep Sleep Music", "Stress Relief Music", "Radha Krishna Flute", "Bansuri Tabla",
             "Man Ki Shanti", "Subah Ki Flute", "Indian Classical Flute", "Morning Meditation",
@@ -1653,6 +1722,9 @@ def upload_to_youtube(theme, duration_sec=900):
     total_tag_chars = 0
     for t in raw_candidates:
         clean_t = t.replace("<", "").replace(">", "").replace(",", "").strip()
+        # Strictly skip any tag mentioning 432 or hz
+        if re.search(r'\b\d*hz\b', clean_t, flags=re.IGNORECASE) or "432" in clean_t:
+            continue
         if not clean_t:
             continue
         effective_len = len(clean_t) + (2 if " " in clean_t else 0) + 1

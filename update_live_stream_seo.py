@@ -119,7 +119,7 @@ Presented with utmost devotion by Krishna Vibez — your sacred sanctuary for co
 ━━━━━━━━━━━━━━━━━━━━━━━━━━
 🔍 इस लाइव स्ट्रीम के प्रमुख विषय एवं खोज प्रश्न (Topics & Searches Covered):
 • Shri Krishna Bansuri 24/7 Live Stream for Peace & Meditation
-• Radha Krishna Peaceful Flute Music Live Radio (432Hz Resonance)
+• Radha Krishna Peaceful Flute Music Live Radio for Inner Calm
 • Subah se raat tak shanti ke liye non-stop bansuri dhun
 • Raat ko gehri neend aur insomnia relief live ambient music
 • Ghar me sakaratmak urja aur shanti ke liye live flute radio
@@ -134,7 +134,7 @@ Presented with utmost devotion by Krishna Vibez — your sacred sanctuary for co
         "radhe krishna live", "bansuri dhun", "24/7 live stream", "meditation flute",
         "deep sleep music", "peaceful flute", "krishna bhajan flute", "relaxing krishna music",
         "vrindavan live", "flute music live", "stress relief music", "shri krishna live",
-        "432hz music", "subah ki flute", "gehri neend music", "krishna radio"
+        "deep meditation flute", "subah ki flute", "gehri neend music", "krishna radio"
     ]
 
     youtube = get_authenticated_service()
