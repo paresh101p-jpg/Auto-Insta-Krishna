@@ -1273,14 +1273,14 @@ def load_flora_sprites_dict():
     return sprites_dict
 
 
-def render_animated_slide_clip(slide_path, clip_output_path, flora_sprites, motion_style, logo_badge, slide_idx=0, duration=25, fps=25, sparkle_palette=None, num_particles=17):
+def render_animated_slide_clip(slide_path, clip_output_path, flora_sprites, motion_style, logo_badge, slide_idx=0, duration=60, fps=25, sparkle_palette=None, num_particles=17):
     """
-    Renders a single 25-second slide clip with:
+    Renders a single 60-second (1-minute) slide clip with:
     - Subpixel 64-bit Floating Bicubic Ken Burns Zoom & Pan (ZERO Jhatka)
     - 17 Clean, Dynamic 3D Falling Flower Petals, Leaves, & Feathers (Video-Specific Theme & Motion)
     - 40 Floating Golden Sparkles with Image-Harmonized Video-Specific Palette Tint
     - Circular Luxury Krishna Vibez Logo in Top Corner
-    - Smooth 1.2s Fade-In & 1.2s Fade-Out
+    - Smooth 2.0s Fade-In & 2.0s Fade-Out
     """
     src_img = cv2.imread(slide_path)
     if src_img is None:
@@ -1402,7 +1402,7 @@ def render_animated_slide_clip(slide_path, clip_output_path, flora_sprites, moti
         clip_output_path
     ]
     proc = subprocess.Popen(ffmpeg_cmd, stdin=subprocess.PIPE)
-    fade_frames = int(1.2 * fps)
+    fade_frames = int(2.0 * fps)
     dt = 1.0 / float(fps)
     
     for i in range(total_frames):
@@ -1501,11 +1501,11 @@ def render_video(slides, duration_sec=900):
     if not active_flora_sprites:
         active_flora_sprites = list(flora_dict.values())
         
-    # 3. Select 12 unique slides to keep total video render time under 8 minutes while ensuring high variety
+    # 3. Select 15 unique slides (each slide stays for 60 seconds)
     selected_slides = slides[:]
-    if len(selected_slides) > 12:
+    if len(selected_slides) > 15:
         random.shuffle(selected_slides)
-        selected_slides = selected_slides[:12]
+        selected_slides = selected_slides[:15]
         
     clip_files = []
     temp_clips_dir = os.path.join(BASE_DIR, "temp_animated_clips")
@@ -1513,18 +1513,18 @@ def render_video(slides, duration_sec=900):
     
     logo_badge = create_corner_logo_badge(size=120)
     
-    # 4. Render 25-second animated clip for each slide
+    # 4. Render 60-second animated clip for each slide
     for idx, slide in enumerate(selected_slides):
         clip_path = os.path.join(temp_clips_dir, f"clip_{idx+1}.mp4")
         clip_files.append(clip_path)
-        print(f"  -> Rendering Slide {idx+1}/{len(selected_slides)} with Dynamic Petals & Smooth Zoom...")
+        print(f"  -> Rendering Slide {idx+1}/{len(selected_slides)} (60s) with Dynamic Petals & Smooth Zoom...")
         render_animated_slide_clip(
             slide, clip_path, active_flora_sprites, chosen_motion, logo_badge,
-            slide_idx=idx, duration=25, fps=25, sparkle_palette=chosen_palette, num_particles=17
+            slide_idx=idx, duration=60, fps=25, sparkle_palette=chosen_palette, num_particles=17
         )
     
     # 2. Concat animated clips to cover duration_sec
-    clips_total_sec = len(clip_files) * 25
+    clips_total_sec = len(clip_files) * 60
     repeat_count = int(math.ceil(duration_sec / float(clips_total_sec))) + 1
     concat_list = os.path.join(BASE_DIR, "temp_concat_clips.txt")
     with open(concat_list, "w", encoding="utf-8") as f:
@@ -1560,79 +1560,202 @@ def render_video(slides, duration_sec=900):
 
 
 def generate_thumbnail(slides, theme):
-    """Creates a high-CTR 16:9 YouTube Thumbnail using FFmpeg HarfBuzz text rendering."""
+    """Creates a high-CTR 16:9 YouTube Thumbnail using Headless Browser HarfBuzz text rendering (100% perfect Devanagari ligatures/matras)."""
     print("[3/4] Generating AI High-CTR YouTube Thumbnail...")
+    import base64
+    import shutil
     selected_slide = random.choice(slides)
     
-    local_font = os.path.join(BASE_DIR, "NotoSansDevanagari-Bold.ttf")
-    local_english = os.path.join(BASE_DIR, "arialbd.ttf")
-    if not os.path.exists("C:/Windows/Fonts/Nirmala.ttc") and not os.path.exists(local_font):
-        try:
-            f_url = "https://github.com/googlefonts/noto-fonts/raw/main/hinted/ttf/NotoSansDevanagari/NotoSansDevanagari-Bold.ttf"
-            r = requests.get(f_url, timeout=10)
-            if r.status_code == 200:
-                with open(local_font, "wb") as f:
-                    f.write(r.content)
-        except Exception:
-            pass
-
-    # Separate English and Hindi fonts to prevent tofu square boxes
-    hindi_candidates = [
-        local_font,
-        "C:/Windows/Fonts/Nirmala.ttc",
-        "C:/Windows/Fonts/NirmalaB.ttf",
-        "/usr/share/fonts/truetype/noto/NotoSansDevanagari-Bold.ttf",
-        "/usr/share/fonts/truetype/noto/NotoSansDevanagari-Regular.ttf",
-        "/usr/share/fonts/opentype/noto/NotoSansDevanagari-Bold.otf",
-        "/usr/share/fonts/opentype/noto/NotoSansDevanagari-Regular.otf",
-    ]
-    hindi_font_file = local_font if os.path.exists(local_font) else "arial.ttf"
-    for hc in hindi_candidates:
-        if os.path.exists(hc):
-            hindi_font_file = hc
-            break
-
-    english_candidates = [
-        "C:/Windows/Fonts/arialbd.ttf",
-        "/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf",
-        "arial.ttf"
-    ]
-    english_font_file = "arial.ttf"
-    for ec in english_candidates:
-        if os.path.exists(ec):
-            english_font_file = ec
-            break
-
-    if os.path.exists(local_english):
-        english_font_arg = os.path.abspath(local_english).replace("\\", "/").replace(":", "\\:")
-    else:
-        english_font_arg = os.path.abspath(english_font_file).replace("\\", "/").replace(":", "\\:")
-
-    if os.path.exists(local_font):
-        hindi_font_arg = os.path.abspath(local_font).replace("\\", "/").replace(":", "\\:")
-    else:
-        hindi_font_arg = os.path.abspath(hindi_font_file).replace("\\", "/").replace(":", "\\:")
-
     badge = theme.get("badge", "DEEP MEDITATION")
     main_text = theme.get("hindi_main", "श्री कृष्ण अमृत बाँसुरी")
     sub_text = theme.get("hindi_sub", "मन की शांति और गहरी नींद के लिए")
     hook_pill = theme.get("hook_pill", "मन की शांति   |   गहरी नींद   |   चिंता मुक्ति")
+    brand_text = "KRISHNA VIBEZ"
 
-    # Write texts to UTF-8 textfiles so FFmpeg HarfBuzz gets 100% clean multibyte Unicode
-    # without shell argument escaping or parameter parsing corruption (guarantees perfect matras)
+    # Detect browser engine (Edge on Windows, Chromium on Linux)
+    browser_candidates = [
+        r"C:\Program Files (x86)\Microsoft\Edge\Application\msedge.exe",
+        r"C:\Program Files\Microsoft\Edge\Application\msedge.exe",
+        r"C:\Program Files\Google\Chrome\Application\chrome.exe",
+        r"C:\Program Files (x86)\Google\Chrome\Application\chrome.exe",
+        "/usr/bin/google-chrome",
+        "/usr/bin/google-chrome-stable",
+        "/usr/bin/chromium",
+        "/usr/bin/chromium-browser",
+    ]
+    browser_path = None
+    for bc in browser_candidates:
+        if os.path.exists(bc):
+            browser_path = bc
+            break
+    if not browser_path:
+        for b in ["chromium-browser", "chromium", "google-chrome", "msedge"]:
+            w = shutil.which(b)
+            if w:
+                browser_path = w
+                break
+
+    # Parse pills
+    pill_items = [p.strip() for p in hook_pill.replace("|", ",").split(",") if p.strip()]
+    if not pill_items:
+        pill_items = ["मन की शांति", "गहरी नींद", "चिंता मुक्ति"]
+    pills_html = "".join([f'<div class="pill">{p}</div>' for p in pill_items[:3]])
+
+    if browser_path:
+        try:
+            with open(selected_slide, "rb") as f:
+                bg_b64 = base64.b64encode(f.read()).decode("utf-8")
+
+            html_content = f"""<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Tiro+Devanagari+Hindi:ital@0;1&family=Cinzel:wght@700;900&family=Montserrat:wght@800;900&family=Poppins:wght@700;800;900&display=swap');
+  * {{ box-sizing: border-box; margin: 0; padding: 0; }}
+  body {{
+    width: 1920px;
+    height: 1080px;
+    position: relative;
+    overflow: hidden;
+    background-color: #000;
+    font-family: 'Poppins', 'Tiro Devanagari Hindi', 'Nirmala UI', sans-serif;
+  }}
+  .bg {{
+    position: absolute;
+    top: 0; left: 0; width: 1920px; height: 1080px;
+    background-image: url('data:image/jpeg;base64,{bg_b64}');
+    background-size: cover;
+    background-position: center;
+  }}
+  .vignette {{
+    position: absolute;
+    top: 0; left: 0; width: 1920px; height: 1080px;
+    background: linear-gradient(180deg, rgba(0,0,0,0.5) 0%, rgba(0,0,0,0.1) 35%, rgba(0,0,0,0.7) 65%, rgba(0,0,0,0.95) 100%),
+                linear-gradient(90deg, rgba(0,0,0,0.88) 0%, rgba(0,0,0,0.5) 50%, rgba(0,0,0,0) 80%);
+  }}
+  .badge {{
+    position: absolute;
+    top: 50px;
+    left: 80px;
+    background: linear-gradient(135deg, #FFB300 0%, #FF8F00 100%);
+    border: 3px solid #FFF8E1;
+    border-radius: 12px;
+    padding: 14px 34px;
+    color: #1A0D00;
+    font-family: 'Montserrat', sans-serif;
+    font-size: 34px;
+    font-weight: 900;
+    letter-spacing: 2px;
+    box-shadow: 0 8px 30px rgba(0,0,0,0.7);
+  }}
+  .content-box {{
+    position: absolute;
+    bottom: 70px;
+    left: 80px;
+    max-width: 1250px;
+    z-index: 10;
+  }}
+  .main-title {{
+    font-size: 116px;
+    font-weight: 900;
+    line-height: 1.15;
+    color: #FFE600;
+    text-shadow: 0 6px 0 #000, 0 12px 35px rgba(0,0,0,0.95), 0 0 50px rgba(255, 230, 0, 0.4);
+    letter-spacing: 1px;
+    margin-bottom: 12px;
+  }}
+  .sub-title {{
+    font-size: 68px;
+    font-weight: 700;
+    line-height: 1.25;
+    color: #FFFFFF;
+    text-shadow: 0 4px 0 #000, 0 8px 25px rgba(0,0,0,0.95);
+    margin-bottom: 30px;
+  }}
+  .pills-container {{
+    display: flex;
+    gap: 20px;
+  }}
+  .pill {{
+    background: rgba(20, 20, 20, 0.88);
+    border: 3px solid #FFD54F;
+    border-radius: 50px;
+    padding: 12px 34px;
+    font-size: 40px;
+    font-weight: 700;
+    color: #FFF9C4;
+    text-shadow: 0 2px 4px rgba(0,0,0,0.8);
+    box-shadow: 0 6px 20px rgba(0,0,0,0.6);
+  }}
+  .brand {{
+    position: absolute;
+    bottom: 50px;
+    right: 80px;
+    font-family: 'Cinzel', serif;
+    font-size: 38px;
+    font-weight: 900;
+    color: #FFD700;
+    letter-spacing: 4px;
+    text-shadow: 0 3px 10px rgba(0,0,0,0.9);
+  }}
+</style>
+</head>
+<body>
+  <div class="bg"></div>
+  <div class="vignette"></div>
+  <div class="badge">{badge}</div>
+  <div class="content-box">
+    <div class="main-title">{main_text}</div>
+    <div class="sub-title">{sub_text}</div>
+    <div class="pills-container">
+      {pills_html}
+    </div>
+  </div>
+  <div class="brand">{brand_text}</div>
+</body>
+</html>"""
+            temp_html = os.path.join(BASE_DIR, "temp_render_thumb.html")
+            with open(temp_html, "w", encoding="utf-8") as f:
+                f.write(html_content)
+
+            cmd = [
+                browser_path,
+                "--headless",
+                "--no-sandbox",
+                "--disable-dev-shm-usage",
+                "--disable-gpu",
+                "--hide-scrollbars",
+                "--window-size=1920,1080",
+                f"--screenshot={TEMP_THUMBNAIL}",
+                temp_html
+            ]
+            subprocess.run(cmd, cwd=BASE_DIR, check=True)
+            if os.path.exists(temp_html):
+                try: os.remove(temp_html)
+                except Exception: pass
+            print(f"  -> SUCCESS! Browser HarfBuzz Thumbnail Created: {TEMP_THUMBNAIL}")
+            sample_thumb = os.path.join(BASE_DIR, "MUSIC_VIDEO_HIGH_CTR_SAMPLE_THUMBNAIL.jpg")
+            shutil.copy2(TEMP_THUMBNAIL, sample_thumb)
+            return TEMP_THUMBNAIL
+        except Exception as e:
+            print(f"  -> [Warning] Browser rendering failed ({e}), falling back to FFmpeg...")
+
+    # Fallback to FFmpeg if browser not available
+    local_font = os.path.join(BASE_DIR, "NotoSansDevanagari-Bold.ttf")
+    local_english = os.path.join(BASE_DIR, "arialbd.ttf")
+    hindi_font_arg = os.path.abspath(local_font).replace("\\", "/").replace(":", "\\:")
+    english_font_arg = os.path.abspath(local_english if os.path.exists(local_english) else "arial.ttf").replace("\\", "/").replace(":", "\\:")
+
     badge_txt = os.path.join(BASE_DIR, "temp_thumb_badge.txt")
     main_txt = os.path.join(BASE_DIR, "temp_thumb_main.txt")
     sub_txt = os.path.join(BASE_DIR, "temp_thumb_sub.txt")
     pill_txt = os.path.join(BASE_DIR, "temp_thumb_pill.txt")
 
-    with open(badge_txt, "w", encoding="utf-8") as f:
-        f.write(badge)
-    with open(main_txt, "w", encoding="utf-8") as f:
-        f.write(main_text)
-    with open(sub_txt, "w", encoding="utf-8") as f:
-        f.write(sub_text)
-    with open(pill_txt, "w", encoding="utf-8") as f:
-        f.write(hook_pill)
+    with open(badge_txt, "w", encoding="utf-8") as f: f.write(badge)
+    with open(main_txt, "w", encoding="utf-8") as f: f.write(main_text)
+    with open(sub_txt, "w", encoding="utf-8") as f: f.write(sub_text)
+    with open(pill_txt, "w", encoding="utf-8") as f: f.write(hook_pill)
 
     badge_arg = os.path.abspath(badge_txt).replace("\\", "/").replace(":", "\\:")
     main_arg = os.path.abspath(main_txt).replace("\\", "/").replace(":", "\\:")
@@ -1665,16 +1788,11 @@ def generate_thumbnail(slides, theme):
         TEMP_THUMBNAIL
     ]
     subprocess.run(cmd, cwd=BASE_DIR, check=True)
-
-    # Clean up temporary textfiles
     for tf in [badge_txt, main_txt, sub_txt, pill_txt]:
         if os.path.exists(tf):
             try: os.remove(tf)
             except Exception: pass
 
-    print(f"  -> Thumbnail Created: {TEMP_THUMBNAIL}")
-    # Also save master sample thumbnail
-    import shutil
     sample_thumb = os.path.join(BASE_DIR, "MUSIC_VIDEO_HIGH_CTR_SAMPLE_THUMBNAIL.jpg")
     shutil.copy2(TEMP_THUMBNAIL, sample_thumb)
     return TEMP_THUMBNAIL
@@ -1993,12 +2111,12 @@ def cleanup():
     print("[Cleanup] All temporary media deleted. Workspace is clean and light.")
 
 def main():
-    slides = ensure_images(num_needed=12)
+    slides = ensure_images(num_needed=15)
         
     # User rule: Dynamic duration between 12 and 50 minutes (randomized per run, e.g. 12:30, 15:06, 40:47)
     dur_min = random.randint(12, 50)
     dur_sec = dur_min * 60 + random.randint(5, 55)
-    print(f"🎬 [DYNAMIC DURATION] Today's Master Video: {dur_min} Minutes ({dur_sec} seconds)")
+    print(f"🎬 [60-SECOND SCENES] Master Video: {dur_min} Minutes ({dur_sec}s), each scene stays for 60 seconds.")
     
     # 1. First assemble and master soundtrack to identify specific track name from registry
     track_info = mix_soundtrack(duration_sec=dur_sec)
