@@ -56,7 +56,7 @@ jobs:
       - name: Commit Updated Music Queues
         run: |
           git config user.name "Krishna Vibez Music Bot"
-          git add treblo_music_video_only_urls.txt treblo_music_urls.txt treblo_music_used_urls.txt treblo_music_cycle_tracker.txt used_music_titles.txt music_theme_tracker.json used_music_images_tracker.txt music_video_images || true
+          git add treblo_music_video_only_urls.txt treblo_music_urls.txt treblo_music_used_urls.txt treblo_music_cycle_tracker.txt used_music_titles.txt music_theme_tracker.json used_music_images_tracker.txt music_video_images youtube_quarantine_queue.json youtube_quarantine_audit.log || true
           git diff --staged --quiet || git commit -m "Auto-posted 15-min Music Video, updated music queues, and archived used images [skip ci]"
           for i in 1 2 3 4 5; do
             git pull --rebase origin master || true

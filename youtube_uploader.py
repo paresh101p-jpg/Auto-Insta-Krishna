@@ -541,7 +541,7 @@ def upload_short_to_youtube(video_path, title, description, tags):
             "defaultAudioLanguage": "hi"
         },
         "status": {
-            "privacyStatus": "public",
+            "privacyStatus": "unlisted",
             "selfDeclaredMadeForKids": False,
             "embeddable": True,
             "license": "youtube",
@@ -661,6 +661,16 @@ def main():
         video_id = upload_short_to_youtube(upload_video_path, title, description, tags)
         mark_url_as_used(chosen_url)
         print(f"YouTube Short workflow completed successfully! ID: {video_id}")
+        
+        # 🛡️ 24-HOUR SAFETY QUARANTINE SHIELD:
+        try:
+            from youtube_safety_quarantine import add_to_quarantine, process_quarantine_queue
+            add_to_quarantine(video_id, title, video_type="short")
+            print("🛡️ Checking mature quarantine videos (>= 24h old)...")
+            process_quarantine_queue(min_quarantine_hours=24)
+        except Exception as q_err:
+            print(f"Quarantine shield notice: {q_err}")
+
     finally:
         for temp_f in [TEMP_VIDEO, TEMP_ENHANCED, TEMP_FRAME]:
             if os.path.exists(temp_f):

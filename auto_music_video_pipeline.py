@@ -2037,7 +2037,7 @@ def upload_to_youtube(theme, duration_sec=900, track_info=None):
             "categoryId": "10" # Music
         },
         "status": {
-            "privacyStatus": "public",
+            "privacyStatus": "unlisted",
             "selfDeclaredMadeForKids": False,
             "containsSyntheticMedia": True
         }
@@ -2075,6 +2075,15 @@ def upload_to_youtube(theme, duration_sec=900, track_info=None):
     if up_res.status_code in [200, 201]:
         video_id = up_res.json().get("id")
         print(f"  -> SUCCESS! Video uploaded to YouTube: https://youtu.be/{video_id}")
+        
+        # 🛡️ 24-HOUR SAFETY QUARANTINE SHIELD:
+        try:
+            from youtube_safety_quarantine import add_to_quarantine, process_quarantine_queue
+            add_to_quarantine(video_id, theme.get("title", "Krishna Meditation Music"), video_type="music_video")
+            print("🛡️ Checking mature quarantine videos (>= 24h old)...")
+            process_quarantine_queue(min_quarantine_hours=24)
+        except Exception as q_err:
+            print(f"Quarantine shield notice: {q_err}")
         
         # Upload Custom Thumbnail
         if os.path.exists(TEMP_THUMBNAIL):
