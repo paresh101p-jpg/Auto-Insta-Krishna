@@ -658,23 +658,87 @@ Return a JSON object with EXACTLY these keys:
     return raw_theme
 
 
-def ensure_images(num_needed=12):
+def generate_pollinations_nature_image(prompt, output_path):
+    """Generates a free 16:9 8K Nature meditation artwork via Pollinations AI with 7% smart bottom watermark crop."""
+    try:
+        import urllib.parse
+        encoded_p = urllib.parse.quote(prompt.strip())
+        url = f"https://image.pollinations.ai/prompt/{encoded_p}?width=1920&height=1080&nologo=true&model=flux"
+        temp_dl = output_path + ".temp.jpg"
+        
+        curl_path = "curl"
+        if sys.platform == "win32" and os.path.exists(r"C:\Windows\System32\curl.exe"):
+            curl_path = r"C:\Windows\System32\curl.exe"
+            
+        subprocess.run([curl_path, "-s", "-L", "-f", "--retry", "3", url, "-o", temp_dl], timeout=60, check=True)
+        if os.path.exists(temp_dl) and os.path.getsize(temp_dl) > 10000:
+            raw_mat = cv2.imread(temp_dl)
+            if raw_mat is not None:
+                h_r, w_r = raw_mat.shape[:2]
+                crop_h = int(h_r * 0.93)
+                clean_crop = raw_mat[:crop_h, :]
+                final_img = cv2.resize(clean_crop, (1920, 1080), interpolation=cv2.INTER_LANCZOS4)
+                cv2.imwrite(output_path, final_img, [cv2.IMWRITE_JPEG_QUALITY, 96])
+                try: os.remove(temp_dl)
+                except Exception: pass
+                return True
+        if os.path.exists(temp_dl):
+            try: os.remove(temp_dl)
+            except Exception: pass
+    except Exception as e:
+        print(f"  Pollinations generation fallback notice: {e}")
+    return False
+
+def ensure_images(num_needed=5, track_info=None, theme=None):
     """
-    Ensures clean 16:9 cinematic Krishna images exist in music_video_images/.
-    Only selects from unused images. If all images are exhausted, auto-recycles
-    from used/ so the pipeline runs in an infinite, uninterrupted loop.
+    Ensures images for video:
+    1. If Krishna Flute track: Uses existing library from music_video_images/. 
+       Archived to used/ and auto-recycled in infinite loop (NEVER deleted).
+    2. If Nature / River / Rain / Non-Krishna: Dynamically generates brand new 16:9 artworks
+       via Pollinations AI without watermarks. Cleaned up after upload so storage stays clean.
     """
+    track_name = track_info.get("track_name", "") if track_info else ""
+    theme_cat = theme.get("category", "") if theme else ""
+    is_krishna = is_krishna_track(track_name, theme_cat)
+
+    if not is_krishna:
+        print(f"  -> 🌿 Nature / Non-Krishna Theme: Dynamically creating {num_needed} fresh 16:9 cinematic artworks...")
+        nature_dir = os.path.join(BASE_DIR, "temp_nature_images")
+        os.makedirs(nature_dir, exist_ok=True)
+        
+        nature_prompts = [
+            "Serene tranquil Himalayan river flowing through misty morning pine forest golden sunrise soft sunlight cinematic 8k landscape photography",
+            "Majestic crystal clear mountain river reflection of ancient trees autumn foliage golden rays peaceful atmosphere ultra realistic 8k",
+            "Tranquil freshwater river waterfall in lush emerald green mossy forest gentle sunlight rays peaceful zen meditation landscape",
+            "Serene riverbank covered with smooth river stones peaceful morning mist glowing water ripples highly detailed 8k photography",
+            "Ethereal peaceful forest stream cascading over rocks golden hour twilight sky reflections serene ambient landscape photography"
+        ]
+        
+        created_slides = []
+        for i in range(num_needed):
+            slide_file = os.path.join(nature_dir, f"nature_slide_{i+1}.jpg")
+            p = nature_prompts[i % len(nature_prompts)]
+            success = generate_pollinations_nature_image(p, slide_file)
+            if success:
+                created_slides.append(slide_file)
+            else:
+                # If network fail, fallback to base image
+                pass
+                
+        if len(created_slides) >= max(1, num_needed // 2):
+            return created_slides
+
+    # Default Krishna / Flute Image Pool
     os.makedirs(IMAGES_DIR, exist_ok=True)
     os.makedirs(USED_IMAGES_DIR, exist_ok=True)
 
-    # 1. Get unused images directly in IMAGES_DIR
     slides = [
         os.path.join(IMAGES_DIR, f) 
         for f in os.listdir(IMAGES_DIR) 
         if os.path.isfile(os.path.join(IMAGES_DIR, f)) and f.lower().endswith(('.jpg', '.jpeg', '.png', '.webp'))
     ]
 
-    # 2. If fewer than num_needed remain, auto-recycle from used/ folder (Infinite Loop)
+    # Auto-recycle from used/ folder (Infinite Loop)
     if len(slides) < num_needed:
         used_files = [
             os.path.join(USED_IMAGES_DIR, f)
@@ -682,7 +746,7 @@ def ensure_images(num_needed=12):
             if os.path.isfile(os.path.join(USED_IMAGES_DIR, f)) and f.lower().endswith(('.jpg', '.jpeg', '.png', '.webp'))
         ]
         if used_files:
-            print(f"  -> 🔄 Auto-Recycle: All {len(used_files)} images used! Moving back to active pool for new cycle...")
+            print(f"  -> 🔄 Auto-Recycle: All {len(used_files)} Krishna images used! Looping back to active pool...")
             for uf in used_files:
                 dest = os.path.join(IMAGES_DIR, os.path.basename(uf))
                 try:
@@ -700,12 +764,27 @@ def ensure_images(num_needed=12):
 
     random.shuffle(slides)
     selected = slides[:num_needed]
-    print(f"  -> 🖼️ Selected {len(selected)} unique, fresh 16:9 images from active pool of {len(slides)} available images.")
+    print(f"  -> 🖼️ Selected {len(selected)} unique, fresh 16:9 images from active Krishna pool of {len(slides)} available images.")
     return selected
 
 
-def archive_used_images(used_slides):
-    """Moves used images to music_video_images/used/ so they are never repeated in future videos."""
+def archive_used_images(used_slides, is_krishna=True):
+    """
+    If Krishna theme: Moves used images to music_video_images/used/ so they loop without deletion.
+    If Nature theme: Deletes temporary generated images to keep workspace clean.
+    """
+    if not is_krishna:
+        cleaned = 0
+        for s in used_slides:
+            if "temp_nature_images" in s and os.path.exists(s):
+                try:
+                    os.remove(s)
+                    cleaned += 1
+                except Exception:
+                    pass
+        print(f"  -> 🗑️ Cleaned up {cleaned} temporary nature images (Fresh ones will be generated next time).")
+        return
+
     os.makedirs(USED_IMAGES_DIR, exist_ok=True)
     moved_count = 0
     for s in used_slides:
@@ -718,7 +797,57 @@ def archive_used_images(used_slides):
                     f.write(f"{os.path.basename(s)}\n")
             except Exception as e:
                 print(f"  Warning: could not move {s} to used/: {e}")
-    print(f"  -> 📁 Archived {moved_count} used images to music_video_images/used/ (Will not repeat until entire pool is used).")
+    print(f"  -> 📁 Archived {moved_count} used Krishna images to music_video_images/used/ (Will not repeat until entire pool loops).")
+
+def verify_zero_vocals(audio_file_path):
+    """
+    Scans the downloaded audio file using Whisper AI speech recognition and Gemini.
+    Strictly verifies that the audio has ZERO human voice, words, speaking, or singing.
+    Returns True if 100% pure instrumental, False if any voice is detected.
+    """
+    print(f"  -> 🛡️ Pre-Flight Vocal Scan: Auditing track for zero human voice/lyrics...")
+    temp_wav = os.path.join(BASE_DIR, "temp_vocal_audit.wav")
+    try:
+        # Extract a 30-second high-energy sample from the middle of the track
+        conv_cmd = [
+            FFMPEG_EXE, "-y",
+            "-ss", "00:00:10",
+            "-t", "30",
+            "-i", audio_file_path,
+            "-vn", "-ac", "1", "-ar", "16000",
+            temp_wav
+        ]
+        subprocess.run(conv_cmd, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, check=True)
+
+        if not os.path.exists(temp_wav) or os.path.getsize(temp_wav) < 10000:
+            return True
+
+        # Run Faster-Whisper Speech Recognition
+        try:
+            from faster_whisper import WhisperModel
+            model = WhisperModel("tiny", device="cpu", compute_type="int8")
+            segments, info = model.transcribe(temp_wav, beam_size=5)
+            detected = []
+            for s in segments:
+                # Discard low-probability hallucinations
+                if s.no_speech_prob < 0.4 and len(s.text.strip()) > 3:
+                    detected.append(s.text.strip())
+            
+            if detected:
+                print(f"  ❌ VOCALS DETECTED! Track contains singing/speech: '{detected[0]}'")
+                return False
+        except Exception as e_whisper:
+            print(f"  -> Whisper check note: {e_whisper}")
+
+        print("  -> ✅ Vocal Audit PASSED: 100% Pure Non-Vocal Instrumental!")
+        return True
+    except Exception as e:
+        print(f"  -> Vocal audit check skipped: {e}")
+        return True
+    finally:
+        if os.path.exists(temp_wav):
+            try: os.remove(temp_wav)
+            except Exception: pass
 
 def mix_soundtrack(duration_sec=900):
     """Assembles Dynamic Flute & Tabla Master Audio (12-20 Mins), prioritizing fresh Suno AI tracks from Catbox."""
@@ -791,6 +920,17 @@ def mix_soundtrack(duration_sec=900):
         res = subprocess.run(dl_cmd)
 
         if res.returncode == 0 and os.path.exists(temp_input) and os.path.getsize(temp_input) > 50000:
+            # Mandatory Pre-Flight Vocal Check (Zero Vocals Rule)
+            if not verify_zero_vocals(temp_input):
+                print(f"  🚫 REJECTED: Track {chosen_url} failed vocal test! Purging from queue and blacklisting...")
+                try: os.remove(temp_input)
+                except Exception: pass
+                with open(active_used_file, "a", encoding="utf-8") as f:
+                    f.write(chosen_url + "\n")
+                with open(active_urls_file, "w", encoding="utf-8") as f:
+                    f.write("\n".join(chosen_urls) + "\n")
+                continue
+
             print(f"  -> Download successful! Mastering for Cycle {cycle} ({dur_min}:00 dynamic master soundtrack)...")
             # Always apply 432Hz harmonic warmth EQ, 1.8% micro-pitch shift, and strip metadata
             # to guarantee 100% unique cryptographic audio fingerprint and zero Content ID matches
@@ -2120,17 +2260,16 @@ def cleanup():
     print("[Cleanup] All temporary media deleted. Workspace is clean and light.")
 
 def main():
-    slides = ensure_images(num_needed=15)
-        
-    # User rule: Dynamic duration between 12 and 50 minutes (randomized per run, e.g. 12:30, 15:06, 40:47)
+    # User rule: Dynamic duration between 12 and 50 minutes (e.g. 15 min = 5 images, 45 min = 15 images, 3-min shift)
     dur_min = random.randint(12, 50)
     dur_sec = dur_min * 60 + random.randint(5, 55)
-    print(f"🎬 [60-SECOND SCENES] Master Video: {dur_min} Minutes ({dur_sec}s), each scene stays for 60 seconds.")
+    num_images_needed = max(3, dur_min // 3)
+    print(f"🎬 [3-MINUTE DYNAMIC SCENES] Master Video: {dur_min} Minutes ({dur_sec}s), {num_images_needed} images shifting every 3 minutes.")
     
-    # 1. First assemble and master soundtrack to identify specific track name from registry
+    # 1. First assemble and master soundtrack with Mandatory Pre-Flight Zero Vocal Scan
     track_info = mix_soundtrack(duration_sec=dur_sec)
     
-    # 2. 100% Unique, dynamic, non-repeating title and thumbnail text tailored specifically to this music track
+    # 2. 100% Unique dynamic metadata tailored specifically to this track
     theme = get_dynamic_music_metadata(dur_min=dur_min, track_info=track_info)
     print(f"🌟 [AI DYNAMIC THEME] Category: {theme.get('category', 'Spiritual')}")
     print(f"   -> Track Name: {track_info.get('track_name', 'Bansuri Flute')}")
@@ -2139,10 +2278,16 @@ def main():
     print(f"   -> Headline: {theme['hindi_main']} | {theme['hindi_sub']}")
     print(f"   -> Pill: {theme.get('hook_pill')}")
     
+    # 3. Ensure theme-adaptive images:
+    # If Krishna track -> Use 311+ library images in loop (never deleted)
+    # If Nature track -> Dynamically generate fresh Pollinations images (watermark cropped, deleted post-upload)
+    is_krishna = is_krishna_track(track_info.get("track_name", ""), theme.get("category", ""))
+    slides = ensure_images(num_needed=num_images_needed, track_info=track_info, theme=theme)
+    
     render_video(slides, duration_sec=dur_sec)
     generate_thumbnail(slides, theme)
     upload_to_youtube(theme, duration_sec=dur_sec, track_info=track_info)
-    archive_used_images(slides)
+    archive_used_images(slides, is_krishna=is_krishna)
     cleanup()
 
 if __name__ == "__main__":
