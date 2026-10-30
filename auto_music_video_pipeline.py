@@ -728,15 +728,67 @@ def ensure_images(num_needed=5, track_info=None, theme=None):
         if len(created_slides) >= max(1, num_needed // 2):
             return created_slides
 
-    # Default Krishna / Flute Image Pool
+    # Smart Categorized Krishna / Flute Image Pool
     os.makedirs(IMAGES_DIR, exist_ok=True)
     os.makedirs(USED_IMAGES_DIR, exist_ok=True)
+    cat_pool_dir = os.path.join(IMAGES_DIR, "All catagery Krisha music photo")
 
-    slides = [
-        os.path.join(IMAGES_DIR, f) 
-        for f in os.listdir(IMAGES_DIR) 
-        if os.path.isfile(os.path.join(IMAGES_DIR, f)) and f.lower().endswith(('.jpg', '.jpeg', '.png', '.webp'))
-    ]
+    all_available = []
+    if os.path.exists(cat_pool_dir):
+        for f in os.listdir(cat_pool_dir):
+            if f.lower().endswith(('.jpg', '.jpeg', '.png', '.webp')):
+                all_available.append(os.path.join(cat_pool_dir, f))
+    
+    # Also include root images
+    for f in os.listdir(IMAGES_DIR):
+        fp = os.path.join(IMAGES_DIR, f)
+        if os.path.isfile(fp) and f.lower().endswith(('.jpg', '.jpeg', '.png', '.webp')):
+            all_available.append(fp)
+
+    # Smart Keyword Filter according to theme category
+    cat_keywords = {
+        "yamuna": ["yamuna", "river", "ghat", "water", "dawn", "sunrise"],
+        "meditation": ["meditation", "cave", "sanctum", "lamp", "altar", "dhyan"],
+        "jugalbandi": ["bansuri", "bamboo", "kadamba", "altar", "classical", "tabla"],
+        "darbari": ["ancient", "stepwell", "sanctum", "palace", "pillar"],
+        "bhairavi": ["morning", "sunrise", "peacock", "kadamba", "grove"],
+        "lo-fi": ["twilight", "sunset", "night", "stars", "moon", "chill", "soft"],
+        "sleep": ["night", "stars", "moon", "twilight", "calm", "serene", "sleep"],
+        "nature": ["forest", "banyan", "tree", "grove", "peacock", "cows", "lotus"],
+        "birds": ["peacock", "bird", "forest", "banyan", "tree", "grove"],
+        "temple": ["temple", "stepwell", "sanctum", "kund", "altar", "lamp"],
+        "radha": ["lotus", "pond", "kund", "radha", "flower", "water"],
+        "ret": ["raman", "reti", "sand", "dust", "wind"],
+        "cows": ["cows", "surabhi", "pasture", "gokul", "field"]
+    }
+
+    # Match theme keywords
+    search_terms = []
+    theme_text = (theme_cat + " " + track_name).lower()
+    for k, terms in cat_keywords.items():
+        if k in theme_text:
+            search_terms.extend(terms)
+
+    # Filter matching slides
+    matched_slides = []
+    if search_terms and all_available:
+        for s in all_available:
+            s_name = os.path.basename(s).lower()
+            if any(term in s_name for term in search_terms):
+                matched_slides.append(s)
+
+    if len(matched_slides) >= num_needed:
+        slides = matched_slides
+        print(f"  -> 🎯 Smart Category Match: Found {len(matched_slides)} matching photos for '{theme_cat}'!")
+    elif len(all_available) >= num_needed:
+        slides = all_available
+        print(f"  -> ℹ️ Using blended pool of {len(all_available)} photos.")
+    else:
+        slides = [
+            os.path.join(IMAGES_DIR, f) 
+            for f in os.listdir(IMAGES_DIR) 
+            if os.path.isfile(os.path.join(IMAGES_DIR, f)) and f.lower().endswith(('.jpg', '.jpeg', '.png', '.webp'))
+        ]
 
     # Auto-recycle from used/ folder (Infinite Loop)
     if len(slides) < num_needed:
@@ -1425,6 +1477,13 @@ def render_animated_slide_clip(slide_path, clip_output_path, flora_sprites, moti
     src_img = cv2.imread(slide_path)
     if src_img is None:
         raise FileNotFoundError(f"Slide not found: {slide_path}")
+
+    # Flow / Image Watermark Auto-Removal: Crop bottom 5.5% cleanly
+    h, w = src_img.shape[:2]
+    if h >= 700:
+        crop_bottom = int(h * 0.055)
+        src_img = src_img[0:h - crop_bottom, 0:w]
+
     src_img = cv2.resize(src_img, (1920, 1080), interpolation=cv2.INTER_LANCZOS4)
     
     adapted_gold, core_bgr = get_image_adapted_gold(src_img, palette=sparkle_palette)
