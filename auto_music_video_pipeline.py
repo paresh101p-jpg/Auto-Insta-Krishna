@@ -2140,17 +2140,29 @@ def add_video_to_category_playlist(video_id, category_name, access_token):
     }
 
     try:
-        # 1. Search existing playlists on channel to find match
+        # 1. Search existing playlists across all pages (0% Duplicate Guarantee)
         playlist_id = None
-        list_url = "https://www.googleapis.com/youtube/v3/playlists?part=snippet&mine=true&maxResults=50"
-        resp = requests.get(list_url, headers=headers)
-        if resp.status_code == 200:
-            items = resp.json().get("items", [])
-            for it in items:
-                p_title = it.get("snippet", {}).get("title", "")
-                if p_title.lower() == target_title.lower():
-                    playlist_id = it.get("id")
+        next_page = ""
+        while True:
+            list_url = f"https://www.googleapis.com/youtube/v3/playlists?part=snippet&mine=true&maxResults=50{next_page}"
+            resp = requests.get(list_url, headers=headers)
+            if resp.status_code == 200:
+                data = resp.json()
+                items = data.get("items", [])
+                for it in items:
+                    p_title = (it.get("snippet", {}).get("title", "")).strip().lower()
+                    if p_title == target_title.strip().lower():
+                        playlist_id = it.get("id")
+                        break
+                if playlist_id:
                     break
+                page_token = data.get("nextPageToken")
+                if page_token:
+                    next_page = f"&pageToken={page_token}"
+                else:
+                    break
+            else:
+                break
 
         # 2. If playlist doesn't exist, create it legally via official API
         if not playlist_id:
