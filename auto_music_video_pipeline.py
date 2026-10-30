@@ -701,32 +701,8 @@ def ensure_images(num_needed=5, track_info=None, theme=None):
     theme_cat = theme.get("category", "") if theme else ""
     is_krishna = is_krishna_track(track_name, theme_cat)
 
-    if not is_krishna:
-        print(f"  -> 🌿 Nature / Non-Krishna Theme: Dynamically creating {num_needed} fresh 16:9 cinematic artworks...")
-        nature_dir = os.path.join(BASE_DIR, "temp_nature_images")
-        os.makedirs(nature_dir, exist_ok=True)
-        
-        nature_prompts = [
-            "Serene tranquil Himalayan river flowing through misty morning pine forest golden sunrise soft sunlight cinematic 8k landscape photography",
-            "Majestic crystal clear mountain river reflection of ancient trees autumn foliage golden rays peaceful atmosphere ultra realistic 8k",
-            "Tranquil freshwater river waterfall in lush emerald green mossy forest gentle sunlight rays peaceful zen meditation landscape",
-            "Serene riverbank covered with smooth river stones peaceful morning mist glowing water ripples highly detailed 8k photography",
-            "Ethereal peaceful forest stream cascading over rocks golden hour twilight sky reflections serene ambient landscape photography"
-        ]
-        
-        created_slides = []
-        for i in range(num_needed):
-            slide_file = os.path.join(nature_dir, f"nature_slide_{i+1}.jpg")
-            p = nature_prompts[i % len(nature_prompts)]
-            success = generate_pollinations_nature_image(p, slide_file)
-            if success:
-                created_slides.append(slide_file)
-            else:
-                # If network fail, fallback to base image
-                pass
-                
-        if len(created_slides) >= max(1, num_needed // 2):
-            return created_slides
+    # All tracks (Krishna, Temple, Nature, River, Rain, Sleep, etc.)
+    # strictly read from our 883 Master Categorized Images Pool (100% Zero-Risk, 0% Watermark)
 
     # Smart Categorized Krishna / Flute Image Pool
     os.makedirs(IMAGES_DIR, exist_ok=True)
@@ -747,34 +723,130 @@ def ensure_images(num_needed=5, track_info=None, theme=None):
 
     # Smart Keyword Filter according to theme category
     cat_keywords = {
-        "yamuna": ["yamuna", "river", "ghat", "water", "dawn", "sunrise"],
-        "meditation": ["meditation", "cave", "sanctum", "lamp", "altar", "dhyan"],
-        "jugalbandi": ["bansuri", "bamboo", "kadamba", "altar", "classical", "tabla"],
-        "darbari": ["ancient", "stepwell", "sanctum", "palace", "pillar"],
-        "bhairavi": ["morning", "sunrise", "peacock", "kadamba", "grove"],
-        "lo-fi": ["twilight", "sunset", "night", "stars", "moon", "chill", "soft"],
-        "sleep": ["night", "stars", "moon", "twilight", "calm", "serene", "sleep"],
-        "nature": ["forest", "banyan", "tree", "grove", "peacock", "cows", "lotus"],
-        "birds": ["peacock", "bird", "forest", "banyan", "tree", "grove"],
-        "temple": ["temple", "stepwell", "sanctum", "kund", "altar", "lamp"],
-        "radha": ["lotus", "pond", "kund", "radha", "flower", "water"],
-        "ret": ["raman", "reti", "sand", "dust", "wind"],
-        "cows": ["cows", "surabhi", "pasture", "gokul", "field"]
+        "temple": {
+            "pos": ["temple", "bell", "aarti", "courtyard", "corridor", "pillar", "archway", "lamp", "sanctum"],
+            "neg": ["peacock", "river", "water", "cow", "cat_"]
+        },
+        "bell": {
+            "pos": ["bell", "temple", "brass", "chime", "aarti", "lamp", "pillar"],
+            "neg": ["peacock", "river", "cow"]
+        },
+        "rain": {
+            "pos": ["rain", "monsoon", "cloud", "sawan", "wet", "puddle", "drop"],
+            "neg": ["desert", "sand"]
+        },
+        "monsoon": {
+            "pos": ["monsoon", "rain", "cloud", "sawan", "wet", "storm"],
+            "neg": ["desert"]
+        },
+        "yamuna": {
+            "pos": ["yamuna", "river", "ghat", "water", "boat", "dock", "ripples"],
+            "neg": ["cave", "desert"]
+        },
+        "river": {
+            "pos": ["river", "water", "stream", "ghat", "boat", "shore"],
+            "neg": ["cave"]
+        },
+        "meditation": {
+            "pos": ["meditation", "cave", "dhyan", "shrine", "zen", "silence", "altar", "lamp"],
+            "neg": ["storm", "rain"]
+        },
+        "sleep": {
+            "pos": ["night", "stars", "moon", "twilight", "calm", "serene", "sleep", "dark", "lamp"],
+            "neg": ["sunrise", "bright"]
+        },
+        "night": {
+            "pos": ["night", "stars", "moon", "twilight", "fireflies", "milky", "diya"],
+            "neg": ["sunrise", "noon", "sunlight"]
+        },
+        "sunrise": {
+            "pos": ["sunrise", "dawn", "morning", "sunbeam", "golden", "first_light"],
+            "neg": ["night", "dark", "moon"]
+        },
+        "morning": {
+            "pos": ["morning", "dawn", "sunrise", "sunlight", "dew", "bamboo_morning"],
+            "neg": ["night", "dark"]
+        },
+        "sunset": {
+            "pos": ["sunset", "dusk", "evening", "twilight", "golden_hour", "sandhya"],
+            "neg": ["morning", "sunrise"]
+        },
+        "cows": {
+            "pos": ["cows", "surabhi", "calf", "calves", "pasture", "meadow", "grass"],
+            "neg": ["cave", "night"]
+        },
+        "peacock": {
+            "pos": ["peacock", "mayur", "morpankh", "feather"],
+            "neg": ["cave"]
+        },
+        "lotus": {
+            "pos": ["lotus", "pond", "water_lily", "kund", "pads"],
+            "neg": ["mountain", "cave"]
+        },
+        "kadamba": {
+            "pos": ["kadamba", "grove", "blossom", "tree", "forest", "flower"],
+            "neg": ["cave"]
+        },
+        "banyan": {
+            "pos": ["banyan", "akshaya_vat", "vat", "roots", "sacred_tree"],
+            "neg": ["lotus", "river"]
+        },
+        "stepwell": {
+            "pos": ["stepwell", "bawdi", "stairs", "stone_steps", "water_level"],
+            "neg": ["forest", "tree"]
+        },
+        "mountain": {
+            "pos": ["mountain", "himalayan", "cliff", "hill", "mist", "ascent"],
+            "neg": ["lotus", "pond"]
+        },
+        "tanpura": {
+            "pos": ["tanpura", "veena", "strings", "wooden_tanpura", "cymbals"],
+            "neg": ["cow", "peacock"]
+        },
+        "bamboo": {
+            "pos": ["bamboo", "flute", "bansuri", "grove", "swaying"],
+            "neg": ["cave", "cow"]
+        },
+        "fireflies": {
+            "pos": ["fireflies", "night", "stars", "twilight", "glowing"],
+            "neg": ["sunrise", "morning"]
+        },
+        "cosmic": {
+            "pos": ["cosmic", "milky_way", "stars", "galaxy", "nebula", "universe"],
+            "neg": ["cow", "pasture"]
+        },
+        "aarti": {
+            "pos": ["aarti", "lamp", "flames", "diya", "brass_aarti", "temple"],
+            "neg": ["river", "pasture"]
+        },
+        "krishna": {
+            "pos": ["krishna", "bansuri", "morpankh", "kadamba", "divine", "lord"],
+            "neg": []
+        }
     }
 
-    # Match theme keywords
-    search_terms = []
+    # Match theme keywords with positive terms and strict negative exclusion
+    pos_terms = set()
+    neg_terms = set()
     theme_text = (theme_cat + " " + track_name).lower()
-    for k, terms in cat_keywords.items():
-        if k in theme_text:
-            search_terms.extend(terms)
+    
+    for cat_name, rules in cat_keywords.items():
+        if cat_name in theme_text:
+            if isinstance(rules, dict):
+                pos_terms.update(rules.get("pos", []))
+                neg_terms.update(rules.get("neg", []))
+            else:
+                pos_terms.update(rules)
 
     # Filter matching slides
     matched_slides = []
-    if search_terms and all_available:
+    if pos_terms and all_available:
         for s in all_available:
             s_name = os.path.basename(s).lower()
-            if any(term in s_name for term in search_terms):
+            # Must match at least one positive term AND none of the negative exclusion terms
+            has_pos = any(term in s_name for term in pos_terms)
+            has_neg = any(term in s_name for term in neg_terms)
+            if has_pos and not has_neg:
                 matched_slides.append(s)
 
     if len(matched_slides) >= num_needed:
@@ -1489,8 +1561,9 @@ def render_animated_slide_clip(slide_path, clip_output_path, flora_sprites, moti
     adapted_gold, core_bgr = get_image_adapted_gold(src_img, palette=sparkle_palette)
     sprites = prebuild_sparkle_sprites(adapted_gold, core_col_base=core_bgr)
     
-    # Initialize 17 particles for this slide
+    # Initialize 7-8 subtle particles for this slide (Sparse, Realistic Depth of Field)
     rng_p = random.Random(slide_idx * 19 + 77)
+    num_particles = 8
     
     class SlideParticle:
         def __init__(self, rng, initial_spread=False):
@@ -1499,19 +1572,20 @@ def render_animated_slide_clip(slide_path, clip_output_path, flora_sprites, moti
             
         def reset(self, initial_spread=False):
             self.sprite = self.rng.choice(flora_sprites) if flora_sprites else None
-            layer = self.rng.choices(["bg", "mid", "fg"], weights=[0.40, 0.40, 0.20])[0]
+            # Depth layers: Mostly background/midground (small & realistic), very rarely foreground
+            layer = self.rng.choices(["bg", "mid", "fg"], weights=[0.60, 0.35, 0.05])[0]
             if layer == "fg":
-                self.scale = self.rng.uniform(0.38, 0.50)
-                self.vy = self.rng.uniform(motion_style["vy_range"][0] * 1.15, motion_style["vy_range"][1] * 1.15)
-                self.opacity = self.rng.uniform(0.92, 0.98)
+                self.scale = self.rng.uniform(0.24, 0.32)
+                self.vy = self.rng.uniform(motion_style["vy_range"][0] * 1.1, motion_style["vy_range"][1] * 1.1)
+                self.opacity = self.rng.uniform(0.75, 0.88)
             elif layer == "mid":
-                self.scale = self.rng.uniform(0.26, 0.36)
+                self.scale = self.rng.uniform(0.16, 0.23)
                 self.vy = self.rng.uniform(*motion_style["vy_range"])
-                self.opacity = self.rng.uniform(0.82, 0.92)
-            else: # bg
-                self.scale = self.rng.uniform(0.15, 0.23)
-                self.vy = self.rng.uniform(motion_style["vy_range"][0] * 0.85, motion_style["vy_range"][1] * 0.85)
                 self.opacity = self.rng.uniform(0.65, 0.80)
+            else: # bg (Far away, subtle drift)
+                self.scale = self.rng.uniform(0.10, 0.16)
+                self.vy = self.rng.uniform(motion_style["vy_range"][0] * 0.75, motion_style["vy_range"][1] * 0.75)
+                self.opacity = self.rng.uniform(0.50, 0.68)
                 
             self.x = self.rng.uniform(-60, 1920 + 60)
             if initial_spread:
