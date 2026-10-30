@@ -1612,7 +1612,7 @@ def render_animated_slide_clip(slide_path, clip_output_path, flora_sprites, moti
     proc.wait()
 
 
-def render_video(slides, duration_sec=900):
+def render_video(slides, duration_sec=900, is_krishna=True):
     """
     Renders Dynamic Full HD Video (12-20 Mins) with:
     - Butter-Smooth Subpixel Bicubic Ken Burns Zoom & Pan (ZERO Jhatka)
@@ -1624,8 +1624,21 @@ def render_video(slides, duration_sec=900):
     dur_min = int(round(duration_sec / 60.0))
     print(f"[2/4] Rendering {dur_min}-Minute ({duration_sec}s) Cinematic Video with Dynamic Petals & Subpixel Zoom...")
     
-    # 1. Dynamically select a unique Flora Theme, Motion Style, and Sparkle Palette for this video
-    chosen_flora = random.choice(FLORA_THEMES)
+    # 1. Dynamically select Flora Theme strictly based on Music Theme:
+    # If Nature / Non-Krishna track -> 100% STRICTLY ZERO Morpankh, ZERO religious petals. Use Green Leaves & Forest Flora only!
+    # If Krishna track -> Sacred Morpankh, Lotus, Rose & Vrindavan Flora.
+    if is_krishna:
+        eligible_flora = FLORA_THEMES
+    else:
+        # Filter flora to ONLY green leaves and gentle forest elements (No feathers)
+        eligible_flora = [
+            th for th in FLORA_THEMES 
+            if not any("feather" in sp for sp in th.get("sprites", [])) and "मयूर" not in th.get("name", "")
+        ]
+        if not eligible_flora:
+            eligible_flora = [{"name": "शांत प्रकृति एवं हरे पत्ते (Serene Nature Leaves)", "sprites": ["flower_04", "flower_08", "flower_09"]}]
+
+    chosen_flora = random.choice(eligible_flora)
     chosen_motion = random.choice(MOTION_STYLES)
     chosen_palette = random.choice(DIVINE_SPARKLE_PALETTES)
     
@@ -2284,7 +2297,7 @@ def main():
     is_krishna = is_krishna_track(track_info.get("track_name", ""), theme.get("category", ""))
     slides = ensure_images(num_needed=num_images_needed, track_info=track_info, theme=theme)
     
-    render_video(slides, duration_sec=dur_sec)
+    render_video(slides, duration_sec=dur_sec, is_krishna=is_krishna)
     generate_thumbnail(slides, theme)
     upload_to_youtube(theme, duration_sec=dur_sec, track_info=track_info)
     archive_used_images(slides, is_krishna=is_krishna)
