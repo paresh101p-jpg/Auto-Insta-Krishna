@@ -1,7 +1,9 @@
 {
   "cows": [],
   "lotus": [],
-  "peacock": [],
+  "peacock": [
+    "https://files.catbox.moe/j3u7ri.jpg"
+  ],
   "mountain": [],
   "kadamba": [
     "https://files.catbox.moe/geebin.jpg",
@@ -11,11 +13,22 @@
     "https://files.catbox.moe/wqodqb.jpg",
     "https://files.catbox.moe/r4okdc.jpg",
     "https://files.catbox.moe/tls8u0.jpg",
-    "https://files.catbox.moe/2lrq4x.jpg"
+    "https://files.catbox.moe/2lrq4x.jpg",
+    "https://files.catbox.moe/hgyrh9.jpg"
   ],
-  "bamboo": [],
+  "bamboo": [
+    "https://files.catbox.moe/j3u7ri.jpg",
+    "https://files.catbox.moe/hgyrh9.jpg",
+    "https://files.catbox.moe/aqusz0.jpg",
+    "https://files.catbox.moe/vzn1ys.jpg"
+  ],
   "yamuna_river": [
-    "https://files.catbox.moe/ffeo9w.jpg"
+    "https://files.catbox.moe/ffeo9w.jpg",
+    "https://files.catbox.moe/ri6m9s.jpg",
+    "https://files.catbox.moe/tgn133.jpg",
+    "https://files.catbox.moe/cq6i8r.jpg",
+    "https://files.catbox.moe/m19kkh.jpg",
+    "https://files.catbox.moe/au1b0k.jpg"
   ],
   "temple": [
     "https://files.catbox.moe/3uay8w.png",
@@ -33,7 +46,14 @@
     "https://files.catbox.moe/goha8t.png",
     "https://files.catbox.moe/vvtlnj.png",
     "https://files.catbox.moe/hxrokt.png",
-    "https://files.catbox.moe/ffeo9w.jpg"
+    "https://files.catbox.moe/ffeo9w.jpg",
+    "https://files.catbox.moe/ri6m9s.jpg",
+    "https://files.catbox.moe/tgn133.jpg",
+    "https://files.catbox.moe/r0svqx.jpg",
+    "https://files.catbox.moe/t6ycnz.jpg",
+    "https://files.catbox.moe/1zila1.jpg",
+    "https://files.catbox.moe/t6wask.jpg",
+    "https://files.catbox.moe/zrsbmx.jpg"
   ],
   "aarti": [
     "https://files.catbox.moe/3uay8w.png",
@@ -50,24 +70,55 @@
     "https://files.catbox.moe/12l4fr.png",
     "https://files.catbox.moe/goha8t.png",
     "https://files.catbox.moe/vvtlnj.png",
-    "https://files.catbox.moe/hxrokt.png"
+    "https://files.catbox.moe/hxrokt.png",
+    "https://files.catbox.moe/0s9sa1.jpg",
+    "https://files.catbox.moe/cv4y79.jpg"
   ],
-  "stepwell": [],
+  "stepwell": [
+    "https://files.catbox.moe/zthuon.jpg",
+    "https://files.catbox.moe/q8a4xc.jpg",
+    "https://files.catbox.moe/pu95om.jpg",
+    "https://files.catbox.moe/0s9sa1.jpg",
+    "https://files.catbox.moe/vlqn63.jpg",
+    "https://files.catbox.moe/cv4y79.jpg",
+    "https://files.catbox.moe/4cghla.jpg",
+    "https://files.catbox.moe/m0ljmc.jpg",
+    "https://files.catbox.moe/r0svqx.jpg",
+    "https://files.catbox.moe/a92x1h.jpg",
+    "https://files.catbox.moe/cq6i8r.jpg",
+    "https://files.catbox.moe/m19kkh.jpg",
+    "https://files.catbox.moe/klwo4w.jpg",
+    "https://files.catbox.moe/yo7mrb.jpg",
+    "https://files.catbox.moe/au1b0k.jpg"
+  ],
   "sleep_night": [
-    "https://files.catbox.moe/0w7ofw.jpg"
+    "https://files.catbox.moe/0w7ofw.jpg",
+    "https://files.catbox.moe/0s9sa1.jpg",
+    "https://files.catbox.moe/cv4y79.jpg",
+    "https://files.catbox.moe/a92x1h.jpg"
   ],
   "sunrise_morning": [
     "https://files.catbox.moe/clpsk8.jpg",
-    "https://files.catbox.moe/wqodqb.jpg"
+    "https://files.catbox.moe/wqodqb.jpg",
+    "https://files.catbox.moe/q8a4xc.jpg",
+    "https://files.catbox.moe/m0ljmc.jpg",
+    "https://files.catbox.moe/klwo4w.jpg",
+    "https://files.catbox.moe/yo7mrb.jpg"
   ],
   "sunset_evening": [],
   "meditation": [
     "https://files.catbox.moe/jx7byf.jpg",
-    "https://files.catbox.moe/tls8u0.jpg"
+    "https://files.catbox.moe/tls8u0.jpg",
+    "https://files.catbox.moe/a92x1h.jpg",
+    "https://files.catbox.moe/aqusz0.jpg"
   ],
   "rain_monsoon": [
     "https://files.catbox.moe/0w7ofw.jpg",
-    "https://files.catbox.moe/wqodqb.jpg"
+    "https://files.catbox.moe/wqodqb.jpg",
+    "https://files.catbox.moe/t6ycnz.jpg",
+    "https://files.catbox.moe/1zila1.jpg",
+    "https://files.catbox.moe/t6wask.jpg",
+    "https://files.catbox.moe/zrsbmx.jpg"
   ],
   "tanpura_instruments": [],
   "raas_celebration": []
