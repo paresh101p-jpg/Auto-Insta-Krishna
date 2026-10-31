@@ -1860,10 +1860,10 @@ def generate_thumbnail(slides, theme):
 
     # Detect browser engine (Edge on Windows, Chromium on Linux)
     browser_candidates = [
-        r"C:\Program Files (x86)\Microsoft\Edge\Application\msedge.exe",
-        r"C:\Program Files\Microsoft\Edge\Application\msedge.exe",
         r"C:\Program Files\Google\Chrome\Application\chrome.exe",
         r"C:\Program Files (x86)\Google\Chrome\Application\chrome.exe",
+        r"C:\Program Files (x86)\Microsoft\Edge\Application\msedge.exe",
+        r"C:\Program Files\Microsoft\Edge\Application\msedge.exe",
         "/usr/bin/google-chrome",
         "/usr/bin/google-chrome-stable",
         "/usr/bin/chromium",
@@ -1875,7 +1875,7 @@ def generate_thumbnail(slides, theme):
             browser_path = bc
             break
     if not browser_path:
-        for b in ["chromium-browser", "chromium", "google-chrome", "msedge"]:
+        for b in ["google-chrome", "chromium-browser", "chromium", "msedge"]:
             w = shutil.which(b)
             if w:
                 browser_path = w
@@ -1883,9 +1883,21 @@ def generate_thumbnail(slides, theme):
 
     # Parse pills
     pill_items = [p.strip() for p in hook_pill.replace("|", ",").split(",") if p.strip()]
-    if not pill_items:
-        pill_items = ["मन की शांति", "गहरी नींद", "चिंता मुक्ति"]
-    pills_html = "".join([f'<div class="pill">{p}</div>' for p in pill_items[:3]])
+    if not pill_items or len(pill_items) < 3:
+        pill_items = ["✨ 100% RELAXING", "🧘 DEEP SLEEP", "🦚 DIVINE VIBES"]
+    else:
+        icons = ["✨", "🧘", "🦚"]
+        pill_items = [f"{icons[i]} {p}" if not any(c in p for c in ["✨", "🧘", "🦚", "🌿", "🌸"]) else p for i, p in enumerate(pill_items[:3])]
+    pills_html = "".join([f'<span class="tag">{p}</span>' for p in pill_items[:3]])
+
+    # Split main_text into dual tone: First word white, remaining words gold
+    parts = main_text.strip().split(" ", 1)
+    if len(parts) == 2:
+        first_word = parts[0]
+        rest_words = parts[1]
+    else:
+        first_word = main_text
+        rest_words = "बाँसुरी ध्यान"
 
     if browser_path:
         try:
@@ -1893,112 +1905,190 @@ def generate_thumbnail(slides, theme):
                 bg_b64 = base64.b64encode(f.read()).decode("utf-8")
 
             html_content = f"""<!DOCTYPE html>
-<html>
+<html lang="hi">
 <head>
 <meta charset="utf-8">
 <style>
-  @import url('https://fonts.googleapis.com/css2?family=Tiro+Devanagari+Hindi:ital@0;1&family=Cinzel:wght@700;900&family=Montserrat:wght@800;900&family=Poppins:wght@700;800;900&display=swap');
+  @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@800;900&family=Noto+Sans+Devanagari:wght@800;900&display=swap');
   * {{ box-sizing: border-box; margin: 0; padding: 0; }}
   body {{
-    width: 1920px;
-    height: 1080px;
-    position: relative;
+    width: 1280px;
+    height: 720px;
     overflow: hidden;
-    background-color: #000;
-    font-family: 'Poppins', 'Tiro Devanagari Hindi', 'Nirmala UI', sans-serif;
+    position: relative;
+    font-family: 'Noto Sans Devanagari', 'Poppins', sans-serif;
+    background-color: #050810;
   }}
   .bg {{
     position: absolute;
-    top: 0; left: 0; width: 1920px; height: 1080px;
+    top: 0;
+    left: 0;
+    width: 1280px;
+    height: 720px;
     background-image: url('data:image/jpeg;base64,{bg_b64}');
     background-size: cover;
-    background-position: center;
+    background-position: center 20%;
+    filter: contrast(1.1) saturate(1.18) brightness(0.98);
   }}
-  .vignette {{
+  .bottom-gradient {{
     position: absolute;
-    top: 0; left: 0; width: 1920px; height: 1080px;
-    background: linear-gradient(180deg, rgba(0,0,0,0.5) 0%, rgba(0,0,0,0.1) 35%, rgba(0,0,0,0.7) 65%, rgba(0,0,0,0.95) 100%),
-                linear-gradient(90deg, rgba(0,0,0,0.88) 0%, rgba(0,0,0,0.5) 50%, rgba(0,0,0,0) 80%);
+    bottom: 0;
+    left: 0;
+    width: 1280px;
+    height: 520px;
+    background: linear-gradient(to top, rgba(5, 8, 16, 0.98) 0%, rgba(5, 8, 16, 0.94) 60%, rgba(5, 8, 16, 0.5) 85%, transparent 100%);
   }}
-  .badge {{
+  .content-container {{
     position: absolute;
-    top: 50px;
-    left: 80px;
-    background: linear-gradient(135deg, #FFB300 0%, #FF8F00 100%);
-    border: 3px solid #FFF8E1;
-    border-radius: 12px;
-    padding: 14px 34px;
-    color: #1A0D00;
-    font-family: 'Montserrat', sans-serif;
-    font-size: 34px;
-    font-weight: 900;
-    letter-spacing: 2px;
-    box-shadow: 0 8px 30px rgba(0,0,0,0.7);
-  }}
-  .content-box {{
-    position: absolute;
-    bottom: 70px;
-    left: 80px;
-    max-width: 1250px;
+    top: 0;
+    left: 0;
+    width: 1280px;
+    height: 720px;
+    padding: 35px 50px 38px 50px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
     z-index: 10;
   }}
-  .main-title {{
-    font-size: 116px;
-    font-weight: 900;
-    line-height: 1.15;
-    color: #FFE600;
-    text-shadow: 0 6px 0 #000, 0 12px 35px rgba(0,0,0,0.95), 0 0 50px rgba(255, 230, 0, 0.4);
-    letter-spacing: 1px;
-    margin-bottom: 12px;
-  }}
-  .sub-title {{
-    font-size: 68px;
-    font-weight: 700;
-    line-height: 1.25;
-    color: #FFFFFF;
-    text-shadow: 0 4px 0 #000, 0 8px 25px rgba(0,0,0,0.95);
-    margin-bottom: 30px;
-  }}
-  .pills-container {{
+  .top-bar {{
     display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }}
+  .badge-category {{
+    background: linear-gradient(135deg, #FF6F00, #E65100);
+    color: #ffffff;
+    font-size: 24px;
+    font-weight: 900;
+    letter-spacing: 1px;
+    padding: 8px 22px;
+    border-radius: 10px;
+    border: 2px solid #FFE082;
+    box-shadow: 0 4px 15px rgba(230, 81, 0, 0.6);
+  }}
+  .badge-time {{
+    background: rgba(10, 20, 35, 0.88);
+    border: 2px solid #00E5FF;
+    color: #00E5FF;
+    font-size: 22px;
+    font-weight: 800;
+    padding: 8px 20px;
+    border-radius: 10px;
+    box-shadow: 0 4px 15px rgba(0, 229, 255, 0.35);
+  }}
+  .bottom-box {{
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    margin-bottom: 75px;
+  }}
+  .title-main {{
+    font-size: 78px;
+    font-weight: 900;
+    line-height: 1.1;
+    display: flex;
+    flex-wrap: wrap;
     gap: 20px;
   }}
-  .pill {{
-    background: rgba(20, 20, 20, 0.88);
-    border: 3px solid #FFD54F;
-    border-radius: 50px;
-    padding: 12px 34px;
-    font-size: 40px;
-    font-weight: 700;
-    color: #FFF9C4;
-    text-shadow: 0 2px 4px rgba(0,0,0,0.8);
-    box-shadow: 0 6px 20px rgba(0,0,0,0.6);
+  .c-white {{
+    color: #FFFFFF;
+    text-shadow: 0 0 20px rgba(255, 255, 255, 0.4), 0 4px 10px #000, 0 8px 25px rgba(0,0,0,0.9);
   }}
-  .brand {{
-    position: absolute;
-    bottom: 50px;
-    right: 80px;
-    font-family: 'Cinzel', serif;
-    font-size: 38px;
+  .c-gold {{
+    color: #FFD600;
+    background: linear-gradient(180deg, #FFF9C4 0%, #FFD600 50%, #FF9100 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    filter: drop-shadow(0 4px 8px rgba(0,0,0,0.95)) drop-shadow(0 0 25px rgba(255, 145, 0, 0.7));
+  }}
+  .sub-box {{
+    display: flex;
+    align-items: center;
+    gap: 18px;
+  }}
+  .pill-red {{
+    background: linear-gradient(90deg, #D50000 0%, #C51162 100%);
+    color: #FFFFFF;
+    font-size: 32px;
     font-weight: 900;
-    color: #FFD700;
-    letter-spacing: 4px;
-    text-shadow: 0 3px 10px rgba(0,0,0,0.9);
+    padding: 6px 22px;
+    border-radius: 8px;
+    border: 2px solid #FF80AB;
+    box-shadow: 0 4px 16px rgba(213, 0, 0, 0.5);
+    text-shadow: 0 2px 4px rgba(0,0,0,0.8);
+  }}
+  .text-cyan {{
+    color: #00E5FF;
+    font-size: 34px;
+    font-weight: 800;
+    text-shadow: 0 3px 8px rgba(0,0,0,0.95), 0 0 15px rgba(0, 229, 255, 0.6);
+  }}
+  .footer-box {{
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-top: 10px;
+    border-top: 1px solid rgba(255, 255, 255, 0.18);
+  }}
+  .tags-list {{
+    display: flex;
+    gap: 16px;
+  }}
+  .tag {{
+    background: linear-gradient(135deg, rgba(15, 30, 50, 0.95), rgba(8, 16, 28, 0.95));
+    color: #FFFFFF;
+    font-size: 26px;
+    font-weight: 900;
+    letter-spacing: 0.5px;
+    padding: 10px 24px;
+    border-radius: 12px;
+    border: 2.5px solid #00E5FF;
+    box-shadow: 0 4px 18px rgba(0, 229, 255, 0.4), inset 0 0 10px rgba(0, 229, 255, 0.2);
+    text-shadow: 0 2px 4px rgba(0,0,0,0.9);
+  }}
+  .brand-name {{
+    color: #FFB300;
+    font-size: 28px;
+    font-weight: 900;
+    letter-spacing: 2px;
+    border: 2px solid #FFB300;
+    padding: 8px 20px;
+    border-radius: 10px;
+    background: rgba(20, 15, 5, 0.85);
+    box-shadow: 0 4px 15px rgba(255, 179, 0, 0.35);
+    text-shadow: 0 2px 8px rgba(0,0,0,0.9);
   }}
 </style>
 </head>
 <body>
   <div class="bg"></div>
-  <div class="vignette"></div>
-  <div class="badge">{badge}</div>
-  <div class="content-box">
-    <div class="main-title">{main_text}</div>
-    <div class="sub-title">{sub_text}</div>
-    <div class="pills-container">
-      {pills_html}
+  <div class="bottom-gradient"></div>
+
+  <div class="content-container">
+    <div class="top-bar">
+      <div class="badge-category">🌿 {badge}</div>
+      <div class="badge-time">⏱️ 15 MIN MEDITATION</div>
+    </div>
+
+    <div class="bottom-box">
+      <div class="title-main">
+        <span class="c-white">{first_word}</span>
+        <span class="c-gold">{rest_words}</span>
+      </div>
+
+      <div class="sub-box">
+        <span class="pill-red">गहरा मानसिक सुकून</span>
+        <span class="text-cyan">{sub_text}</span>
+      </div>
+
+      <div class="footer-box">
+        <div class="tags-list">
+          {pills_html}
+        </div>
+        <div class="brand-name">{brand_text}</div>
+      </div>
     </div>
   </div>
-  <div class="brand">{brand_text}</div>
 </body>
 </html>"""
             temp_html = os.path.join(BASE_DIR, "temp_render_thumb.html")
@@ -2007,12 +2097,12 @@ def generate_thumbnail(slides, theme):
 
             cmd = [
                 browser_path,
-                "--headless",
+                "--headless=new",
                 "--no-sandbox",
                 "--disable-dev-shm-usage",
                 "--disable-gpu",
                 "--hide-scrollbars",
-                "--window-size=1920,1080",
+                "--window-size=1280,720",
                 f"--screenshot={TEMP_THUMBNAIL}",
                 temp_html
             ]
