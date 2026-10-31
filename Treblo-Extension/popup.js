@@ -1,7 +1,6 @@
-// popup.js - Controller for Treblo Downloader Popup with Studio-Quality WAV conversion
+// popup.js - Controller for Treblo Downloader Popup with Background Downloader
 
 let currentTracks = [];
-let isDownloading = false;
 let activeTabId = null;
 
 // DOM Elements
@@ -39,85 +38,42 @@ const btnCancelModal = document.getElementById("btnCancelModal");
 // Sleep helper
 const sleep = (ms) => new Promise(resolve => setTimeout(resolve, ms));
 
-// Format title to safe filename
-function getCleanTitle(title, index) {
-  let clean = (title || `Track_${index + 1}`).replace(/[\\/:*?"<>|]/g, "_").trim();
-  clean = clean.replace(/\.(ogg|mp3|wav)$/i, "");
-  return clean || `Track_${index + 1}`;
-}
+// Update UI based on background progress
+function updateProgressUI(progress) {
+  if (!progress) return;
 
-// Convert ArrayBuffer audio (OGG/MP3) to standard 16-bit PCM WAV Blob
-async function convertAudioBufferToWavBlob(arrayBuffer) {
-  const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-  let audioBuffer;
-  try {
-    audioBuffer = await audioCtx.decodeAudioData(arrayBuffer);
-  } finally {
-    try { audioCtx.close(); } catch(e) {}
-  }
+  if (progress.active || progress.status === "downloading") {
+    progressContainer.classList.remove("hidden");
+    btnDownloadAll.disabled = true;
+    btnReloadTab.disabled = true;
 
-  const numChannels = audioBuffer.numberOfChannels;
-  const sampleRate = audioBuffer.sampleRate;
-  const format = 1; // PCM
-  const bitDepth = 16;
+    const total = progress.total || 1;
+    const current = progress.current || 0;
+    const percent = Math.min(100, Math.round((current / total) * 100));
 
-  // Interleave channels
-  let interleaved;
-  if (numChannels === 2) {
-    const left = audioBuffer.getChannelData(0);
-    const right = audioBuffer.getChannelData(1);
-    interleaved = new Float32Array(left.length + right.length);
-    let index = 0;
-    for (let i = 0; i < left.length; i++) {
-      interleaved[index++] = left[i];
-      interleaved[index++] = right[i];
-    }
+    progressBar.style.width = `${percent}%`;
+    const formatLabel = progress.isWav ? "WAV" : "OGG";
+    progressText.innerHTML = `⏳ [${current}/${total}] Downloading & Converting ${formatLabel}: <strong>${progress.currentTitle || "Track"}</strong>... <br><small style="color:#38bdf8;">(Aap dusra tab use kar sakte hain ya browser minimize kar sakte hain)</small>`;
+  } else if (progress.status === "completed") {
+    progressContainer.classList.remove("hidden");
+    progressBar.style.width = "100%";
+    btnDownloadAll.disabled = false;
+    btnReloadTab.disabled = false;
+    const formatLabel = progress.isWav ? "WAV" : "OGG";
+    progressText.innerHTML = `✅ <strong>Completed!</strong> ${progress.downloaded} ${formatLabel} tracks downloaded (${progress.failed} failed).<br><small style="color:#94a3b8;">Downloads/Treblo_Music/ folder me saved hain.</small>`;
   } else {
-    interleaved = audioBuffer.getChannelData(0);
+    // idle
+    btnDownloadAll.disabled = currentTracks.length === 0;
+    btnReloadTab.disabled = false;
   }
-
-  const byteRate = (sampleRate * numChannels * bitDepth) / 8;
-  const blockAlign = (numChannels * bitDepth) / 8;
-  const dataSize = interleaved.length * 2;
-  const bufferLength = 44 + dataSize;
-  const wavBuffer = new ArrayBuffer(bufferLength);
-  const view = new DataView(wavBuffer);
-
-  function writeString(view, offset, string) {
-    for (let i = 0; i < string.length; i++) {
-      view.setUint8(offset + i, string.charCodeAt(i));
-    }
-  }
-
-  // RIFF chunk descriptor
-  writeString(view, 0, "RIFF");
-  view.setUint32(4, 36 + dataSize, true);
-  writeString(view, 8, "WAVE");
-
-  // fmt sub-chunk
-  writeString(view, 12, "fmt ");
-  view.setUint32(16, 16, true); // SubChunk1Size (16 for PCM)
-  view.setUint16(20, format, true); // AudioFormat (1 = PCM)
-  view.setUint16(22, numChannels, true); // NumChannels
-  view.setUint32(24, sampleRate, true); // SampleRate
-  view.setUint32(28, byteRate, true); // ByteRate
-  view.setUint16(32, blockAlign, true); // BlockAlign
-  view.setUint16(34, bitDepth, true); // BitsPerSample
-
-  // data sub-chunk
-  writeString(view, 36, "data");
-  view.setUint32(40, dataSize, true);
-
-  // Write 16-bit PCM samples
-  let offset = 44;
-  for (let i = 0; i < interleaved.length; i++) {
-    let s = Math.max(-1, Math.min(1, interleaved[i]));
-    view.setInt16(offset, s < 0 ? s * 0x8000 : s * 0x7FFF, true);
-    offset += 2;
-  }
-
-  return new Blob([wavBuffer], { type: "audio/wav" });
 }
+
+// Listen for real-time progress updates from background.js
+chrome.runtime.onMessage.addListener((request) => {
+  if (request.action === "DOWNLOAD_PROGRESS_UPDATE" && request.progress) {
+    updateProgressUI(request.progress);
+  }
+});
 
 // Update Download Button Label based on format radio
 function updateDownloadButtonLabel() {
@@ -147,7 +103,7 @@ function renderTrackList(tracks) {
       <div class="empty-state">
         No tracks detected yet.<br>
         <span style="color:#38bdf8; font-weight:600;">👉 Click "Reload & Scan" button above</span><br>
-        <small style="color:#94a3b8;">Page reload hote hi sabhi 31 tracks apne aap load ho jayenge.</small>
+        <small style="color:#94a3b8;">Page reload hote hi sabhi tracks apne aap load ho jayenge.</small>
       </div>
     `;
     btnDownloadAll.disabled = true;
@@ -169,7 +125,7 @@ function renderTrackList(tracks) {
     item.className = "track-item";
     item.innerHTML = `
       <span class="track-item-title" title="${t.title}">${i + 1}. ${t.title}</span>
-      <span class="track-item-idx">WAV</span>
+      <span class="track-item-idx">AUDIO</span>
     `;
     trackListEl.appendChild(item);
   });
@@ -179,6 +135,13 @@ function renderTrackList(tracks) {
 async function initTab() {
   statusBadge.className = "badge checking";
   statusBadge.textContent = "Scanning...";
+
+  // Check background download status first
+  chrome.runtime.sendMessage({ action: "GET_DOWNLOAD_STATUS" }, (response) => {
+    if (response && response.progress && response.progress.active) {
+      updateProgressUI(response.progress);
+    }
+  });
 
   try {
     const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
@@ -269,103 +232,36 @@ btnReloadTab.addEventListener("click", async () => {
   }
 });
 
-// Button 1: Download All Music with Safe Pacing + WAV Conversion
-btnDownloadAll.addEventListener("click", async () => {
-  if (isDownloading || currentTracks.length === 0) return;
+// Button 1: Download All Music (Runs in Background Service Worker)
+btnDownloadAll.addEventListener("click", () => {
+  if (currentTracks.length === 0) return;
 
   const isWav = fmtWav && fmtWav.checked;
   const targetFormat = isWav ? "WAV (Studio Quality)" : "OGG (Original)";
   const total = currentTracks.length;
 
-  const userConfirmed = confirm(`Aapke paas total ${total} music tracks hain.\nFormat: ${targetFormat}\n\nKya aap sabhi ${total} tracks ko seedhe:\nE:\\Paresh\\Auto Post\\Auto-Insta-Krishna\\Treblo Music\nme download karna chahte hain?`);
+  const userConfirmed = confirm(`Aapke paas total ${total} music tracks hain.\nFormat: ${targetFormat}\n\nKya aap download shuru karna chahte hain?\n\n(Download background me chalta rahega - chahe aap dusra tab kholein ya browser minimize karein!)`);
   if (!userConfirmed) return;
 
-  isDownloading = true;
-  btnDownloadAll.disabled = true;
-  btnReloadTab.disabled = true;
-  progressContainer.classList.remove("hidden");
-
-  let downloadedCount = 0;
-  let failedCount = 0;
-
-  for (let i = 0; i < total; i++) {
-    const track = currentTracks[i];
-    const cleanTitle = getCleanTitle(track.title, i);
-
-    progressBar.style.width = `${Math.round(((i + 1) / total) * 100)}%`;
-
-    try {
-      if (isWav) {
-        progressText.textContent = `[${i + 1}/${total}] Fetching & Converting to WAV: ${track.title}...`;
-        
-        // 1. Fetch raw audio
-        const resp = await fetch(track.url);
-        if (!resp.ok) throw new Error("HTTP " + resp.status);
-        const arrayBuf = await resp.arrayBuffer();
-
-        // 2. Convert to uncompressed 16-bit PCM WAV
-        const wavBlob = await convertAudioBufferToWavBlob(arrayBuf);
-        const blobUrl = URL.createObjectURL(wavBlob);
-        const destPath = `Treblo_Music/${cleanTitle}.wav`;
-
-        // 3. Trigger download
-        await new Promise((resolve) => {
-          chrome.downloads.download({
-            url: blobUrl,
-            filename: destPath,
-            conflictAction: "uniquify",
-            saveAs: false
-          }, (downloadId) => {
-            setTimeout(() => URL.revokeObjectURL(blobUrl), 15000);
-            if (chrome.runtime.lastError || !downloadId) {
-              console.warn("Download error:", chrome.runtime.lastError);
-              failedCount++;
-            } else {
-              downloadedCount++;
-            }
-            resolve();
-          });
-        });
-
-      } else {
-        // Fast direct OGG download
-        progressText.textContent = `[${i + 1}/${total}] Downloading: ${track.title}...`;
-        const destPath = `Treblo_Music/${cleanTitle}.ogg`;
-
-        await new Promise((resolve) => {
-          chrome.downloads.download({
-            url: track.url,
-            filename: destPath,
-            conflictAction: "uniquify",
-            saveAs: false
-          }, (downloadId) => {
-            if (chrome.runtime.lastError || !downloadId) {
-              failedCount++;
-            } else {
-              downloadedCount++;
-            }
-            resolve();
-          });
-        });
-      }
-
-    } catch (e) {
-      console.warn("Track download error:", e);
-      failedCount++;
+  // Send to background service worker
+  chrome.runtime.sendMessage({
+    action: "START_DOWNLOAD_ALL",
+    tracks: currentTracks,
+    isWav: isWav
+  }, (response) => {
+    if (response && response.success) {
+      updateProgressUI({
+        active: true,
+        total: total,
+        current: 0,
+        currentTitle: "Starting background download...",
+        isWav: isWav,
+        status: "downloading"
+      });
+    } else {
+      alert("Notice: " + (response ? response.error : "Failed to start background download."));
     }
-
-    // Safe delay (1.2s) between downloads to respect browser and memory
-    if (i < total - 1) {
-      await sleep(1200);
-    }
-  }
-
-  isDownloading = false;
-  btnDownloadAll.disabled = false;
-  btnReloadTab.disabled = false;
-  const extLabel = isWav ? ".WAV" : ".OGG";
-  progressText.textContent = `✅ Completed: ${downloadedCount} ${extLabel} downloaded (${failedCount} failed). Saved to Downloads/Treblo_Music/`;
-  alert(`✅ Done! ${downloadedCount} music tracks successfully ${extLabel} format me download ho gaye hain!\n\nAapke computer ke 'Downloads/Treblo_Music/' folder me check karein.`);
+  });
 });
 
 // Button 2: Delete List (Safety Confirmation)

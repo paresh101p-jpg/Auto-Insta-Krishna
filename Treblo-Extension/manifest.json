@@ -1,19 +1,24 @@
 {
   "manifest_version": 3,
   "name": "Treblo Music Downloader",
-  "version": "1.1.0",
-  "description": "Download your generated tracks from Treblo AI safely with a single click.",
+  "version": "1.2.0",
+  "description": "Download your generated tracks from Treblo AI safely in background with a single click.",
   "permissions": [
     "activeTab",
     "scripting",
     "downloads",
-    "storage"
+    "storage",
+    "offscreen",
+    "notifications"
   ],
   "host_permissions": [
     "https://treblo.com/*",
     "https://*.treblo.com/*",
     "https://cdn.treblo.com/*"
   ],
+  "background": {
+    "service_worker": "background.js"
+  },
   "action": {
     "default_popup": "popup.html",
     "default_icon": {
