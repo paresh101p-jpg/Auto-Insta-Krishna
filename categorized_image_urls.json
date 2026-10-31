@@ -1,5 +1,11 @@
 {
-  "cows": [],
+  "cows": [
+    "https://files.catbox.moe/4g4biy.jpg",
+    "https://files.catbox.moe/lrobd2.jpg",
+    "https://files.catbox.moe/wq28n7.jpg",
+    "https://files.catbox.moe/p3nmvr.jpg",
+    "https://files.catbox.moe/w2s6hs.jpg"
+  ],
   "lotus": [
     "https://files.catbox.moe/ggnuup.jpg",
     "https://files.catbox.moe/906a5a.jpg"
@@ -24,7 +30,8 @@
     "https://files.catbox.moe/q6bgwt.jpg"
   ],
   "mountain": [
-    "https://files.catbox.moe/nlru95.jpg"
+    "https://files.catbox.moe/nlru95.jpg",
+    "https://files.catbox.moe/vi8v7n.jpg"
   ],
   "kadamba": [
     "https://files.catbox.moe/geebin.jpg",
@@ -195,7 +202,18 @@
     "https://files.catbox.moe/shrelg.jpg",
     "https://files.catbox.moe/1osf0e.jpg",
     "https://files.catbox.moe/i3kbxz.jpg",
-    "https://files.catbox.moe/c5zse0.jpg"
+    "https://files.catbox.moe/c5zse0.jpg",
+    "https://files.catbox.moe/lr3c6c.jpg",
+    "https://files.catbox.moe/0ehoxn.jpg",
+    "https://files.catbox.moe/xswcyi.jpg",
+    "https://files.catbox.moe/cymrjq.jpg",
+    "https://files.catbox.moe/hhac2r.jpg",
+    "https://files.catbox.moe/nlk6gc.jpg",
+    "https://files.catbox.moe/fkqjku.jpg",
+    "https://files.catbox.moe/m9j4ar.jpg",
+    "https://files.catbox.moe/id7gn1.jpg",
+    "https://files.catbox.moe/9okjvg.jpg",
+    "https://files.catbox.moe/kmlr5f.jpg"
   ],
   "temple": [
     "https://files.catbox.moe/3uay8w.png",
@@ -226,7 +244,15 @@
     "https://files.catbox.moe/vj7khq.jpg",
     "https://files.catbox.moe/1ah55h.jpg",
     "https://files.catbox.moe/k49hlv.jpg",
-    "https://files.catbox.moe/du02oj.jpg"
+    "https://files.catbox.moe/du02oj.jpg",
+    "https://files.catbox.moe/gaduv9.jpg",
+    "https://files.catbox.moe/u7141d.jpg",
+    "https://files.catbox.moe/nlk6gc.jpg",
+    "https://files.catbox.moe/fkqjku.jpg",
+    "https://files.catbox.moe/m9j4ar.jpg",
+    "https://files.catbox.moe/id7gn1.jpg",
+    "https://files.catbox.moe/9okjvg.jpg",
+    "https://files.catbox.moe/kmlr5f.jpg"
   ],
   "aarti": [
     "https://files.catbox.moe/3uay8w.png",
@@ -262,7 +288,24 @@
     "https://files.catbox.moe/k91ako.jpg",
     "https://files.catbox.moe/du02oj.jpg",
     "https://files.catbox.moe/e36koq.jpg",
-    "https://files.catbox.moe/c5zse0.jpg"
+    "https://files.catbox.moe/c5zse0.jpg",
+    "https://files.catbox.moe/lr3c6c.jpg",
+    "https://files.catbox.moe/6yvyjv.jpg",
+    "https://files.catbox.moe/it0ah8.jpg",
+    "https://files.catbox.moe/r44evp.jpg",
+    "https://files.catbox.moe/u7141d.jpg",
+    "https://files.catbox.moe/0ehoxn.jpg",
+    "https://files.catbox.moe/xswcyi.jpg",
+    "https://files.catbox.moe/cymrjq.jpg",
+    "https://files.catbox.moe/hhac2r.jpg",
+    "https://files.catbox.moe/nlk6gc.jpg",
+    "https://files.catbox.moe/fkqjku.jpg",
+    "https://files.catbox.moe/m9j4ar.jpg",
+    "https://files.catbox.moe/id7gn1.jpg",
+    "https://files.catbox.moe/9okjvg.jpg",
+    "https://files.catbox.moe/kmlr5f.jpg",
+    "https://files.catbox.moe/9oumqz.jpg",
+    "https://files.catbox.moe/ce3hp7.jpg"
   ],
   "stepwell": [
     "https://files.catbox.moe/zthuon.jpg",
@@ -307,14 +350,17 @@
     "https://files.catbox.moe/lg80c1.jpg",
     "https://files.catbox.moe/h4jtdd.jpg",
     "https://files.catbox.moe/b5m7pl.jpg",
-    "https://files.catbox.moe/c5zse0.jpg"
+    "https://files.catbox.moe/c5zse0.jpg",
+    "https://files.catbox.moe/9oumqz.jpg",
+    "https://files.catbox.moe/ce3hp7.jpg"
   ],
   "sleep_night": [
     "https://files.catbox.moe/0w7ofw.jpg",
     "https://files.catbox.moe/0s9sa1.jpg",
     "https://files.catbox.moe/cv4y79.jpg",
     "https://files.catbox.moe/a92x1h.jpg",
-    "https://files.catbox.moe/gxga33.jpg"
+    "https://files.catbox.moe/gxga33.jpg",
+    "https://files.catbox.moe/xswcyi.jpg"
   ],
   "sunrise_morning": [
     "https://files.catbox.moe/clpsk8.jpg",
@@ -349,7 +395,9 @@
     "https://files.catbox.moe/gyy2u0.jpg",
     "https://files.catbox.moe/c2qjxh.jpg",
     "https://files.catbox.moe/k91ako.jpg",
-    "https://files.catbox.moe/e36koq.jpg"
+    "https://files.catbox.moe/e36koq.jpg",
+    "https://files.catbox.moe/it0ah8.jpg",
+    "https://files.catbox.moe/nfp9xc.jpg"
   ],
   "rain_monsoon": [
     "https://files.catbox.moe/0w7ofw.jpg",
@@ -394,7 +442,9 @@
   ],
   "tanpura_instruments": [
     "https://files.catbox.moe/ldj7l4.jpg",
-    "https://files.catbox.moe/124a1m.jpg"
+    "https://files.catbox.moe/124a1m.jpg",
+    "https://files.catbox.moe/r44evp.jpg",
+    "https://files.catbox.moe/u7141d.jpg"
   ],
   "raas_celebration": [
     "https://files.catbox.moe/r5xqy4.jpg",
