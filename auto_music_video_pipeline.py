@@ -822,6 +822,30 @@ def ensure_images(num_needed=5, track_info=None, theme=None):
         "krishna": {
             "pos": ["krishna", "bansuri", "morpankh", "kadamba", "divine", "lord"],
             "neg": []
+        },
+        "raas": {
+            "pos": ["raas", "dance", "vrindavan", "circle", "dandiya", "celebration", "kadamba", "moonlight"],
+            "neg": ["cave", "desert", "sad"]
+        },
+        "holi": {
+            "pos": ["holi", "color", "gulal", "celebration", "spring", "joy", "braj", "pichkari"],
+            "neg": ["night", "dark", "cave", "sleep"]
+        },
+        "braj": {
+            "pos": ["braj", "brij", "gali", "village", "gokul", "barsana", "nandgaon", "pasture"],
+            "neg": ["cave", "storm"]
+        },
+        "warrior": {
+            "pos": ["warrior", "kurukshetra", "chariot", "arjuna", "dharma", "conch", "divine"],
+            "neg": ["sleep", "soft", "rain"]
+        },
+        "dance": {
+            "pos": ["dance", "leela", "celebration", "ghungroo", "brij", "joy", "vrindavan", "circle"],
+            "neg": ["cave", "sad", "dark"]
+        },
+        "radha": {
+            "pos": ["radha", "radhey", "barsana", "kund", "lotus", "affection", "eternal", "divine"],
+            "neg": ["warrior", "kurukshetra"]
         }
     }
 
