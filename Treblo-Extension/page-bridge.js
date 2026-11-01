@@ -162,22 +162,28 @@
     return found;
   }
 
-  // 1. Monkey-patch window.fetch to capture live network API responses
+  // 1. Monkey-patch window.fetch to capture live network API responses safely
   const originalFetch = window.fetch;
-  window.fetch = async function(...args) {
-    const response = await originalFetch.apply(this, args);
-    try {
-      const clone = response.clone();
-      clone.json().then(data => {
-        extractTracksGeneric(data, sessionFetchTracks);
-        // Also update capturedTracks if matching project
-        sessionFetchTracks.forEach((t, url) => {
-          capturedTracks.set(url, t);
-        });
-        notifyContentScript();
-      }).catch(() => {});
-    } catch (e) {}
-    return response;
+  window.fetch = function(...args) {
+    return originalFetch.apply(this, args).then(response => {
+      try {
+        if (response && response.ok) {
+          const clone = response.clone();
+          clone.json().then(data => {
+            extractTracksGeneric(data, sessionFetchTracks);
+            // Also update capturedTracks if matching project
+            sessionFetchTracks.forEach((t, url) => {
+              capturedTracks.set(url, t);
+            });
+            notifyContentScript();
+          }).catch(() => {});
+        }
+      } catch (e) {}
+      return response;
+    }).catch(err => {
+      // Pass network rejections naturally to page caller without uncaught extension error
+      throw err;
+    });
   };
 
   // 2. Monkey-patch XMLHttpRequest

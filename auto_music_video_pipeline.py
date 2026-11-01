@@ -846,6 +846,26 @@ def ensure_images(num_needed=5, track_info=None, theme=None):
         "radha": {
             "pos": ["radha", "radhey", "barsana", "kund", "lotus", "affection", "eternal", "divine"],
             "neg": ["warrior", "kurukshetra"]
+        },
+        "diwali": {
+            "pos": ["diwali", "deepawali", "deepotsav", "diya", "deepak", "lamp", "lights", "rangoli", "golden", "celebration", "temple"],
+            "neg": ["monsoon", "rain", "storm"]
+        },
+        "deepotsav": {
+            "pos": ["deepotsav", "diya", "deepak", "lamp", "aarti", "flames", "golden", "illumination", "night"],
+            "neg": ["monsoon", "rain", "mud"]
+        },
+        "sarovar": {
+            "pos": ["sarovar", "pond", "talaab", "kund", "water", "lotus", "ripples", "shore", "twilight", "evening"],
+            "neg": ["desert", "mountain_cliff"]
+        },
+        "pond": {
+            "pos": ["pond", "sarovar", "talaab", "lotus", "water", "shore", "reflection", "ripples", "twilight"],
+            "neg": ["desert", "sand"]
+        },
+        "hanuman": {
+            "pos": ["hanuman", "sankatmochan", "maruti", "rudra", "veera", "bhakti", "ayodhya", "ram"],
+            "neg": ["peacock", "flute"]
         }
     }
 
