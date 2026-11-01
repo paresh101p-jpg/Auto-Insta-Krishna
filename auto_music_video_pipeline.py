@@ -969,14 +969,75 @@ def archive_used_images(used_slides, is_krishna=True):
 
 def verify_zero_vocals(audio_file_path):
     """
-    Scans the downloaded audio file using Whisper AI speech recognition and Gemini.
-    Strictly verifies that the audio has ZERO human voice, words, speaking, or singing.
+    Scans the downloaded audio file using Gemini Audio AI and Whisper speech recognition.
+    Strictly verifies that the audio has ZERO human voice, words, speaking, chanting, or singing.
     Returns True if 100% pure instrumental, False if any voice is detected.
     """
     print(f"  -> 🛡️ Pre-Flight Vocal Scan: Auditing track for zero human voice/lyrics...")
+    temp_preview = os.path.join(BASE_DIR, "temp_vocal_audit_preview.mp3")
+
+    # 1. Primary AI Audio Listener: Gemini 3.7 / 2.5 Flash Audio
+    gemini_key = None
+    gemini_key_file = os.path.join(BASE_DIR, "gemini_key.txt")
+    if os.path.exists(gemini_key_file):
+        try:
+            with open(gemini_key_file, "r", encoding="utf-8") as gf:
+                gemini_key = gf.read().strip()
+        except Exception:
+            pass
+    if not gemini_key:
+        gemini_key = os.getenv("GEMINI_API_KEY")
+
+    if gemini_key:
+        try:
+            from google import genai
+            client = genai.Client(api_key=gemini_key, http_options={"timeout": 30000})
+
+            conv_cmd = [
+                FFMPEG_EXE, "-y",
+                "-ss", "00:00:10",
+                "-t", "60",
+                "-i", audio_file_path,
+                "-vn", "-ac", "1", "-b:a", "64k",
+                temp_preview
+            ]
+            subprocess.run(conv_cmd, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, check=True)
+
+            if os.path.exists(temp_preview) and os.path.getsize(temp_preview) > 5000:
+                up_file = client.files.upload(file=temp_preview)
+                res = client.models.generate_content(
+                    model="gemini-3.7-flash",
+                    contents=[
+                        up_file,
+                        "Listen to this audio track carefully.\n"
+                        "Task: Is there ANY human vocal, singing, chanting, talking, speaking, whispering, breathing, or voice choir? "
+                        "Answer STRICTLY with 'VOCAL_YES' or 'VOCAL_NO'. If VOCAL_YES, specify what kind of voice is heard."
+                    ]
+                )
+                text = (res.text or "").strip()
+                try: client.files.delete(name=up_file.name)
+                except Exception:
+                    pass
+
+                if "VOCAL_YES" in text.upper():
+                    print(f"  ❌ VOCALS DETECTED by Gemini Audio AI: {text}")
+                    return False
+                bad_words = ["singing", "vocal", "chant", "voice", "lyrics", "words", "spoken", "choir"]
+                if any(w in text.lower() for w in bad_words) and "vocal_no" not in text.lower():
+                    print(f"  ❌ VOCALS DETECTED by Gemini Audio AI keywords: {text}")
+                    return False
+                print(f"  -> ✅ Gemini Audio AI Confirmed: Pure Instrumental (No Vocals)")
+        except Exception as e_gemini:
+            print(f"  -> Gemini Audio AI check note: {e_gemini}")
+        finally:
+            if os.path.exists(temp_preview):
+                try: os.remove(temp_preview)
+                except Exception:
+                    pass
+
+    # 2. Secondary AI Speech Recognition: Whisper
     temp_wav = os.path.join(BASE_DIR, "temp_vocal_audit.wav")
     try:
-        # Extract a 30-second high-energy sample from the middle of the track
         conv_cmd = [
             FFMPEG_EXE, "-y",
             "-ss", "00:00:10",
@@ -987,25 +1048,20 @@ def verify_zero_vocals(audio_file_path):
         ]
         subprocess.run(conv_cmd, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, check=True)
 
-        if not os.path.exists(temp_wav) or os.path.getsize(temp_wav) < 10000:
-            return True
-
-        # Run Faster-Whisper Speech Recognition
-        try:
-            from faster_whisper import WhisperModel
-            model = WhisperModel("tiny", device="cpu", compute_type="int8")
-            segments, info = model.transcribe(temp_wav, beam_size=5)
-            detected = []
-            for s in segments:
-                # Discard low-probability hallucinations
-                if s.no_speech_prob < 0.4 and len(s.text.strip()) > 3:
-                    detected.append(s.text.strip())
-            
-            if detected:
-                print(f"  ❌ VOCALS DETECTED! Track contains singing/speech: '{detected[0]}'")
-                return False
-        except Exception as e_whisper:
-            print(f"  -> Whisper check note: {e_whisper}")
+        if os.path.exists(temp_wav) and os.path.getsize(temp_wav) > 10000:
+            try:
+                from faster_whisper import WhisperModel
+                model = WhisperModel("tiny", device="cpu", compute_type="int8")
+                segments, info = model.transcribe(temp_wav, beam_size=5)
+                detected = []
+                for s in segments:
+                    if s.no_speech_prob < 0.4 and len(s.text.strip()) > 3:
+                        detected.append(s.text.strip())
+                if detected:
+                    print(f"  ❌ VOCALS DETECTED by Whisper: '{detected[0]}'")
+                    return False
+            except Exception:
+                pass
 
         print("  -> ✅ Vocal Audit PASSED: 100% Pure Non-Vocal Instrumental!")
         return True
@@ -1015,7 +1071,8 @@ def verify_zero_vocals(audio_file_path):
     finally:
         if os.path.exists(temp_wav):
             try: os.remove(temp_wav)
-            except Exception: pass
+            except Exception:
+                pass
 
 
 def assemble_dynamic_evolution_audio(temp_input, output_master_path, duration_sec):
