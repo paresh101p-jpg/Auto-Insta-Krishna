@@ -1027,24 +1027,24 @@ def assemble_dynamic_evolution_audio(temp_input, output_master_path, duration_se
     needed_cycles = int(math.ceil(duration_sec / raw_dur)) + 1
     print(f"     Generating {needed_cycles} progressively evolving cycles with unique harmonic textures...")
     
-    # List of diverse, soothing spiritual filter variations per cycle
+    # List of diverse, soothing spiritual filter variations per cycle (OPTION 2 DYNAMIC MICRO-EVOLUTION)
     variation_filters = [
-        # Cycle 1: Pure Soothing Baseline (Warm, gentle flute, original raga)
-        "equalizer=f=432:t=q:w=1.2:g=2,equalizer=f=3200:t=q:w=1.5:g=1.2,volume=1.02",
-        # Cycle 2: Deep Dhyan Resonance (Soft lower harmonics + micro-warmth)
-        "equalizer=f=216:t=q:w=1:g=2.5,equalizer=f=432:t=q:w=1:g=1.8,equalizer=f=5000:t=q:w=1:g=-1.5,atempo=0.992,volume=1.04",
-        # Cycle 3: Vrindavan Spatial Ambiance (Gentle stereo spread + subtle studio chamber)
-        "equalizer=f=432:t=q:w=1:g=2.0,extrastereo=m=1.25,aecho=0.8:0.6:40:0.12,atempo=1.008,volume=1.00",
-        # Cycle 4: High Divine Vibrations (Silk harmonics + clarity)
-        "equalizer=f=432:t=q:w=1:g=1.5,equalizer=f=2800:t=q:w=1.2:g=2.2,atempo=1.015,volume=1.03",
-        # Cycle 5: Meditative Tanpura Depth (Warm low-mid resonance)
-        "equalizer=f=160:t=q:w=1:g=2.0,equalizer=f=432:t=q:w=1:g=2.5,atempo=0.995,volume=1.05",
-        # Cycle 6: Shanti Whisper (Ultra-soft, calming evening cadence)
-        "equalizer=f=432:t=q:w=1:g=1.8,equalizer=f=1200:t=q:w=1.5:g=1.5,volume=1.01",
-        # Cycle 7: Uplifting Temple Glow (Sparkling high presence)
-        "equalizer=f=432:t=q:w=1:g=2.2,equalizer=f=3600:t=q:w=1:g=2.0,extrastereo=m=1.2,volume=1.02",
-        # Cycle 8: Deep Transcendental Trance (Rich body, subtle wide chorus)
-        "equalizer=f=240:t=q:w=1.2:g=2.2,equalizer=f=432:t=q:w=1:g=2.0,aecho=0.7:0.5:50:0.10,volume=1.03"
+        # Cycle 1 (0 to ~3 min): Pure Bansuri flute (Original pure raga baseline)
+        "volume=1.00",
+        # Cycle 2 (3 to ~6 min): Deep divine warmth + soft low-pass meditation ambient
+        "lowpass=f=4200,equalizer=f=220:t=q:w=1.2:g=3.0,equalizer=f=440:t=q:w=1:g=2.0,volume=1.02",
+        # Cycle 3 (6 to ~9 min): Subtle Tanpura / Mandir river resonance blend
+        "equalizer=f=180:t=q:w=1:g=2.5,equalizer=f=520:t=q:w=1:g=2.0,aecho=0.75:0.5:35:0.12,volume=1.00",
+        # Cycle 4 (9 to ~12 min): Halka harmonic shift (+1.5% micro-tempo/resonance)
+        "atempo=1.015,equalizer=f=3000:t=q:w=1.2:g=2.2,equalizer=f=6000:t=q:w=1.5:g=1.5,volume=1.03",
+        # Cycle 5 (12 to ~15 min): Studio divine echo & binaural wide stereo expansion
+        "extrastereo=m=1.35,aecho=0.8:0.7:45:0.15,equalizer=f=350:t=q:w=1:g=2.0,volume=1.00",
+        # Cycle 6 (15 to ~18 min): Ultra-calm Shanti Dhyan (Deep peaceful meditation)
+        "lowpass=f=3800,equalizer=f=200:t=q:w=1:g=2.8,atempo=0.992,volume=1.02",
+        # Cycle 7 (18 to ~21 min): Uplifting Temple Glow (Bright sacred resonance)
+        "extrastereo=m=1.20,equalizer=f=3200:t=q:w=1.2:g=2.5,atempo=1.008,volume=1.02",
+        # Cycle 8 (21 to ~24 min): Transcendental Deep River Ambiance
+        "aecho=0.85:0.6:50:0.18,equalizer=f=250:t=q:w=1.2:g=2.0,extrastereo=m=1.25,volume=1.01"
     ]
     
     cycle_files = []
