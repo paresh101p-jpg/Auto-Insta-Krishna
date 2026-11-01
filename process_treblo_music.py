@@ -17,6 +17,8 @@ TREBLO AI MUSIC PROCESSOR & CATBOX CDN SYNC (KRISHNA VIBEZ)
 import os
 import sys
 import time
+import json
+import re
 import shutil
 import subprocess
 
@@ -30,6 +32,7 @@ TREBLO_URLS_FILE = os.path.join(BASE_DIR, "treblo_music_urls.txt")
 TREBLO_VIDEO_ONLY_URLS = os.path.join(BASE_DIR, "treblo_music_video_only_urls.txt")
 TREBLO_BACKUP_URLS_FILE = os.path.join(BASE_DIR, "treblo_music_urls_backup.txt")
 TREBLO_USED_URLS_FILE = os.path.join(BASE_DIR, "treblo_music_used_urls.txt")
+TREBLO_REGISTRY_FILE = os.path.join(BASE_DIR, "treblo_tracks_registry.json")
 
 os.makedirs(TREBLO_DIR, exist_ok=True)
 os.makedirs(TREBLO_UPLOADED_DIR, exist_ok=True)
@@ -151,6 +154,21 @@ def process_all_treblo_music():
                 f.write(url + "\n")
             with open(TREBLO_BACKUP_URLS_FILE, "a", encoding="utf-8") as f:
                 f.write(url + "\n")
+
+            # Save track name mapping in registry
+            clean_track = os.path.splitext(fname)[0]
+            clean_track = re.sub(r'_\d+$', '', clean_track)
+            clean_track = re.sub(r'\s*\(\d+\)$', '', clean_track).strip()
+            try:
+                reg = {}
+                if os.path.exists(TREBLO_REGISTRY_FILE):
+                    with open(TREBLO_REGISTRY_FILE, "r", encoding="utf-8") as rf:
+                        reg = json.load(rf)
+                reg[url] = clean_track
+                with open(TREBLO_REGISTRY_FILE, "w", encoding="utf-8") as rf:
+                    json.dump(reg, rf, ensure_ascii=False, indent=2)
+            except Exception:
+                pass
 
             # Move raw file to uploaded folder so Treblo Music inbox stays 100% clean
             dest_archive = os.path.join(TREBLO_UPLOADED_DIR, fname)
