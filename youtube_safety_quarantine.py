@@ -157,6 +157,10 @@ def process_quarantine_queue(min_quarantine_hours=24):
             elif upload_status == "rejected":
                 has_copyright_flag = True
                 flag_reason = f"Upload status rejected ({rejection_reason})"
+            elif has_custom_license is True:
+                # 100% Content ID Shield: Any 3rd party audio fingerprint (e.g. BerryDeep) triggers instant auto-delete
+                has_copyright_flag = True
+                flag_reason = "Content ID Claim detected (licensedContent=True)"
 
             # If copyright flag detected -> AUTO-DELETE IMMEDIATELY!
             if has_copyright_flag:
