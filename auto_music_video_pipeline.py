@@ -1075,50 +1075,18 @@ def assemble_dynamic_evolution_audio(temp_input, output_master_path, duration_se
             f.write(f"file '{esc}'\n")
             
     fade_out_st = max(10, duration_sec - 5)
-    tag_asset = os.path.join(BASE_DIR, "krishna_vibez_tag.wav")
-    tag_url = "https://files.catbox.moe/86nirb.wav"
-    if not os.path.exists(tag_asset):
-        curl_path = "curl"
-        if sys.platform == "win32" and os.path.exists(r"C:\Windows\System32\curl.exe"):
-            curl_path = r"C:\Windows\System32\curl.exe"
-        try:
-            subprocess.run([curl_path, "-s", "-L", "-f", "--retry", "3", tag_url, "-o", tag_asset], check=True)
-        except Exception:
-            pass
-
-    if os.path.exists(tag_asset) and duration_sec >= 70:
-        print("  -> 🏷️ Embedding 5% Divine Acoustic Watermark ('Krishna Vibez') at 60s mark...")
-        filter_complex_str = (
-            f"[0:a]afade=t=in:st=0:d=3,afade=t=out:st={fade_out_st}:d=4[bgm];"
-            f"[1:a]adelay=60000|60000,volume=0.05[tag];"
-            f"[bgm][tag]amix=inputs=2:duration=first:dropout_transition=2[out]"
-        )
-        final_cmd = [
-            FFMPEG_EXE, "-y",
-            "-f", "concat", "-safe", "0",
-            "-i", concat_txt,
-            "-i", tag_asset,
-            "-vn",
-            "-map_metadata", "-1",
-            "-t", str(duration_sec),
-            "-filter_complex", filter_complex_str,
-            "-map", "[out]",
-            "-c:a", "libmp3lame", "-b:a", "192k",
-            output_master_path
-        ]
-    else:
-        final_master_filter = f"afade=t=in:st=0:d=3,afade=t=out:st={fade_out_st}:d=4"
-        final_cmd = [
-            FFMPEG_EXE, "-y",
-            "-f", "concat", "-safe", "0",
-            "-i", concat_txt,
-            "-vn",
-            "-map_metadata", "-1",
-            "-t", str(duration_sec),
-            "-af", final_master_filter,
-            "-c:a", "libmp3lame", "-b:a", "192k",
-            output_master_path
-        ]
+    final_master_filter = f"afade=t=in:st=0:d=3,afade=t=out:st={fade_out_st}:d=4"
+    final_cmd = [
+        FFMPEG_EXE, "-y",
+        "-f", "concat", "-safe", "0",
+        "-i", concat_txt,
+        "-vn",
+        "-map_metadata", "-1",
+        "-t", str(duration_sec),
+        "-af", final_master_filter,
+        "-c:a", "libmp3lame", "-b:a", "192k",
+        output_master_path
+    ]
     subprocess.run(final_cmd, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, check=True)
     
     # Cleanup cycle temp files
