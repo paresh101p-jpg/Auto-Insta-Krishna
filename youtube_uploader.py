@@ -567,7 +567,7 @@ def git_commit_and_push(commit_msg):
     try:
         subprocess.run(["git", "config", "user.email", "actions@github.com"], check=False)
         subprocess.run(["git", "config", "user.name", "Auto Insta Bot"], check=False)
-        subprocess.run(["git", "add", "youtube_reels_urls.txt", "youtube_used_urls.txt", "youtube_cycle_tracker.txt"], check=False)
+        subprocess.run(["git", "add", "youtube_reels_urls.txt", "youtube_used_urls.txt", "youtube_cycle_tracker.txt", "youtube_quarantine_queue.json", "youtube_quarantine_audit.log"], check=False)
         subprocess.run(["git", "commit", "-m", commit_msg], check=False)
         for _ in range(3):
             subprocess.run(["git", "pull", "--rebase", "origin", "master"], check=False)
@@ -668,6 +668,7 @@ def main():
             add_to_quarantine(video_id, title, video_type="short")
             print("🛡️ Checking mature quarantine videos (>= 24h old)...")
             process_quarantine_queue(min_quarantine_hours=24)
+            git_commit_and_push("Update youtube_quarantine_queue.json after upload & review")
         except Exception as q_err:
             print(f"Quarantine shield notice: {q_err}")
 
