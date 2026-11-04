@@ -145,7 +145,7 @@ def ping_search_engines(post_id):
             "host": "krishnavibez.in",
             "key": "c8d1979b9a674e2d83b0f51276a71e3d",
             "keyLocation": "https://krishnavibez.in/c8d1979b9a674e2d83b0f51276a71e3d.txt",
-            "urlList": [f"https://krishnavibez.in/post.html?id={post_id}", "https://krishnavibez.in/"]
+            "urlList": [f"https://krishnavibez.in/post/{post_id}", "https://krishnavibez.in/"]
         }).encode("utf-8")
         in_req = urllib.request.Request(
             indexnow_url,
@@ -159,7 +159,7 @@ def ping_search_engines(post_id):
 
     # 3. Internet Archive Wayback Machine (DA 99 Permanent Snapshot)
     try:
-        wb_url = f"https://web.archive.org/save/https://krishnavibez.in/post.html?id={post_id}"
+        wb_url = f"https://web.archive.org/save/https://krishnavibez.in/post/{post_id}"
         wb_req = urllib.request.Request(wb_url, headers={"User-Agent": "KrishnaVibezBot/2.0"})
         urllib.request.urlopen(wb_req, timeout=8)
         print(f"[SearchPing] [OK] Internet Archive (Wayback Machine DA 99) snapshot requested.")
@@ -183,7 +183,7 @@ def send_push_notification(title, quote, media_url, post_id):
         return False
 
     app_id = "e0fe57c1-475c-4a59-95ae-9ade9008342c"
-    post_url = f"https://krishnavibez.in/post.html?id={post_id}"
+    post_url = f"https://krishnavibez.in/post/{post_id}"
     clean_quote = (quote or "श्री कृष्ण का पावन दिव्य दर्शन").strip().replace("\n", " ")
     if len(clean_quote) > 110:
         clean_quote = clean_quote[:107] + "…"
@@ -317,6 +317,19 @@ def publish_to_website(media_url, caption, is_video=False, custom_post_id=None):
 
         print(f"[WebsitePublisher] ✅ Successfully added new post to website: {title}")
 
+        # Trigger Static Site Generator (SSG) Engine for 100% Googlebot Indexing
+        try:
+            ssg_path = os.path.join(WEBSITE_DIR, 'generate_static_site.py')
+            if os.path.exists(ssg_path):
+                import importlib.util
+                spec = importlib.util.spec_from_file_location('generate_static_site', ssg_path)
+                ssg_mod = importlib.util.module_from_spec(spec)
+                spec.loader.exec_module(ssg_mod)
+                ssg_mod.main()
+                print('[WebsitePublisher] ✅ SSG successfully generated static post, sitemap, and index.html.')
+        except Exception as ssg_err:
+            print(f'[WebsitePublisher] Notice running SSG: {ssg_err}')
+
         # Update index.html cache-buster timestamp for posts-data.js so visitors always see new posts instantly
         index_html_path = os.path.join(PUBLIC_DIR, "index.html")
         if os.path.exists(index_html_path):
@@ -356,7 +369,7 @@ def publish_to_website(media_url, caption, is_video=False, custom_post_id=None):
                 sitemap_content = f.read()
 
             new_url_entry = f"""  <url>
-    <loc>https://krishnavibez.in/post.html?id={post_id}</loc>
+    <loc>https://krishnavibez.in/post/{post_id}</loc>
     <lastmod>{iso_date}</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.9</priority>
@@ -378,7 +391,7 @@ def publish_to_website(media_url, caption, is_video=False, custom_post_id=None):
                 rfc_date = now.strftime("%a, %d %b %Y %H:%M:%S +0530")
                 rss_content = re.sub(r'<lastBuildDate>.*?</lastBuildDate>', f'<lastBuildDate>{rfc_date}</lastBuildDate>', rss_content)
 
-                post_link = f"https://krishnavibez.in/post.html?id={post_id}"
+                post_link = f"https://krishnavibez.in/post/{post_id}"
                 media_type = "video/mp4" if is_video else "image/jpeg"
                 medium = "video" if is_video else "image"
                 length = "1048576" if is_video else "524288"
@@ -424,7 +437,7 @@ def publish_to_website(media_url, caption, is_video=False, custom_post_id=None):
         # 6. Multi-Channel Social Broadcast (Telegram, Pinterest, Threads, Reddit)
         try:
             import social_publisher
-            canonical_post_url = f"https://krishnavibez.in/post.html?id={post_id}"
+            canonical_post_url = f"https://krishnavibez.in/post/{post_id}"
             social_publisher.publish_all_channels(
                 media_url=media_url,
                 caption=caption,

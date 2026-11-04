@@ -24,3 +24,6 @@ frame_*
 test_*
 user_suno_music/
 Treblo Music/
+
+.firebase/
+website/.firebase/

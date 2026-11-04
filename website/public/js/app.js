@@ -435,7 +435,7 @@ function renderFilteredPosts(allPosts) {
     return `
       <article class="post-card" id="card-${post.id}">
         <div class="card-img-wrap">
-          <a href="post.html?id=${post.id}" class="card-media-link" style="display:block;width:100%;height:100%;text-decoration:none;color:inherit;">
+          <a href="/post/${post.id}" class="card-media-link" style="display:block;width:100%;height:100%;text-decoration:none;color:inherit;">
             ${mediaHtml}
           </a>
           <span class="card-overlay-badge">${isVideo ? '🎬' : '🪷'} ${escapeHtml(post.category)}</span>
@@ -463,7 +463,7 @@ function renderFilteredPosts(allPosts) {
           </div>
           <!-- Accessible SEO Title: 100% Googlebot & Semantic Schema Intact (Visually hidden on feed cards) -->
           <h2 class="card-title">
-            <a href="post.html?id=${post.id}" style="color:inherit;text-decoration:none;">
+            <a href="/post/${post.id}" style="color:inherit;text-decoration:none;">
               ${escapeHtml(post.title)}
             </a>
           </h2>
@@ -497,7 +497,7 @@ function renderFilteredPosts(allPosts) {
               <strong class="like-num-${post.id}">${formatMetricNumber(stats.likes)}</strong>
             </span>
 
-            <a href="post.html?id=${post.id}#commentsSection" class="metric-item interactive" style="color:inherit;text-decoration:none;" title="भक्त टिप्पणियाँ">
+            <a href="/post/${post.id}#commentsSection" class="metric-item interactive" style="color:inherit;text-decoration:none;" title="भक्त टिप्पणियाँ">
               💬 <strong class="comment-num-${post.id}">${formatMetricNumber(stats.commentsCount)}</strong>
             </a>
 
@@ -520,7 +520,7 @@ function renderFilteredPosts(allPosts) {
             <button class="btn-download-hd" onclick="downloadHdWallpaper('${post.id}')" title="${isVideo ? '4K Reel डाउनलोड करें' : 'HD Wallpaper डाउनलोड करें'}">
               ${isVideo ? '⬇️ 4K Reel (MP4)' : '⬇️ HD Wallpaper'}
             </button>
-            <a href="post.html?id=${post.id}" class="btn-read-full">
+            <a href="/post/${post.id}" class="btn-read-full">
               पूरा दर्शन एवं भावार्थ पढ़ें →
             </a>
           </div>
@@ -904,7 +904,7 @@ function shareOnWhatsApp(postId) {
     detailShares.textContent = formatMetricNumber(updatedStats.shares);
   }
 
-  const currentUrl = window.location.origin + window.location.pathname.replace('index.html', '') + 'post.html?id=' + post.id;
+  const currentUrl = `${window.location.origin}/post/${post.id}`;
   const text = `🪷 *श्री कृष्ण दिव्य संदेश | Krishna Vibez* 🪷\n\n"${post.quote}"\n\n✨ *${post.title}*\n\n📱 *आज का 4K HD Wallpaper डाउनलोड करें व पूरा भावार्थ पढ़ें:* \n👉 ${currentUrl}\n\n🙏 *राधे-राधे! अपने परिजनों को भी यह शुभ विचार अवश्य भेजें।*`;
   
   const shareUrl = `https://api.whatsapp.com/send?text=${encodeURIComponent(text)}`;
