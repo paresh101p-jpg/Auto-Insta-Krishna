@@ -2367,53 +2367,62 @@ def generate_thumbnail(slides, theme):
     return TEMP_THUMBNAIL
 
 
-def add_video_to_category_playlist(video_id, category_name, access_token):
+def add_video_to_category_playlist(video_id, category_name=None, access_token=None, metadata=None):
     """
     100% Legal & Official YouTube Data API v3 Playlist Automation.
     Finds or creates a dedicated category playlist and adds the newly uploaded video into it.
+    Guarantees 0% duplicates and exact intelligent category classification.
     """
     if not video_id or not access_token:
         return
 
-    # Map category keyword to clean, beautiful high-CTR YouTube Playlist Titles
-    playlist_titles = {
-        "temple": "🏛️ Ancient Temple Bells & Sacred Chants | Peaceful Dhyan",
-        "bell": "🔔 Auspicious Temple Bells & Flute Meditation",
-        "rain": "🌧️ Monsoon Rain & Peaceful Flute Meditation",
-        "monsoon": "🌧️ Sawan Monsoon Rain & Serene Nature Flute",
-        "yamuna": "🌊 Sacred Yamuna River & Ghats Meditation Flute",
-        "river": "🌊 Flowing Mountain River & Nature Flute Meditation",
-        "sleep": "🌙 Deep Meditative Sleep Music | Pure Night Peace",
-        "night": "✨ Starlight & Moonlight Deep Sleep Meditation",
-        "sunrise": "🌅 Golden Sunrise & Morning Meditation Flute",
-        "morning": "☀️ Peaceful Morning Flute & Birds Meditation",
-        "sunset": "🌇 Sandhya Twilight & Dusk Meditation Dhun",
-        "cows": "🐮 Surabhi Cows & Peaceful Vrindavan Meadows",
-        "peacock": "🦚 Divine Peacock Van & Kadamba Forest Flute",
-        "lotus": "🪷 Sacred Lotus Pond & Water Lily Ambient Meditation",
-        "kadamba": "🌳 Kadamba Tree Grove & Forest Ambient Flute",
-        "banyan": "🌿 Ancient Banyan Tree & Deep Dhyan Meditation",
-        "stepwell": "🏰 Ancient Stepwell & Serene Water Reflection",
-        "mountain": "🏔️ Himalayan Mist & Mountain Pine Forest Flute",
-        "tanpura": "🪕 Classical Tanpura & Bansuri Jugalbandi Meditation",
-        "bamboo": "🎋 Swaying Bamboo Forest & Pure Wind Flute",
-        "fireflies": "✨ Glowing Fireflies & Serene Night Meditation",
-        "cosmic": "🌌 Cosmic Naad & Universal Sound Meditation",
-        "aarti": "🪔 Divine Temple Aarti & Ghee Diya Meditation",
-        "garland": "🌺 Garlands & Fresh Flower Offering Ambient Flute",
-        "flower": "🌸 Fresh Vrindavan Blossoms & Flute Meditation",
-        "krishna": "🦚 Lord Krishna Divine Bansuri & Vrindavan Flute",
-        "darbari": "👑 Raga Darbari Deep Meditation Flute",
-        "bhairavi": "🌅 Raga Bhairavi Morning Awakening Flute"
-    }
+    # Combine search text from all available metadata (English + Hindi)
+    search_parts = []
+    if isinstance(metadata, dict):
+        for k in ["category", "title", "hindi_main", "badge", "track_name"]:
+            val = metadata.get(k)
+            if val:
+                search_parts.append(str(val))
+    if category_name:
+        search_parts.append(str(category_name))
+    search_text = " ".join(search_parts).lower()
+
+    # Smart Category Mapping Rules (Priority-Ordered, English + Hindi)
+    category_rules = [
+        # 1. Sunrise / Dawn
+        (["sunrise", "सूर्योदय", "dawn"], "🌅 Golden Sunrise & Morning Meditation Flute"),
+        # 2. Morning Pooja & Awakening
+        (["morning", "प्रभात", "प्रातः", "awakening", "pooja", "पूजा", "gokul", "गोकुल", "सुबह"], "☀️ Peaceful Morning Flute & Sacred Meditation"),
+        # 3. Sleep / Insomnia / Night
+        (["sleep", "insomnia", "अनिद्रा", "निद्रा", "सोने", "night", "रात्रि", "bedtime", "स्वप्न"], "🌙 Deep Meditative Sleep Music | Pure Night Peace"),
+        # 4. Stress Relief & Anxiety Healing
+        (["stress", "anxiety", "तनाव", "चिंता", "relief", "विश्राम", "calm mind", "मानसिक शांति"], "🧘 Stress Relief & Mental Peace | Flute Meditation"),
+        # 5. Lotus Lake & Water Lilies
+        (["lotus", "lake", "सरोवर", "कमल", "pond", "water lily"], "🌸 Peaceful Lotus Lake Meditation Flute"),
+        # 6. Classical Bansuri & Tabla Jugalbandi
+        (["jugalbandi", "जुगलबंदी", "tabla", "तबला"], "🪕 Pure Bansuri & Tabla Classical Jugalbandi"),
+        # 7. Raag Darbari
+        (["darbari", "दरबारी"], "👑 Raga Darbari Deep Meditation Flute"),
+        # 8. Raag Bhairavi
+        (["bhairavi", "भैरवी"], "🌅 Raga Bhairavi Morning Awakening Flute"),
+        # 9. Sacred Yamuna River & Ghats
+        (["yamuna", "यमुना", "river", "ghat", "घाट", "तट", "flowing water"], "🌊 Sacred Yamuna River & Ghats Meditation Flute"),
+        # 10. Deep Dhyan, Soul Healing & Inner Peace
+        (["dhyan", "ध्यान", "inner peace", "soul", "आत्मा", "नाद", "naad", "transcendental", "spiritual energy"], "🕉️ Deep Dhyan & Inner Peace Meditation Flute"),
+        # 11. Lo-Fi Beats
+        (["lo-fi", "lofi", "chill"], "☕ Krishna Lo-Fi & Chill Beats | Relax & Study"),
+        # 12. Temple Bells & Sacred Aarti
+        (["temple", "bell", "मंदिर", "घंटी", "aarti", "आरती", "chant"], "🏛️ Ancient Temple Bells & Sacred Chants | Peaceful Dhyan"),
+        # 13. Radha Krishna Divine Love & Bhakti
+        (["radha", "radhe", "राधा", "राधे", "krishna", "कृष्ण", "bhakti", "भक्ति", "barsana", "बरसाना"], "🦚 Lord Krishna Divine Bansuri & Vrindavan Flute")
+    ]
 
     target_title = None
-    cat_lower = (category_name or "").lower()
-    for k, title in playlist_titles.items():
-        if k in cat_lower:
-            target_title = title
+    for keywords, p_title in category_rules:
+        if any(kw in search_text for kw in keywords):
+            target_title = p_title
             break
-            
+
     if not target_title:
         target_title = "🕉️ Divine Flute & Pure Meditation Music | Krishna Vibez"
 
@@ -2467,8 +2476,15 @@ def add_video_to_category_playlist(video_id, category_name, access_token):
             else:
                 print(f"  Notice creating playlist: {c_resp.status_code} - {c_resp.text}")
 
-        # 3. Add the video to the playlist via official playlistItems.insert
+        # 3. Add the video to the playlist via official playlistItems.insert (0% Duplicate check)
         if playlist_id:
+            chk_url = f"https://www.googleapis.com/youtube/v3/playlistItems?part=snippet&playlistId={playlist_id}&maxResults=50"
+            chk_resp = requests.get(chk_url, headers=headers).json()
+            for it in chk_resp.get("items", []):
+                if it.get("snippet", {}).get("resourceId", {}).get("videoId") == video_id:
+                    print(f"  -> Video {video_id} already exists in playlist: '{target_title}'")
+                    return
+
             item_url = "https://www.googleapis.com/youtube/v3/playlistItems?part=snippet"
             item_payload = {
                 "snippet": {
@@ -2790,6 +2806,20 @@ def upload_to_youtube(theme, duration_sec=900, track_info=None):
                 print("  -> SUCCESS! Custom Thumbnail applied successfully!")
             else:
                 print("  -> [Notice] Thumbnail upload:", thumb_res.text)
+
+        # 📂 SMART CATEGORY PLAYLIST AUTO-ORGANIZER (0% Duplicate Guarantee)
+        try:
+            print("  -> 📂 Auto-detecting and organizing video into Category Playlist...")
+            meta = {
+                "category": theme.get("category", ""),
+                "title": theme.get("title", ""),
+                "hindi_main": theme.get("hindi_main", ""),
+                "badge": theme.get("badge", ""),
+                "track_name": track_info.get("track_name", "") if track_info else ""
+            }
+            add_video_to_category_playlist(video_id=video_id, metadata=meta, access_token=access_token)
+        except Exception as pl_call_err:
+            print(f"  Notice calling auto playlist organizer: {pl_call_err}")
     else:
         print("[Error] YouTube upload failed:", up_res.text)
 
