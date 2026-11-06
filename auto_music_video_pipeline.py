@@ -1730,7 +1730,7 @@ def load_flora_sprites_dict():
     return sprites_dict
 
 
-def render_animated_slide_clip(slide_path, clip_output_path, flora_sprites, motion_style, logo_badge, slide_idx=0, duration=60, fps=25, sparkle_palette=None, num_particles=17):
+def render_animated_slide_clip(slide_path, clip_output_path, flora_sprites, motion_style, logo_badge, slide_idx=0, duration=300, fps=25, sparkle_palette=None, num_particles=17):
     """
     Renders a single 60-second (1-minute) slide clip with:
     - Subpixel 64-bit Floating Bicubic Ken Burns Zoom & Pan (ZERO Jhatka)
@@ -1996,14 +1996,14 @@ def render_video(slides, duration_sec=900, is_krishna=True):
     for idx, slide in enumerate(selected_slides):
         clip_path = os.path.join(temp_clips_dir, f"clip_{idx+1}.mp4")
         clip_files.append(clip_path)
-        print(f"  -> Rendering Slide {idx+1}/{len(selected_slides)} (60s) with Dynamic Petals & Smooth Zoom...")
+        print(f"  -> Rendering Slide {idx+1}/{len(selected_slides)} (300s / 5-min) with Dynamic Petals & Smooth Zoom...")
         render_animated_slide_clip(
             slide, clip_path, active_flora_sprites, chosen_motion, logo_badge,
-            slide_idx=idx, duration=60, fps=25, sparkle_palette=chosen_palette, num_particles=17
+            slide_idx=idx, duration=300, fps=25, sparkle_palette=chosen_palette, num_particles=17
         )
     
     # 2. Concat animated clips to cover duration_sec
-    clips_total_sec = len(clip_files) * 60
+    clips_total_sec = len(clip_files) * 300
     repeat_count = int(math.ceil(duration_sec / float(clips_total_sec))) + 1
     concat_list = os.path.join(BASE_DIR, "temp_concat_clips.txt")
     with open(concat_list, "w", encoding="utf-8") as f:
@@ -2842,9 +2842,9 @@ def cleanup():
 
 def main():
     # User rule: Dynamic duration between 12 and 50 minutes (e.g. 15 min = 5 images, 45 min = 15 images, 3-min shift)
-    dur_min = random.randint(12, 50)
+    dur_min = random.randint(60, 135)
     dur_sec = dur_min * 60 + random.randint(5, 55)
-    num_images_needed = max(3, dur_min // 3)
+    num_images_needed = max(12, dur_min // 5)
     print(f"🎬 [3-MINUTE DYNAMIC SCENES] Master Video: {dur_min} Minutes ({dur_sec}s), {num_images_needed} images shifting every 3 minutes.")
     
     # 1. First assemble and master soundtrack with Mandatory Pre-Flight Zero Vocal Scan
