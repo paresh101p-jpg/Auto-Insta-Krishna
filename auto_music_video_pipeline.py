@@ -447,6 +447,21 @@ def sanitize_clean_text(text):
     text = re.sub(r'\s{2,}', ' ', text).strip()
     return text
 
+
+def detect_track_instrument_badge(track_name):
+    t = str(track_name or '').lower()
+    if any(k in t for k in ['santoor', 'sintoor']): return 'DIVINE SANTOOR'
+    if any(k in t for k in ['sitar']): return 'MEDITATIVE SITAR'
+    if any(k in t for k in ['veena', 'vina']): return 'SACRED VEENA'
+    if any(k in t for k in ['sarod']): return 'SOULFUL SAROD'
+    if any(k in t for k in ['lofi', 'lo-fi', 'chill']): return 'COZY LO-FI BEATS'
+    if any(k in t for k in ['piano']): return 'PEACEFUL PIANO'
+    if any(k in t for k in ['tanpura', 'om', 'chant']): return 'SACRED TANPURA'
+    if any(k in t for k in ['tabla', 'jugalbandi']): return 'BANSURI AND TABLA'
+    if any(k in t for k in ['rain', 'river', 'water', 'stream', 'ocean', 'waves']): return 'HEALING NATURE SOUNDS'
+    if any(k in t for k in ['flute', 'bansuri', 'murli', 'flut', 'bamboo']): return 'DIVINE BANSURI'
+    return 'PEACEFUL INSTRUMENTAL'
+
 def is_krishna_track(track_name="", theme_category=""):
     t_lower = (track_name or "").lower()
     cat_lower = (theme_category or "").lower()
