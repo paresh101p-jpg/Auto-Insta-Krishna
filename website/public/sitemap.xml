@@ -46,6 +46,12 @@
 
   <!-- Clean Canonical Devotional Articles & 4K Posts (Pre-Rendered SSG) -->
   <url>
+    <loc>https://krishnavibez.in/post/krishna-20261106-090128</loc>
+    <lastmod>2026-11-06</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.9</priority>
+  </url>
+  <url>
     <loc>https://krishnavibez.in/post/krishna-20261106-023212</loc>
     <lastmod>2026-11-06</lastmod>
     <changefreq>weekly</changefreq>
@@ -460,33 +466,9 @@
     <priority>0.9</priority>
   </url>
   <url>
-    <loc>https://krishnavibez.in/post/diwali-spiritual-significance-krishna-naraka-chaturdashi</loc>
+    <loc>https://krishnavibez.in/post/krishna-20261106-090128</loc>
     <lastmod>2026-11-06</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.9</priority>
-  </url>
-  <url>
-    <loc>https://krishnavibez.in/post/new-year-spiritual-resolutions-bhagavad-gita</loc>
-    <lastmod>2026-11-06</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.9</priority>
-  </url>
-  <url>
-    <loc>https://krishnavibez.in/post/makar-sankranti-uttarayan-sun-worship-spiritual-flying</loc>
-    <lastmod>2026-11-06</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.9</priority>
-  </url>
-  <url>
-    <loc>https://krishnavibez.in/post/spiritual-love-radha-krishna-valentine-pure-devotion</loc>
-    <lastmod>2026-11-06</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.9</priority>
-  </url>
-  <url>
-    <loc>https://krishnavibez.in/post/holi-spiritual-significance-braj-bhakt-prahlad</loc>
-    <lastmod>2026-11-06</lastmod>
-    <changefreq>weekly</changefreq>
+    <changefreq>daily</changefreq>
     <priority>0.9</priority>
   </url>
 </urlset>
