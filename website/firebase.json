@@ -133,6 +133,14 @@
     ],
     "rewrites": [
       {
+        "source": "/privacy",
+        "destination": "/privacy-policy.html"
+      },
+      {
+        "source": "/privacy.html",
+        "destination": "/privacy-policy.html"
+      },
+      {
         "source": "/post/:id",
         "destination": "/post.html"
       }
