@@ -220,39 +220,40 @@ def clean_image_watermark(image_path, target_cleaned_path):
     return target_cleaned_path
 
 def get_next_image():
-    """Picks the next 100% clean, text-free Krishna image from music_video_images pool."""
+    """Picks a unique, random clean Krishna image from pool (tracked by basename across Windows & Linux)."""
     all_images = []
-    if os.path.exists(MUSIC_IMAGES_DIR):
-        for root, dirs, files in os.walk(MUSIC_IMAGES_DIR):
-            for f in files:
-                if f.lower().endswith(('.jpg', '.jpeg', '.png')):
-                    all_images.append(os.path.join(root, f))
+    for d in [MUSIC_IMAGES_DIR, IMAGES_DIR]:
+        if os.path.exists(d):
+            for root, dirs, files in os.walk(d):
+                for f in files:
+                    if f.lower().endswith(('.jpg', '.jpeg', '.png')):
+                        all_images.append(os.path.join(root, f))
 
     all_images = sorted(list(dict.fromkeys(all_images)))
-    if not all_images and os.path.exists(IMAGES_DIR):
-        for root, dirs, files in os.walk(IMAGES_DIR):
-            for f in files:
-                if f.lower().endswith(('.jpg', '.jpeg', '.png')):
-                    all_images.append(os.path.join(root, f))
-        all_images = sorted(list(dict.fromkeys(all_images)))
-
     if not all_images:
-        raise RuntimeError(f"No clean Krishna images found in {MUSIC_IMAGES_DIR} or {IMAGES_DIR}!")
+        raise RuntimeError("No clean Krishna images found in pool!")
 
-    used_images = set()
+    used_basenames = set()
     if os.path.exists(USED_IMAGES_TRACKER):
         with open(USED_IMAGES_TRACKER, "r", encoding="utf-8") as f:
-            used_images = set(line.strip() for line in f if line.strip())
+            for line in f:
+                line = line.strip()
+                if line:
+                    used_basenames.add(os.path.basename(line))
 
-    available = [img for img in all_images if img not in used_images]
+    available = [img for img in all_images if os.path.basename(img) not in used_basenames]
     if not available:
         print(f"🔄 All {len(all_images)} clean images used! Resetting tracker for next cycle.")
-        used_images.clear()
+        used_basenames.clear()
+        if os.path.exists(USED_IMAGES_TRACKER):
+            with open(USED_IMAGES_TRACKER, "w", encoding="utf-8") as f:
+                f.write("")
         available = all_images
 
-    chosen = available[0]
+    # Random selection guarantees different image on every single Reel
+    chosen = random.choice(available)
     with open(USED_IMAGES_TRACKER, "a", encoding="utf-8") as f:
-        f.write(chosen + "\n")
+        f.write(os.path.basename(chosen) + "\n")
 
     return chosen
 
@@ -290,9 +291,9 @@ def split_quote_into_phrases(quote_text):
 
 def synthesize_voice(phrases, output_audio_path, temp_dir):
     """
-    Synthesizes authentic human spiritual voiceover using Google Cloud Neural2 (hi-IN-Neural2-B)
-    with 100% word-perfect phrase-by-phrase synchronization (ZERO skipped words, ZERO robotic rush).
-    Falls back to Edge-TTS if Google Cloud credentials are unavailable.
+    Synthesizes authentic human spiritual voiceover using Google Cloud Chirp3-HD (hi-IN-Chirp3-HD-Fenrir)
+    in ONE smooth, continuous, fluent master recording (ZERO phrase chopping, ZERO robotic breaks).
+    Falls back to Neural2 or Edge-TTS if needed.
     """
     ffmpeg = find_ffmpeg()
 
@@ -302,21 +303,24 @@ def synthesize_voice(phrases, output_audio_path, temp_dir):
         m = re.search(r"Duration:\s*(\d+):(\d+):(\d+\.\d+)", res.stderr)
         if m:
             return int(m.group(1)) * 3600 + int(m.group(2)) * 60 + float(m.group(3))
-        return 1.8
+        return 2.5
 
     thought_for_hook = " ".join([" ".join(p) for p in phrases])
     hook_text = detect_thought_adaptive_hook(thought_for_hook)
+    full_thought_text = " ".join([" ".join(p) for p in phrases])
+
     hook_audio = os.path.join(temp_dir, "hook.mp3")
+    thought_audio = os.path.join(temp_dir, "thought.mp3")
 
     # Check for Google Cloud credentials
     gcreds_file = os.path.join(BASE_DIR, "google_tts_service_account.json")
     gcreds_env = os.environ.get("GOOGLE_TTS_SERVICE_ACCOUNT")
     embedded_b64 = "ewogICJ0eXBlIjogInNlcnZpY2VfYWNjb3VudCIsCiAgInByb2plY3RfaWQiOiAieW91dHViZS1idWxrLXVwZGF0ZS01MDEwMDkiLAogICJwcml2YXRlX2tleV9pZCI6ICJlMTNiY2M2NDMyOGE3MjMwOTNkOGZiMjMyZWM5MDRjOWIzZDg3Mzg4IiwKICAicHJpdmF0ZV9rZXkiOiAiLS0tLS1CRUdJTiBQUklWQVRFIEtFWS0tLS0tXG5NSUlFdkFJQkFEQU5CZ2txaGtpRzl3MEJBUUVGQUFTQ0JLWXdnZ1NpQWdFQUFvSUJBUUNkNEdjTWozOGZMUTN0XG5iVmdHY3RRS3lyMXFIMCtvOE9zN2lWRU1QbEhmZm4zOGZxMVJFZmRJZWJzekQ2Q3JaK3NPeDZCbjUzTUc2Yk14XG5kVk9rbVBTTHpHQVZIRU11Vm1uajZaR081VDB1OENRTWpPWTF4Zlc2cktTZW5oNGNXN0JwWWsrNjN4MXpuWU5YXG5iNWJCRFB5NVJlcldjMU9rQmhVSmtyTEd0OFZvK0llaGhoVXRGeCswbmFDdG9vK0tRRFRqS25RUnRPWitWcXBHXG54OXRLVVJJdHZraVp3ZU1ia1J6cXpCOGVzckJ4VlJPZXRFQUdpVXZtZ1ljTXMwdTJjcDhoNkV6TEhrc08veDhlXG4rZ3FWb3NZR0d6bHpuYkQwZGdOTEhYMzRrbzNYS25LaHVSVlhkMmI3V2RPMkdwaDBDNVFMQXU4citVdEg5SnBkXG5SVTVnYmp4UEFnTUJBQUVDZ2dFQU13MmpKVXV1RngzUnVDcTQ0WFQybnZySzMrdDZMaTZpVXlGbnBTYnVBUEQ5XG51czRZSy9ROFhDS0paOHl3NzF6dWhWd0d3akwxWHBIcVVaOFlTa3p3SDlrYVpSazduRnR6YUxGYVViUk40Y1RrXG5VMjZvNzFDeDB3a0xQd1B3eHNqYnRtaUZVZS9lclVtTmRKUHdVME5vNGx6NndSaVFQcVY4M2hpaldXR0tKQlJnXG5WekJBazYvRkducWNNNXdwelBhZ2NqR2ljVUdMSGk3U3pYYmtlV3F4REFtYVFsRzRLcEpTbXJsMTRhNEIzM3pHXG41Y255ekEya0ZMR0ZCTVIxaCtwNm5hRDNzRWpPZWNxQ0lYblo2WlBKTXNCcTMyc0ZzMHB1d1FIY2UzOERzZEpiXG5yay9CTkxvNnNhZUd5ajVHOFR1VXRZVXJScUFVdmFFK24vMmRHR2NjMFFLQmdRRFNiYXlDbXlMN0RIeklObFNzXG4yVmJ0N1ZyQnVWeld5WWxrUFd2bXR0RVRiTFhhZzNTTTd5Z1p3aTRKenVBeHFvSWNBeUJTVnovZWVSMW04b3JCXG5nM0srQzRGdVc1T2RHSjdYaGVjdERIdmo0RjJxNlltOXgvYUNCR0ovaEx4M3JYdWtVamJEZ0FINGg1T0NIaGtvXG5DKzIybXB3TTBnWDRVMVdRS0FqVktEQ091UUtCZ1FEQUVUWCt6WWFBSHBJa2h4bUtUZHJBc3Z5Y3kvSFErQVpXXG5UZHA1OUM2V0IwUmpqZ1dhV0xBR2ZmVkhEYWI5aTJ2cHBpeGphVDZzMUE4c2pYbW1XaGFxc1VEaklhOEJZRDJjXG4wWmY5Q0tkNzZaYmlCY0xETGFmMVpBMU1KOFFTNUNvM05tMUZZY05tTnloRUJPemdxc1BLQnJJdGpHb0dSRHkxXG53ZkpzNWdCZlJ3S0JnSC9JNWpleDZmNDJTUmgwRmR1WmFEYTRLcUwxNDdEelZpR3ZRdlVxRTdFT0ZTa0xKeDNtXG5wWjF1MC9KVTFNU1VYTXFTQTNDOVZ5WE11dFFuZWFlbUlXblRKdGhUZUVLd0R0V21sUXBBU0lQTFhsWkoxOEdOXG55dDZOdHhybENtWkt6WWl0L0YrZ1BwSWtFcW16aVdkT1J4N2FxT1VJTFdQdGgwb3haWnU3K2pEUkFvR0FlenRQXG51cUdodDVobHlod0lqZzF2Mm8yOHVObTkySWNhZ2N0SDcxRjFobnM1TE9zVnV6ZEdFWlJGaUlaQTY1TEY5VTdTXG5VaUpYdlVuK1JtYXJjOGwvbTV0STk3SkgrQWtJM3hJM2czbEhCS0VXVndTOU5yK1hjVUgxcWpRbGdMMTJQS0NtXG5NWXNOZFFyVXdmZXJDR2RvWWJvMEhqZG1XNGp5cnVlMnBKcGFDTWNDZ1lCNUhYczhiMW5LUVowcENNU2I2S1BEXG5vRkNCdHJMUGU0Vk5ORmlqMnYvZ2JpUThXT2hjQnFFVGRmWEpyQTZyZk1yY21IUjdVcmIwZzZQTS9ZTG00Z3VPXG5mdE5KQWRObVBYVlQ3Z2hTaTFZeFAxaVY0REttbE9hWmVROTlxa0J3K0hIaEN1L1I2SmRISEI3bEUwc0hCR2VEXG5HR2RRbDRLNmlpZ3AwbnQwM2tzek13PT1cbi0tLS0tRU5EIFBSSVZBVEUgS0VZLS0tLS1cbiIsCiAgImNsaWVudF9lbWFpbCI6ICJrcmlzaG5hLXJlZWwtYXVkaW9AeW91dHViZS1idWxrLXVwZGF0ZS01MDEwMDkuaWFtLmdzZXJ2aWNlYWNjb3VudC5jb20iLAogICJjbGllbnRfaWQiOiAiMTA3MjI4MjAxMjg3NTQwNjkzNDcxIiwKICAiYXV0aF91cmkiOiAiaHR0cHM6Ly9hY2NvdW50cy5nb29nbGUuY29tL28vb2F1dGgyL2F1dGgiLAogICJ0b2tlbl91cmkiOiAiaHR0cHM6Ly9vYXV0aDIuZ29vZ2xlYXBpcy5jb20vdG9rZW4iLAogICJhdXRoX3Byb3ZpZGVyX3g1MDlfY2VydF91cmwiOiAiaHR0cHM6Ly93d3cuZ29vZ2xlYXBpcy5jb20vb2F1dGgyL3YxL2NlcnRzIiwKICAiY2xpZW50X3g1MDlfY2VydF91cmwiOiAiaHR0cHM6Ly93d3cuZ29vZ2xlYXBpcy5jb20vcm9ib3QvdjEvbWV0YWRhdGEveDUwOS9rcmlzaG5hLXJlZWwtYXVkaW8lNDB5b3V0dWJlLWJ1bGstdXBkYXRlLTUwMTAwOS5pYW0uZ3NlcnZpY2VhY2NvdW50LmNvbSIsCiAgInVuaXZlcnNlX2RvbWFpbiI6ICJnb29nbGVhcGlzLmNvbSIKfQo="
 
-    use_google = False
     client = None
     voice_params = None
     audio_cfg = None
+    use_google = False
 
     if gcreds_env or os.path.exists(gcreds_file) or embedded_b64:
         try:
@@ -332,102 +336,110 @@ def synthesize_voice(phrases, output_audio_path, temp_dir):
             else:
                 client = texttospeech.TextToSpeechClient.from_service_account_json(gcreds_file)
 
+            # Chirp3-HD Studio Human Voice (Zero Pitch Parameter as required by Google Cloud)
             voice_params = texttospeech.VoiceSelectionParams(
                 language_code="hi-IN",
-                name="hi-IN-Neural2-B",
-                ssml_gender=texttospeech.SsmlVoiceGender.MALE
+                name="hi-IN-Chirp3-HD-Fenrir",
             )
             audio_cfg = texttospeech.AudioConfig(
                 audio_encoding=texttospeech.AudioEncoding.MP3,
-                speaking_rate=0.92,
-                pitch=-1.2
+                speaking_rate=0.94
             )
             use_google = True
-            print("🎙️ Using Google Cloud Neural2 Engine (hi-IN-Neural2-B) for human voiceover.")
+            print("🎙️ Using Google Cloud Chirp3-HD Studio Voice (hi-IN-Chirp3-HD-Fenrir) for human delivery.")
         except Exception as ge:
             print(f"Google TTS init note: {ge}")
 
-    # 1. Synthesize Spoken Hook (Audio only, never displayed in text)
+    # 1. Synthesize Spoken Hook
     if use_google:
-        resp = client.synthesize_speech(
-            input=texttospeech.SynthesisInput(text=hook_text),
-            voice=voice_params,
-            audio_config=audio_cfg
-        )
-        with open(hook_audio, "wb") as f:
-            f.write(resp.audio_content)
-    else:
-        import edge_tts, asyncio
-        asyncio.run(edge_tts.Communicate(hook_text, 'hi-IN-MadhurNeural', rate="-7%", pitch="-1Hz").save(hook_audio))
-
-    hook_dur = get_dur(hook_audio)
-
-    # 2. Synthesize each phrase individually to measure exact duration (NO SKIPPED WORDS)
-    phrase_audios = []
-    phrase_durs = []
-    for idx, p in enumerate(phrases):
-        p_text = " ".join(p)
-        p_audio = os.path.join(temp_dir, f"phrase_{idx}.mp3")
-        if use_google:
+        try:
             resp = client.synthesize_speech(
-                input=texttospeech.SynthesisInput(text=p_text),
+                input=texttospeech.SynthesisInput(text=hook_text),
                 voice=voice_params,
                 audio_config=audio_cfg
             )
-            with open(p_audio, "wb") as f:
+            with open(hook_audio, "wb") as f:
                 f.write(resp.audio_content)
-        else:
-            import edge_tts, asyncio
-            asyncio.run(edge_tts.Communicate(p_text, 'hi-IN-MadhurNeural', rate="-9%", pitch="-1Hz").save(p_audio))
+        except Exception as he:
+            print(f"Chirp3 hook fallback: {he}")
+            # Fallback to Neural2 if Chirp3 fails
+            v_neural2 = texttospeech.VoiceSelectionParams(language_code="hi-IN", name="hi-IN-Neural2-B")
+            cfg_neural2 = texttospeech.AudioConfig(audio_encoding=texttospeech.AudioEncoding.MP3, speaking_rate=0.92)
+            resp = client.synthesize_speech(input=texttospeech.SynthesisInput(text=hook_text), voice=v_neural2, audio_config=cfg_neural2)
+            with open(hook_audio, "wb") as f:
+                f.write(resp.audio_content)
+    else:
+        import edge_tts, asyncio
+        asyncio.run(edge_tts.Communicate(hook_text, 'hi-IN-MadhurNeural', rate="-7%").save(hook_audio))
 
-        p_dur = get_dur(p_audio)
-        phrase_audios.append(p_audio)
-        phrase_durs.append(p_dur)
+    hook_dur = get_dur(hook_audio)
 
-    # 3. Concatenate Hook + Pause + Phrases into master voice with studio EQ
-    # Pause between hook and thought = 400ms; pause between phrases = 300ms
-    filter_cmds = ["[0:a]volume=1.0[a0];"]
-    concat_inputs = ["[a0]"]
-    for idx, pa in enumerate(phrase_audios):
-        in_idx = idx + 1
-        filter_cmds.append(f"[{in_idx}:a]adelay=300|300,volume=1.0[a{in_idx}];")
-        concat_inputs.append(f"[a{in_idx}]")
+    # 2. Synthesize ENTIRE Thought in ONE single, fluent, unbroken recording (NO CHOPPING!)
+    if use_google:
+        try:
+            resp = client.synthesize_speech(
+                input=texttospeech.SynthesisInput(text=full_thought_text),
+                voice=voice_params,
+                audio_config=audio_cfg
+            )
+            with open(thought_audio, "wb") as f:
+                f.write(resp.audio_content)
+        except Exception as te:
+            print(f"Chirp3 thought fallback: {te}")
+            v_neural2 = texttospeech.VoiceSelectionParams(language_code="hi-IN", name="hi-IN-Neural2-B")
+            cfg_neural2 = texttospeech.AudioConfig(audio_encoding=texttospeech.AudioEncoding.MP3, speaking_rate=0.92)
+            resp = client.synthesize_speech(input=texttospeech.SynthesisInput(text=full_thought_text), voice=v_neural2, audio_config=cfg_neural2)
+            with open(thought_audio, "wb") as f:
+                f.write(resp.audio_content)
+    else:
+        import edge_tts, asyncio
+        asyncio.run(edge_tts.Communicate(full_thought_text, 'hi-IN-MadhurNeural', rate="-8%").save(thought_audio))
 
-    num_segments = len(phrase_audios) + 1
-    filter_cmds.append(f"{''.join(concat_inputs)}concat=n={num_segments}:v=0:a=1[acomb];")
-    filter_cmds.append("[acomb]bass=g=3.0:f=160,treble=g=2.0:f=3200,volume=1.40[aout]")
+    thought_dur = get_dur(thought_audio)
 
-    input_files = ["-i", hook_audio]
-    for pa in phrase_audios:
-        input_files.extend(["-i", pa])
-
-    master_cmd = [ffmpeg, "-y"] + input_files + [
-        "-filter_complex", "".join(filter_cmds),
+    # 3. Concatenate Hook + 350ms Natural Breath Pause + Unbroken Thought with Studio EQ
+    filter_complex = (
+        "[0:a]volume=1.0[a0];"
+        "[1:a]adelay=350|350,volume=1.0[a1];"
+        "[a0][a1]concat=n=2:v=0:a=1[acomb];"
+        "[acomb]bass=g=2.5:f=160,treble=g=1.5:f=3200,volume=1.35[aout]"
+    )
+    master_cmd = [
+        ffmpeg, "-y",
+        "-i", hook_audio,
+        "-i", thought_audio,
+        "-filter_complex", filter_complex,
         "-map", "[aout]",
         output_audio_path
     ]
     subprocess.run(master_cmd, check=True)
 
-    # 4. Calculate word timings strictly within each phrase's exact spoken time window
-    word_timings = []
-    curr_t = hook_dur + 0.40  # speech start after hook
+    # 4. Map Word Timings continuously across the measured thought duration
+    all_words = []
+    for p in phrases:
+        all_words.extend(p)
 
-    for phrase_idx, phrase in enumerate(phrases):
-        p_dur = phrase_durs[phrase_idx]
-        total_phrase_chars = sum(len(w) for w in phrase)
+    total_chars = sum(len(w) for w in all_words)
+    raw_durs = [max((len(w) / max(total_chars, 1)) * thought_dur, 0.22) for w in all_words]
+    scale_factor = thought_dur / max(sum(raw_durs), 0.01)
+    normalized_durs = [d * scale_factor for d in raw_durs]
+
+    word_timings = []
+    w_idx = 0
+    curr_t = hook_dur + 0.35  # exact time thought voice begins
+
+    for phrase in phrases:
         phrase_timings = []
         for w in phrase:
-            w_len = len(w)
-            w_dur = (w_len / max(total_phrase_chars, 1)) * p_dur
-            w_dur = max(w_dur, 0.22)
+            w_dur = normalized_durs[w_idx]
             phrase_timings.append({
                 'word': w,
                 'start': curr_t,
                 'end': curr_t + w_dur
             })
             curr_t += w_dur
+            w_idx += 1
         word_timings.append(phrase_timings)
-        curr_t += 0.30  # natural breath pause between phrases
 
     total_video_dur = curr_t + 1.8
     return total_video_dur, word_timings, hook_text
