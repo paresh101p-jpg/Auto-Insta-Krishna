@@ -36,16 +36,75 @@ USED_IMAGES_TRACKER = os.path.join(BASE_DIR, "used_kinetic_images.txt")
 BGM_FILE = os.path.join(BASE_DIR, "AUDIT_PURE_SOFT_BANSURI_5_TRACKS.mp3")
 LOGO_PATH = os.path.join(BASE_DIR, "kv_watermark_logo.png")
 
-HOOK_POOL = [
-    "श्री कृष्ण कहते हैं —",
-    "कान्हा का यह दिव्य संदेश सुनो —",
-    "हे मानव, सदा स्मरण रखना —",
-    "श्री कृष्ण का यह अमृत वचन सुनो —",
-    "जीवन का यह परम सत्य सदा याद रखना —",
-    "कान्हा कहते हैं —",
-    "हे पार्थ, ध्यान से सुनो —",
-    "ईश्वर का यह संदेश सदा याद रखना —"
-]
+def detect_thought_adaptive_hook(thought_text):
+    """
+    Intelligently analyzes the thought's core theme and selects a contextually accurate hook.
+    ONLY uses 'श्री कृष्ण / कान्हा' hooks when the thought is explicitly spiritual/Gita/Krishna-related.
+    For struggle, anger, patience, success, or life wisdom, uses powerful topic-specific hooks!
+    """
+    text = thought_text.lower()
+
+    # 1. Krishna / Bhagavad Gita / Arjun / Divine Spiritual
+    krishna_keywords = ["कृष्ण", "कान्हा", "पार्थ", "अर्जुन", "गीता", "ईश्वर", "परमात्मा", "कर्मण्ये", "भगवान", "भक्ति", "माधव", "गोविंद", "हरि", "प्रभु", "राधे", "नारायण"]
+    if any(k in text for k in krishna_keywords):
+        return random.choice([
+            "श्री कृष्ण का यह दिव्य वचन सुनो —",
+            "हे पार्थ, जीवन का यह गूढ़ सत्य समझो —",
+            "कर्म का यह अमर विधान याद रखना —",
+            "कान्हा का यह पावन संदेश सदा याद रखना —",
+            "श्री कृष्ण कहते हैं, ध्यान से सुनो —"
+        ])
+
+    # 2. Anger / Mind / Silence / Patience / Inner Peace
+    peace_keywords = ["क्रोध", "गुस्सा", "मन", "धैर्य", "शांति", "मौन", "चुप", "सब्र", "शांत", "अहंकार", "घमंड", "अपमान"]
+    if any(k in text for k in peace_keywords):
+        return random.choice([
+            "जब मन अशांत हो, तब यह ज्ञान सुनो —",
+            "क्रोध में कोई निर्णय लेने से पहले यह सुनो —",
+            "धैर्य और सब्र का यह अनमोल नियम सुनो —",
+            "मौन की इस महान शक्ति को सदा याद रखना —",
+            "जब कोई तुम्हारा अपमान करे, तब यह याद रखना —"
+        ])
+
+    # 3. Struggle / Tough Times / Darkness / Pain / Courage
+    struggle_keywords = ["कठिन", "मुश्किल", "समय", "हार", "जीत", "संघर्ष", "शुरुआत", "विपत्ति", "दर्द", "तकलीफ", "अंधेरा", "रास्ते", "उम्मीद", "हिम्मत", "साहस", "डर", "घबराना"]
+    if any(k in text for k in struggle_keywords):
+        return random.choice([
+            "जब जीवन में कठिन समय आए, तब याद रखना —",
+            "संघर्ष से कभी मत घबराना, यह सुनो —",
+            "हार मानने से पहले यह बात ज़रूर सुनना —",
+            "जब रास्ते बंद दिखने लगें, तब यह याद रखना —",
+            "कठिन दौर में यह एक बात सदा याद रखना —"
+        ])
+
+    # 4. Success / Hard Work / Goal / Change / Destiny
+    success_keywords = ["सफलता", "मेहनत", "लक्ष्य", "कामयाबी", "बदलाव", "कर्म", "परिश्रम", "मंजिल", "भाग्य", "किस्मत", "सपना", "सपने"]
+    if any(k in text for k in success_keywords):
+        return random.choice([
+            "सफलता पाने का यह स्वर्णिम नियम सुनो —",
+            "यदि जीवन बदलना चाहते हो, तो यह सुनो —",
+            "मेहनत और कर्म का यह नियम सदा याद रखना —",
+            "सच्ची कामयाबी का यह रहस्य सुनो —",
+            "अपनी मंजिल पाने से पहले यह जान लो —"
+        ])
+
+    # 5. Thinkers / People / Truth / World / Relations
+    wisdom_keywords = ["विचारक", "महान", "लोग", "संसार", "दुनिया", "रिश्ते", "विश्वास", "धोखा", "सच्चाई", "सत्य", "पहचान", "समझदारी", "ज्ञान", "सीख"]
+    if any(k in text for k in wisdom_keywords):
+        return random.choice([
+            "संसार का यह कड़वा सच सदा याद रखना —",
+            "महान विचारकों का यह गहरा सत्य सुनो —",
+            "लोगों की पहचान करने का यह नियम सुनो —",
+            "जीवन की इस कड़वी सच्चाई को पहचानो —",
+            "सच्चे ज्ञान की यह बात हमेशा याद रखना —"
+        ])
+
+    # 6. General Life Wisdom Fallback
+    return random.choice([
+        "जीवन का यह परम सत्य सदा याद रखना —",
+        "बुद्धिमान मनुष्य की यह सीख सदा याद रखना —",
+        "सत्य की इस अनमोल वाणी को ध्यान से सुनो —"
+    ])
 
 # Visualizer Geometries & Divine Color Palettes
 VISUALIZER_STYLES = [
@@ -245,7 +304,8 @@ def synthesize_voice(phrases, output_audio_path, temp_dir):
             return int(m.group(1)) * 3600 + int(m.group(2)) * 60 + float(m.group(3))
         return 1.8
 
-    hook_text = random.choice(HOOK_POOL)
+    thought_for_hook = " ".join([" ".join(p) for p in phrases])
+    hook_text = detect_thought_adaptive_hook(thought_for_hook)
     hook_audio = os.path.join(temp_dir, "hook.mp3")
 
     # Check for Google Cloud credentials
