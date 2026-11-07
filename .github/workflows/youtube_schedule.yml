@@ -42,6 +42,7 @@ jobs:
           YOUTUBE_CLIENT_SECRET: ${{ secrets.YOUTUBE_CLIENT_SECRET }}
           YOUTUBE_REFRESH_TOKEN: ${{ secrets.YOUTUBE_REFRESH_TOKEN }}
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          GOOGLE_TTS_SERVICE_ACCOUNT: ${{ secrets.GOOGLE_TTS_SERVICE_ACCOUNT }}
         run: python -u youtube_uploader.py
 
       - name: Commit Updated YouTube Queue to Git
