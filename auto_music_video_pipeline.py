@@ -2007,11 +2007,12 @@ def render_video(slides, duration_sec=900, is_krishna=True):
     if not active_flora_sprites:
         active_flora_sprites = list(flora_dict.values())
         
-    # 3. Select 15 unique slides (each slide stays for 60 seconds)
+    # 3. Select exact number of unique slides needed for duration_sec (5 minutes per slide)
+    num_slides_needed = max(3, int(math.ceil(duration_sec / 300.0)))
     selected_slides = slides[:]
-    if len(selected_slides) > 15:
-        random.shuffle(selected_slides)
-        selected_slides = selected_slides[:15]
+    random.shuffle(selected_slides)
+    selected_slides = selected_slides[:num_slides_needed]
+    print(f"  -> 🎯 Duration: {int(duration_sec//60)} Minutes | Rendering {len(selected_slides)} unique slides (5-min each, ZERO repeat)")
         
     clip_files = []
     temp_clips_dir = os.path.join(BASE_DIR, "temp_animated_clips")
