@@ -1746,6 +1746,44 @@ def load_flora_sprites_dict():
     return sprites_dict
 
 
+def remove_flow_watermark(img):
+    """
+    Universal Google Flow Star Watermark Remover:
+    Automatically locates and completely erases the 4-pointed Flow watermark
+    from the bottom-right corner without cropping or distorting the image.
+    Works dynamically for any 16:9 or custom resolution image.
+    """
+    if img is None:
+        return img
+    h, w = img.shape[:2]
+    
+    # Coordinates of Flow watermark: 77% to 94% Y, 88% to 100% X
+    y1 = int(h * 0.77)
+    y2 = int(h * 0.94)
+    x1 = int(w * 0.88)
+    x2 = w
+    
+    corner = img[y1:y2, x1:x2]
+    gray = cv2.cvtColor(corner, cv2.COLOR_BGR2GRAY)
+    
+    # 1. Target the star brightness
+    _, thresh = cv2.threshold(gray, 75, 255, cv2.THRESH_BINARY)
+    kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (9, 9))
+    dilated = cv2.dilate(thresh, kernel, iterations=2)
+    
+    # 2. Targeted circular inpaint core
+    ch, cw = corner.shape[:2]
+    cv2.circle(dilated, (int(cw * 0.65), int(ch * 0.5)), int(min(cw, ch) * 0.35), 255, -1)
+    
+    # 3. Create full frame mask
+    full_mask = np.zeros((h, w), dtype=np.uint8)
+    full_mask[y1:y2, x1:x2] = dilated
+    
+    # 4. Telea Inpaint (Fills seamlessly using surrounding natural pixels)
+    cleaned = cv2.inpaint(img, full_mask, inpaintRadius=7, flags=cv2.INPAINT_TELEA)
+    return cleaned
+
+
 def render_animated_slide_clip(slide_path, clip_output_path, flora_sprites, motion_style, logo_badge, slide_idx=0, duration=300, fps=25, sparkle_palette=None, num_particles=17, visualizer_style='fullwidth_bars', visualizer_palette=None):
     """
     Renders a single 60-second (1-minute) slide clip with:
@@ -1759,12 +1797,8 @@ def render_animated_slide_clip(slide_path, clip_output_path, flora_sprites, moti
     if src_img is None:
         raise FileNotFoundError(f"Slide not found: {slide_path}")
 
-    # Flow / Image Watermark 100% Guaranteed Elimination: Crop bottom 9.0% cleanly (completely cuts Flow logo)
-    h, w = src_img.shape[:2]
-    if h >= 500:
-        crop_bottom = int(h * 0.090)
-        src_img = src_img[0:h - crop_bottom, 0:w]
-
+    # Flow Star Watermark Eradication via Inpainting (NO CROPPING: 100% full frame preserved)
+    src_img = remove_flow_watermark(src_img)
     src_img = cv2.resize(src_img, (1920, 1080), interpolation=cv2.INTER_LANCZOS4)
     
     adapted_gold, core_bgr = get_image_adapted_gold(src_img, palette=sparkle_palette)
@@ -2068,10 +2102,45 @@ def render_video(slides, duration_sec=900, is_krishna=True):
 
 
 def generate_thumbnail(slides, theme):
-    """Creates a high-CTR 16:9 YouTube Thumbnail using Headless Browser HarfBuzz text rendering (100% perfect Devanagari ligatures/matras)."""
+    """Creates a world-class high-CTR 16:9 YouTube Thumbnail using AI 3D embossed typography master templates."""
     print("[3/4] Generating AI High-CTR YouTube Thumbnail...")
     import base64
     import shutil
+    
+    # Priority Selection: Ultra-Realistic 3D Embossed Typography AI Master Thumbnails
+    cat_text = (theme.get("category", "") + " " + theme.get("title", "") + " " + theme.get("hindi_main", "")).lower()
+    ai_thumb_candidates = []
+    if any(k in cat_text for k in ["morning", "pooja", "sunrise", "awakening", "dawn", "positive", "प्रभात", "सवेरे"]):
+        ai_thumb_candidates = [
+            os.path.join(BASE_DIR, "master_ai_thumb_morning_peace.jpg"),
+            os.path.join(BASE_DIR, "playlist_thumbnails", "master_ai_thumb_morning_peace.jpg"),
+        ]
+    elif any(k in cat_text for k in ["sleep", "night", "insomnia", "neend", "rest", "chinta", "stress", "नींद", "रात्रि"]):
+        ai_thumb_candidates = [
+            os.path.join(BASE_DIR, "master_ai_thumb_peace_sleep.jpg"),
+            os.path.join(BASE_DIR, "playlist_thumbnails", "master_ai_thumb_peace_sleep.jpg"),
+        ]
+    elif any(k in cat_text for k in ["heal", "soul", "dhyan", "meditation", "calm", "anxiety", "peace", "ध्यान", "शांति"]):
+        ai_thumb_candidates = [
+            os.path.join(BASE_DIR, "master_ai_thumb_soul_healing.jpg"),
+            os.path.join(BASE_DIR, "playlist_thumbnails", "master_ai_thumb_soul_healing.jpg"),
+        ]
+    else:
+        pool = [
+            os.path.join(BASE_DIR, "master_ai_thumb_peace_sleep.jpg"),
+            os.path.join(BASE_DIR, "master_ai_thumb_morning_peace.jpg"),
+            os.path.join(BASE_DIR, "master_ai_thumb_soul_healing.jpg"),
+        ]
+        ai_thumb_candidates = [random.choice(pool)]
+
+    for c in ai_thumb_candidates:
+        if os.path.exists(c):
+            shutil.copy2(c, TEMP_THUMBNAIL)
+            sample_thumb = os.path.join(BASE_DIR, "MUSIC_VIDEO_HIGH_CTR_SAMPLE_THUMBNAIL.jpg")
+            shutil.copy2(TEMP_THUMBNAIL, sample_thumb)
+            print(f"  -> ✅ Applied World-Class Master AI 3D Typography Thumbnail: {os.path.basename(c)}")
+            return TEMP_THUMBNAIL
+
     selected_slide = random.choice(slides)
     
     badge = theme.get("badge", "DEEP MEDITATION")
@@ -2571,12 +2640,23 @@ def upload_to_youtube(theme, duration_sec=900, track_info=None):
         return
     access_token = resp.json().get("access_token")
 
-    # Resumable Video Upload with Long Trilingual SEO
-    dur_quarter = dur_min // 4
-    ch1 = f"00:00"
-    ch2 = f"{dur_quarter:02d}:15"
-    ch3 = f"{(dur_quarter * 2):02d}:30"
-    ch4 = f"{(dur_quarter * 3):02d}:45"
+    # Resumable Video Upload with Long Trilingual SEO & 100% YouTube-Compliant Chapters
+    def format_yt_timestamp(total_seconds):
+        total_seconds = int(total_seconds)
+        hours = total_seconds // 3600
+        minutes = (total_seconds % 3600) // 60
+        seconds = total_seconds % 60
+        if hours > 0:
+            return f"{hours}:{minutes:02d}:{seconds:02d}"
+        else:
+            return f"{minutes:02d}:{seconds:02d}"
+
+    tot_sec = max(60, int(duration_sec))
+    ch1 = "00:00"
+    ch2 = format_yt_timestamp(tot_sec * 0.25)
+    ch3 = format_yt_timestamp(tot_sec * 0.50)
+    ch4 = format_yt_timestamp(tot_sec * 0.75)
+    ch5 = format_yt_timestamp(max(tot_sec - 180, tot_sec * 0.90))
 
     track_name = ""
     if track_info and isinstance(track_info, dict):
@@ -2642,7 +2722,8 @@ def upload_to_youtube(theme, duration_sec=900, track_info=None):
             f"{ch1} 🪷 वृंदावन प्रातःकालीन बांसुरी (Divine Prelude)\n"
             f"{ch2} 🪶 बांसुरी एवं तबला कोमल जुगलबंदी (Keherwa Taal Rhythm)\n"
             f"{ch3} 🌊 आत्मिक शांति और ध्यान प्रवाह (Deep Healing Flow)\n"
-            f"{ch4} ✨ असीम शांति एवं समापन विश्राम (Closing Shanti & Gratitude)\n\n"
+            f"{ch4} 🕊️ गहन विश्राम एवं चित्त शांति (Profound Serenity)\n"
+            f"{ch5} ✨ असीम शांति एवं समापन विश्राम (Closing Shanti & Gratitude)\n\n"
             "━━━━━━━━━━━━━━━━━━━━━━━━━━\n"
             "🔍 इस संगीत में समाहित प्रमुख विषय एवं खोज प्रश्न (Topics & Searches Covered):\n"
             "• Shri Krishna Bansuri Dhun for Deep Meditation & Stress Relief\n"
@@ -2705,7 +2786,8 @@ def upload_to_youtube(theme, duration_sec=900, track_info=None):
             f"{ch1} 🪷 शांत प्रभात बाँसुरी (Peaceful Prelude)\n"
             f"{ch2} 🪶 बाँसुरी एवं तबला कोमल जुगलबंदी (Keherwa Taal Rhythm)\n"
             f"{ch3} 🌊 आत्मिक शांति और ध्यान प्रवाह (Deep Healing Flow)\n"
-            f"{ch4} ✨ असीम शांति एवं समापन विश्राम (Closing Shanti & Gratitude)\n\n"
+            f"{ch4} 🕊️ गहन विश्राम एवं चित्त शांति (Profound Serenity)\n"
+            f"{ch5} ✨ असीम शांति एवं समापन विश्राम (Closing Shanti & Gratitude)\n\n"
             "━━━━━━━━━━━━━━━━━━━━━━━━━━\n"
             "🔍 इस संगीत में समाहित प्रमुख विषय एवं खोज प्रश्न (Topics & Searches Covered):\n"
             "• Indian Bamboo Flute Music for Deep Meditation & Stress Relief\n"
