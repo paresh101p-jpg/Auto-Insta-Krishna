@@ -34,6 +34,18 @@ MUSIC_IMAGES_DIR = os.path.join(BASE_DIR, "music_video_images")
 IMAGES_DIR = os.path.join(BASE_DIR, "Images")
 USED_IMAGES_TRACKER = os.path.join(BASE_DIR, "used_kinetic_images.txt")
 BGM_FILE = os.path.join(BASE_DIR, "AUDIT_PURE_SOFT_BANSURI_5_TRACKS.mp3")
+LOGO_PATH = os.path.join(BASE_DIR, "kv_watermark_logo.png")
+
+HOOK_POOL = [
+    "श्री कृष्ण कहते हैं —",
+    "कान्हा का यह दिव्य संदेश सुनो —",
+    "हे मानव, सदा स्मरण रखना —",
+    "श्री कृष्ण का यह अमृत वचन सुनो —",
+    "जीवन का यह परम सत्य सदा याद रखना —",
+    "कान्हा कहते हैं —",
+    "हे पार्थ, ध्यान से सुनो —",
+    "ईश्वर का यह संदेश सदा याद रखना —"
+]
 
 # Visualizer Geometries & Divine Color Palettes
 VISUALIZER_STYLES = [
@@ -118,6 +130,29 @@ def get_next_quote():
 
     return chosen_quote
 
+def clean_image_watermark(image_path, target_cleaned_path):
+    """Guarantees 100% Zero Flow / Google watermark by cropping bottom 9% and inpainting."""
+    try:
+        data = np.fromfile(image_path, dtype=np.uint8)
+        img = cv2.imdecode(data, cv2.IMREAD_COLOR)
+        if img is not None:
+            h, w = img.shape[:2]
+            crop_b = int(h * 0.09)
+            cleaned = img[0:h - crop_b, 0:w]
+            ch, cw = cleaned.shape[:2]
+            mask = np.zeros((ch, cw), dtype=np.uint8)
+            y1, y2, x1, x2 = int(ch * 0.72), ch, int(cw * 0.80), cw
+            mask[y1:y2, x1:x2] = 255
+            cleaned = cv2.inpaint(cleaned, mask, inpaintRadius=5, flags=cv2.INPAINT_TELEA)
+            success, encoded = cv2.imencode('.jpg', cleaned, [cv2.IMWRITE_JPEG_QUALITY, 96])
+            if success:
+                encoded.tofile(target_cleaned_path)
+                return target_cleaned_path
+    except Exception as e:
+        print(f"Watermark clean note: {e}")
+    shutil.copy(image_path, target_cleaned_path)
+    return target_cleaned_path
+
 def get_next_image():
     """Picks the next 100% clean, text-free Krishna image from music_video_images pool."""
     all_images = []
@@ -187,50 +222,80 @@ def split_quote_into_phrases(quote_text):
 
     return phrases
 
-def synthesize_voice(phrases, output_audio_path):
+def synthesize_voice(phrases, output_audio_path, temp_dir):
     """
-    Synthesizes speech using Edge-TTS hi-IN-MadhurNeural.
-    Returns total audio duration and word timings list.
+    Synthesizes human-like, deep meditative voiceover using Edge-TTS hi-IN-MadhurNeural.
+    1. Speaks a unique divine Hook first (e.g. 'श्री कृष्ण कहते हैं —') with natural breath pause.
+    2. Speaks the Thought with rhythmic clause pauses and rich studio audio mastering.
+    3. Returns total video duration and word timings for ONLY the Thought (so Hook is heard but NOT displayed in text).
     """
     all_words = []
     for p in phrases:
         all_words.extend(p)
 
-    full_text = " ".join([" ".join(p) for p in phrases])
+    # 1. Divine Hook (Spoken in audio, never displayed in captions)
+    hook_text = random.choice(HOOK_POOL)
+    hook_audio = os.path.join(temp_dir, "hook.mp3")
+
+    # 2. Thought with natural breathing pauses between clauses
+    thought_clauses = [" ".join(p) for p in phrases]
+    thought_text = " ... ".join(thought_clauses)
+    thought_audio = os.path.join(temp_dir, "thought.mp3")
 
     import edge_tts
     import asyncio
 
-    async def _run():
-        comm = edge_tts.Communicate(full_text, 'hi-IN-MadhurNeural', rate='-6%', pitch='-1Hz')
-        await comm.save(output_audio_path)
+    async def _gen_audio(text, out_path, rate="-8%", pitch="-1Hz"):
+        comm = edge_tts.Communicate(text, 'hi-IN-MadhurNeural', rate=rate, pitch=pitch)
+        await comm.save(out_path)
 
-    # Retry loop up to 3 times
     for attempt in range(3):
         try:
-            asyncio.run(_run())
-            if os.path.exists(output_audio_path) and os.path.getsize(output_audio_path) > 1000:
+            asyncio.run(_gen_audio(hook_text, hook_audio, rate="-7%", pitch="-1Hz"))
+            asyncio.run(_gen_audio(thought_text, thought_audio, rate="-9%", pitch="-1Hz"))
+            if os.path.exists(hook_audio) and os.path.getsize(hook_audio) > 500 and os.path.exists(thought_audio) and os.path.getsize(thought_audio) > 1000:
                 break
         except Exception as te:
-            print(f"TTS attempt {attempt+1} warning: {te}")
+            print(f"TTS attempt {attempt+1} note: {te}")
             time.sleep(2)
 
-    if not os.path.exists(output_audio_path) or os.path.getsize(output_audio_path) < 1000:
+    if not os.path.exists(hook_audio) or not os.path.exists(thought_audio):
         raise RuntimeError("Failed to synthesize voiceover with Edge-TTS!")
 
     ffmpeg = find_ffmpeg()
-    cmd = [ffmpeg, "-i", output_audio_path]
-    res = subprocess.run(cmd, stderr=subprocess.PIPE, stdout=subprocess.DEVNULL, text=True)
-    import re
-    m = re.search(r"Duration:\s*(\d+):(\d+):(\d+\.\d+)", res.stderr)
-    if m:
-        dur = int(m.group(1)) * 3600 + int(m.group(2)) * 60 + float(m.group(3))
-    else:
-        dur = max(len(all_words) * 0.45, 10.0)
 
+    def get_dur(fpath):
+        res = subprocess.run([ffmpeg, "-i", fpath], stderr=subprocess.PIPE, stdout=subprocess.DEVNULL, text=True)
+        import re
+        m = re.search(r"Duration:\s*(\d+):(\d+):(\d+\.\d+)", res.stderr)
+        if m:
+            return int(m.group(1)) * 3600 + int(m.group(2)) * 60 + float(m.group(3))
+        return 1.6
+
+    hook_dur = get_dur(hook_audio)
+    thought_dur = get_dur(thought_audio)
+
+    # Concatenate hook + natural breath pause (350ms) + thought, with warm studio EQ & subtle room reverb
+    master_voice_cmd = [
+        ffmpeg, "-y",
+        "-i", hook_audio,
+        "-i", thought_audio,
+        "-filter_complex", (
+            "[0:a]volume=1.0[a0];"
+            "[1:a]adelay=350|350,volume=1.0[a1];"
+            "[a0][a1]concat=n=2:v=0:a=1[acomb];"
+            "[acomb]bass=g=3.5:f=160,treble=g=2.5:f=3200,aecho=0.8:0.6:28:0.12,volume=1.45[aout]"
+        ),
+        "-map", "[aout]",
+        output_audio_path
+    ]
+    subprocess.run(master_voice_cmd, check=True)
+
+    # Word timings for Thought ONLY:
+    # During 0.0 to speech_start, ONLY the hook is heard in audio! ZERO text overlays!
+    speech_start = hook_dur + 0.35
     total_chars = sum(len(w) for w in all_words)
-    speech_start = 0.55
-    usable_speech_dur = max(dur - 0.2, 5.0)
+    usable_thought_dur = max(thought_dur - 0.2, 5.0)
 
     word_timings = []
     curr_t = speech_start
@@ -239,12 +304,12 @@ def synthesize_voice(phrases, output_audio_path):
         phrase_timings = []
         for w in phrase:
             w_len = len(w)
-            w_dur = (w_len / max(total_chars, 1)) * usable_speech_dur
+            w_dur = (w_len / max(total_chars, 1)) * usable_thought_dur
             w_dur = max(w_dur, 0.22)
-            if "।" in w or "—" in w:
-                w_dur += 0.35
+            if "।" in w or "—" in w or "!" in w:
+                w_dur += 0.38
             elif "," in w:
-                w_dur += 0.18
+                w_dur += 0.20
             phrase_timings.append({
                 'word': w,
                 'start': curr_t,
@@ -253,8 +318,8 @@ def synthesize_voice(phrases, output_audio_path):
             curr_t += w_dur
         word_timings.append(phrase_timings)
 
-    total_video_dur = curr_t + 1.6
-    return total_video_dur, word_timings
+    total_video_dur = curr_t + 1.8
+    return total_video_dur, word_timings, hook_text
 
 def render_chrome_slide(task):
     chrome, html_file, png_file = task
@@ -350,9 +415,13 @@ def generate_kinetic_reel(output_mp4, custom_quote=None, custom_image=None):
         print(f"🎬 Generating Kinetic Reel for Thought: \"{quote_text}\"")
         print(f"🖼️ Using Clean Image: {os.path.basename(image_path)}")
 
+        # Clean image to guarantee 100% Zero Flow watermark
+        clean_image_path = os.path.join(temp_dir, "clean_bg.jpg")
+        clean_image_watermark(image_path, clean_image_path)
+
         voice_audio = os.path.join(temp_dir, "voice.mp3")
-        total_video_dur, word_timings = synthesize_voice(phrases, voice_audio)
-        print(f"🎙️ Synthesized Voiceover: {total_video_dur:.2f}s")
+        total_video_dur, word_timings, hook_text = synthesize_voice(phrases, voice_audio, temp_dir)
+        print(f"🎙️ Spoken Hook: \"{hook_text}\" (Duration: {total_video_dur:.2f}s total)")
 
         # HTML template for Chrome rendering
         html_template = """<!DOCTYPE html>
@@ -457,22 +526,34 @@ def generate_kinetic_reel(output_mp4, custom_quote=None, custom_image=None):
         # Text at y=760 (upper chest, crystal clear)
         fade_out_start = f"{total_video_dur - 1.5:.2f}"
 
-        # Universal aspect ratio fit: scales & crops cleanly to 1080x1920 then zooms
+        # Universal aspect ratio fit: scales & crops cleanly to 1440x2560 then prominent cinematic zoom to 1080x1920
         filter_parts = [
-            f"[0:v]scale='if(gt(a,9/16),-2,1440)':'if(gt(a,9/16),2560,-2)',crop=1440:2560,zoompan=z='min(zoom+0.0006,1.14)':x='iw/2-(iw/zoom/2)':y='ih/2-(ih/zoom/2)':d={total_frames}:s=1080x1920:fps=25[base];",
+            f"[0:v]scale='if(gt(a,9/16),-2,1440)':'if(gt(a,9/16),2560,-2)',crop=1440:2560,zoompan=z='min(zoom+0.0014,1.25)':x='iw/2-(iw/zoom/2)':y='ih/2-(ih/zoom/2)':d={total_frames}:s=1080x1920:fps=25[base];",
             f"[base][1:v]overlay=0:1380[base_with_wave];"
         ]
 
-        curr_input = "[base_with_wave]"
-        input_args = [
-            "-loop", "1", "-t", f"{total_video_dur:.2f}", "-i", image_path,
-            "-i", wave_video
-        ]
+        has_logo = os.path.exists(LOGO_PATH)
+        if has_logo:
+            filter_parts.append(f"[2:v]scale=125:125,format=rgba,colorchannelmixer=aa=0.88[wlogo];")
+            filter_parts.append(f"[base_with_wave][wlogo]overlay=W-w-35:45[base_with_logo];")
+            curr_input = "[base_with_logo]"
+            input_args = [
+                "-loop", "1", "-t", f"{total_video_dur:.2f}", "-i", clean_image_path,
+                "-i", wave_video,
+                "-i", LOGO_PATH
+            ]
+            input_idx = 3
+        else:
+            curr_input = "[base_with_wave]"
+            input_args = [
+                "-loop", "1", "-t", f"{total_video_dur:.2f}", "-i", clean_image_path,
+                "-i", wave_video
+            ]
+            input_idx = 2
 
-        input_idx = 2
         for oe in overlay_events:
             input_args.extend(["-i", oe['png']])
-            next_input = f"[tmp_{input_idx}]" if input_idx < len(overlay_events) + 1 else "[v]"
+            next_input = f"[tmp_{input_idx}]" if input_idx < len(overlay_events) + (3 if has_logo else 2) - 1 else "[v]"
             filter_parts.append(
                 f"{curr_input}[{input_idx}:v]overlay=0:760:enable='between(t,{oe['start']:.2f},{oe['end']:.2f})'{next_input};"
             )
@@ -485,9 +566,9 @@ def generate_kinetic_reel(output_mp4, custom_quote=None, custom_image=None):
         input_args.extend(["-i", voice_audio, "-i", BGM_FILE])
 
         filter_parts.append(
-            f"[{voice_idx}:a]adelay=550|550,volume=1.40[voice];"
+            f"[{voice_idx}:a]volume=1.15[voice];"
             f"[{bgm_idx}:a]volume=0.14,afade=t=out:st={fade_out_start}:d=1.5[bgm];"
-            f"[voice][bgm]amix=inputs=2:duration=first:dropout_transition=0,volume=1.8[a]"
+            f"[voice][bgm]amix=inputs=2:duration=first:dropout_transition=0,volume=1.75[a]"
         )
 
         final_filter = "".join(filter_parts)
