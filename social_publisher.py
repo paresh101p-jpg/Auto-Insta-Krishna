@@ -59,11 +59,10 @@ def publish_to_telegram(media_url, caption, post_url, is_video=False, youtube_ur
         quote_text = clean_lines[0] if clean_lines else "तुम्हारा केवल कर्म है, बाक़ी सब मुझ पर छोड़ दो।"
         quote_text = quote_text.replace("- राधे कृष्ण", "").replace("- श्री कृष्ण", "").strip()
 
-        # Clean short caption: Only thought and 2-4 keywords, strictly ZERO URLs
+        # Clean short caption: Only thought and 2-4 keywords, strictly ZERO URLs (No forced Krishna header)
         formatted_caption = (
-            f"✨ <b>श्री कृष्ण अमृत विचार</b> ✨\n\n"
-            f"<i>\"{quote_text}\"</i>\n\n"
-            f"🏷️ #Krishna #RadheKrishna #DailySuvichar #KrishnaVibez"
+            f"\"{quote_text}\"\n\n"
+            f"#सुविचार #प्रेरणा #सकारात्मक_सोच #जीवन"
         )
 
         import urllib.parse
@@ -71,7 +70,7 @@ def publish_to_telegram(media_url, caption, post_url, is_video=False, youtube_ur
         target_yt_url = youtube_url or "https://www.youtube.com/@KrishnaVibezMusic"
         target_wa_url = "https://whatsapp.com/channel/0029VbDxJHk30LKNtj4Er62J"
 
-        share_text = urllib.parse.quote(f"✨ श्री कृष्ण अमृत विचार: \"{quote_text}\"")
+        share_text = urllib.parse.quote(f"\"{quote_text}\"")
         share_url = f"https://t.me/share/url?url={urllib.parse.quote(target_web_url)}&text={share_text}"
 
         # Clean 4-button layout: Website, YouTube, WhatsApp, and Share
