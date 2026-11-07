@@ -30,28 +30,51 @@ jobs:
         with:
           python-version: '3.10'
 
+      - name: Set up Node.js for Firebase
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+
       - name: Install System Dependencies (ffmpeg, Chromium & Hindi Fonts)
         run: sudo apt-get update && sudo apt-get install -y ffmpeg chromium-browser fonts-noto-extra fonts-noto-core fonts-deva
 
       - name: Install Python dependencies
         run: pip install -r requirements.txt edge-tts
 
-      - name: Upload Reel to YouTube Shorts
+      - name: Upload Reel to YouTube Shorts & Syndicate Multi-Platform
         env:
           YOUTUBE_CLIENT_ID: ${{ secrets.YOUTUBE_CLIENT_ID }}
           YOUTUBE_CLIENT_SECRET: ${{ secrets.YOUTUBE_CLIENT_SECRET }}
           YOUTUBE_REFRESH_TOKEN: ${{ secrets.YOUTUBE_REFRESH_TOKEN }}
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
           GOOGLE_TTS_SERVICE_ACCOUNT: ${{ secrets.GOOGLE_TTS_SERVICE_ACCOUNT }}
+          FB_PAGE_ID: ${{ secrets.FB_PAGE_ID }}
+          FB_ACCESS_TOKEN: ${{ secrets.FB_ACCESS_TOKEN }}
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+          TELEGRAM_ADMIN_CHAT_ID: ${{ secrets.TELEGRAM_ADMIN_CHAT_ID }}
+          THREADS_ACCESS_TOKEN: ${{ secrets.THREADS_ACCESS_TOKEN }}
+          THREADS_USER_ID: ${{ secrets.THREADS_USER_ID }}
+          PINTEREST_ACCESS_TOKEN: ${{ secrets.PINTEREST_ACCESS_TOKEN }}
+          PINTEREST_BOARD_ID: ${{ secrets.PINTEREST_BOARD_ID }}
         run: python -u youtube_uploader.py
 
-      - name: Commit Updated YouTube Queue to Git
+      - name: Commit Updated Website Data & YouTube Queue to Git
         run: |
           git config user.name "Krishna Vibez YouTube Bot"
           git config user.email "bot@krishnavibez.in"
-          git add quotes.txt used_quotes.txt used_kinetic_images.txt used_kinetic_music.txt youtube_reels_urls.txt youtube_used_urls.txt youtube_quarantine_queue.json youtube_quarantine_audit.log || true
-          git diff --staged --quiet || git commit -m "Auto-posted Kinetic YouTube Short and updated queue [skip ci]"
+          git add website/ quotes.txt used_quotes.txt used_kinetic_images.txt used_kinetic_music.txt youtube_reels_urls.txt youtube_used_urls.txt youtube_quarantine_queue.json youtube_quarantine_audit.log || true
+          git diff --staged --quiet || git commit -m "Auto-posted Kinetic Reel across YouTube, Website, Telegram, IG & FB [skip ci]"
           for i in 1 2 3 4 5; do
             git pull --rebase origin master || true
             git push origin master && break || sleep 3
           done
+
+      - name: Deploy to Firebase Hosting
+        env:
+          FIREBASE_TOKEN: ${{ secrets.FIREBASE_TOKEN }}
+        if: env.FIREBASE_TOKEN != ''
+        run: |
+          npm install -g firebase-tools
+          firebase deploy --only hosting --token "$FIREBASE_TOKEN"
+        working-directory: website

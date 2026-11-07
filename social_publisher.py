@@ -24,13 +24,10 @@ if sys.platform == "win32":
     except Exception:
         pass
 
-def publish_to_telegram(media_url, caption, post_url, is_video=False):
+def publish_to_telegram(media_url, caption, post_url, is_video=False, youtube_url=None):
     """
-    Publishes the image or reel with title and direct website link to a Telegram Channel.
+    Publishes the image or reel with clean short thought and interactive buttons to Telegram Channel.
     Uses official Telegram Bot API (100% Free, No Token Expiration).
-    Required Secrets:
-      - TELEGRAM_BOT_TOKEN: Bot token from @BotFather
-      - TELEGRAM_CHAT_ID: Channel username (e.g., @krishnavibez) or channel ID
     """
     bot_token = os.environ.get("TELEGRAM_BOT_TOKEN")
     chat_id = os.environ.get("TELEGRAM_CHAT_ID")
@@ -57,79 +54,36 @@ def publish_to_telegram(media_url, caption, post_url, is_video=False):
         return False
 
     try:
-        # Format a rich, long FB/Insta style devotional caption (strictly under 1000 chars for Telegram)
+        # Extract clean thought for clean, uncluttered caption (ZERO URLs in text as requested)
         clean_lines = [l.strip() for l in caption.split("\n") if l.strip() and not l.strip().startswith("#") and not l.strip().startswith("http")]
-        quote_text = clean_lines[0] if clean_lines else "कर्मण्येवाधिकारस्ते मा फलेषु कदाचन।"
+        quote_text = clean_lines[0] if clean_lines else "तुम्हारा केवल कर्म है, बाक़ी सब मुझ पर छोड़ दो।"
+        quote_text = quote_text.replace("- राधे कृष्ण", "").replace("- श्री कृष्ण", "").strip()
 
-        if len(clean_lines) > 1:
-            reflection = "\n".join(clean_lines[1:4])
-        else:
-            reflection = "भगवान श्री कृष्ण का प्रत्येक वचन समस्त मानव जाति के कल्याण और अंतरात्मा की शुद्धि के लिए अमृत धारा है। जीवन के हर मोड़ पर जब चिंता या संशय घेरे, तब गोविंद के इन पावन वचनों को अपने हृदय में धारण करें। निष्काम कर्म ही ईश्वर की सच्ची पूजा है।"
+        # Clean short caption: Only thought and 2-4 keywords, strictly ZERO URLs
+        formatted_caption = (
+            f"✨ <b>श्री कृष्ण अमृत विचार</b> ✨\n\n"
+            f"<i>\"{quote_text}\"</i>\n\n"
+            f"🏷️ #Krishna #RadheKrishna #DailySuvichar #KrishnaVibez"
+        )
 
         import urllib.parse
-        share_text = urllib.parse.quote(f"✨ श्री कृष्ण अमृत विचार: \"{quote_text}\" 🌸 4K वॉलपेपर दर्शन:")
-        share_url = f"https://t.me/share/url?url={urllib.parse.quote(post_url)}&text={share_text}"
+        target_web_url = post_url or "https://krishnavibez.in/"
+        target_yt_url = youtube_url or "https://www.youtube.com/@KrishnaVibezMusic"
+        target_wa_url = "https://whatsapp.com/channel/0029VbDxJHk30LKNtj4Er62J"
 
-        # Ensure fresh preview by adding cache-buster so WhatsApp never uses old cached logo
-        sep = "&" if "?" in post_url else "?"
-        fresh_post_url = f"{post_url}{sep}v={int(time.time())}"
+        share_text = urllib.parse.quote(f"✨ श्री कृष्ण अमृत विचार: \"{quote_text}\"")
+        share_url = f"https://t.me/share/url?url={urllib.parse.quote(target_web_url)}&text={share_text}"
 
-        whatsapp_channel = "https://whatsapp.com/channel/0029VbDxJHk30LKNtj4Er62J"
-        wa_share_text = urllib.parse.quote(
-            f"🪷 ✨ श्री कृष्ण पावन अमृत विचार ✨ 🪷\n\n"
-            f"\"{quote_text}\"\n\n"
-            f"🌸 4K दर्शन व दिव्य रील देखें:\n"
-            f"{fresh_post_url}\n\n"
-            f"🕊️ हमारे आधिकारिक परिवार से जुड़ें:\n"
-            f"🟢 WhatsApp: {whatsapp_channel}\n"
-            f"▶️ YouTube: https://youtube.com/@krishnavibezofficial\n"
-            f"📸 Insta: https://www.instagram.com/krishnavibez/\n"
-            f"🧵 Threads: https://www.threads.net/@krishnavibez\n"
-            f"📘 FB: https://www.facebook.com/1808917602588221\n\n"
-            f"जय श्री राधे कृष्ण! हे गोविंद, कल्याण करें। 🙏✨\n\n"
-            f"#Krishna #RadheKrishna #BhagavadGita #KrishnaQuotes #KrishnaVibez"
-        )
-        wa_share_url = f"https://api.whatsapp.com/send?text={wa_share_text}"
-
-        # Smart Share Bridge URL: Prevents Telegram 512-byte button limit truncation
-        # and forwards the full text with all social links seamlessly into WhatsApp!
-        quote_snippet = urllib.parse.quote(quote_text[:90])
-        share_bridge_url = f"{post_url.replace('post.html', 'share.html')}&q={quote_snippet}"
-
-        channel_user = chat_id if str(chat_id).startswith("@") else "@krishnavibezz"
-        clean_channel = str(channel_user).lstrip("@")
-        channel_link = f"https://t.me/{clean_channel}"
-
-        formatted_caption = (
-            f"<b>✨ श्री कृष्ण पावन अमृत विचार ✨</b>\n\n"
-            f"<i>\"{quote_text}\"</i>\n\n"
-            f"📖 <b>पावन भावार्थ व जीवन सीख:</b>\n"
-            f"{reflection[:350]}\n\n"
-            f"🔗 <b>वेबसाइट 4K पोस्ट लिंक:</b>\n"
-            f"<a href=\"{post_url}\">{post_url}</a>\n\n"
-            f"🟢 <b>WhatsApp चैनल:</b> <a href=\"{whatsapp_channel}\">Krishna Vibez Channel</a>\n\n"
-            f"🙏 <i>भगवान श्री कृष्ण की कृपा आप और आपके परिवार पर सदा बनी रहे।</i>\n"
-            f"💫 <b>अपनी प्रतिक्रिया दें:</b> नीचे दिए गए 👍 लाइक या 👎 डिसलाइक पर टैप करें!\n\n"
-            f"🏷️ #ShreeKrishna #RadhaKrishna #BhagavadGita #KrishnaQuotes #RadheRadhe #KrishnaStatus #4KWallpaper #KrishnaVibez"
-        )
-
-        # Multi-row interactive buttons for maximum engagement, direct download, and sharing
+        # Clean 4-button layout: Website, YouTube, WhatsApp, and Share
         reply_markup = {
             "inline_keyboard": [
                 [
-                    {"text": "🌸 4K दर्शन व वॉलपेपर डाउनलोड", "url": post_url}
+                    {"text": "🌐 Visit Website", "url": target_web_url},
+                    {"text": "▶️ Watch YouTube", "url": target_yt_url}
                 ],
                 [
-                    {"text": "📲 WhatsApp पर शेयर करें", "url": share_bridge_url},
-                    {"text": "🌐 Visit Website", "url": "https://krishnavibez.in/"}
-                ],
-                [
-                    {"text": "📸 Follow Instagram", "url": "https://www.instagram.com/krishnavibez/"},
-                    {"text": "🧵 Follow Threads", "url": "https://www.threads.net/@krishnavibez"}
-                ],
-                [
-                    {"text": "▶️ Follow YouTube", "url": "https://youtube.com/@krishnavibezofficial"},
-                    {"text": "📘 Follow Facebook", "url": "https://www.facebook.com/1808917602588221"}
+                    {"text": "💬 WhatsApp Channel", "url": target_wa_url},
+                    {"text": "↗️ Share Thought", "url": share_url}
                 ]
             ]
         }
@@ -139,15 +93,20 @@ def publish_to_telegram(media_url, caption, post_url, is_video=False):
 
         payload = {
             "chat_id": chat_id,
-            param_name: media_url,
             "caption": formatted_caption,
             "parse_mode": "HTML",
             "reply_markup": json.dumps(reply_markup)
         }
-
         api_url = f"https://api.telegram.org/bot{bot_token}/{endpoint}"
-        response = requests.post(api_url, data=payload, timeout=20)
-        res_data = response.json()
+
+        if os.path.exists(str(media_url)):
+            with open(media_url, "rb") as mf:
+                response = requests.post(api_url, data=payload, files={param_name: mf}, timeout=60)
+                res_data = response.json()
+        else:
+            payload[param_name] = media_url
+            response = requests.post(api_url, data=payload, timeout=30)
+            res_data = response.json()
 
         if res_data.get("ok"):
             message_id = res_data.get("result", {}).get("message_id")
@@ -490,7 +449,7 @@ def publish_to_reddit(title, post_url, media_url, is_video=False):
         return False
 
 
-def publish_all_channels(media_url, caption, title, post_url, is_video=False):
+def publish_all_channels(media_url, caption, title, post_url, is_video=False, youtube_url=None):
     """
     Master function that runs all multi-platform publishers in parallel or sequence.
     Guaranteed to never raise an exception, preventing any failure in main.py.
@@ -503,7 +462,8 @@ def publish_all_channels(media_url, caption, title, post_url, is_video=False):
         media_url=media_url,
         caption=caption,
         post_url=post_url,
-        is_video=is_video
+        is_video=is_video,
+        youtube_url=youtube_url
     )
 
     # 2. Pinterest API

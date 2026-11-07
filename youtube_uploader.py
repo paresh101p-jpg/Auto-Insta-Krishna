@@ -626,6 +626,20 @@ def main():
         video_id = upload_short_to_youtube(upload_video_path, title, description, tags)
         mark_url_as_used(chosen_url)
         print(f"YouTube Short workflow completed successfully! ID: {video_id}")
+
+        # 🌐 MULTI-PLATFORM SYNDICATION:
+        # Broadcast newly generated Kinetic Reel to Website, Telegram, Instagram, Facebook, Threads & Pinterest!
+        try:
+            from multi_platform_reels_syndicator import syndicate_kinetic_reel
+            syndicate_kinetic_reel(
+                video_path=upload_video_path,
+                spoken_thought=spoken_thought,
+                title=title,
+                youtube_video_id=video_id,
+                image_path=chosen_img
+            )
+        except Exception as syn_err:
+            print(f"Multi-platform syndication notice: {syn_err}")
         
         # 🛡️ 24-HOUR SAFETY QUARANTINE SHIELD:
         try:
