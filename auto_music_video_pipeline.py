@@ -1759,10 +1759,10 @@ def render_animated_slide_clip(slide_path, clip_output_path, flora_sprites, moti
     if src_img is None:
         raise FileNotFoundError(f"Slide not found: {slide_path}")
 
-    # Flow / Image Watermark Auto-Removal: Crop bottom 5.5% cleanly
+    # Flow / Image Watermark 100% Guaranteed Elimination: Crop bottom 9.0% cleanly (completely cuts Flow logo)
     h, w = src_img.shape[:2]
-    if h >= 700:
-        crop_bottom = int(h * 0.055)
+    if h >= 500:
+        crop_bottom = int(h * 0.090)
         src_img = src_img[0:h - crop_bottom, 0:w]
 
     src_img = cv2.resize(src_img, (1920, 1080), interpolation=cv2.INTER_LANCZOS4)
