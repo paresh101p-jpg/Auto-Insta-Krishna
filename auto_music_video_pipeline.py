@@ -2647,7 +2647,7 @@ def upload_to_youtube(theme, duration_sec=900, track_info=None):
         minutes = (total_seconds % 3600) // 60
         seconds = total_seconds % 60
         if hours > 0:
-            return f"{hours}:{minutes:02d}:{seconds:02d}"
+            return f"{hours:02d}:{minutes:02d}:{seconds:02d}"
         else:
             return f"{minutes:02d}:{seconds:02d}"
 
@@ -2749,6 +2749,13 @@ def upload_to_youtube(theme, duration_sec=900, track_info=None):
             "👉 Explore our Amazon Store: https://www.amazon.in/shop/myhappybirthday\n"
             "(Disclaimer: As an Amazon Associate, Krishna Vibez earns from qualifying purchases at no extra cost to you.)\n"
             "━━━━━━━━━━━━━━━━━━━━━━━━━━\n\n"
+            "⚖️ आधिकारिक कॉपीराइट एवं संगीत अस्वीकरण (Copyright & Music Disclaimer):\n"
+            "• संगीत एवं ऑडियो (Music & Audio): यह संगीत 100% मूल (Original) एवं कृष्ण वाइब्स (Krishna Vibez) द्वारा एक्सक्लूसिव रूप से निर्मित है। All music compositions are 100% original, copyright-safe, and exclusively owned/mastered by Krishna Vibez.\n"
+            "• दृश्य एवं वीडियो (Visuals & Art): सभी 16:9 सिनेमैटिक विजुअल्स एवं कलाकृतियां कृष्ण वाइब्स की मूल संपत्ति हैं।\n"
+            "• उद्देश्य (Purpose): यह पावन संगीत केवल मानसिक शांति, ध्यान, योग, तनाव मुक्ति और अनिद्रा से राहत के आध्यात्मिक कल्याण हेतु निर्मित है।\n"
+            "• सुरक्षा अस्वीकरण (Safety Notice): कृपया वाहन चलाते समय या भारी मशीनरी चलाते समय ध्यान/नींद संगीत न सुनें।\n"
+            "• कॉपीराइट सूचना (Copyright Notice): इस चैनल के किसी भी ऑडियो या वीडियो को पुनः अपलोड (re-upload) करना पूर्णतः प्रतिबंधित है। All Rights Reserved © 2026 Krishna Vibez.\n"
+            "━━━━━━━━━━━━━━━━━━━━━━━━━━\n\n"
             "🙏 यदि इस संगीत ने आपके मन को शांति और सुकून दिया हो, तो वीडियो को लाइक करें, अपने परिजनों के साथ साझा करें और चैनल को सब्सक्राइब अवश्य करें।\n\n"
             "जय श्री राधे कृष्ण! 🪷✨\n\n"
             + ("#KrishnaLofi #LofiFlute #LofiBeats #LofiMusic #Krishna #Flute #Bansuri #MeditationMusic #KrishnaMusic #RelaxingMusic #InnerPeace #DeepSleep #BansuriTabla #KrishnaVibez #DailyMeditation" if is_lofi else
@@ -2812,6 +2819,13 @@ def upload_to_youtube(theme, duration_sec=900, track_info=None):
             "🛍️ Recommendations (Amazon Storefront):\n"
             "👉 Explore our Amazon Store: https://www.amazon.in/shop/myhappybirthday\n"
             "(Disclaimer: Krishna Vibez earns from qualifying purchases at no extra cost to you.)\n"
+            "━━━━━━━━━━━━━━━━━━━━━━━━━━\n\n"
+            "⚖️ आधिकारिक कॉपीराइट एवं संगीत अस्वीकरण (Copyright & Music Disclaimer):\n"
+            "• संगीत एवं ऑडियो (Music & Audio): यह संगीत 100% मूल (Original) एवं कृष्ण वाइब्स (Krishna Vibez) द्वारा एक्सक्लूसिव रूप से निर्मित है। All music compositions are 100% original, copyright-safe, and exclusively owned/mastered by Krishna Vibez.\n"
+            "• दृश्य एवं वीडियो (Visuals & Art): सभी 16:9 सिनेमैटिक विजुअल्स एवं कलाकृतियां कृष्ण वाइब्स की मूल संपत्ति हैं।\n"
+            "• उद्देश्य (Purpose): यह पावन संगीत केवल मानसिक शांति, ध्यान, योग, तनाव मुक्ति और अनिद्रा से राहत के आध्यात्मिक कल्याण हेतु निर्मित है।\n"
+            "• सुरक्षा अस्वीकरण (Safety Notice): कृपया वाहन चलाते समय या भारी मशीनरी चलाते समय ध्यान/नींद संगीत न सुनें।\n"
+            "• कॉपीराइट सूचना (Copyright Notice): इस चैनल के किसी भी ऑडियो या वीडियो को पुनः अपलोड (re-upload) करना पूर्णतः प्रतिबंधित है। All Rights Reserved © 2026 Krishna Vibez.\n"
             "━━━━━━━━━━━━━━━━━━━━━━━━━━\n\n"
             "🙏 यदि इस संगीत ने आपके मन को शांति और सुकून दिया हो, तो वीडियो को लाइक करें, अपने परिजनों के साथ साझा करें और चैनल को सब्सक्राइब अवश्य करें।\n\n"
             "शान्ति: शान्ति: शान्ति: 🌿✨\n\n"
