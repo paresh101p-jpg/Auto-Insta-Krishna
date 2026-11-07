@@ -1,4 +1,5 @@
-﻿#!/usr/bin/env python3
+import procedural_visualizer_engine as pve
+#!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
 =============================================================================
@@ -1745,7 +1746,7 @@ def load_flora_sprites_dict():
     return sprites_dict
 
 
-def render_animated_slide_clip(slide_path, clip_output_path, flora_sprites, motion_style, logo_badge, slide_idx=0, duration=300, fps=25, sparkle_palette=None, num_particles=17):
+def render_animated_slide_clip(slide_path, clip_output_path, flora_sprites, motion_style, logo_badge, slide_idx=0, duration=300, fps=25, sparkle_palette=None, num_particles=17, visualizer_style='fullwidth_bars', visualizer_palette=None):
     """
     Renders a single 60-second (1-minute) slide clip with:
     - Subpixel 64-bit Floating Bicubic Ken Burns Zoom & Pan (ZERO Jhatka)
@@ -1935,6 +1936,13 @@ def render_animated_slide_clip(slide_path, clip_output_path, flora_sprites, moti
             brightness = 0.35 + 0.65 * (0.5 + 0.5 * math.sin(t * speed * 2.0 + phase))
             fast_draw_sparkle(frame, cur_x, cur_y, rad, star, brightness, sprites)
             
+        # Procedural Audio-Reactive Visualizer (50+ Styles)
+        if visualizer_style and visualizer_palette:
+            norm_t = prog
+            # Dynamic sound energy response with extra high jump on high notes
+            sound_intensity = 1.0 + 3.2 * math.pow(max(0.0, math.sin(t * 1.8) * 0.7 + math.cos(t * 0.9) * 0.5), 1.6)
+            pve.draw_dynamic_visualizer(frame, visualizer_style, visualizer_palette, sound_intensity, t, base_y=885)
+
         # Top Corner Logo Badge
         if logo_badge is not None:
             overlay_rgba(frame, logo_badge, center_x=95, center_y=95, scale=1.0, angle_deg=0)
@@ -1983,6 +1991,10 @@ def render_video(slides, duration_sec=900, is_krishna=True):
     chosen_motion = random.choice(MOTION_STYLES)
     chosen_palette = random.choice(DIVINE_SPARKLE_PALETTES)
     
+    # 50+ Visualizer Engine Selection (Procedural variation per video)
+    chosen_vis_style = random.choice(pve.VISUALIZER_STYLES)
+    chosen_vis_palette = random.choice(pve.COLOR_PALETTES)
+    
     print("=================================================================")
     print(f"  -> 🌸 Selected Flora Theme   : {chosen_flora['name']}")
     print(f"  -> 🍃 Selected Motion Style  : {chosen_motion['name']}")
@@ -2014,7 +2026,8 @@ def render_video(slides, duration_sec=900, is_krishna=True):
         print(f"  -> Rendering Slide {idx+1}/{len(selected_slides)} (300s / 5-min) with Dynamic Petals & Smooth Zoom...")
         render_animated_slide_clip(
             slide, clip_path, active_flora_sprites, chosen_motion, logo_badge,
-            slide_idx=idx, duration=300, fps=25, sparkle_palette=chosen_palette, num_particles=17
+            slide_idx=idx, duration=300, fps=25, sparkle_palette=chosen_palette, num_particles=17,
+            visualizer_style=chosen_vis_style, visualizer_palette=chosen_vis_palette
         )
     
     # 2. Concat animated clips to cover duration_sec
