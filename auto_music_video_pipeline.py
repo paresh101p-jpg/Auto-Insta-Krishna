@@ -1784,7 +1784,41 @@ def remove_flow_watermark(img):
     return cleaned
 
 
-def render_animated_slide_clip(slide_path, clip_output_path, flora_sprites, motion_style, logo_badge, slide_idx=0, duration=60, fps=25, sparkle_palette=None, num_particles=17, visualizer_style='fullwidth_bars', visualizer_palette=None):
+def extract_real_audio_amplitudes(audio_path, duration_sec=900, fps=25):
+    """Extracts 100% REAL audio RMS decibels frame-by-frame from the audio file."""
+    total_frames = int(fps * duration_sec)
+    sample_rate = 1000
+    try:
+        cmd = [
+            FFMPEG_EXE, "-y",
+            "-t", str(duration_sec),
+            "-i", audio_path,
+            "-ac", "1",
+            "-ar", str(sample_rate),
+            "-f", "f32le",
+            "pipe:1"
+        ]
+        proc = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.DEVNULL)
+        raw_bytes, _ = proc.communicate()
+        samples = np.frombuffer(raw_bytes, dtype=np.float32)
+        expected = total_frames * 40
+        if len(samples) < expected:
+            samples = np.pad(samples, (0, expected - len(samples)))
+        else:
+            samples = samples[:expected]
+        chunks = samples.reshape((total_frames, 40))
+        rms = np.sqrt(np.mean(chunks**2, axis=1))
+        kernel = np.ones(3) / 3.0
+        smooth_rms = np.convolve(rms, kernel, mode="same")
+        mean_val = np.mean(smooth_rms) or 0.05
+        intensity_curve = np.clip((smooth_rms / mean_val) * 1.5, 0.2, 4.0)
+        return intensity_curve
+    except Exception as e:
+        print(f"  -> Real audio extraction notice: {e}")
+        return None
+
+
+def render_animated_slide_clip(slide_path, clip_output_path, flora_sprites, motion_style, logo_badge, slide_idx=0, duration=60, fps=25, sparkle_palette=None, num_particles=17, visualizer_style='fullwidth_bars', visualizer_palette=None, audio_curve=None):
     """
     Renders a single 60-second (1-minute) slide clip with:
     - Subpixel 64-bit Floating Bicubic Ken Burns Zoom & Pan (ZERO Jhatka)
@@ -1970,12 +2004,13 @@ def render_animated_slide_clip(slide_path, clip_output_path, flora_sprites, moti
             brightness = 0.35 + 0.65 * (0.5 + 0.5 * math.sin(t * speed * 2.0 + phase))
             fast_draw_sparkle(frame, cur_x, cur_y, rad, star, brightness, sprites)
             
-        # Procedural Audio-Reactive Visualizer (50+ Styles)
+        # 100% Real Audio-Reactive Visualizer (Real RMS Decibels from Music Track)
         if visualizer_style and visualizer_palette:
-            norm_t = prog
-            # Dynamic sound energy response with extra high jump on high notes
-            sound_intensity = 1.0 + 3.2 * math.pow(max(0.0, math.sin(t * 1.8) * 0.7 + math.cos(t * 0.9) * 0.5), 1.6)
-            pve.draw_dynamic_visualizer(frame, visualizer_style, visualizer_palette, sound_intensity, t, base_y=885)
+            if audio_curve is not None and i < len(audio_curve):
+                sound_intensity = float(audio_curve[i])
+            else:
+                sound_intensity = 1.0
+            pve.draw_dynamic_visualizer(frame, visualizer_style, visualizer_palette, sound_intensity, t, base_y=800)
 
         # Top Corner Logo Badge
         if logo_badge is not None:
@@ -2054,15 +2089,26 @@ def render_video(slides, duration_sec=900, is_krishna=True):
     
     logo_badge = create_corner_logo_badge(size=120)
     
-    # 4. Render 60-second animated clip for each slide
+    # 4. Extract 100% REAL Audio Amplitude Curve from Soundtrack
+    print("  -> 🎙️ Extracting 100% REAL Audio Amplitude from soundtrack for visualizer sync...")
+    real_audio_curve = extract_real_audio_amplitudes(TEMP_AUDIO, duration_sec=duration_sec, fps=25)
+
+    # 5. Render 60-second animated clip for each slide
     for idx, slide in enumerate(selected_slides):
         clip_path = os.path.join(temp_clips_dir, f"clip_{idx+1}.mp4")
         clip_files.append(clip_path)
         print(f"  -> Rendering Slide {idx+1}/{len(selected_slides)} (60s) with Dynamic Petals & Smooth Zoom...")
+
+        # Slice exact audio curve for this 60s clip
+        clip_start_frame = (idx * 60 * 25)
+        clip_end_frame = ((idx + 1) * 60 * 25)
+        clip_audio_curve = real_audio_curve[clip_start_frame:clip_end_frame] if real_audio_curve is not None else None
+
         render_animated_slide_clip(
             slide, clip_path, active_flora_sprites, chosen_motion, logo_badge,
             slide_idx=idx, duration=60, fps=25, sparkle_palette=chosen_palette, num_particles=17,
-            visualizer_style=chosen_vis_style, visualizer_palette=chosen_vis_palette
+            visualizer_style=chosen_vis_style, visualizer_palette=chosen_vis_palette,
+            audio_curve=clip_audio_curve
         )
     
     # 2. Concat animated clips to cover duration_sec
