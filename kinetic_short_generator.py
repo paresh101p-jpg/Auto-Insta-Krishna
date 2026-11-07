@@ -291,11 +291,68 @@ def split_quote_into_phrases(quote_text):
 
 from reel_atmospheric_engine import select_thought_atmospheric, AtmosphericParticleSimulator, SACRED_PALETTES
 
+# 12+ Emotion-Adaptive Voice Profiles (Spanning Sad, Joy, Masti, Motivation, Peace - Men & Female)
+VOICE_CATALOG = {
+    "SED_SOLACE": [
+        {"name": "hi-IN-Chirp3-HD-Charon", "gender": "MALE", "rate": 0.83, "tone": "गंभीर, सांत्वना देने वाला शांत स्वर", "bass": 3.0, "treble": 1.2},
+        {"name": "hi-IN-Chirp3-HD-Aoede", "gender": "FEMALE", "rate": 0.85, "tone": "स्नेही, करुणामयी कोमल स्त्री स्वर", "bass": 1.5, "treble": 2.2},
+    ],
+    "KHUSHI_PREM": [
+        {"name": "hi-IN-Chirp3-HD-Sadachbia", "gender": "MALE", "rate": 0.88, "tone": "मधुर, भक्ति एवं प्रेममय स्वर", "bass": 2.0, "treble": 2.0},
+        {"name": "hi-IN-Chirp3-HD-Kore", "gender": "FEMALE", "rate": 0.86, "tone": "सौम्य, आनंदमयी स्त्री स्वर", "bass": 1.5, "treble": 2.4},
+    ],
+    "MASTI_UTSAH": [
+        {"name": "hi-IN-Chirp3-HD-Puck", "gender": "MALE", "rate": 0.92, "tone": "उमंग भरा, स्फूर्तिदायक स्वर", "bass": 1.8, "treble": 2.5},
+        {"name": "hi-IN-Chirp3-HD-Leda", "gender": "FEMALE", "rate": 0.89, "tone": "उत्साही, प्रेरणादायक स्त्री स्वर", "bass": 1.8, "treble": 2.2},
+    ],
+    "MOTIVATION_SAHAS": [
+        {"name": "hi-IN-Chirp3-HD-Fenrir", "gender": "MALE", "rate": 0.87, "tone": "ओजस्वी, आत्मविश्वासी गुरु स्वर", "bass": 2.8, "treble": 1.6},
+        {"name": "hi-IN-Neural2-B", "gender": "MALE", "rate": 0.88, "tone": "दृढ़, गंभीर कर्म उपदेशक स्वर", "bass": 3.0, "treble": 1.5},
+        {"name": "hi-IN-Neural2-D", "gender": "FEMALE", "rate": 0.87, "tone": "प्रेरक, जागृतिदायक स्त्री स्वर", "bass": 1.6, "treble": 2.2},
+    ],
+    "SHANTI_DHYAN": [
+        {"name": "hi-IN-Chirp3-HD-Orus", "gender": "MALE", "rate": 0.83, "tone": "अत्यंत शांत, ध्यानमग्न साधना स्वर", "bass": 2.5, "treble": 1.8},
+        {"name": "hi-IN-Neural2-C", "gender": "MALE", "rate": 0.84, "tone": "गहन ध्यान, मौन चिंतन स्वर", "bass": 3.0, "treble": 1.5},
+        {"name": "hi-IN-Neural2-A", "gender": "FEMALE", "rate": 0.85, "tone": "पावन, शांतिदायक प्रार्थना स्वर", "bass": 1.5, "treble": 2.4},
+    ]
+}
+
+def detect_thought_emotion_category(thought_text):
+    text_lower = thought_text.lower()
+    sed_words = ["दुःख", "कठिन", "दर्द", "हार", "आंसू", "संकट", "अकेला", "बुरा", "विपत्ति", "पीड़ा", "रुला", "चोट", "उदासी", "कष्ट", "समय खराब"]
+    khushi_words = ["खुशी", "आनंद", "प्रेम", "मुस्कान", "सखा", "राधा", "बांसुरी", "हर्ष", "सुख", "मधुर", "मनमोहक", "प्रसन्न", "प्यार"]
+    masti_words = ["उत्साह", "नया", "उमंग", "प्रकाश", "सवेरा", "खिल", "हँसी", "मस्ती", "खिलखिला", "चंचल", "रंग", "सृष्टि"]
+    shanti_words = ["शांति", "मौन", "ध्यान", "ईश्वर", "आत्मा", "प्रभु", "समर्पण", "शांत", "सत्य", "साधना", "भरोसा", "विश्वास", "कान्हा"]
+    motivation_words = ["साहस", "हिम्मत", "सफलता", "लक्ष्य", "जीत", "कर्म", "पुरुषार्थ", "कर्तव्य", "सामर्थ्य", "प्रयास", "मेहनत", "रास्ता"]
+
+    for w in sed_words:
+        if w in text_lower:
+            return "SED_SOLACE"
+    for w in khushi_words:
+        if w in text_lower:
+            return "KHUSHI_PREM"
+    for w in masti_words:
+        if w in text_lower:
+            return "MASTI_UTSAH"
+    for w in shanti_words:
+        if w in text_lower:
+            return "SHANTI_DHYAN"
+    for w in motivation_words:
+        if w in text_lower:
+            return "MOTIVATION_SAHAS"
+
+    return random.choice(["SHANTI_DHYAN", "MOTIVATION_SAHAS"])
+
+def select_thought_voice(thought_text):
+    cat = detect_thought_emotion_category(thought_text)
+    options = VOICE_CATALOG.get(cat, VOICE_CATALOG["SHANTI_DHYAN"])
+    selected = random.choice(options)
+    return cat, selected
+
 def synthesize_voice(phrases, output_audio_path, temp_dir):
     """
-    Synthesizes authentic human spiritual voiceover using Google Cloud Chirp3-HD (hi-IN-Chirp3-HD-Fenrir)
+    Synthesizes authentic human spiritual voiceover with real emotional depth (12+ Voices)
     speaking ONLY the pure thought text (ZERO extra hook words, ZERO robotic breaks).
-    Guarantees video duration is strictly >= 11.8 seconds.
     """
     ffmpeg = find_ffmpeg()
 
@@ -310,14 +367,16 @@ def synthesize_voice(phrases, output_audio_path, temp_dir):
     full_thought_text = " ".join([" ".join(p) for p in phrases])
     thought_audio = os.path.join(temp_dir, "thought.mp3")
 
+    # Select Emotion-Adaptive Voice Profile
+    emotion_cat, voice_prof = select_thought_voice(full_thought_text)
+    print(f"🎙️ Selected Voice Profile: {emotion_cat} -> {voice_prof['name']} ({voice_prof['tone']}, speaking_rate={voice_prof['rate']})")
+
     # Check for Google Cloud credentials
     gcreds_file = os.path.join(BASE_DIR, "google_tts_service_account.json")
     gcreds_env = os.environ.get("GOOGLE_TTS_SERVICE_ACCOUNT")
-    embedded_b64 = "ewogICJ0eXBlIjogInNlcnZpY2VfYWNjb3VudCIsCiAgInByb2plY3RfaWQiOiAieW91dHViZS1idWxrLXVwZGF0ZS01MDEwMDkiLAogICJwcml2YXRlX2tleV9pZCI6ICJlMTNiY2M2NDMyOGE3MjMwOTNkOGZiMjMyZWM5MDRjOWIzZDg3Mzg4IiwKICAicHJpdmF0ZV9rZXkiOiAiLS0tLS1CRUdJTiBQUklWQVRFIEtFWS0tLS0tXG5NSUlFdkFJQkFEQU5CZ2txaGtpRzl3MEJBUUVGQUFTQ0JLWXdnZ1NpQWdFQUFvSUJBUUNkNEdjTWozOGZMUTN0XG5iVmdHY3RRS3lyMXFIMCtvOE9zN2lWRU1QbEhmZm4zOGZxMVJFZmRJZWJzekQ2Q3JaK3NPeDZCbjUzTUc2Yk14XG5kVk9rbVBTTHpHQVZIRU11Vm1uajZaR081VDB1OENRTWpPWTF4Zlc2cktTZW5oNGNXN0JwWWsrNjN4MXpuWU5YXG5iNWJCRFB5NVJlcldjMU9rQmhVSmtyTEd0OFZvK0llaGhoVXRGeCswbmFDdG9vK0tRRFRqS25RUnRPWitWcXBHXG54OXRLVVJJdHZraVp3ZU1ia1J6cXpCOGVzckJ4VlJPZXRFQUdpVXZtZ1ljTXMwdTJjcDhoNkV6TEhrc08veDhlXG4rZ3FWb3NZR0d6bHpuYkQwZGdOTEhYMzRrbzNYS25LaHVSVlhkMmI3V2RPMkdwaDBDNVFMQXU4citVdEg5SnBkXG5SVTVnYmp4UEFnTUJBQUVDZ2dFQU13MmpKVXV1RngzUnVDcTQ0WFQybnZySzMrdDZMaTZpVXlGbnBTYnVBUEQ5XG51czRZSy9ROFhDS0paOHl3NzF6dWhWd0d3akwxWHBIcVVaOFlTa3p3SDlrYVpSazduRnR6YUxGYVViUk40Y1RrXG5VMjZvNzFDeDB3a0xQd1B3eHNqYnRtaUZVZS9lclVtTmRKUHdVME5vNGx6NndSaVFQcVY4M2hpaldXR0tKQlJnXG5WekJBazYvRkducWNNNXdwelBhZ2NqR2ljVUdMSGk3U3pYYmtlV3F4REFtYVFsRzRLcEpTbXJsMTRhNEIzM3pHXG41Y255ekEya0ZMR0ZCTVIxaCtwNm5hRDNzRWpPZWNxQ0lYblo2WlBKTXNCcTMyc0ZzMHB1d1FIY2UzOERzZEpiXG5yay9CTkxvNnNhZUd5ajVHOFR1VXRZVXJScUFVdmFFK24vMmRHR2NjMFFLQmdRRFNiYXlDbXlMN0RIeklObFNzXG4yVmJ0N1ZyQnVWeld5WWxrUFd2bXR0RVRiTFhhZzNTTTd5Z1p3aTRKenVBeHFvSWNBeUJTVnovZWVSMW04b3JCXG5nM0srQzRGdVc1T2RHSjdYaGVjdERIdmo0RjJxNlltOXgvYUNCR0ovaEx4M3JYdWtVamJEZ0FINGg1T0NIaGtvXG5DKzIybXB3TTBnWDRVMVdRS0FqVktEQ091UUtCZ1FEQUVUWCt6WWFBSHBJa2h4bUtUZHJBc3Z5Y3kvSFErQVpXXG5UZHA1OUM2V0IwUmpqZ1dhV0xBR2ZmVkhEYWI5aTJ2cHBpeGphVDZzMUE4c2pYbW1XaGFxc1VEaklhOEJZRDJjXG4wWmY5Q0tkNzZaYmlCY0xETGFmMVpBMU1KOFFTNUNvM05tMUZZY05tTnloRUJPemdxc1BLQnJJdGpHb0dSRHkxXG53ZkpzNWdCZlJ3S0JnSC9JNWpleDZmNDJTUmgwRmR1WmFEYTRLcUwxNDdEelZpR3ZRdlVxRTdFT0ZTa0xKeDNtXG5wWjF1MC9KVTFNU1VYTXFTQTNDOVZ5WE11dFFuZWFlbUlXblRKdGhUZUVLd0R0V21sUXBBU0lQTFhsWkoxOEdOXG55dDZOdHhybENtWkt6WWl0L0YrZ1BwSWtFcW16aVdkT1J4N2FxT1VJTFdQdGgwb3haWnU3K2pEUkFvR0FlenRQXG51cUdodDVobHlod0lqZzF2Mm8yOHVObTkySWNhZ2N0SDcxRjFobnM1TE9zVnV6ZEdFWlJGaUlaQTY1TEY5VTdTXG5VaUpYdlVuK1JtYXJjOGwvbTV0STk3SkgrQWtJM3hJM2czbEhCS0VXVndTOU5yK1hjVUgxcWpRbGdMMTJQS0NtXG5NWXNOZFFyVXdmZXJDR2RvWWJvMEhqZG1XNGp5cnVlMnBKcGFDTWNDZ1lCNUhYczhiMW5LUVowcENNU2I2S1BEXG5vRkNCdHJMUGU0Vk5ORmlqMnYvZ2JpUThXT2hjQnFFVGRmWEpyQTZyZk1yY21IUjdVcmIwZzZQTS9ZTG00Z3VPXG5mdE5KQWRObVBYVlQ3Z2hTaTFZeFAxaVY0REttbE9hWmVROTlxa0J3K0hIaEN1L1I2SmRISEI3bEUwc0hCR2VEXG5HR2RRbDRLNmlpZ3AwbnQwM2tzek13PT1cbi0tLS0tRU5EIFBSSVZBVEUgS0VZLS0tLS1cbiIsCiAgImNsaWVudF9lbWFpbCI6ICJrcmlzaG5hLXJlZWwtYXVkaW9AeW91dHViZS1idWxrLXVwZGF0ZS01MDEwMDkuaWFtLmdzZXJ2aWNlYWNjb3VudC5jb20iLAogICJjbGllbnRfaWQiOiAiMTA3MjI4MjAxMjg3NTQwNjkzNDcxIiwKICAiYXV0aF91cmkiOiAiaHR0cHM6Ly9hY2NvdW50cy5nb29nbGUuY29tL28vb2F1dGgyL2F1dGgiLAogICJ0b2tlbl91cmkiOiAiaHR0cHM6Ly9vYXV0aDIuZ29vZ2xlYXBpcy5jb20vdG9rZW4iLAogICJhdXRoX3Byb3ZpZGVyX3g1MDlfY2VydF91cmwiOiAiaHR0cHM6Ly93d3cuZ29vZ2xlYXBpcy5jb20vb2F1dGgyL3YxL2NlcnRzIiwKICAiY2xpZW50X3g1MDlfY2VydF91cmwiOiAiaHR0cHM6Ly93d3cuZ29vZ2xlYXBpcy5jb20vcm9ib3QvdjEvbWV0YWRhdGEveDUwOS9rcmlzaG5hLXJlZWwtYXVkaW8lNDB5b3V0dWJlLWJ1bGstdXBkYXRlLTUwMTAwOS5pYW0uZ3NlcnZpY2VhY2NvdW50LmNvbSIsCiAgInVuaXZlcnNlX2RvbWFpbiI6ICJnb29nbGVhcGlzLmNvbSIKfQo="
+    embedded_b64 = "ewogICJ0eXBlIjogInNlcnZpY2VfYWNjb3VudCIsCiAgInByb2plY3RfaWQiOiAieW91dHViZS1idWxrLXVwZGF0ZS01MDEwMDkiLAogICJwcml2YXRlX2tleV9pZCI6ICJlMTNiY2M2NDMyOGE3MjMwOTNkOGZiMjMyZWM5MDRjOWIzZDg3Mzg4IiwKICAicHJpdmF0ZV9rZXkiOiAiLS0tLS1CRUdJTiBQUklWQVRFIEtFWS0tLS0tXG5NSUlFdkFJQkFEQU5CZ2txaGtpRzl3MEJBUUVGQUFTQ0JLWXdnZ1NpQWdFQUFvSUJBUUNkNEdjTWozOGZMUTN0XG5iVmdHY3RRS3lyMXFIMCtvOE9zN2lWRU1QbEhmZm4zOGZxMVJFZmRJZWJzekQ2Q3JaK3NPeDZCbjUzTUc2Yk14XG5kVk9rbVBTTHpHQVZIRU11Vm1uajZaR081VDB1OENRTWpPWTF4Zlc2cktTZW5oNGNXN0JwWWsrNjN4MXpuWU5YXG5iNWJCRFB5NVJlcldjMU9rQmhVSmtyTEd0OFZvK0llaGhoVXRGeCswbmFDdG9vK0tRRFRqS25RUnRPWitWcXBHXG54OXRLVVJJdHZraVp3ZU1ia1J6cXpCOGVzckJ4VlJPZXRFQUdpVXZtZ1ljTXMwdTJjcDhoNkV6TEhrc08veDhlXG4rZ3FWb3NZR0d6bHpuYkQwZGdOTEhYMzRrbzNYS25LaHVSVlhkMmI3V2RPMkdwaDBDNVFMQXU4citVdEg5SnBkXG5SVTVnYmp4UEFnTUJBQUVDZ2dFQU13MmpKVXV1RngzUnVDcTQ0WFQybnZySzMrdDZMaTZpVXlGbnBTYnVBUEQ5XG51czRZSy9ROFhDS0paOHl3NzF6dWhWd0d3akwxWHBIcVVaOFlTa3p3SDlrYVpSazduRnR6YUxGYVViUk40Y1RrXG5VMjZvNzFDeDB3a0xQd1B3eHNqYnRtaUZVZS9lclVtTmRKUHdVME5vNGx6NndSaVFQcVY4M2hpaldXR0tKQlJnXG5WekJBazYvRkducWNNNXdwelBhZ2NqR2ljVUdMSGk3U3pYYmtlV3F4REFtYVFsRzRLcEpTbXJsMTRhNEIzM3pHXG51Y255ekEya0ZMR0ZCTVIxaCtwNm5hRDNzRWpPZWNxQ0lYblo2WlBKTXNCcTMyc0ZzMHB1d1FIY2UzOERzZEpiXG5yay9CTkxvNnNhZUd5ajVHOFR1VXRZVXJScUFVdmFFK24vMmRHR2NjMFFLQmdRRFNiYXlDbXlMN0RIeklObFNzXG4yVmJ0N1ZyQnVWeld5WWxrUFd2bXR0RVRiTFhhZzNTTTd5Z1p3aTRKenVBeHFvSWNBeUJTVnovZWVSMW04b3JCXG5nM0srQzRGdVc1T2RHSjdYaGVjdERIdmo0RjJxNlltOXgvYUNCR0ovaEx4M3JYdWtVamJEZ0FINGg1T0NIaGtvXG5DKzIybXB3TTBnWDRVMVdRS0FqVktEQ091UUtCZ1FEQUVUWCt6WWFBSHBJa2h4bUtUZHJBc3Z5Y3kvSFErQVpXXG5UZHA1OUM2V0IwUmpqZ1dhV0xBR2ZmVkhEYWI5aTJ2cHBpeGphVDZzMUE4c2pYbW1XaGFxc1VEaklhOEJZRDJjXG4wWmY5Q0tkNzZaYmlCY0xETGFmMVpBMU1KOFFTNUNvM05tMUZZY05tTnloRUJPemdxc1BLQnJJdGpHb0dSRHkxXG53ZkpzNWdCZlJ3S0JnSC9JNWpleDZmNDJTUmgwRmR1WmFEYTRLcUwxNDdEelZpR3ZRdlVxRTdFT0ZTa0xKeDNtXG5wWjF1MC9KVTFNU1VYTXFTQTNDOVZ5WE11dFFuZWFlbUlXblRKdGhUZUVLd0R0V21sUXBBU0lQTFhsWkoxOEdOXG55dDZOdHhybENtWkt6WWl0L0YrZ1BwSWtFcW16aVdkT1J4N2FxT1VJTFdQdGgwb3haWnU3K2pEUkFvR0FlenRQXG51cUdodDVobHlod0lqZzF2Mm8yOHVObTkySWNhZ2N0SDcxRjFobnM1TE9zVnV6ZEdFWlJGaUlaQTY1TEY5VTdTXG5VaUpYdlVuK1JtYXJjOGwvbTV0STk3SkgrQWtJM3hJM2czbEhCS0VXVndTOU5yK1hjVUgxcWpRbGdMMTJQS0NtXG5NWXNOZFFyVXdmZXJDR2RvWWJvMEhqZG1XNGp5cnVlMnBKcGFDTWNDZ1lCNUhYczhiMW5LUVowcENNU2I2S1BEXG5vRkNCdHJMUGU0Vk5ORmlqMnYvZ2JpUThXT2hjQnFFVGRmWEpyQTZyZk1yY21IUjdVcmIwZzZQTS9ZTG00Z3VPXG5mdE5KQWRObVBYVlQ3Z2hTaTFZeFAxaVY0REttbE9hWmVROTlxa0J3K0hIaEN1L1I2SmRISEI3bEUwc0hCR2VEXG5HR2RRbDRLNmlpZ3AwbnQwM2tzek13PT1cbi0tLS0tRU5EIFBSSVZBVEUgS0VZLS0tLS1cbiIsCiAgImNsaWVudF9lbWFpbCI6ICJrcmlzaG5hLXJlZWwtYXVkaW9AeW91dHViZS1idWxrLXVwZGF0ZS01MDEwMDkuaWFtLmdzZXJ2aWNlYWNjb3VudC5jb20iLAogICJjbGllbnRfaWQiOiAiMTA3MjI4MjAxMjg3NTQwNjkzNDcxIiwKICAiYXV0aF91cmkiOiAiaHR0cHM6Ly9hY2NvdW50cy5nb29nbGUuY29tL28vb2F1dGgyL2F1dGgiLAogICJ0b2tlbl91cmkiOiAiaHR0cHM6Ly9vYXV0aDIuZ29vZ2xlYXBpcy5jb20vdG9rZW4iLAogICJhdXRoX3Byb3ZpZGVyX3g1MDlfY2VydF91cmwiOiAiaHR0cHM6Ly93d3cuZ29vZ2xlYXBpcy5jb20vb2F1dGgyL3YxL2NlcnRzIiwKICAiY2xpZW50X3g1MDlfY2VydF91cmwiOiAiaHR0cHM6Ly93d3cuZ29vZ2xlYXBpcy5jb20vcm9ib3QvdjEvbWV0YWRhdGEveDUwOS9rcmlzaG5hLXJlZWwtYXVkaW9lNDB5b3V0dWJlLWJ1bGstdXBkYXRlLTUwMTAwOS5pYW0uZ3NlcnZpY2VhY2NvdW50LmNvbSIsCiAgInVuaXZlcnNlX2RvbWFpbiI6ICJnb29nbGVhcGlzLmNvbSIKfQo="
 
     client = None
-    voice_params = None
-    audio_cfg = None
     use_google = False
 
     if gcreds_env or os.path.exists(gcreds_file) or embedded_b64:
@@ -325,30 +384,28 @@ def synthesize_voice(phrases, output_audio_path, temp_dir):
             import json
             from google.cloud import texttospeech
             from google.oauth2 import service_account
-            if gcreds_env or embedded_b64:
+            if os.path.exists(gcreds_file):
+                client = texttospeech.TextToSpeechClient.from_service_account_json(gcreds_file)
+            elif gcreds_env or embedded_b64:
                 import base64
                 raw_json = gcreds_env if gcreds_env else base64.b64decode(embedded_b64).decode("utf-8")
                 info = json.loads(raw_json)
                 creds = service_account.Credentials.from_service_account_info(info)
                 client = texttospeech.TextToSpeechClient(credentials=creds)
-            else:
-                client = texttospeech.TextToSpeechClient.from_service_account_json(gcreds_file)
 
-            # Chirp3-HD Studio Voice with Serene, Meditative Delivery (speaking_rate=0.88)
             voice_params = texttospeech.VoiceSelectionParams(
                 language_code="hi-IN",
-                name="hi-IN-Chirp3-HD-Fenrir",
+                name=voice_prof["name"],
             )
             audio_cfg = texttospeech.AudioConfig(
                 audio_encoding=texttospeech.AudioEncoding.MP3,
-                speaking_rate=0.88
+                speaking_rate=voice_prof["rate"]
             )
             use_google = True
-            print("🎙️ Using Google Cloud Chirp3-HD Studio Voice (hi-IN-Chirp3-HD-Fenrir) for pure thought delivery.")
         except Exception as ge:
             print(f"Google TTS init note: {ge}")
 
-    # Synthesize Pure Thought in ONE single, unbroken, continuous master recording
+    # Synthesize Pure Thought in ONE single, unbroken master recording
     if use_google:
         try:
             resp = client.synthesize_speech(
@@ -359,23 +416,25 @@ def synthesize_voice(phrases, output_audio_path, temp_dir):
             with open(thought_audio, "wb") as f:
                 f.write(resp.audio_content)
         except Exception as te:
-            print(f"Chirp3 thought fallback: {te}")
-            v_neural2 = texttospeech.VoiceSelectionParams(language_code="hi-IN", name="hi-IN-Neural2-B")
+            print(f"Primary voice fallback: {te}")
+            fallback_voice = "hi-IN-Neural2-B" if voice_prof["gender"] == "MALE" else "hi-IN-Neural2-A"
+            v_neural2 = texttospeech.VoiceSelectionParams(language_code="hi-IN", name=fallback_voice)
             cfg_neural2 = texttospeech.AudioConfig(audio_encoding=texttospeech.AudioEncoding.MP3, speaking_rate=0.88)
             resp = client.synthesize_speech(input=texttospeech.SynthesisInput(text=full_thought_text), voice=v_neural2, audio_config=cfg_neural2)
             with open(thought_audio, "wb") as f:
                 f.write(resp.audio_content)
     else:
         import edge_tts, asyncio
-        asyncio.run(edge_tts.Communicate(full_thought_text, 'hi-IN-MadhurNeural', rate="-10%").save(thought_audio))
+        edge_v = 'hi-IN-MadhurNeural' if voice_prof["gender"] == "MALE" else 'hi-IN-SwaraNeural'
+        asyncio.run(edge_tts.Communicate(full_thought_text, edge_v, rate="-10%").save(thought_audio))
 
     thought_dur = get_dur(thought_audio)
 
-    # Master audio with warm studio EQ (Pure thought, zero hook)
+    # Master audio with studio warm EQ tailored to the selected voice
     master_cmd = [
         ffmpeg, "-y",
         "-i", thought_audio,
-        "-af", "bass=g=2.5:f=160,treble=g=1.5:f=3200,volume=1.35",
+        "-af", f"bass=g={voice_prof['bass']}:f=160,treble=g={voice_prof['treble']}:f=3200,volume=1.35",
         output_audio_path
     ]
     subprocess.run(master_cmd, check=True)
@@ -407,14 +466,16 @@ def synthesize_voice(phrases, output_audio_path, temp_dir):
             w_idx += 1
         word_timings.append(phrase_timings)
 
-    # Guarantee video duration is strictly >= 11.8 seconds!
     voice_end_t = curr_t
-    total_video_dur = max(voice_end_t + 3.5, 11.8)
-
-    return total_video_dur, word_timings
+    return voice_end_t, word_timings, full_thought_text
 
 def render_chrome_slide(task):
-    chrome, html_file, png_file = task
+    if len(task) == 4:
+        chrome, html_file, png_file, win_size = task
+    else:
+        chrome, html_file, png_file = task
+        win_size = "1080,420"
+    file_url = "file:///" + os.path.abspath(html_file).replace("\\", "/")
     cmd = [
         chrome,
         "--headless=new",
@@ -423,9 +484,9 @@ def render_chrome_slide(task):
         "--disable-dev-shm-usage",
         "--disable-gpu",
         "--default-background-color=00000000",
-        "--window-size=1080,420",
+        f"--window-size={win_size}",
         f"--screenshot={png_file}",
-        html_file
+        file_url
     ]
     res = subprocess.run(cmd, capture_output=True, text=True)
     if res.returncode != 0 or not os.path.exists(png_file) or os.path.getsize(png_file) == 0:
@@ -566,10 +627,16 @@ def generate_kinetic_reel(output_mp4, custom_quote=None, custom_image=None):
         clean_image_watermark(image_path, clean_image_path)
 
         voice_audio = os.path.join(temp_dir, "voice.mp3")
-        total_video_dur, word_timings = synthesize_voice(phrases, voice_audio, temp_dir)
-        print(f"🎙️ Pure Thought Voiceover Generated (Duration: {total_video_dur:.2f}s total >= 11.8s)")
+        voice_end_t, word_timings, full_thought_text = synthesize_voice(phrases, voice_audio, temp_dir)
 
-        # HTML template for Chrome rendering
+        # Dynamic Timing: Speech finishes, then the FULL thought displays all together for at least 5.0 seconds!
+        summary_start_t = voice_end_t + 0.35
+        summary_dur = max(5.0, 11.8 - summary_start_t - 0.8)
+        summary_end_t = summary_start_t + summary_dur
+        total_video_dur = summary_end_t + 0.8
+        print(f"🎙️ Voice Duration: {voice_end_t:.2f}s | Full Thought Outro: {summary_dur:.2f}s | Total Reel: {total_video_dur:.2f}s")
+
+        # HTML template for Kinetic Chrome rendering
         html_template = """<!DOCTYPE html>
 <html>
 <head>
@@ -605,7 +672,7 @@ def generate_kinetic_reel(output_mp4, custom_quote=None, custom_image=None):
         overlay_events = []
         overlay_idx = 0
 
-        for phrase in word_timings:
+        for p_idx, phrase in enumerate(word_timings):
             split_twoline = len(phrase) >= 4
             for active_wt in phrase:
                 words_html = []
@@ -626,15 +693,94 @@ def generate_kinetic_reel(output_mp4, custom_quote=None, custom_image=None):
                 with open(html_file, "w", encoding="utf-8") as f:
                     f.write(html_template.format(content=content))
 
-                tasks.append((chrome, html_file, png_file))
+                tasks.append((chrome, html_file, png_file, "1080,420"))
                 overlay_events.append({
                     'png': png_file,
                     'start': active_wt['start'],
-                    'end': active_wt['end']
+                    'end': active_wt['end'],
+                    'pos': '0:760'
                 })
                 overlay_idx += 1
 
-        print(f"🎨 Rendering {len(tasks)} Chrome HarfBuzz overlays in parallel...")
+        # Render Full Thought Showcase Card for the last 5+ seconds
+        font_size = 62 if len(full_thought_text) < 45 else (52 if len(full_thought_text) < 90 else (44 if len(full_thought_text) < 140 else 38))
+        full_card_html_code = f"""<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<style>
+  body {{
+    margin: 0; padding: 0; width: 1080px; height: 1920px;
+    background: transparent;
+    display: flex; justify-content: center; align-items: center;
+    font-family: 'Nirmala UI', 'Noto Sans Devanagari', 'Segoe UI', sans-serif;
+  }}
+  .card {{
+    width: 880px;
+    background: rgba(12, 18, 30, 0.78);
+    border: 3px solid rgba(255, 215, 0, 0.88);
+    border-radius: 36px;
+    padding: 45px 44px;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.95), inset 0 0 35px rgba(255, 215, 0, 0.18);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+  }}
+  .header-badge {{
+    color: #FFE600;
+    font-size: 36px;
+    font-weight: 800;
+    letter-spacing: 3px;
+    text-shadow: 0 0 20px rgba(255, 215, 0, 0.8), 0 4px 12px #000;
+  }}
+  .divider {{
+    width: 160px;
+    height: 3px;
+    background: linear-gradient(90deg, transparent, #FFD700, transparent);
+    margin: 22px 0;
+  }}
+  .thought-text {{
+    font-size: {font_size}px;
+    font-weight: 800;
+    line-height: 1.48;
+    color: #FFFFFF;
+    text-shadow: 0 8px 24px rgba(0,0,0,0.95);
+  }}
+  .footer-sub {{
+    color: #FFD700;
+    font-size: 28px;
+    font-weight: 600;
+    letter-spacing: 2px;
+    opacity: 0.92;
+  }}
+</style>
+</head>
+<body>
+  <div class="card">
+    <div class="header-badge">✨ श्री कृष्ण अमृत विचार ✨</div>
+    <div class="divider"></div>
+    <div class="thought-text">{full_thought_text}</div>
+    <div class="divider"></div>
+    <div class="footer-sub">॥ राधे कृष्ण ॥</div>
+  </div>
+</body>
+</html>"""
+
+        full_card_html = os.path.join(temp_dir, "full_thought_card.html")
+        full_card_png = os.path.join(temp_dir, "full_thought_card.png")
+        with open(full_card_html, "w", encoding="utf-8") as f:
+            f.write(full_card_html_code)
+
+        tasks.append((chrome, full_card_html, full_card_png, "1080,1920"))
+        overlay_events.append({
+            'png': full_card_png,
+            'start': summary_start_t,
+            'end': summary_end_t,
+            'pos': '0:0'
+        })
+
+        print(f"🎨 Rendering {len(tasks)} Chrome HarfBuzz overlays (including Full Thought Card) in parallel...")
         with concurrent.futures.ThreadPoolExecutor(max_workers=8) as executor:
             list(executor.map(render_chrome_slide, tasks))
 
@@ -707,10 +853,9 @@ def generate_kinetic_reel(output_mp4, custom_quote=None, custom_image=None):
         for i, oe in enumerate(overlay_events):
             input_args.extend(["-i", oe['png']])
             next_input = f"[tmp_{input_idx}]" if input_idx < len(overlay_events) + (3 if has_logo else 2) - 1 else "[v]"
-            # Keep last slide on screen until video outro fade begins!
-            end_t = (total_video_dur - 0.8) if (i == len(overlay_events) - 1) else oe['end']
+            pos = oe.get('pos', '0:760')
             filter_parts.append(
-                f"{curr_input}[{input_idx}:v]overlay=0:760:enable='between(t,{oe['start']:.2f},{end_t:.2f})'{next_input};"
+                f"{curr_input}[{input_idx}:v]overlay={pos}:enable='between(t,{oe['start']:.2f},{oe['end']:.2f})'{next_input};"
             )
             curr_input = next_input
             input_idx += 1
