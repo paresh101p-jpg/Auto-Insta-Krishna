@@ -9,8 +9,8 @@ on:
       - 'TRIGGER_MUSIC_VIDEO.txt'
   schedule:
     # EXACTLY 1 TIME DAILY IN THE EVENING:
-    # 13:30 UTC = 07:00 PM IST (Evening Peak Relaxation & Deep Meditation)
-    - cron: '30 13 * * *'
+    # 12:30 UTC = 06:00 PM IST (Takes ~50 mins to render, uploads right at ~06:55 - 07:00 PM IST Peak)
+    - cron: '30 12 * * *'
 
 concurrency:
   group: krishna-music-video-upload
