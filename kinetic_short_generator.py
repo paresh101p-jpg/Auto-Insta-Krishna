@@ -450,66 +450,95 @@ def synthesize_voice(phrases, output_audio_path, temp_dir):
         except Exception as ge:
             print(f"Google TTS init note: {ge}")
 
-    # Synthesize Pure Thought in ONE single, unbroken master recording
-    if use_google:
-        try:
-            resp = client.synthesize_speech(
-                input=texttospeech.SynthesisInput(text=full_thought_text),
-                voice=voice_params,
-                audio_config=audio_cfg
-            )
-            with open(thought_audio, "wb") as f:
-                f.write(resp.audio_content)
-        except Exception as te:
-            print(f"Primary voice fallback: {te}")
-            fallback_voice = "hi-IN-Neural2-B" if voice_prof["gender"] == "MALE" else "hi-IN-Neural2-A"
-            v_neural2 = texttospeech.VoiceSelectionParams(language_code="hi-IN", name=fallback_voice)
-            cfg_neural2 = texttospeech.AudioConfig(audio_encoding=texttospeech.AudioEncoding.MP3, speaking_rate=0.88)
-            resp = client.synthesize_speech(input=texttospeech.SynthesisInput(text=full_thought_text), voice=v_neural2, audio_config=cfg_neural2)
-            with open(thought_audio, "wb") as f:
-                f.write(resp.audio_content)
-    else:
-        import edge_tts, asyncio
-        edge_v = 'hi-IN-MadhurNeural' if voice_prof["gender"] == "MALE" else 'hi-IN-SwaraNeural'
-        asyncio.run(edge_tts.Communicate(full_thought_text, edge_v, rate="-10%").save(thought_audio))
+    # Synthesize each phrase individually with dedicated timing
+    phrase_audios = []
+    phrase_durs = []
 
-    thought_dur = get_dur(thought_audio)
+    for p_idx, p in enumerate(phrases):
+        p_text = " ".join(p).replace(",", "").replace(";", "").strip()
+        p_audio = os.path.join(temp_dir, f"phrase_{p_idx}.mp3")
+
+        if use_google:
+            try:
+                resp = client.synthesize_speech(
+                    input=texttospeech.SynthesisInput(text=p_text),
+                    voice=voice_params,
+                    audio_config=audio_cfg
+                )
+                with open(p_audio, "wb") as f:
+                    f.write(resp.audio_content)
+            except Exception as te:
+                print(f"Phrase {p_idx} primary voice fallback: {te}")
+                fallback_voice = "hi-IN-Neural2-B" if voice_prof["gender"] == "MALE" else "hi-IN-Neural2-A"
+                v_neural2 = texttospeech.VoiceSelectionParams(language_code="hi-IN", name=fallback_voice)
+                cfg_neural2 = texttospeech.AudioConfig(audio_encoding=texttospeech.AudioEncoding.MP3, speaking_rate=voice_prof.get("rate", 0.88))
+                resp = client.synthesize_speech(input=texttospeech.SynthesisInput(text=p_text), voice=v_neural2, audio_config=cfg_neural2)
+                with open(p_audio, "wb") as f:
+                    f.write(resp.audio_content)
+        else:
+            import edge_tts, asyncio
+            edge_v = 'hi-IN-MadhurNeural' if voice_prof["gender"] == "MALE" else 'hi-IN-SwaraNeural'
+            edge_rate = f"-{int((1.0 - voice_prof.get('rate', 0.88)) * 100)}%" if voice_prof.get("rate", 0.88) < 1.0 else "+0%"
+            asyncio.run(edge_tts.Communicate(p_text, edge_v, rate=edge_rate).save(p_audio))
+
+        p_dur = get_dur(p_audio)
+        phrase_audios.append(p_audio)
+        phrase_durs.append(p_dur)
+
+    # Concatenate phrases with 0.35s breathing pause
+    silence_dur = 0.35
+    silence_file = os.path.join(temp_dir, "silence_pause.mp3")
+    subprocess.run([
+        ffmpeg, "-y", "-f", "lavfi", "-i", "anullsrc=r=24000:cl=mono",
+        "-t", str(silence_dur), "-q:a", "9", silence_file
+    ], check=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+
+    concat_list = os.path.join(temp_dir, "voice_concat.txt")
+    with open(concat_list, "w", encoding="utf-8") as f:
+        for idx, pa in enumerate(phrase_audios):
+            f.write(f"file '{os.path.abspath(pa)}'\n")
+            if idx < len(phrase_audios) - 1:
+                f.write(f"file '{os.path.abspath(silence_file)}'\n")
+
+    unmastered_voice = os.path.join(temp_dir, "unmastered_voice.mp3")
+    subprocess.run([
+        ffmpeg, "-y", "-f", "concat", "-safe", "0", "-i", concat_list,
+        "-c", "copy", unmastered_voice
+    ], check=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
 
     # Master audio with studio warm EQ tailored to the selected voice
     master_cmd = [
         ffmpeg, "-y",
-        "-i", thought_audio,
+        "-i", unmastered_voice,
         "-af", f"bass=g={voice_prof['bass']}:f=160,treble=g={voice_prof['treble']}:f=3200,volume=1.35",
         output_audio_path
     ]
     subprocess.run(master_cmd, check=True)
 
-    # Map Word Timings across thought duration starting at exactly 0.50s
-    all_words = []
-    for p in phrases:
-        all_words.extend(p)
-
-    total_chars = sum(len(w) for w in all_words)
-    raw_durs = [max((len(w) / max(total_chars, 1)) * thought_dur, 0.22) for w in all_words]
-    scale_factor = thought_dur / max(sum(raw_durs), 0.01)
-    normalized_durs = [d * scale_factor for d in raw_durs]
-
+    # Exact Word Timings aligned to 400ms audio adelay
+    voice_start_delay = 0.40  # 400ms delay matches adelay=400|400 in FFmpeg filter
+    curr_t = voice_start_delay
     word_timings = []
-    w_idx = 0
-    curr_t = 0.50  # Voice starts cleanly at 0.50s (allowing 0.5s for opening flute chord & focus)
 
-    for phrase in phrases:
+    for p_idx, phrase in enumerate(phrases):
+        p_dur = phrase_durs[p_idx]
+        total_chars = sum(len(w) for w in phrase)
+        raw_durs = [max((len(w) / max(total_chars, 1)) * p_dur, 0.20) for w in phrase]
+        scale = p_dur / max(sum(raw_durs), 0.01)
+        norm_durs = [d * scale for d in raw_durs]
+
         phrase_timings = []
-        for w in phrase:
-            w_dur = normalized_durs[w_idx]
+        for w_idx, w in enumerate(phrase):
+            w_dur = norm_durs[w_idx]
             phrase_timings.append({
                 'word': w,
                 'start': curr_t,
                 'end': curr_t + w_dur
             })
             curr_t += w_dur
-            w_idx += 1
         word_timings.append(phrase_timings)
+        if p_idx < len(phrases) - 1:
+            curr_t += silence_dur
 
     voice_end_t = curr_t
     return voice_end_t, word_timings, full_thought_text
@@ -538,7 +567,7 @@ def render_chrome_slide(task):
         raise RuntimeError(f"Chrome screenshot failed ({res.returncode}): {res.stderr}\nCommand: {' '.join(cmd)}")
     return png_file
 
-def extract_audio_envelope(audio_path, total_frames, fps=25, sr=22050):
+def extract_audio_envelope(audio_path, total_frames, fps=25, sr=22050, delay_sec=0.40):
     """
     Extracts frame-by-frame REAL audio RMS energy and FFT frequency spectrum from the actual voice/music.
     The visualizer is 100% physically linked to spoken words, voice pitch, and flute notes!
@@ -561,11 +590,18 @@ def extract_audio_envelope(audio_path, total_frames, fps=25, sr=22050):
         return np.ones(total_frames, dtype=np.float32) * 0.5, [np.zeros(48, dtype=np.float32) for _ in range(total_frames)]
 
     samples_per_frame = int(sr / fps)
+    delay_frames = int(delay_sec * fps)
     energies = []
     spectrums = []
 
     for i in range(total_frames):
-        s_start = i * samples_per_frame
+        if i < delay_frames:
+            energies.append(0.02)
+            spectrums.append(np.zeros(48, dtype=np.float32))
+            continue
+
+        audio_frame_idx = i - delay_frames
+        s_start = audio_frame_idx * samples_per_frame
         s_end = min(s_start + samples_per_frame, len(audio))
         if s_start >= len(audio):
             energies.append(0.02)
@@ -922,7 +958,7 @@ def generate_kinetic_reel(output_mp4, custom_quote=None, custom_image=None):
         input_args.extend(["-i", voice_audio, "-i", active_bgm])
 
         filter_parts.append(
-            f"[{voice_idx}:a]apad=whole_dur={total_video_dur:.2f},volume=1.15[voice];"
+            f"[{voice_idx}:a]adelay=400|400,apad=whole_dur={total_video_dur:.2f},volume=1.15[voice];"
             f"[{bgm_idx}:a]atrim=start={bgm_start_offset}:duration={total_video_dur:.2f},asetpts=PTS-STARTPTS,volume=0.15,afade=t=out:st={fade_out_start}:d=1.5[bgm];"
             f"[voice][bgm]amix=inputs=2:duration=first:dropout_transition=0,volume=1.75[a]"
         )
