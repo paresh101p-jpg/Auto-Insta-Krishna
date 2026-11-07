@@ -1784,7 +1784,7 @@ def remove_flow_watermark(img):
     return cleaned
 
 
-def render_animated_slide_clip(slide_path, clip_output_path, flora_sprites, motion_style, logo_badge, slide_idx=0, duration=300, fps=25, sparkle_palette=None, num_particles=17, visualizer_style='fullwidth_bars', visualizer_palette=None):
+def render_animated_slide_clip(slide_path, clip_output_path, flora_sprites, motion_style, logo_badge, slide_idx=0, duration=60, fps=25, sparkle_palette=None, num_particles=17, visualizer_style='fullwidth_bars', visualizer_palette=None):
     """
     Renders a single 60-second (1-minute) slide clip with:
     - Subpixel 64-bit Floating Bicubic Ken Burns Zoom & Pan (ZERO Jhatka)
@@ -2041,12 +2041,12 @@ def render_video(slides, duration_sec=900, is_krishna=True):
     if not active_flora_sprites:
         active_flora_sprites = list(flora_dict.values())
         
-    # 3. Select exact number of unique slides needed for duration_sec (5 minutes per slide)
-    num_slides_needed = max(3, int(math.ceil(duration_sec / 300.0)))
+    # 3. Select 8 to 10 unique diverse slides for rich variation (60 seconds per slide)
+    num_slides_needed = min(len(slides), 10)
     selected_slides = slides[:]
     random.shuffle(selected_slides)
     selected_slides = selected_slides[:num_slides_needed]
-    print(f"  -> 🎯 Duration: {int(duration_sec//60)} Minutes | Rendering {len(selected_slides)} unique slides (5-min each, ZERO repeat)")
+    print(f"  -> 🎯 Duration: {int(duration_sec//60)} Minutes | Rendering {len(selected_slides)} unique slides (60s each with smooth Ken Burns, 3D Petals, Sparkles & Audio Wave)")
         
     clip_files = []
     temp_clips_dir = os.path.join(BASE_DIR, "temp_animated_clips")
@@ -2058,15 +2058,15 @@ def render_video(slides, duration_sec=900, is_krishna=True):
     for idx, slide in enumerate(selected_slides):
         clip_path = os.path.join(temp_clips_dir, f"clip_{idx+1}.mp4")
         clip_files.append(clip_path)
-        print(f"  -> Rendering Slide {idx+1}/{len(selected_slides)} (300s / 5-min) with Dynamic Petals & Smooth Zoom...")
+        print(f"  -> Rendering Slide {idx+1}/{len(selected_slides)} (60s) with Dynamic Petals & Smooth Zoom...")
         render_animated_slide_clip(
             slide, clip_path, active_flora_sprites, chosen_motion, logo_badge,
-            slide_idx=idx, duration=300, fps=25, sparkle_palette=chosen_palette, num_particles=17,
+            slide_idx=idx, duration=60, fps=25, sparkle_palette=chosen_palette, num_particles=17,
             visualizer_style=chosen_vis_style, visualizer_palette=chosen_vis_palette
         )
     
     # 2. Concat animated clips to cover duration_sec
-    clips_total_sec = len(clip_files) * 300
+    clips_total_sec = len(clip_files) * 60
     repeat_count = int(math.ceil(duration_sec / float(clips_total_sec))) + 1
     concat_list = os.path.join(BASE_DIR, "temp_concat_clips.txt")
     with open(concat_list, "w", encoding="utf-8") as f:
