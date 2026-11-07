@@ -3,11 +3,12 @@
 Kinetic Word-by-Word YouTube Shorts Generator for Krishna Vibez
 Features:
 - Headless Chrome HarfBuzz typography (100% correct Devanagari ligatures, zero dotted circles)
+- Cross-platform Linux (Ubuntu GitHub Actions) & Windows support with --no-sandbox
 - Rotating procedural soundwave visualizer placed safely at y=1380 (above Shorts bottom UI)
 - Smooth Ken Burns zoom (1.0x to 1.14x)
 - Pure soft Treblo AI Bansuri background music (100% copyright safe)
-- Male devotional voiceover (Edge-TTS hi-IN-MadhurNeural or Google Cloud Neural2-B)
-- Safe image rotation across 562 vertical images with auto-recycle
+- Male devotional voiceover (Edge-TTS hi-IN-MadhurNeural)
+- 100% clean, text-free Krishna images from music_video_images pool (5,600+ images)
 - Infinite thought queue with quotes.txt -> used_quotes.txt recycling
 """
 
@@ -32,7 +33,6 @@ USED_QUOTES_FILE = os.path.join(BASE_DIR, "used_quotes.txt")
 MUSIC_IMAGES_DIR = os.path.join(BASE_DIR, "music_video_images")
 IMAGES_DIR = os.path.join(BASE_DIR, "Images")
 USED_IMAGES_TRACKER = os.path.join(BASE_DIR, "used_kinetic_images.txt")
-SERVICE_ACCOUNT_FILE = os.path.join(BASE_DIR, "google_tts_service_account.json")
 BGM_FILE = os.path.join(BASE_DIR, "AUDIT_PURE_SOFT_BANSURI_5_TRACKS.mp3")
 
 # Visualizer Geometries & Divine Color Palettes
@@ -56,12 +56,16 @@ COLOR_PALETTES = [
 
 def find_chrome():
     candidates = [
-        r"C:\Program Files\Google\Chrome\Application\chrome.exe",
-        r"C:\Program Files (x86)\Google\Chrome\Application\chrome.exe",
+        "/usr/bin/google-chrome",
+        "/usr/bin/google-chrome-stable",
+        "/usr/bin/chromium",
+        "/usr/bin/chromium-browser",
         "google-chrome",
         "google-chrome-stable",
         "chromium",
-        "chromium-browser"
+        "chromium-browser",
+        r"C:\Program Files\Google\Chrome\Application\chrome.exe",
+        r"C:\Program Files (x86)\Google\Chrome\Application\chrome.exe",
     ]
     for c in candidates:
         if os.path.isabs(c):
@@ -89,7 +93,6 @@ def get_next_quote():
         quotes = [line.strip() for line in f if line.strip()]
 
     if not quotes:
-        # Auto-recycle from used_quotes.txt
         if os.path.exists(USED_QUOTES_FILE):
             with open(USED_QUOTES_FILE, "r", encoding="utf-8") as uf:
                 used = [line.strip() for line in uf if line.strip()]
@@ -107,28 +110,33 @@ def get_next_quote():
 
     chosen_quote = quotes.pop(0)
 
-    # Save remaining quotes
     with open(QUOTES_FILE, "w", encoding="utf-8") as f:
         f.write("\n".join(quotes) + ("\n" if quotes else ""))
 
-    # Append to used_quotes.txt
     with open(USED_QUOTES_FILE, "a", encoding="utf-8") as uf:
         uf.write(chosen_quote + "\n")
 
     return chosen_quote
 
 def get_next_image():
-    """Picks the next 100% clean, text-free Krishna image from music_video_images pool (6,540 images)."""
-    search_dirs = [MUSIC_IMAGES_DIR, IMAGES_DIR]
+    """Picks the next 100% clean, text-free Krishna image from music_video_images pool."""
     all_images = []
-    for s_dir in search_dirs:
-        if os.path.exists(s_dir):
-            all_images.extend(glob.glob(os.path.join(s_dir, "**", "*.jpg"), recursive=True))
-            all_images.extend(glob.glob(os.path.join(s_dir, "**", "*.png"), recursive=True))
+    if os.path.exists(MUSIC_IMAGES_DIR):
+        for root, dirs, files in os.walk(MUSIC_IMAGES_DIR):
+            for f in files:
+                if f.lower().endswith(('.jpg', '.jpeg', '.png')):
+                    all_images.append(os.path.join(root, f))
 
     all_images = sorted(list(dict.fromkeys(all_images)))
+    if not all_images and os.path.exists(IMAGES_DIR):
+        for root, dirs, files in os.walk(IMAGES_DIR):
+            for f in files:
+                if f.lower().endswith(('.jpg', '.jpeg', '.png')):
+                    all_images.append(os.path.join(root, f))
+        all_images = sorted(list(dict.fromkeys(all_images)))
+
     if not all_images:
-        return None
+        raise RuntimeError(f"No clean Krishna images found in {MUSIC_IMAGES_DIR} or {IMAGES_DIR}!")
 
     used_images = set()
     if os.path.exists(USED_IMAGES_TRACKER):
@@ -141,10 +149,7 @@ def get_next_image():
         used_images.clear()
         available = all_images
 
-    # Filter for known clean categories first
-    clean_candidates = [x for x in available if "music_video_images" in x]
-    chosen = clean_candidates[0] if clean_candidates else available[0]
-
+    chosen = available[0]
     with open(USED_IMAGES_TRACKER, "a", encoding="utf-8") as f:
         f.write(chosen + "\n")
 
@@ -153,7 +158,6 @@ def get_next_image():
 def split_quote_into_phrases(quote_text):
     """Splits a long thought into natural 2-4 word rhythmic phrases."""
     cleaned = quote_text.replace("- राधे कृष्ण", "").replace("- श्री कृष्ण", "").strip()
-    # Normalize punctuation
     raw_clauses = [c.strip() for c in cleaned.replace(";", ",").replace("!", "।").split("।") if c.strip()]
     
     phrases = []
@@ -163,7 +167,6 @@ def split_quote_into_phrases(quote_text):
             words = sub.split()
             if not words:
                 continue
-            # Chunk words into groups of 2-3 words
             curr_chunk = []
             for w in words:
                 curr_chunk.append(w)
@@ -179,7 +182,6 @@ def split_quote_into_phrases(quote_text):
     if not phrases:
         phrases = [["तुम्हारा", "केवल", "कर्म", "है,"], ["बाक़ी", "सब", "मुझ", "पर", "छोड़", "दो।"]]
 
-    # Ensure last phrase has a purna viram
     if not phrases[-1][-1].endswith("।"):
         phrases[-1][-1] += "।"
 
@@ -203,9 +205,19 @@ def synthesize_voice(phrases, output_audio_path):
         comm = edge_tts.Communicate(full_text, 'hi-IN-MadhurNeural', rate='-6%', pitch='-1Hz')
         await comm.save(output_audio_path)
 
-    asyncio.run(_run())
+    # Retry loop up to 3 times
+    for attempt in range(3):
+        try:
+            asyncio.run(_run())
+            if os.path.exists(output_audio_path) and os.path.getsize(output_audio_path) > 1000:
+                break
+        except Exception as te:
+            print(f"TTS attempt {attempt+1} warning: {te}")
+            time.sleep(2)
 
-    # Get duration of generated audio using ffprobe/ffmpeg
+    if not os.path.exists(output_audio_path) or os.path.getsize(output_audio_path) < 1000:
+        raise RuntimeError("Failed to synthesize voiceover with Edge-TTS!")
+
     ffmpeg = find_ffmpeg()
     cmd = [ffmpeg, "-i", output_audio_path]
     res = subprocess.run(cmd, stderr=subprocess.PIPE, stdout=subprocess.DEVNULL, text=True)
@@ -214,16 +226,14 @@ def synthesize_voice(phrases, output_audio_path):
     if m:
         dur = int(m.group(1)) * 3600 + int(m.group(2)) * 60 + float(m.group(3))
     else:
-        dur = max(len(all_words) * 0.45, 12.0)
+        dur = max(len(all_words) * 0.45, 10.0)
 
-    # Calculate proportional word timings
     total_chars = sum(len(w) for w in all_words)
-    speech_start = 0.55  # 0.55s initial delay for hook
+    speech_start = 0.55
     usable_speech_dur = max(dur - 0.2, 5.0)
 
     word_timings = []
     curr_t = speech_start
-    w_ptr = 0
 
     for phrase_idx, phrase in enumerate(phrases):
         phrase_timings = []
@@ -249,12 +259,20 @@ def synthesize_voice(phrases, output_audio_path):
 def render_chrome_slide(task):
     chrome, html_file, png_file = task
     cmd = [
-        chrome, "--headless=new", "--disable-gpu", "--default-background-color=00000000",
+        chrome,
+        "--headless=new",
+        "--no-sandbox",
+        "--disable-setuid-sandbox",
+        "--disable-dev-shm-usage",
+        "--disable-gpu",
+        "--default-background-color=00000000",
         "--window-size=1080,420",
         f"--screenshot={png_file}",
         html_file
     ]
-    subprocess.run(cmd, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+    res = subprocess.run(cmd, capture_output=True, text=True)
+    if res.returncode != 0 or not os.path.exists(png_file) or os.path.getsize(png_file) == 0:
+        raise RuntimeError(f"Chrome screenshot failed ({res.returncode}): {res.stderr}\nCommand: {' '.join(cmd)}")
     return png_file
 
 def draw_procedural_wave(canvas, style, palette, intensity, t, base_y=140):
@@ -293,7 +311,6 @@ def draw_procedural_wave(canvas, style, palette, intensity, t, base_y=140):
             cv2.rectangle(canvas, (bx, y_top), (bx + bw, y_bot), c, -1)
 
     else:
-        # Default organic wave
         pts = []
         for x in range(0, w, 8):
             rad = (x / float(w)) * 6.28
@@ -302,7 +319,6 @@ def draw_procedural_wave(canvas, style, palette, intensity, t, base_y=140):
         cv2.polylines(canvas, [np.array(pts, np.int32)], False, col_glow, 8, cv2.LINE_AA)
         cv2.polylines(canvas, [np.array(pts, np.int32)], False, col_main, 3, cv2.LINE_AA)
 
-    # Vital Alpha Channel Fix: Ensure drawn pixels are 100% opaque in RGBA
     mask = np.any(canvas[:, :, :3] > 15, axis=2)
     canvas[mask, 3] = 255
 
@@ -315,13 +331,16 @@ def generate_kinetic_reel(output_mp4, custom_quote=None, custom_image=None):
     ffmpeg = find_ffmpeg()
 
     if not chrome:
-        raise RuntimeError("Google Chrome or Chromium not found on system!")
+        raise RuntimeError("Google Chrome or Chromium not found on system! (Checked candidates)")
+
+    if not os.path.exists(BGM_FILE):
+        raise RuntimeError(f"BGM audio file missing: {BGM_FILE}")
 
     quote_text = custom_quote or get_next_quote()
     image_path = custom_image or get_next_image()
 
     if not image_path or not os.path.exists(image_path):
-        raise RuntimeError("No valid Krishna image available for Reel!")
+        raise RuntimeError("No valid clean Krishna image available for Reel!")
 
     temp_dir = os.path.join(BASE_DIR, f"temp_short_{int(time.time())}")
     os.makedirs(temp_dir, exist_ok=True)
@@ -409,7 +428,6 @@ def generate_kinetic_reel(output_mp4, custom_quote=None, custom_image=None):
         total_frames = int(total_video_dur * fps)
         wave_video = os.path.join(temp_dir, "wave_overlay.mp4")
 
-        # Pick random style and palette
         wave_style = random.choice(VISUALIZER_STYLES)
         wave_palette = random.choice(COLOR_PALETTES)
         print(f"🌊 Rendering Soundwave ({wave_style}) at elevated y=1380 safe-zone...")
@@ -439,7 +457,7 @@ def generate_kinetic_reel(output_mp4, custom_quote=None, custom_image=None):
         # Text at y=760 (upper chest, crystal clear)
         fade_out_start = f"{total_video_dur - 1.5:.2f}"
 
-        # Universal Aspect-Ratio Handling (Centers Krishna & eliminates black bars without distortion)
+        # Universal aspect ratio fit: scales & crops cleanly to 1080x1920 then zooms
         filter_parts = [
             f"[0:v]scale='if(gt(a,9/16),-2,1440)':'if(gt(a,9/16),2560,-2)',crop=1440:2560,zoompan=z='min(zoom+0.0006,1.14)':x='iw/2-(iw/zoom/2)':y='ih/2-(ih/zoom/2)':d={total_frames}:s=1080x1920:fps=25[base];",
             f"[base][1:v]overlay=0:1380[base_with_wave];"
@@ -495,7 +513,6 @@ def generate_kinetic_reel(output_mp4, custom_quote=None, custom_image=None):
         return output_mp4, quote_text, image_path
 
     finally:
-        # Cleanup temporary files
         try:
             shutil.rmtree(temp_dir, ignore_errors=True)
         except:

@@ -605,63 +605,13 @@ def main():
     spoken_thought = None
     chosen_url = None
 
-    # 1. Primary Engine: On-the-fly Kinetic Reel Generation
-    try:
-        from kinetic_short_generator import generate_kinetic_reel
-        print("🚀 Generating fresh Kinetic Short on runner...")
-        temp_out = os.path.join(BASE_DIR, "temp_kinetic_short.mp4")
-        upload_video_path, spoken_thought, chosen_img = generate_kinetic_reel(temp_out)
-        print(f"✅ Kinetic Short generated successfully: {upload_video_path}")
-        print(f"📖 Spoken Thought: {spoken_thought}")
-    except Exception as ge:
-        print(f"Notice on kinetic generation: {ge}")
-        print("Falling back to queue download if available...")
-
-    # 2. Fallback: Queue download if kinetic generation failed
-    if not upload_video_path or not os.path.exists(upload_video_path):
-        urls = reload_reels_from_backup_if_needed()
-        if not urls:
-            print("Error: No reels available in queue or generator!")
-            sys.exit(1)
-
-        max_url_attempts = 5
-        for attempt_idx in range(max_url_attempts):
-            if not urls:
-                urls = reload_reels_from_backup_if_needed()
-                if not urls:
-                    break
-
-            candidate_url = random.choice(urls)
-            print(f"\n[Attempt {attempt_idx + 1}/{max_url_attempts}] Selecting candidate reel: {candidate_url}")
-            success, is_corrupt = download_video(candidate_url)
-            if success:
-                chosen_url = candidate_url
-                break
-            else:
-                if is_corrupt:
-                    print(f"⚠️ Video at {candidate_url} confirmed corrupted or 404. Discarding broken URL from queue...")
-                    if candidate_url in urls:
-                        urls.remove(candidate_url)
-                        try:
-                            with open(YT_REELS_FILE, "w", encoding="utf-8") as f:
-                                f.write("\n".join(urls) + "\n")
-                        except Exception as ef:
-                            print(f"Notice updating reels file: {ef}")
-                else:
-                    print(f"⚠️ Temporary network error with {candidate_url}. Keeping in queue and trying another candidate reel...")
-                time.sleep(2)
-
-        if not chosen_url:
-            print("Error: Failed to download a valid reel after trying multiple candidate URLs. Exiting.")
-            sys.exit(1)
-
-        curr_cycle = get_current_cycle()
-        if curr_cycle > 1:
-            print(f"🔄 Loop Cycle {curr_cycle} Active: Applying Smart Video Fingerprint & Variations for YouTube...")
-            upload_video_path = apply_smart_video_fingerprint(TEMP_VIDEO, TEMP_ENHANCED)
-        else:
-            print("✨ Cycle 1 (Original Run): Uploading pristine original voice reel without modifications.")
-            upload_video_path = TEMP_VIDEO
+    # 1. Primary Engine: On-the-fly Kinetic Reel Generation (ZERO FALLBACK TO OLD REELS)
+    from kinetic_short_generator import generate_kinetic_reel
+    print("🚀 Generating fresh Kinetic Short on runner...")
+    temp_out = os.path.join(BASE_DIR, "temp_kinetic_short.mp4")
+    upload_video_path, spoken_thought, chosen_img = generate_kinetic_reel(temp_out)
+    print(f"✅ Kinetic Short generated successfully: {upload_video_path}")
+    print(f"📖 Spoken Thought: {spoken_thought}")
 
     # 2. Extract crystal-clear frame & generate rich AI metadata
     title, description, tags = generate_youtube_metadata_from_video(upload_video_path)
