@@ -2,10 +2,8 @@ name: Daily Krishna AI Music Video (15-Min Meditation)
 
 on:
   workflow_dispatch: # Allows manual trigger from GitHub UI
-  repository_dispatch: # Allows external triggers from https://cron-job.org/
-    types: [generate_music_video, daily_music_video]
   schedule:
-    # 1 Time Daily (Time in UTC):
+    # EXACTLY 1 TIME DAILY IN THE EVENING:
     # 13:30 UTC = 07:00 PM IST (Evening Peak Relaxation & Deep Meditation)
     - cron: '30 13 * * *'
 
@@ -60,4 +58,3 @@ jobs:
             git pull --rebase origin master || true
             git push origin master && break || sleep 3
           done
-
