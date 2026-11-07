@@ -289,11 +289,13 @@ def split_quote_into_phrases(quote_text):
 
     return phrases
 
+from reel_atmospheric_engine import select_thought_atmospheric, AtmosphericParticleSimulator, SACRED_PALETTES
+
 def synthesize_voice(phrases, output_audio_path, temp_dir):
     """
     Synthesizes authentic human spiritual voiceover using Google Cloud Chirp3-HD (hi-IN-Chirp3-HD-Fenrir)
-    in ONE smooth, continuous, fluent master recording (ZERO phrase chopping, ZERO robotic breaks).
-    Falls back to Neural2 or Edge-TTS if needed.
+    speaking ONLY the pure thought text (ZERO extra hook words, ZERO robotic breaks).
+    Guarantees video duration is strictly >= 11.8 seconds.
     """
     ffmpeg = find_ffmpeg()
 
@@ -303,13 +305,9 @@ def synthesize_voice(phrases, output_audio_path, temp_dir):
         m = re.search(r"Duration:\s*(\d+):(\d+):(\d+\.\d+)", res.stderr)
         if m:
             return int(m.group(1)) * 3600 + int(m.group(2)) * 60 + float(m.group(3))
-        return 2.5
+        return 3.0
 
-    thought_for_hook = " ".join([" ".join(p) for p in phrases])
-    hook_text = detect_thought_adaptive_hook(thought_for_hook)
     full_thought_text = " ".join([" ".join(p) for p in phrases])
-
-    hook_audio = os.path.join(temp_dir, "hook.mp3")
     thought_audio = os.path.join(temp_dir, "thought.mp3")
 
     # Check for Google Cloud credentials
@@ -336,45 +334,21 @@ def synthesize_voice(phrases, output_audio_path, temp_dir):
             else:
                 client = texttospeech.TextToSpeechClient.from_service_account_json(gcreds_file)
 
-            # Chirp3-HD Studio Human Voice (Zero Pitch Parameter as required by Google Cloud)
+            # Chirp3-HD Studio Voice with Serene, Meditative Delivery (speaking_rate=0.88)
             voice_params = texttospeech.VoiceSelectionParams(
                 language_code="hi-IN",
                 name="hi-IN-Chirp3-HD-Fenrir",
             )
             audio_cfg = texttospeech.AudioConfig(
                 audio_encoding=texttospeech.AudioEncoding.MP3,
-                speaking_rate=0.94
+                speaking_rate=0.88
             )
             use_google = True
-            print("🎙️ Using Google Cloud Chirp3-HD Studio Voice (hi-IN-Chirp3-HD-Fenrir) for human delivery.")
+            print("🎙️ Using Google Cloud Chirp3-HD Studio Voice (hi-IN-Chirp3-HD-Fenrir) for pure thought delivery.")
         except Exception as ge:
             print(f"Google TTS init note: {ge}")
 
-    # 1. Synthesize Spoken Hook
-    if use_google:
-        try:
-            resp = client.synthesize_speech(
-                input=texttospeech.SynthesisInput(text=hook_text),
-                voice=voice_params,
-                audio_config=audio_cfg
-            )
-            with open(hook_audio, "wb") as f:
-                f.write(resp.audio_content)
-        except Exception as he:
-            print(f"Chirp3 hook fallback: {he}")
-            # Fallback to Neural2 if Chirp3 fails
-            v_neural2 = texttospeech.VoiceSelectionParams(language_code="hi-IN", name="hi-IN-Neural2-B")
-            cfg_neural2 = texttospeech.AudioConfig(audio_encoding=texttospeech.AudioEncoding.MP3, speaking_rate=0.92)
-            resp = client.synthesize_speech(input=texttospeech.SynthesisInput(text=hook_text), voice=v_neural2, audio_config=cfg_neural2)
-            with open(hook_audio, "wb") as f:
-                f.write(resp.audio_content)
-    else:
-        import edge_tts, asyncio
-        asyncio.run(edge_tts.Communicate(hook_text, 'hi-IN-MadhurNeural', rate="-7%").save(hook_audio))
-
-    hook_dur = get_dur(hook_audio)
-
-    # 2. Synthesize ENTIRE Thought in ONE single, fluent, unbroken recording (NO CHOPPING!)
+    # Synthesize Pure Thought in ONE single, unbroken, continuous master recording
     if use_google:
         try:
             resp = client.synthesize_speech(
@@ -387,34 +361,26 @@ def synthesize_voice(phrases, output_audio_path, temp_dir):
         except Exception as te:
             print(f"Chirp3 thought fallback: {te}")
             v_neural2 = texttospeech.VoiceSelectionParams(language_code="hi-IN", name="hi-IN-Neural2-B")
-            cfg_neural2 = texttospeech.AudioConfig(audio_encoding=texttospeech.AudioEncoding.MP3, speaking_rate=0.92)
+            cfg_neural2 = texttospeech.AudioConfig(audio_encoding=texttospeech.AudioEncoding.MP3, speaking_rate=0.88)
             resp = client.synthesize_speech(input=texttospeech.SynthesisInput(text=full_thought_text), voice=v_neural2, audio_config=cfg_neural2)
             with open(thought_audio, "wb") as f:
                 f.write(resp.audio_content)
     else:
         import edge_tts, asyncio
-        asyncio.run(edge_tts.Communicate(full_thought_text, 'hi-IN-MadhurNeural', rate="-8%").save(thought_audio))
+        asyncio.run(edge_tts.Communicate(full_thought_text, 'hi-IN-MadhurNeural', rate="-10%").save(thought_audio))
 
     thought_dur = get_dur(thought_audio)
 
-    # 3. Concatenate Hook + 350ms Natural Breath Pause + Unbroken Thought with Studio EQ
-    filter_complex = (
-        "[0:a]volume=1.0[a0];"
-        "[1:a]adelay=350|350,volume=1.0[a1];"
-        "[a0][a1]concat=n=2:v=0:a=1[acomb];"
-        "[acomb]bass=g=2.5:f=160,treble=g=1.5:f=3200,volume=1.35[aout]"
-    )
+    # Master audio with warm studio EQ (Pure thought, zero hook)
     master_cmd = [
         ffmpeg, "-y",
-        "-i", hook_audio,
         "-i", thought_audio,
-        "-filter_complex", filter_complex,
-        "-map", "[aout]",
+        "-af", "bass=g=2.5:f=160,treble=g=1.5:f=3200,volume=1.35",
         output_audio_path
     ]
     subprocess.run(master_cmd, check=True)
 
-    # 4. Map Word Timings continuously across the measured thought duration
+    # Map Word Timings across thought duration starting at exactly 0.50s
     all_words = []
     for p in phrases:
         all_words.extend(p)
@@ -426,7 +392,7 @@ def synthesize_voice(phrases, output_audio_path, temp_dir):
 
     word_timings = []
     w_idx = 0
-    curr_t = hook_dur + 0.35  # exact time thought voice begins
+    curr_t = 0.50  # Voice starts cleanly at 0.50s (allowing 0.5s for opening flute chord & focus)
 
     for phrase in phrases:
         phrase_timings = []
@@ -441,8 +407,11 @@ def synthesize_voice(phrases, output_audio_path, temp_dir):
             w_idx += 1
         word_timings.append(phrase_timings)
 
-    total_video_dur = curr_t + 1.8
-    return total_video_dur, word_timings, hook_text
+    # Guarantee video duration is strictly >= 11.8 seconds!
+    voice_end_t = curr_t
+    total_video_dur = max(voice_end_t + 3.5, 11.8)
+
+    return total_video_dur, word_timings
 
 def render_chrome_slide(task):
     chrome, html_file, png_file = task
@@ -463,52 +432,106 @@ def render_chrome_slide(task):
         raise RuntimeError(f"Chrome screenshot failed ({res.returncode}): {res.stderr}\nCommand: {' '.join(cmd)}")
     return png_file
 
-def draw_procedural_wave(canvas, style, palette, intensity, t, base_y=140):
-    """Draws dynamic beat-reactive procedural soundwaves onto RGBA canvas with alpha support."""
+def extract_audio_envelope(audio_path, total_frames, fps=25, sr=22050):
+    """
+    Extracts frame-by-frame REAL audio RMS energy and FFT frequency spectrum from the actual voice/music.
+    The visualizer is 100% physically linked to spoken words, voice pitch, and flute notes!
+    """
+    ffmpeg = find_ffmpeg()
+    cmd = [
+        ffmpeg, "-y",
+        "-i", audio_path,
+        "-ac", "1",
+        "-ar", str(sr),
+        "-f", "f32le",
+        "pipe:1"
+    ]
+    proc = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.DEVNULL)
+    raw = proc.stdout.read()
+    proc.wait()
+
+    audio = np.frombuffer(raw, dtype=np.float32)
+    if len(audio) == 0:
+        return np.ones(total_frames, dtype=np.float32) * 0.5, [np.zeros(48, dtype=np.float32) for _ in range(total_frames)]
+
+    samples_per_frame = int(sr / fps)
+    energies = []
+    spectrums = []
+
+    for i in range(total_frames):
+        s_start = i * samples_per_frame
+        s_end = min(s_start + samples_per_frame, len(audio))
+        if s_start >= len(audio):
+            energies.append(0.02)
+            spectrums.append(np.zeros(48, dtype=np.float32))
+            continue
+
+        chunk = audio[s_start:s_end]
+        rms = float(np.sqrt(np.mean(chunk**2))) if len(chunk) > 0 else 0.02
+        energies.append(rms)
+
+        if len(chunk) >= 64:
+            fft_vals = np.abs(np.fft.rfft(chunk))
+            bins = np.array_split(fft_vals[:min(len(fft_vals), 256)], 48)
+            band_energies = np.array([float(np.mean(b)) if len(b) > 0 else 0.0 for b in bins], dtype=np.float32)
+            b_max = float(np.max(band_energies)) or 1.0
+            spectrums.append(band_energies / b_max)
+        else:
+            spectrums.append(np.zeros(48, dtype=np.float32))
+
+    energies = np.array(energies, dtype=np.float32)
+    e_min, e_max = float(np.min(energies)), float(np.max(energies)) or 1.0
+    # True dynamic scaling: 0.15 during silence, up to 2.20 during loud spoken words
+    norm_energy = 0.15 + 2.05 * ((energies - e_min) / max(e_max - e_min, 0.001))
+    smoothed = np.convolve(norm_energy, [0.2, 0.6, 0.2], mode='same')
+    return smoothed, spectrums
+
+def draw_procedural_wave(canvas, style, palette, intensity, t, base_y=660, spectrum=None):
+    """Draws real audio-reactive soundwave onto RGBA canvas with alpha support."""
     w = canvas.shape[1]
-    col_main = palette[0]
-    col_mid = palette[1]
-    col_glow = palette[2]
+    col_main = (palette[0][0], palette[0][1], palette[0][2], 255)
+    col_mid = (palette[1][0], palette[1][1], palette[1][2], 210)
+    col_glow = (palette[2][0], palette[2][1], palette[2][2], 160)
 
-    if style == "silk_sine_ribbon":
-        pts1 = []
-        pts2 = []
-        for x in range(0, w, 6):
-            phase = (x / float(w)) * 4.0 * math.pi
-            y_off = math.sin(phase + t * 4.2) * 45.0 * intensity + math.sin(phase * 2.1 - t * 2.8) * 22.0
-            y1 = int(base_y + y_off)
-            y2 = int(base_y - y_off * 0.75)
-            pts1.append([x, y1])
-            pts2.append([x, y2])
-        for p in [pts1, pts2]:
-            cv2.polylines(canvas, [np.array(p, np.int32)], False, col_glow, 7, cv2.LINE_AA)
-            cv2.polylines(canvas, [np.array(p, np.int32)], False, col_main, 3, cv2.LINE_AA)
-
-    elif style == "fullwidth_bars":
+    if style == "fullwidth_bars":
         num_bars = 48
         bar_w = int(w / num_bars)
+        spec = spectrum if (spectrum is not None and len(spectrum) == num_bars) else np.zeros(num_bars)
         for b in range(num_bars):
             bx = b * bar_w + int(bar_w * 0.15)
-            bw = int(bar_w * 0.7)
-            b_phase = (b / float(num_bars)) * math.pi * 3.0
-            bh = int(abs(math.sin(b_phase + t * 5.0) * 85.0 * intensity + math.cos(b * 0.6 + t * 3.2) * 35.0))
-            bh = max(10, min(bh, 130))
+            bw = int(bar_w * 0.70)
+            # Bar height is 100% physically driven by the real audio frequency of each word!
+            freq_val = float(spec[b]) if b < len(spec) else 0.1
+            bh = int(8 + (freq_val * 48.0 + 10.0) * intensity)
+            bh = max(6, min(bh, 100))
             y_top = base_y - bh
             y_bot = base_y + bh
             c = col_main if (b % 2 == 0) else col_mid
             cv2.rectangle(canvas, (bx, y_top), (bx + bw, y_bot), c, -1)
 
+    elif style == "silk_sine_ribbon":
+        pts1 = []
+        pts2 = []
+        for x in range(0, w, 5):
+            phase = (x / float(w)) * 4.0 * math.pi
+            # Ribbon amplitude physically expands with spoken word energy!
+            y_off = (math.sin(phase + t * 4.2) * 28.0 + math.sin(phase * 2.1 - t * 2.8) * 14.0) * intensity
+            y1 = int(base_y + y_off)
+            y2 = int(base_y - y_off * 0.75)
+            pts1.append([x, y1])
+            pts2.append([x, y2])
+        for p in [pts1, pts2]:
+            cv2.polylines(canvas, [np.array(p, np.int32)], False, col_glow, 5, cv2.LINE_AA)
+            cv2.polylines(canvas, [np.array(p, np.int32)], False, col_main, 2, cv2.LINE_AA)
+
     else:
         pts = []
-        for x in range(0, w, 8):
+        for x in range(0, w, 6):
             rad = (x / float(w)) * 6.28
-            y_off = math.sin(rad * 3.0 + t * 4.5) * 50.0 * intensity + math.sin(rad * 6.0 - t * 3.0) * 25.0
+            y_off = (math.sin(rad * 3.0 + t * 4.5) * 30.0 + math.sin(rad * 6.0 - t * 3.0) * 15.0) * intensity
             pts.append([x, int(base_y + y_off)])
-        cv2.polylines(canvas, [np.array(pts, np.int32)], False, col_glow, 8, cv2.LINE_AA)
-        cv2.polylines(canvas, [np.array(pts, np.int32)], False, col_main, 3, cv2.LINE_AA)
-
-    mask = np.any(canvas[:, :, :3] > 15, axis=2)
-    canvas[mask, 3] = 255
+        cv2.polylines(canvas, [np.array(pts, np.int32)], False, col_glow, 6, cv2.LINE_AA)
+        cv2.polylines(canvas, [np.array(pts, np.int32)], False, col_main, 2, cv2.LINE_AA)
 
 def generate_kinetic_reel(output_mp4, custom_quote=None, custom_image=None):
     """
@@ -543,8 +566,8 @@ def generate_kinetic_reel(output_mp4, custom_quote=None, custom_image=None):
         clean_image_watermark(image_path, clean_image_path)
 
         voice_audio = os.path.join(temp_dir, "voice.mp3")
-        total_video_dur, word_timings, hook_text = synthesize_voice(phrases, voice_audio, temp_dir)
-        print(f"🎙️ Spoken Hook: \"{hook_text}\" (Duration: {total_video_dur:.2f}s total)")
+        total_video_dur, word_timings = synthesize_voice(phrases, voice_audio, temp_dir)
+        print(f"🎙️ Pure Thought Voiceover Generated (Duration: {total_video_dur:.2f}s total >= 11.8s)")
 
         # HTML template for Chrome rendering
         html_template = """<!DOCTYPE html>
@@ -615,44 +638,51 @@ def generate_kinetic_reel(output_mp4, custom_quote=None, custom_image=None):
         with concurrent.futures.ThreadPoolExecutor(max_workers=8) as executor:
             list(executor.map(render_chrome_slide, tasks))
 
-        # Generate Procedural Soundwave Overlay Video
+        # 100+ Thought-Adaptive Atmospheric Particle Animation & Elevated Soundwave
+        atmos_style, atmos_palette_name = select_thought_atmospheric(quote_text)
+        atmos_sim = AtmosphericParticleSimulator(atmos_style, atmos_palette_name, width=540, height=960)
+        wave_style = random.choice(VISUALIZER_STYLES)
+        wave_palette = random.choice(COLOR_PALETTES)
+        print(f"✨ Rendering 100+ Procedural Atmosphere ({atmos_style} / {atmos_palette_name}) & Wave ({wave_style})...")
+
         fps = 25
         total_frames = int(total_video_dur * fps)
         wave_video = os.path.join(temp_dir, "wave_overlay.mp4")
 
-        wave_style = random.choice(VISUALIZER_STYLES)
-        wave_palette = random.choice(COLOR_PALETTES)
-        print(f"🌊 Rendering Soundwave ({wave_style}) at elevated y=1380 safe-zone...")
-
         wave_cmd = [
             ffmpeg, "-y",
             "-f", "rawvideo", "-vcodec", "rawvideo",
-            "-s", "1080x280", "-pix_fmt", "bgra", "-r", str(fps),
+            "-s", "540x960", "-pix_fmt", "bgra", "-r", str(fps),
             "-i", "-",
+            "-vf", "scale=1080:1920:flags=bicubic",
             "-c:v", "png", "-pix_fmt", "rgba",
             wave_video
         ]
         proc = subprocess.Popen(wave_cmd, stdin=subprocess.PIPE, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
 
+        # Extract REAL Audio-Reactive Energy Envelope from the actual voice
+        audio_energies, audio_spectrums = extract_audio_envelope(voice_audio, total_frames, fps=fps)
+
         for i in range(total_frames):
             t = i / float(fps)
-            canvas = np.zeros((280, 1080, 4), dtype=np.uint8)
-            intensity = 1.1 + 0.65 * math.sin(t * 2.2) + 0.35 * math.cos(t * 4.1)
-            draw_procedural_wave(canvas, wave_style, wave_palette, intensity, t, base_y=140)
+            canvas = atmos_sim.draw_frame(t)
+            # Physical audio-reactive response: jumps with spoken words, calms during pauses!
+            real_intensity = float(audio_energies[i])
+            real_spec = audio_spectrums[i] if i < len(audio_spectrums) else np.zeros(48, dtype=np.float32)
+            draw_procedural_wave(canvas, wave_style, wave_palette, real_intensity, t, base_y=660, spectrum=real_spec)
             proc.stdin.write(canvas.tobytes())
 
         proc.stdin.close()
         proc.wait()
 
         # Build FFmpeg Filter Complex
-        # Wave elevated to y=1260 (completely above YouTube Shorts bottom UI & handle)
+        # Fullscreen atmospheric particles + Wave elevated at y=1320
         # Text at y=760 (upper chest, crystal clear)
         fade_out_start = f"{total_video_dur - 1.5:.2f}"
 
-        # Universal aspect ratio fit: scales & crops cleanly to 1440x2560 then prominent cinematic zoom to 1080x1920
         filter_parts = [
             f"[0:v]scale='if(gt(a,9/16),-2,1440)':'if(gt(a,9/16),2560,-2)',crop=1440:2560,zoompan=z='min(zoom+0.0014,1.25)':x='iw/2-(iw/zoom/2)':y='ih/2-(ih/zoom/2)':d={total_frames}:s=1080x1920:fps=25[base];",
-            f"[base][1:v]overlay=0:1260[base_with_wave];"
+            f"[base][1:v]overlay=0:0[base_with_wave];"
         ]
 
         has_logo = os.path.exists(LOGO_PATH)
@@ -674,11 +704,13 @@ def generate_kinetic_reel(output_mp4, custom_quote=None, custom_image=None):
             ]
             input_idx = 2
 
-        for oe in overlay_events:
+        for i, oe in enumerate(overlay_events):
             input_args.extend(["-i", oe['png']])
             next_input = f"[tmp_{input_idx}]" if input_idx < len(overlay_events) + (3 if has_logo else 2) - 1 else "[v]"
+            # Keep last slide on screen until video outro fade begins!
+            end_t = (total_video_dur - 0.8) if (i == len(overlay_events) - 1) else oe['end']
             filter_parts.append(
-                f"{curr_input}[{input_idx}:v]overlay=0:760:enable='between(t,{oe['start']:.2f},{oe['end']:.2f})'{next_input};"
+                f"{curr_input}[{input_idx}:v]overlay=0:760:enable='between(t,{oe['start']:.2f},{end_t:.2f})'{next_input};"
             )
             curr_input = next_input
             input_idx += 1
@@ -689,8 +721,8 @@ def generate_kinetic_reel(output_mp4, custom_quote=None, custom_image=None):
         input_args.extend(["-i", voice_audio, "-i", BGM_FILE])
 
         filter_parts.append(
-            f"[{voice_idx}:a]volume=1.15[voice];"
-            f"[{bgm_idx}:a]volume=0.14,afade=t=out:st={fade_out_start}:d=1.5[bgm];"
+            f"[{voice_idx}:a]apad=whole_dur={total_video_dur:.2f},volume=1.15[voice];"
+            f"[{bgm_idx}:a]atrim=0:{total_video_dur:.2f},volume=0.15,afade=t=out:st={fade_out_start}:d=1.5[bgm];"
             f"[voice][bgm]amix=inputs=2:duration=first:dropout_transition=0,volume=1.75[a]"
         )
 
