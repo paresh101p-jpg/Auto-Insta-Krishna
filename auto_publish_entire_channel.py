@@ -1,4 +1,4 @@
-import os, sys, json
+import os, sys, json, time
 sys.stdout.reconfigure(encoding='utf-8')
 from datetime import datetime, timezone
 from google.oauth2.credentials import Credentials
@@ -74,12 +74,12 @@ while True:
                 age_hours = (now - pub_dt).total_seconds() / 3600.0
                 title = v['snippet']['title'][:50]
                 
-                # Check for copyright or processing issues
                 upload_status = status.get('uploadStatus')
                 rejection_reason = status.get('rejectionReason')
                 content_details = v.get('contentDetails', {})
                 region_restriction = content_details.get('regionRestriction', {})
                 blocked_regions = region_restriction.get('blocked', [])
+                licensed_content = content_details.get('licensedContent', False)
                 
                 all_unlisted.append({
                     'id': vid,
@@ -89,7 +89,8 @@ while True:
                     'status': status,
                     'upload_status': upload_status,
                     'rejection_reason': rejection_reason,
-                    'blocked_regions': blocked_regions
+                    'blocked_regions': blocked_regions,
+                    'licensed_content': licensed_content
                 })
                 
     page_token = playlist_res.get('nextPageToken')
@@ -104,7 +105,7 @@ print(f"Candidates >= 24h: {len(ready_candidates)}")
 print(f"Still in 24h Quarantine (< 24h): {len(still_in_quarantine)}")
 
 published_count = 0
-flagged_count = 0
+deleted_count = 0
 
 for item in ready_candidates:
     vid = item['id']
@@ -113,27 +114,42 @@ for item in ready_candidates:
     upload_status = item['upload_status']
     rejection = item['rejection_reason']
     blocked = item['blocked_regions']
+    licensed = item['licensed_content']
     
-    # Pre-flight Safety Verification:
-    # 1. Must be fully processed
-    # 2. Must not have any rejection reason (copyright, termsOfUse, etc.)
-    # 3. Must not have blocked country restrictions
+    # Check if ANY problem exists (copyright, rejection, block, 3rd party claim)
+    problem_found = False
+    problem_reason = ""
+    
     if rejection:
-        print(f"❌ [QUARANTINE BLOCKED] Video {vid} has rejectionReason='{rejection}'! DO NOT PUBLISH. Title: {title}")
-        flagged_count += 1
+        problem_found = True
+        problem_reason = f"Rejection reason: {rejection}"
+    elif upload_status in ['rejected', 'failed']:
+        problem_found = True
+        problem_reason = f"Upload status failed/rejected: {upload_status}"
+    elif blocked:
+        problem_found = True
+        problem_reason = f"Blocked in {len(blocked)} regions: {blocked}"
+    elif licensed:
+        problem_found = True
+        problem_reason = "3rd party Content ID claim detected (licensedContent=True)"
+        
+    # USER RULE: If ANY problem is found, DO NOT keep Unlisted -> PERMANENTLY DELETE FROM YOUTUBE!
+    if problem_found:
+        print(f"\n🚨 [PROBLEM DETECTED] Video {vid} ({title}) has issue: {problem_reason}")
+        print(f"🗑️ [AUTO-DELETE] Deleting video {vid} permanently from YouTube...")
+        try:
+            youtube.videos().delete(id=vid).execute()
+            deleted_count += 1
+            print(f"✅ Video {vid} permanently DELETED from YouTube!")
+        except Exception as del_err:
+            print(f"❌ Failed to delete video {vid}: {del_err}")
         continue
     
     if upload_status != 'processed':
-        print(f"⚠️ [PROCESSING INCOMPLETE] Video {vid} uploadStatus='{upload_status}'. Skipping for now. Title: {title}")
-        flagged_count += 1
+        print(f"⚠️ [PROCESSING INCOMPLETE] Video {vid} uploadStatus='{upload_status}'. Still processing, skipping for next cycle.")
         continue
         
-    if blocked:
-        print(f"❌ [QUARANTINE BLOCKED] Video {vid} has blocked regions ({len(blocked)} countries)! DO NOT PUBLISH. Title: {title}")
-        flagged_count += 1
-        continue
-        
-    # Safety checks passed 100% -> Publish to Public
+    # 100% Clean -> Publish to Public
     snippet = item['snippet']
     snippet['categoryId'] = '10'  # Music category
     body = {
@@ -153,7 +169,7 @@ for item in ready_candidates:
 
 print(f"\nSummary:")
 print(f"  Successfully Published: {published_count}")
-print(f"  Quarantine Flagged/Skipped: {flagged_count}")
+print(f"  Problematic Videos Deleted: {deleted_count}")
 print(f"  Waiting in Quarantine (<24h): {len(still_in_quarantine)}")
 
 if still_in_quarantine:

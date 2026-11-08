@@ -326,3 +326,4 @@ def render_atmospheric_video(style, palette_name, total_duration, output_mp4, fp
     proc.stdin.close()
     proc.wait()
     return output_mp4
+
