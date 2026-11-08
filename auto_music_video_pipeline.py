@@ -2156,41 +2156,87 @@ def generate_thumbnail(slides, theme):
         title = theme.get("title", "").lower()
         hindi = theme.get("hindi_main", "").lower()
 
-        # Deep Sleep / Insomnia: STRICTLY ZERO FACES (Pure tranquil night lake, bamboo forest, cozy rain)
+        # Track used AI thumbnails to guarantee fresh rotation on every run
+        used_thumbs_file = os.path.join(BASE_DIR, "used_ai_thumbnails.txt")
+        used_thumbs = set()
+        if os.path.exists(used_thumbs_file):
+            try:
+                with open(used_thumbs_file, "r", encoding="utf-8") as f:
+                    used_thumbs = set(line.strip() for line in f if line.strip())
+            except Exception:
+                pass
+
+        # Smart Category Mapping for 100% Genuine 3D AI Artwork
         pool = []
+        # 1. Deep Sleep / Insomnia (STRICTLY ZERO FACES: Pure tranquil night lake, bamboo forest, cozy rain)
         if any(w in cat or w in title or w in hindi for w in ["sleep", "neend", "निद्रा", "रात", "night", "अनिद्रा", "insomnia"]):
-            pool = ["master_ai_thumb_zen_bamboo_sleep.jpg", "master_ai_thumb_cozy_rain_sleep.jpg", "master_ai_thumb_insomnia_sleep_flute.jpg"]
+            pool = [
+                "master_ai_thumb_zen_bamboo_sleep.jpg",
+                "master_ai_thumb_cozy_rain_sleep.jpg",
+                "master_ai_thumb_insomnia_sleep_flute.jpg",
+                "master_ai_thumb_sleep_peace.jpg",
+                "master_ai_thumb_peace_sleep.jpg"
+            ]
+        # 2. Classical Jugalbandi / Bansuri & Tabla
         elif any(w in cat or w in title or w in hindi for w in ["tabla", "तबला", "jugalbandi"]):
             pool = ["master_ai_thumb_bansuri_tabla_awakening.jpg"]
-        elif any(w in cat or w in title or w in hindi for w in ["morning", "subah", "प्रभात", "सवेरा"]):
-            pool = ["master_ai_thumb_morning_awakening_v2.jpg", "master_ai_thumb_morning_peace.jpg"]
-        elif any(w in cat or w in title or w in hindi for w in ["soul", "dhyan", "ध्यान", "healing"]):
-            pool = ["master_ai_thumb_soul_healing.jpg"]
+        # 3. Morning Pooja & Awakening
+        elif any(w in cat or w in title or w in hindi for w in ["morning", "subah", "प्रभात", "सवेरा", "awakening", "pooja", "पूजा"]):
+            pool = [
+                "master_ai_thumb_morning_awakening_v2.jpg",
+                "master_ai_thumb_morning_peace.jpg",
+                "master_ai_thumb_morning_awakening.jpg"
+            ]
+        # 4. Inner Peace & Soul Dhyan / Healing / Lo-Fi
+        elif any(w in cat or w in title or w in hindi for w in ["soul", "dhyan", "ध्यान", "healing", "peace", "शांति", "lofi", "chill"]):
+            pool = [
+                "master_ai_thumb_soul_healing.jpg",
+                "master_ai_thumb_morning_peace.jpg"
+            ]
         else:
             all_masters = glob.glob(os.path.join(BASE_DIR, "master_ai_thumb_*.jpg"))
             pool = [os.path.basename(p) for p in all_masters]
 
-        chosen = None
-        for p in pool:
-            full_p = os.path.join(BASE_DIR, p)
-            if os.path.exists(full_p):
-                chosen = full_p
-                break
+        # Filter candidates that actually exist in repo
+        valid_candidates = [p for p in pool if os.path.exists(os.path.join(BASE_DIR, p))]
+        if not valid_candidates:
+            all_masters = glob.glob(os.path.join(BASE_DIR, "master_ai_thumb_*.jpg"))
+            valid_candidates = [os.path.basename(p) for p in all_masters if os.path.exists(p)]
 
-        if chosen:
+        # Rotation: Prefer unused thumbnails from the valid candidates
+        unused_candidates = [p for p in valid_candidates if p not in used_thumbs]
+        if unused_candidates:
+            chosen_name = random.choice(unused_candidates)
+        elif valid_candidates:
+            # If all were used once, pick randomly from pool for infinite rotation
+            chosen_name = random.choice(valid_candidates)
+        else:
+            chosen_name = None
+
+        if chosen_name:
+            chosen = os.path.join(BASE_DIR, chosen_name)
             shutil.copy2(chosen, TEMP_THUMBNAIL)
             sample_thumb = os.path.join(BASE_DIR, "MUSIC_VIDEO_HIGH_CTR_SAMPLE_THUMBNAIL.jpg")
             shutil.copy2(chosen, sample_thumb)
-            print(f"  -> SUCCESS! Attached 100% Genuine 3D Master AI Artwork Thumbnail: {os.path.basename(chosen)}", flush=True)
+
+            # Record used thumbnail
+            try:
+                with open(used_thumbs_file, "a", encoding="utf-8") as f:
+                    f.write(chosen_name + "\n")
+            except Exception:
+                pass
+
+            print(f"  -> SUCCESS! Attached 100% Genuine 3D Master AI Artwork Thumbnail: {chosen_name}", flush=True)
             return TEMP_THUMBNAIL
 
-        import create_music_thumbnail as cmt
-        selected_slide = random.choice(slides) if slides else None
-        cmt.create_thumbnail(theme=theme, image_path=selected_slide, output_path=TEMP_THUMBNAIL)
-        sample_thumb = os.path.join(BASE_DIR, "MUSIC_VIDEO_HIGH_CTR_SAMPLE_THUMBNAIL.jpg")
-        shutil.copy2(TEMP_THUMBNAIL, sample_thumb)
-        print(f"  -> SUCCESS! High-CTR AI Thumbnail Generated: {TEMP_THUMBNAIL}", flush=True)
-        return TEMP_THUMBNAIL
+        # Hard safety fallback: Pick from clean 16:9 cinematic slides (NEVER the HTML drawbox template)
+        if slides:
+            chosen_slide = random.choice(slides)
+            shutil.copy2(chosen_slide, TEMP_THUMBNAIL)
+            print(f"  -> Fallback to clean 16:9 cinematic slide: {os.path.basename(chosen_slide)}", flush=True)
+            return TEMP_THUMBNAIL
+
+        return None
     except Exception as e:
         print(f"  -> [Notice] Thumbnail generation error, using fallback: {e}", flush=True)
         if slides:
