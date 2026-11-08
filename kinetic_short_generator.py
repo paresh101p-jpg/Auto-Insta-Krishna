@@ -324,40 +324,25 @@ def get_next_image():
     return chosen
 
 def split_quote_into_phrases(quote_text):
-    """
-    Splits any spiritual thought into at most 1 or 2 natural complete grammatical lines.
-    NEVER chops sentences into 3, 4, or 5 fragmented pieces.
-    If short (<= 8 words): speaks as 1 smooth line.
-    If medium/long (> 8 words): splits at natural punctuation or conjunction into exactly 2 lines.
-    """
+    """Splits a thought into 1 or 2 natural complete grammatical lines (NOT chopped 3-word fragments)."""
     cleaned = quote_text.replace("- राधे कृष्ण", "").replace("- श्री कृष्ण", "").replace("—", "").strip()
-    words = cleaned.split()
-    if len(words) <= 8:
-        phrases = [words]
-    else:
-        total = len(words)
-        mid = total // 2
-        conjunctions = {'और', 'लेकिन', 'तो', 'क्योंकि', 'इसलिए', 'बाकी', 'परन्तु', 'किन्तु', 'जब', 'तब', 'वही', 'वहाँ'}
-        best_split = mid
-        best_score = -100
-
-        for i in range(3, total - 3):
-            score = 0
-            w_prev = words[i - 1]
-            w_curr = words[i]
-
-            if any(w_prev.endswith(p) for p in [';', ':', ',', '।', '!']):
-                score += 25
-            if w_curr in conjunctions:
-                score += 20
-            dist = abs(i - mid)
-            score -= dist * 4
-
-            if score > best_score:
-                best_score = score
-                best_split = i
-
-        phrases = [words[:best_split], words[best_split:]]
+    raw_clauses = [c.strip() for c in cleaned.replace(";", ",").replace("!", "।").split("।") if c.strip()]
+    
+    phrases = []
+    for clause in raw_clauses:
+        # Split on comma or conjunctions
+        sub_parts = [s.strip() for s in clause.split(",") if s.strip()]
+        for sub in sub_parts:
+            words = sub.split()
+            if not words:
+                continue
+            # If a sub-clause has more than 10 words, split cleanly in the middle
+            if len(words) > 10:
+                mid = len(words) // 2
+                phrases.append(words[:mid])
+                phrases.append(words[mid:])
+            else:
+                phrases.append(words)
 
     if not phrases:
         phrases = [["तुम्हारा", "केवल", "कर्म", "है,"], ["बाक़ी", "सब", "मुझ", "पर", "छोड़", "दो।"]]
@@ -545,23 +530,23 @@ def synthesize_voice(phrases, output_audio_path, temp_dir):
         p_audio = os.path.join(temp_dir, f"phrase_{p_idx}.mp3")
         synthesized = False
 
-        # Tier 1: Cartesia Sonic (Native Indian Hindi Voice - Vivek)
-        if cartesia_key:
-            try:
-                synthesize_with_cartesia(p_text, p_audio)
-                synthesized = True
-                print(f"✨ Phrase {p_idx} synthesized with Cartesia Sonic (Native Hindi Vivek): '{p_text}'")
-            except Exception as cart_err:
-                print(f"⚠️ Cartesia note (phrase {p_idx}): {cart_err}")
-
-        # Tier 2: ElevenLabs Fallback
-        if not synthesized and eleven_key:
+        # Tier 1: ElevenLabs (#1 Primary Human Voice)
+        if eleven_key:
             try:
                 synthesize_with_elevenlabs(p_text, p_audio)
                 synthesized = True
-                print(f"🎙️ Phrase {p_idx} synthesized with ElevenLabs (George): '{p_text}'")
+                print(f"🎙️ Phrase {p_idx} synthesized with ElevenLabs (#1 Primary): '{p_text}'")
             except Exception as ele_err:
                 print(f"⚠️ ElevenLabs note (phrase {p_idx}): {ele_err}")
+
+        # Tier 2: Cartesia Sonic (#2 Backup Native Indian Hindi Voice - Vivek)
+        if not synthesized and cartesia_key:
+            try:
+                synthesize_with_cartesia(p_text, p_audio)
+                synthesized = True
+                print(f"✨ Phrase {p_idx} synthesized with Cartesia Sonic (#2 Backup Vivek): '{p_text}'")
+            except Exception as cart_err:
+                print(f"⚠️ Cartesia note (phrase {p_idx}): {cart_err}")
 
         # Tier 3: Google Cloud Text-to-Speech (Neural2-B)
         if not synthesized and use_google:
