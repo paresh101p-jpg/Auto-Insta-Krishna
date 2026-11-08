@@ -2156,11 +2156,10 @@ def generate_thumbnail(slides, theme):
         title = theme.get("title", "").lower()
         hindi = theme.get("hindi_main", "").lower()
 
-        # Prioritize matching pure 3D AI Master Thumbnails (Zero HTML, Zero Flat Cards)
-        # Deep Sleep / Insomnia: STRICTLY ZERO FACES (Pure tranquil night lake, moon, flute, singing bowl)
+        # Deep Sleep / Insomnia: STRICTLY ZERO FACES (Pure tranquil night lake, bamboo forest, cozy rain)
         pool = []
         if any(w in cat or w in title or w in hindi for w in ["sleep", "neend", "निद्रा", "रात", "night", "अनिद्रा", "insomnia"]):
-            pool = ["master_ai_thumb_insomnia_sleep_flute.jpg"]
+            pool = ["master_ai_thumb_zen_bamboo_sleep.jpg", "master_ai_thumb_cozy_rain_sleep.jpg", "master_ai_thumb_insomnia_sleep_flute.jpg"]
         elif any(w in cat or w in title or w in hindi for w in ["tabla", "तबला", "jugalbandi"]):
             pool = ["master_ai_thumb_bansuri_tabla_awakening.jpg"]
         elif any(w in cat or w in title or w in hindi for w in ["morning", "subah", "प्रभात", "सवेरा"]):
