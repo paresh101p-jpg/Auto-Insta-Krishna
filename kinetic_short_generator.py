@@ -202,36 +202,57 @@ def find_ffmpeg():
 
 def get_next_quote():
     """Gets the next thought from quotes.txt, moves it to used_quotes.txt, and auto-recycles if exhausted."""
-    if not os.path.exists(QUOTES_FILE):
-        return "तुम्हारा केवल कर्म है, बाक़ी सब मुझ पर छोड़ दो।"
+    fallback_pool = [
+        "समय से पहले और भाग्य से अधिक किसी को कुछ नहीं मिलता, इसलिए धैर्य रखो।",
+        "कर्म करो और फल की चिंता मत करो, क्योंकि ईश्वर का न्याय सबसे बड़ा है।",
+        "संदेह करने वाले मन को कभी सुख और शांति नहीं मिल सकती, विश्वास रखो।",
+        "मन की शांति से बड़ा कोई धन नहीं, और संतोष से बड़ा कोई सुख नहीं।",
+        "जो हुआ वह अच्छा हुआ, जो हो रहा है वह अच्छा हो रहा है, जो होगा वह भी अच्छा ही होगा।",
+        "परिवर्तन संसार का नियम है, जो आज तुम्हारा है कल किसी और का था।",
+        "क्रोध से भ्रम पैदा होता है, भ्रम से बुद्धि भ्रष्ट होती है, और बुद्धि नाश से सब नष्ट हो जाता है।",
+        "संसार का सबसे बड़ा योद्धा वह है जो अपने मन और इंद्रियों पर विजय पा ले।",
+        "जब मन शांत होता है, तब जीवन की हर उलझन का हल मिल जाता है।"
+    ]
 
-    with open(QUOTES_FILE, "r", encoding="utf-8") as f:
-        quotes = [line.strip() for line in f if line.strip()]
+    quotes = []
+    if os.path.exists(QUOTES_FILE):
+        try:
+            with open(QUOTES_FILE, "r", encoding="utf-8") as f:
+                quotes = [line.strip() for line in f if line.strip()]
+        except Exception as e:
+            print(f"⚠️ Error reading quotes.txt: {e}")
 
     if not quotes:
         if os.path.exists(USED_QUOTES_FILE):
-            with open(USED_QUOTES_FILE, "r", encoding="utf-8") as uf:
-                used = [line.strip() for line in uf if line.strip()]
-            if used:
-                random.shuffle(used)
-                with open(QUOTES_FILE, "w", encoding="utf-8") as f:
-                    f.write("\n".join(used) + "\n")
-                with open(USED_QUOTES_FILE, "w", encoding="utf-8") as uf:
-                    uf.write("")
-                print(f"🔄 Auto-recycled {len(used)} quotes from used_quotes.txt back to quotes.txt!")
-                quotes = used
+            try:
+                with open(USED_QUOTES_FILE, "r", encoding="utf-8") as uf:
+                    used = [line.strip() for line in uf if line.strip()]
+                if used:
+                    random.shuffle(used)
+                    with open(QUOTES_FILE, "w", encoding="utf-8") as f:
+                        f.write("\n".join(used) + "\n")
+                    print(f"🔄 Auto-recycled {len(used)} quotes from used_quotes.txt back to quotes.txt!")
+                    quotes = used
+            except Exception as e:
+                print(f"⚠️ Error reading used_quotes.txt: {e}")
 
     if not quotes:
-        return "तुम्हारा केवल कर्म है, बाक़ी सब मुझ पर छोड़ दो।"
+        chosen_quote = random.choice(fallback_pool)
+        print(f"⚠️ Using fallback pool quote: {chosen_quote}")
+        return chosen_quote
 
     chosen_quote = quotes.pop(0)
 
-    with open(QUOTES_FILE, "w", encoding="utf-8") as f:
-        f.write("\n".join(quotes) + ("\n" if quotes else ""))
+    try:
+        with open(QUOTES_FILE, "w", encoding="utf-8") as f:
+            f.write("\n".join(quotes) + ("\n" if quotes else ""))
 
-    with open(USED_QUOTES_FILE, "a", encoding="utf-8") as uf:
-        uf.write(chosen_quote + "\n")
+        with open(USED_QUOTES_FILE, "a", encoding="utf-8") as uf:
+            uf.write(chosen_quote + "\n")
+    except Exception as e:
+        print(f"⚠️ Error saving updated quotes: {e}")
 
+    print(f"✨ Picked unique thought ({len(quotes)} remaining): {chosen_quote}")
     return chosen_quote
 
 def clean_image_watermark(image_path, target_cleaned_path):
