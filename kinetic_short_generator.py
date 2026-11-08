@@ -324,28 +324,25 @@ def get_next_image():
     return chosen
 
 def split_quote_into_phrases(quote_text):
-    """Splits a long thought into natural 2-4 word rhythmic phrases."""
-    cleaned = quote_text.replace("- राधे कृष्ण", "").replace("- श्री कृष्ण", "").strip()
+    """Splits a thought into 1 or 2 natural complete grammatical lines (NOT chopped 3-word fragments)."""
+    cleaned = quote_text.replace("- राधे कृष्ण", "").replace("- श्री कृष्ण", "").replace("—", "").strip()
     raw_clauses = [c.strip() for c in cleaned.replace(";", ",").replace("!", "।").split("।") if c.strip()]
     
     phrases = []
     for clause in raw_clauses:
+        # Split on comma or conjunctions
         sub_parts = [s.strip() for s in clause.split(",") if s.strip()]
         for sub in sub_parts:
             words = sub.split()
             if not words:
                 continue
-            curr_chunk = []
-            for w in words:
-                curr_chunk.append(w)
-                if len(curr_chunk) >= 3:
-                    phrases.append(curr_chunk)
-                    curr_chunk = []
-            if curr_chunk:
-                if len(curr_chunk) == 1 and phrases:
-                    phrases[-1].append(curr_chunk[0])
-                else:
-                    phrases.append(curr_chunk)
+            # If a sub-clause has more than 10 words, split cleanly in the middle
+            if len(words) > 10:
+                mid = len(words) // 2
+                phrases.append(words[:mid])
+                phrases.append(words[mid:])
+            else:
+                phrases.append(words)
 
     if not phrases:
         phrases = [["तुम्हारा", "केवल", "कर्म", "है,"], ["बाक़ी", "सब", "मुझ", "पर", "छोड़", "दो।"]]
@@ -476,29 +473,11 @@ def synthesize_voice(phrases, output_audio_path, temp_dir):
     # Tier 2: Cartesia Sonic (Ultra-Realistic Human Hindi Narrator)
     # Tier 3: Google Cloud Neural2-B (1M Free Chars/month)
     # Tier 4: Microsoft Edge-TTS (Safety fallback)
-    eleven_key = os.environ.get("ELEVENLABS_API_KEY", "sk_3a70ca540c7a6de1700b2ffb22ba4686ee217368a8445881")
-    eleven_voice_id = "JBFqnCBsd6RMkjVDRZzb"  # George - deep, warm, authentic male spiritual voice
-
     cartesia_key = os.environ.get("CARTESIA_API_KEY", "sk_car_N9Q78thDifsd7Ts5RSfvQ2")
-    cartesia_voice_id = "9bde82b6-70e6-4df6-b964-e897cc526b2b"  # Aryan - Hindi Male Spiritual Narrator
+    cartesia_voice_id = "4cd9f881-58f7-4969-876a-00983214c362"  # Varun - Native Indian Hindi Deep Spiritual Voice
 
-    def synthesize_with_elevenlabs(text, out_p):
-        import urllib.request, json
-        url = f"https://api.elevenlabs.io/v1/text-to-speech/{eleven_voice_id}"
-        payload = {
-            "text": text,
-            "model_id": "eleven_multilingual_v2",
-            "voice_settings": {"stability": 0.65, "similarity_boost": 0.85}
-        }
-        req = urllib.request.Request(
-            url,
-            data=json.dumps(payload).encode("utf-8"),
-            headers={"xi-api-key": eleven_key, "Content-Type": "application/json"}
-        )
-        with urllib.request.urlopen(req, timeout=20) as resp:
-            with open(out_p, "wb") as f_out:
-                f_out.write(resp.read())
-        return True
+    eleven_key = os.environ.get("ELEVENLABS_API_KEY", "sk_3a70ca540c7a6de1700b2ffb22ba4686ee217368a8445881")
+    eleven_voice_id = "JBFqnCBsd6RMkjVDRZzb"
 
     def synthesize_with_cartesia(text, out_p):
         import urllib.request, json
@@ -524,6 +503,24 @@ def synthesize_voice(phrases, output_audio_path, temp_dir):
                 f_out.write(resp.read())
         return True
 
+    def synthesize_with_elevenlabs(text, out_p):
+        import urllib.request, json
+        url = f"https://api.elevenlabs.io/v1/text-to-speech/{eleven_voice_id}"
+        payload = {
+            "text": text,
+            "model_id": "eleven_multilingual_v2",
+            "voice_settings": {"stability": 0.65, "similarity_boost": 0.85}
+        }
+        req = urllib.request.Request(
+            url,
+            data=json.dumps(payload).encode("utf-8"),
+            headers={"xi-api-key": eleven_key, "Content-Type": "application/json"}
+        )
+        with urllib.request.urlopen(req, timeout=20) as resp:
+            with open(out_p, "wb") as f_out:
+                f_out.write(resp.read())
+        return True
+
     # Synthesize each phrase individually with dedicated timing
     phrase_audios = []
     phrase_durs = []
@@ -533,23 +530,23 @@ def synthesize_voice(phrases, output_audio_path, temp_dir):
         p_audio = os.path.join(temp_dir, f"phrase_{p_idx}.mp3")
         synthesized = False
 
-        # Tier 1: ElevenLabs (Authentic Human Soul)
-        if eleven_key:
-            try:
-                synthesize_with_elevenlabs(p_text, p_audio)
-                synthesized = True
-                print(f"✨ Phrase {p_idx} synthesized with ElevenLabs (100% Real Human Voice): '{p_text}'")
-            except Exception as ele_err:
-                print(f"⚠️ ElevenLabs note (phrase {p_idx}): {ele_err}")
-
-        # Tier 2: Cartesia Sonic (Ultra-Realistic Human Hindi Narrator)
-        if not synthesized and cartesia_key:
+        # Tier 1: Cartesia Sonic (Native Indian Hindi Voice - Varun)
+        if cartesia_key:
             try:
                 synthesize_with_cartesia(p_text, p_audio)
                 synthesized = True
-                print(f"⚡ Phrase {p_idx} synthesized with Cartesia Sonic (Aryan Hindi Narrator): '{p_text}'")
+                print(f"✨ Phrase {p_idx} synthesized with Cartesia Sonic (Native Hindi Varun): '{p_text}'")
             except Exception as cart_err:
                 print(f"⚠️ Cartesia note (phrase {p_idx}): {cart_err}")
+
+        # Tier 2: ElevenLabs Fallback
+        if not synthesized and eleven_key:
+            try:
+                synthesize_with_elevenlabs(p_text, p_audio)
+                synthesized = True
+                print(f"🎙️ Phrase {p_idx} synthesized with ElevenLabs (George): '{p_text}'")
+            except Exception as ele_err:
+                print(f"⚠️ ElevenLabs note (phrase {p_idx}): {ele_err}")
 
         # Tier 3: Google Cloud Text-to-Speech (Neural2-B)
         if not synthesized and use_google:
@@ -589,8 +586,8 @@ def synthesize_voice(phrases, output_audio_path, temp_dir):
         phrase_audios.append(p_audio)
         phrase_durs.append(p_dur)
 
-    # Concatenate phrases with 0.35s breathing pause
-    silence_dur = 0.35
+    # Concatenate phrases with 0.18s natural breathing pause
+    silence_dur = 0.18
     silence_file = os.path.join(temp_dir, "silence_pause.mp3")
     subprocess.run([
         ffmpeg, "-y", "-f", "lavfi", "-i", "anullsrc=r=24000:cl=mono",
