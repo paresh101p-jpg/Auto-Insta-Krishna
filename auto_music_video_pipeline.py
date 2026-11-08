@@ -2157,15 +2157,16 @@ def generate_thumbnail(slides, theme):
         hindi = theme.get("hindi_main", "").lower()
 
         # Prioritize matching pure 3D AI Master Thumbnails (Zero HTML, Zero Flat Cards)
+        # Deep Sleep / Insomnia: STRICTLY ZERO FACES (Pure tranquil night lake, moon, flute, singing bowl)
         pool = []
-        if any(w in cat or w in title or w in hindi for w in ["sleep", "neend", "निद्रा", "रात", "night", "अनिद्रा"]):
-            pool = ["master_ai_thumb_sleep_peace.jpg", "master_ai_thumb_insomnia_sleep_flute.jpg", "master_ai_thumb_peace_sleep.jpg"]
-        elif any(w in cat or w in title or w in hindi for w in ["morning", "subah", "प्रभात", "सवेरा"]):
-            pool = ["master_ai_thumb_morning_awakening.jpg", "master_ai_thumb_morning_peace.jpg"]
-        elif any(w in cat or w in title or w in hindi for w in ["tabla", "तबला", "jugalbandi", "धून"]):
+        if any(w in cat or w in title or w in hindi for w in ["sleep", "neend", "निद्रा", "रात", "night", "अनिद्रा", "insomnia"]):
+            pool = ["master_ai_thumb_insomnia_sleep_flute.jpg"]
+        elif any(w in cat or w in title or w in hindi for w in ["tabla", "तबला", "jugalbandi"]):
             pool = ["master_ai_thumb_bansuri_tabla_awakening.jpg"]
+        elif any(w in cat or w in title or w in hindi for w in ["morning", "subah", "प्रभात", "सवेरा"]):
+            pool = ["master_ai_thumb_morning_awakening_v2.jpg", "master_ai_thumb_morning_peace.jpg"]
         elif any(w in cat or w in title or w in hindi for w in ["soul", "dhyan", "ध्यान", "healing"]):
-            pool = ["master_ai_thumb_soul_healing.jpg", "master_ai_thumb_peace_sleep.jpg"]
+            pool = ["master_ai_thumb_soul_healing.jpg"]
         else:
             all_masters = glob.glob(os.path.join(BASE_DIR, "master_ai_thumb_*.jpg"))
             pool = [os.path.basename(p) for p in all_masters]
