@@ -2153,40 +2153,7 @@ def generate_thumbnail(slides, theme):
     import base64
     import shutil
     
-    # Priority Selection: Ultra-Realistic 3D Embossed Typography AI Master Thumbnails
-    cat_text = (theme.get("category", "") + " " + theme.get("title", "") + " " + theme.get("hindi_main", "")).lower()
-    ai_thumb_candidates = []
-    if any(k in cat_text for k in ["morning", "pooja", "sunrise", "awakening", "dawn", "positive", "प्रभात", "सवेरे"]):
-        ai_thumb_candidates = [
-            os.path.join(BASE_DIR, "master_ai_thumb_morning_peace.jpg"),
-            os.path.join(BASE_DIR, "playlist_thumbnails", "master_ai_thumb_morning_peace.jpg"),
-        ]
-    elif any(k in cat_text for k in ["sleep", "night", "insomnia", "neend", "rest", "chinta", "stress", "नींद", "रात्रि"]):
-        ai_thumb_candidates = [
-            os.path.join(BASE_DIR, "master_ai_thumb_peace_sleep.jpg"),
-            os.path.join(BASE_DIR, "playlist_thumbnails", "master_ai_thumb_peace_sleep.jpg"),
-        ]
-    elif any(k in cat_text for k in ["heal", "soul", "dhyan", "meditation", "calm", "anxiety", "peace", "ध्यान", "शांति"]):
-        ai_thumb_candidates = [
-            os.path.join(BASE_DIR, "master_ai_thumb_soul_healing.jpg"),
-            os.path.join(BASE_DIR, "playlist_thumbnails", "master_ai_thumb_soul_healing.jpg"),
-        ]
-    else:
-        pool = [
-            os.path.join(BASE_DIR, "master_ai_thumb_peace_sleep.jpg"),
-            os.path.join(BASE_DIR, "master_ai_thumb_morning_peace.jpg"),
-            os.path.join(BASE_DIR, "master_ai_thumb_soul_healing.jpg"),
-        ]
-        ai_thumb_candidates = [random.choice(pool)]
-
-    for c in ai_thumb_candidates:
-        if os.path.exists(c):
-            shutil.copy2(c, TEMP_THUMBNAIL)
-            sample_thumb = os.path.join(BASE_DIR, "MUSIC_VIDEO_HIGH_CTR_SAMPLE_THUMBNAIL.jpg")
-            shutil.copy2(TEMP_THUMBNAIL, sample_thumb)
-            print(f"  -> ✅ Applied World-Class Master AI 3D Typography Thumbnail: {os.path.basename(c)}")
-            return TEMP_THUMBNAIL
-
+    # ALWAYS dynamically generate a unique high-CTR thumbnail for every video using the track's slide and theme
     selected_slide = random.choice(slides)
     
     badge = theme.get("badge", "DEEP MEDITATION")
