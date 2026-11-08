@@ -2153,14 +2153,78 @@ def generate_thumbnail(slides, theme):
     import base64
     import shutil
     
-    # ALWAYS dynamically generate a unique high-CTR thumbnail for every video using the track's slide and theme
-    selected_slide = random.choice(slides)
-    
     badge = theme.get("badge", "DEEP MEDITATION")
     main_text = theme.get("hindi_main", "श्री कृष्ण अमृत बाँसुरी")
     sub_text = theme.get("hindi_sub", "मन की शांति और गहरी नींद के लिए")
     hook_pill = theme.get("hook_pill", "मन की शांति   |   गहरी नींद   |   चिंता मुक्ति")
+    category = theme.get("category", "")
     brand_text = "KRISHNA VIBEZ"
+
+    # ── 1. DYNAMIC AI IMAGEN 3 GENERATION (100% Pure Instruments, 0 Human Faces) ──
+    gemini_api_key = os.environ.get("GEMINI_API_KEY", "").strip()
+    if not gemini_api_key and os.path.exists("gemini_key.txt"):
+        try:
+            with open("gemini_key.txt", "r") as kf:
+                gemini_api_key = kf.read().strip()
+        except Exception: pass
+
+    if gemini_api_key:
+        try:
+            print("  -> Calling Google Gemini Imagen 3 for 100% Original AI Thumbnail...")
+            from google import genai
+            client = genai.Client(api_key=gemini_api_key)
+
+            if any(k in category.lower() for k in ["morning", "awakening", "prabhat"]):
+                inst_scene = (
+                    "Authentic Indian Tablas and handcrafted golden bamboo Bansuri (flute) resting on a sacred temple ghat "
+                    "overlooking tranquil holy river waters at golden sunrise, burning brass Diya with warm flame, gentle incense smoke, single peacock feather."
+                )
+            elif any(k in category.lower() for k in ["sleep", "night", "insomnia", "neend"]):
+                inst_scene = (
+                    "Handcrafted Indian bamboo Bansuri (flute) and Tibetan singing bowl resting on an ancient teak deck "
+                    "overlooking a serene moonlit lotus pond with glowing water lilies under a starry night sky and crescent moon, sacred brass Diya."
+                )
+            elif any(k in category.lower() for k in ["dhyan", "meditation", "peace", "healing"]):
+                inst_scene = (
+                    "Master Indian bamboo Bansuri (flute) resting across classical Indian Tablas and Tanpura on a carved marble temple terrace, "
+                    "glowing brass Diya, swirling incense smoke, floating marigold petals in holy water, serene twilight atmosphere."
+                )
+            else:
+                inst_scene = (
+                    "Handcrafted Indian classical bamboo Bansuri (flute) and Indian Tablas placed elegantly on velvet cushions on a divine temple terrace, "
+                    "burning brass Diya with gentle flame, holy smoke, fresh peacock feather, sunset river ambiance."
+                )
+
+            ai_prompt = (
+                f"World-class high-CTR 16:9 YouTube thumbnail for Indian classical meditation music:\n"
+                f"Title in 3D golden embossed typography: '{badge} | {main_text}'\n"
+                f"Visual Scene: {inst_scene}\n"
+                f"STRICT REQUIREMENTS: ABSOLUTELY ZERO human faces, ZERO characters, ZERO people, ZERO cartoons. "
+                f"100% pure classical instruments and divine sacred sanctuary. "
+                f"16:9 landscape aspect ratio, ultra-crisp HDR, hyper-realistic 8K textures, warm studio cinematic lighting."
+            )
+
+            result = client.models.generate_images(
+                model="imagen-3.0-generate-002",
+                prompt=ai_prompt,
+                config=dict(
+                    number_of_images=1,
+                    aspect_ratio="16:9",
+                    output_mime_type="image/jpeg",
+                    person_generation="DONT_ALLOW"
+                )
+            )
+            if result and result.generated_images:
+                img_bytes = result.generated_images[0].image.image_bytes
+                with open(TEMP_THUMBNAIL, "wb") as f:
+                    f.write(img_bytes)
+                print(f"  -> SUCCESS! AI Thumbnail Generated via Imagen 3 (0 Faces, Pure Instruments): {TEMP_THUMBNAIL}")
+                return
+        except Exception as img_err:
+            print(f"  -> [Notice] Imagen 3 thumbnail generation fallback: {img_err}")
+
+    # ── 2. LOCAL FALLBACK GENERATOR (Headless Browser) ──
+    selected_slide = random.choice(slides)
 
     # Detect browser engine (Edge on Windows, Chromium on Linux)
     browser_candidates = [
