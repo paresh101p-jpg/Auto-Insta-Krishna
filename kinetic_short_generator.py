@@ -440,7 +440,7 @@ def synthesize_voice(phrases, output_audio_path, temp_dir):
     # Check for Google Cloud credentials
     gcreds_file = os.path.join(BASE_DIR, "google_tts_service_account.json")
     gcreds_env = os.environ.get("GOOGLE_TTS_SERVICE_ACCOUNT")
-    embedded_b64 = "ewogICJ0eXBlIjogInNlcnZpY2VfYWNjb3VudCIsCiAgInByb2plY3RfaWQiOiAieW91dHViZS1idWxrLXVwZGF0ZS01MDEwMDkiLAogICJwcml2YXRlX2tleV9pZCI6ICJlMTNiY2M2NDMyOGE3MjMwOTNkOGZiMjMyZWM5MDRjOWIzZDg3Mzg4IiwKICAicHJpdmF0ZV9rZXkiOiAiLS0tLS1CRUdJTiBQUklWQVRFIEtFWS0tLS0tXG5NSUlFdkFJQkFEQU5CZ2txaGtpRzl3MEJBUUVGQUFTQ0JLWXdnZ1NpQWdFQUFvSUJBUUNkNEdjTWozOGZMUTN0XG5iVmdHY3RRS3lyMXFIMCtvOE9zN2lWRU1QbEhmZm4zOGZxMVJFZmRJZWJzekQ2Q3JaK3NPeDZCbjUzTUc2Yk14XG5kVk9rbVBTTHpHQVZIRU11Vm1uajZaR081VDB1OENRTWpPWTF4Zlc2cktTZW5oNGNXN0JwWWsrNjN4MXpuWU5YXG5iNWJCRFB5NVJlcldjMU9rQmhVSmtyTEd0OFZvK0llaGhoVXRGeCswbmFDdG9vK0tRRFRqS25RUnRPWitWcXBHXG54OXRLVVJJdHZraVp3ZU1ia1J6cXpCOGVzckJ4VlJPZXRFQUdpVXZtZ1ljTXMwdTJjcDhoNkV6TEhrc08veDhlXG4rZ3FWb3NZR0d6bHpuYkQwZGdOTEhYMzRrbzNYS25LaHVSVlhkMmI3V2RPMkdwaDBDNVFMQXU4citVdEg5SnBkXG5SVTVnYmp4UEFnTUJBQUVDZ2dFQU13MmpKVXV1RngzUnVDcTQ0WFQybnZySzMrdDZMaTZpVXlGbnBTYnVBUEQ5XG51czRZSy9ROFhDS0paOHl3NzF6dWhWd0d3akwxWHBIcVVaOFlTa3p3SDlrYVpSazduRnR6YUxGYVViUk40Y1RrXG5VMjZvNzFDeDB3a0xQd1B3eHNqYnRtaUZVZS9lclVtTmRKUHdVME5vNGx6NndSaVFQcVY4M2hpaldXR0tKQlJnXG5WekJBazYvRkducWNNNXdwelBhZ2NqR2ljVUdMSGk3U3pYYmtlV3F4REFtYVFsRzRLcEpTbXJsMTRhNEIzM3pHXG51Y255ekEya0ZMR0ZCTVIxaCtwNm5hRDNzRWpPZWNxQ0lYblo2WlBKTXNCcTMyc0ZzMHB1d1FIY2UzOERzZEpiXG5yay9CTkxvNnNhZUd5ajVHOFR1VXRZVXJScUFVdmFFK24vMmRHR2NjMFFLQmdRRFNiYXlDbXlMN0RIeklObFNzXG4yVmJ0N1ZyQnVWeld5WWxrUFd2bXR0RVRiTFhhZzNTTTd5Z1p3aTRKenVBeHFvSWNBeUJTVnovZWVSMW04b3JCXG5nM0srQzRGdVc1T2RHSjdYaGVjdERIdmo0RjJxNlltOXgvYUNCR0ovaEx4M3JYdWtVamJEZ0FINGg1T0NIaGtvXG5DKzIybXB3TTBnWDRVMVdRS0FqVktEQ091UUtCZ1FEQUVUWCt6WWFBSHBJa2h4bUtUZHJBc3Z5Y3kvSFErQVpXXG5UZHA1OUM2V0IwUmpqZ1dhV0xBR2ZmVkhEYWI5aTJ2cHBpeGphVDZzMUE4c2pYbW1XaGFxc1VEaklhOEJZRDJjXG4wWmY5Q0tkNzZaYmlCY0xETGFmMVpBMU1KOFFTNUNvM05tMUZZY05tTnloRUJPemdxc1BLQnJJdGpHb0dSRHkxXG53ZkpzNWdCZlJ3S0JnSC9JNWpleDZmNDJTUmgwRmR1WmFEYTRLcUwxNDdEelZpR3ZRdlVxRTdFT0ZTa0xKeDNtXG5wWjF1MC9KVTFNU1VYTXFTQTNDOVZ5WE11dFFuZWFlbUlXblRKdGhUZUVLd0R0V21sUXBBU0lQTFhsWkoxOEdOXG55dDZOdHhybENtWkt6WWl0L0YrZ1BwSWtFcW16aVdkT1J4N2FxT1VJTFdQdGgwb3haWnU3K2pEUkFvR0FlenRQXG51cUdodDVobHlod0lqZzF2Mm8yOHVObTkySWNhZ2N0SDcxRjFobnM1TE9zVnV6ZEdFWlJGaUlaQTY1TEY5VTdTXG5VaUpYdlVuK1JtYXJjOGwvbTV0STk3SkgrQWtJM3hJM2czbEhCS0VXVndTOU5yK1hjVUgxcWpRbGdMMTJQS0NtXG5NWXNOZFFyVXdmZXJDR2RvWWJvMEhqZG1XNGp5cnVlMnBKcGFDTWNDZ1lCNUhYczhiMW5LUVowcENNU2I2S1BEXG5vRkNCdHJMUGU0Vk5ORmlqMnYvZ2JpUThXT2hjQnFFVGRmWEpyQTZyZk1yY21IUjdVcmIwZzZQTS9ZTG00Z3VPXG5mdE5KQWRObVBYVlQ3Z2hTaTFZeFAxaVY0REttbE9hWmVROTlxa0J3K0hIaEN1L1I2SmRISEI3bEUwc0hCR2VEXG5HR2RRbDRLNmlpZ3AwbnQwM2tzek13PT1cbi0tLS0tRU5EIFBSSVZBVEUgS0VZLS0tLS1cbiIsCiAgImNsaWVudF9lbWFpbCI6ICJrcmlzaG5hLXJlZWwtYXVkaW9AeW91dHViZS1idWxrLXVwZGF0ZS01MDEwMDkuaWFtLmdzZXJ2aWNlYWNjb3VudC5jb20iLAogICJjbGllbnRfaWQiOiAiMTA3MjI4MjAxMjg3NTQwNjkzNDcxIiwKICAiYXV0aF91cmkiOiAiaHR0cHM6Ly9hY2NvdW50cy5nb29nbGUuY29tL28vb2F1dGgyL2F1dGgiLAogICJ0b2tlbl91cmkiOiAiaHR0cHM6Ly9vYXV0aDIuZ29vZ2xlYXBpcy5jb20vdG9rZW4iLAogICJhdXRoX3Byb3ZpZGVyX3g1MDlfY2VydF91cmwiOiAiaHR0cHM6Ly93d3cuZ29vZ2xlYXBpcy5jb20vb2F1dGgyL3YxL2NlcnRzIiwKICAiY2xpZW50X3g1MDlfY2VydF91cmwiOiAiaHR0cHM6Ly93d3cuZ29vZ2xlYXBpcy5jb20vcm9ib3QvdjEvbWV0YWRhdGEveDUwOS9rcmlzaG5hLXJlZWwtYXVkaW9lNDB5b3V0dWJlLWJ1bGstdXBkYXRlLTUwMTAwOS5pYW0uZ3NlcnZpY2VhY2NvdW50LmNvbSIsCiAgInVuaXZlcnNlX2RvbWFpbiI6ICJnb29nbGVhcGlzLmNvbSIKfQo="
+    embedded_b64 = "ewogICJ0eXBlIjogInNlcnZpY2VfYWNjb3VudCIsCiAgInByb2plY3RfaWQiOiAieW91dHViZS1idWxrLXVwZGF0ZS01MDEwMDkiLAogICJwcml2YXRlX2tleV9pZCI6ICJlMTNiY2M2NDMyOGE3MjMwOTNkOGZiMjMyZWM5MDRjOWIzZDg3Mzg4IiwKICAicHJpdmF0ZV9rZXkiOiAiLS0tLS1CRUdJTiBQUklWQVRFIEtFWS0tLS0tXG5NSUlFdkFJQkFEQU5CZ2txaGtpRzl3MEJBUUVGQUFTQ0JLWXdnZ1NpQWdFQUFvSUJBUUNkNEdjTWozOGZMUTN0XG5iVmdHY3RRS3lyMXFIMCtvOE9zN2lWRU1QbEhmZm4zOGZxMVJFZmRJZWJzekQ2Q3JaK3NPeDZCbjUzTUc2Yk14XG5kVk9rbVBTTHpHQVZIRU11Vm1uajZaR081VDB1OENRTWpPWTF4Zlc2cktTZW5oNGNXN0JwWWsrNjN4MXpuWU5YXG5iNWJCRFB5NVJlcldjMU9rQmhVSmtyTEd0OFZvK0llaGhoVXRGeCswbmFDdG9vK0tRRFRqS25RUnRPWitWcXBHXG54OXRLVVJJdHZraVp3ZU1ia1J6cXpCOGVzckJ4VlJPZXRFQUdpVXZtZ1ljTXMwdTJjcDhoNkV6TEhrc08veDhlXG4rZ3FWb3NZR0d6bHpuYkQwZGdOTEhYMzRrbzNYS25LaHVSVlhkMmI3V2RPMkdwaDBDNVFMQXU4citVdEg5SnBkXG5SVTVnYmp4UEFnTUJBQUVDZ2dFQU13MmpKVXV1RngzUnVDcTQ0WFQybnZySzMrdDZMaTZpVXlGbnBTYnVBUEQ5XG51czRZSy9ROFhDS0paOHl3NzF6dWhWd0d3akwxWHBIcVVaOFlTa3p3SDlrYVpSazduRnR6YUxGYVViUk40Y1RrXG5VMjZvNzFDeDB3a0xQd1B3eHNqYnRtaUZVZS9lclVtTmRKUHdVME5vNGx6NndSaVFQcVY4M2hpaldXR0tKQlJnXG5WekJBazYvRkducWNNNXdwelBhZ2NqR2ljVUdMSGk3U3pYYmtlV3F4REFtYVFsRzRLcEpTbXJsMTRhNEIzM3pHXG41Y255ekEya0ZMR0ZCTVIxaCtwNm5hRDNzRWpPZWNxQ0lYblo2WlBKTXNCcTMyc0ZzMHB1d1FIY2UzOERzZEpiXG5yay9CTkxvNnNhZUd5ajVHOFR1VXRZVXJScUFVdmFFK24vMmRHR2NjMFFLQmdRRFNiYXlDbXlMN0RIeklObFNzXG4yVmJ0N1ZyQnVWeld5WWxrUFd2bXR0RVRiTFhhZzNTTTd5Z1p3aTRKenVBeHFvSWNBeUJTVnovZWVSMW04b3JCXG5nM0srQzRGdVc1T2RHSjdYaGVjdERIdmo0RjJxNlltOXgvYUNCR0ovaEx4M3JYdWtVamJEZ0FINGg1T0NIaGtvXG5DKzIybXB3TTBnWDRVMVdRS0FqVktEQ091UUtCZ1FEQUVUWCt6WWFBSHBJa2h4bUtUZHJBc3Z5Y3kvSFErQVpXXG5UZHA1OUM2V0IwUmpqZ1dhV0xBR2ZmVkhEYWI5aTJ2cHBpeGphVDZzMUE4c2pYbW1XaGFxc1VEaklhOEJZRDJjXG4wWmY5Q0tkNzZaYmlCY0xETGFmMVpBMU1KOFFTNUNvM05tMUZZY05tTnloRUJPemdxc1BLQnJJdGpHb0dSRHkxXG53ZkpzNWdCZlJ3S0JnSC9JNWpleDZmNDJTUmgwRmR1WmFEYTRLcUwxNDdEelZpR3ZRdlVxRTdFT0ZTa0xKeDNtXG5wWjF1MC9KVTFNU1VYTXFTQTNDOVZ5WE11dFFuZWFlbUlXblRKdGhUZUVLd0R0V21sUXBBU0lQTFhsWkoxOEdOXG55dDZOdHhybENtWkt6WWl0L0YrZ1BwSWtFcW16aVdkT1J4N2FxT1VJTFdQdGgwb3haWnU3K2pEUkFvR0FlenRQXG51cUdodDVobHlod0lqZzF2Mm8yOHVObTkySWNhZ2N0SDcxRjFobnM1TE9zVnV6ZEdFWlJGaUlaQTY1TEY5VTdTXG5VaUpYdlVuK1JtYXJjOGwvbTV0STk3SkgrQWtJM3hJM2czbEhCS0VXVndTOU5yK1hjVUgxcWpRbGdMMTJQS0NtXG5NWXNOZFFyVXdmZXJDR2RvWWJvMEhqZG1XNGp5cnVlMnBKcGFDTWNDZ1lCNUhYczhiMW5LUVowcENNU2I2S1BEXG5vRkNCdHJMUGU0Vk5ORmlqMnYvZ2JpUThXT2hjQnFFVGRmWEpyQTZyZk1yY21IUjdVcmIwZzZQTS9ZTG00Z3VPXG5mdE5KQWRObVBYVlQ3Z2hTaTFZeFAxaVY0REttbE9hWmVROTlxa0J3K0hIaEN1L1I2SmRISEI3bEUwc0hCR2VEXG5HR2RRbDRLNmlpZ3AwbnQwM2tzek13PT1cbi0tLS0tRU5EIFBSSVZBVEUgS0VZLS0tLS1cbiIsCiAgImNsaWVudF9lbWFpbCI6ICJrcmlzaG5hLXJlZWwtYXVkaW9AeW91dHViZS1idWxrLXVwZGF0ZS01MDEwMDkuaWFtLmdzZXJ2aWNlYWNjb3VudC5jb20iLAogICJjbGllbnRfaWQiOiAiMTA3MjI4MjAxMjg3NTQwNjkzNDcxIiwKICAiYXV0aF91cmkiOiAiaHR0cHM6Ly9hY2NvdW50cy5nb29nbGUuY29tL28vb2F1dGgyL2F1dGgiLAogICJ0b2tlbl91cmkiOiAiaHR0cHM6Ly9vYXV0aDIuZ29vZ2xlYXBpcy5jb20vdG9rZW4iLAogICJhdXRoX3Byb3ZpZGVyX3g1MDlfY2VydF91cmwiOiAiaHR0cHM6Ly93d3cuZ29vZ2xlYXBpcy5jb20vb2F1dGgyL3YxL2NlcnRzIiwKICAiY2xpZW50X3g1MDlfY2VydF91cmwiOiAiaHR0cHM6Ly93d3cuZ29vZ2xlYXBpcy5jb20vcm9ib3QvdjEvbWV0YWRhdGEveDUwOS9rcmlzaG5hLXJlZWwtYXVkaW8lNDB5b3V0dWJlLWJ1bGstdXBkYXRlLTUwMTAwOS5pYW0uZ3NlcnZpY2VhY2NvdW50LmNvbSIsCiAgInVuaXZlcnNlX2RvbWFpbiI6ICJnb29nbGVhcGlzLmNvbSIKfQo="
 
     client = None
     use_google = False
@@ -471,6 +471,31 @@ def synthesize_voice(phrases, output_audio_path, temp_dir):
         except Exception as ge:
             print(f"Google TTS init note: {ge}")
 
+    # 3-Tier Multi-Engine Voice System:
+    # Tier 1: ElevenLabs (100% Real Human Voice, Multilingual v2)
+    # Tier 2: Google Cloud Neural2-B (1M Free Chars/month)
+    # Tier 3: Microsoft Edge-TTS (Safety fallback)
+    eleven_key = os.environ.get("ELEVENLABS_API_KEY", "sk_3a70ca540c7a6de1700b2ffb22ba4686ee217368a8445881")
+    eleven_voice_id = "JBFqnCBsd6RMkjVDRZzb"  # George - deep, warm, authentic male spiritual voice
+
+    def synthesize_with_elevenlabs(text, out_p):
+        import urllib.request, json
+        url = f"https://api.elevenlabs.io/v1/text-to-speech/{eleven_voice_id}"
+        payload = {
+            "text": text,
+            "model_id": "eleven_multilingual_v2",
+            "voice_settings": {"stability": 0.65, "similarity_boost": 0.85}
+        }
+        req = urllib.request.Request(
+            url,
+            data=json.dumps(payload).encode("utf-8"),
+            headers={"xi-api-key": eleven_key, "Content-Type": "application/json"}
+        )
+        with urllib.request.urlopen(req, timeout=20) as resp:
+            with open(out_p, "wb") as f_out:
+                f_out.write(resp.read())
+        return True
+
     # Synthesize each phrase individually with dedicated timing
     phrase_audios = []
     phrase_durs = []
@@ -478,8 +503,19 @@ def synthesize_voice(phrases, output_audio_path, temp_dir):
     for p_idx, p in enumerate(phrases):
         p_text = " ".join(p).replace(",", "").replace(";", "").strip()
         p_audio = os.path.join(temp_dir, f"phrase_{p_idx}.mp3")
+        synthesized = False
 
-        if use_google:
+        # Tier 1: ElevenLabs (Authentic Human Soul)
+        if eleven_key:
+            try:
+                synthesize_with_elevenlabs(p_text, p_audio)
+                synthesized = True
+                print(f"✨ Phrase {p_idx} synthesized with ElevenLabs (100% Real Human Voice): '{p_text}'")
+            except Exception as ele_err:
+                print(f"⚠️ ElevenLabs note (phrase {p_idx}): {ele_err}")
+
+        # Tier 2: Google Cloud Text-to-Speech (Neural2-B)
+        if not synthesized and use_google:
             try:
                 resp = client.synthesize_speech(
                     input=texttospeech.SynthesisInput(text=p_text),
@@ -488,19 +524,29 @@ def synthesize_voice(phrases, output_audio_path, temp_dir):
                 )
                 with open(p_audio, "wb") as f:
                     f.write(resp.audio_content)
+                synthesized = True
+                print(f"🎙️ Phrase {p_idx} synthesized with Google Cloud Neural2-B: '{p_text}'")
             except Exception as te:
                 print(f"Phrase {p_idx} primary voice fallback: {te}")
-                fallback_voice = "hi-IN-Neural2-B" if voice_prof["gender"] == "MALE" else "hi-IN-Neural2-A"
-                v_neural2 = texttospeech.VoiceSelectionParams(language_code="hi-IN", name=fallback_voice)
-                cfg_neural2 = texttospeech.AudioConfig(audio_encoding=texttospeech.AudioEncoding.MP3, speaking_rate=voice_prof.get("rate", 0.88))
-                resp = client.synthesize_speech(input=texttospeech.SynthesisInput(text=p_text), voice=v_neural2, audio_config=cfg_neural2)
-                with open(p_audio, "wb") as f:
-                    f.write(resp.audio_content)
-        else:
+                try:
+                    fallback_voice = "hi-IN-Neural2-B" if voice_prof["gender"] == "MALE" else "hi-IN-Neural2-A"
+                    v_neural2 = texttospeech.VoiceSelectionParams(language_code="hi-IN", name=fallback_voice)
+                    cfg_neural2 = texttospeech.AudioConfig(audio_encoding=texttospeech.AudioEncoding.MP3, speaking_rate=voice_prof.get("rate", 0.88))
+                    resp = client.synthesize_speech(input=texttospeech.SynthesisInput(text=p_text), voice=v_neural2, audio_config=cfg_neural2)
+                    with open(p_audio, "wb") as f:
+                        f.write(resp.audio_content)
+                    synthesized = True
+                    print(f"🎙️ Phrase {p_idx} synthesized with Google Neural2-B Fallback")
+                except Exception as g_err2:
+                    print(f"⚠️ Google Neural2 fallback error: {g_err2}")
+
+        # Tier 3: Edge-TTS Fallback
+        if not synthesized:
             import edge_tts, asyncio
             edge_v = 'hi-IN-MadhurNeural' if voice_prof["gender"] == "MALE" else 'hi-IN-SwaraNeural'
             edge_rate = f"-{int((1.0 - voice_prof.get('rate', 0.88)) * 100)}%" if voice_prof.get("rate", 0.88) < 1.0 else "+0%"
             asyncio.run(edge_tts.Communicate(p_text, edge_v, rate=edge_rate).save(p_audio))
+            print(f"🔊 Phrase {p_idx} synthesized with Edge-TTS (Safety Fallback)")
 
         p_dur = get_dur(p_audio)
         phrase_audios.append(p_audio)
