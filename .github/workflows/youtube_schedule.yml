@@ -61,6 +61,13 @@ jobs:
           PINTEREST_BOARD_ID: ${{ secrets.PINTEREST_BOARD_ID }}
         run: python -u youtube_uploader.py
 
+      - name: Auto-Publish Clean Videos (>24h Quarantine)
+        env:
+          YOUTUBE_CLIENT_ID: ${{ secrets.YOUTUBE_CLIENT_ID }}
+          YOUTUBE_CLIENT_SECRET: ${{ secrets.YOUTUBE_CLIENT_SECRET }}
+          YOUTUBE_REFRESH_TOKEN: ${{ secrets.YOUTUBE_REFRESH_TOKEN }}
+        run: python -u auto_publish_entire_channel.py || true
+
       - name: Commit Updated Website Data & YouTube Queue to Git
         run: |
           git config user.name "Krishna Vibez YouTube Bot"

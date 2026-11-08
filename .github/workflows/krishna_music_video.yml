@@ -37,7 +37,7 @@ jobs:
       - name: Install Python Dependencies
         run: |
           pip install -r requirements.txt || true
-          pip install google-genai pillow requests
+          pip install google-genai pillow requests google-api-python-client google-auth-oauthlib google-auth
 
       - name: Generate and Upload 15-Min Golden Theme Music Video
         env:
@@ -47,6 +47,13 @@ jobs:
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
         run: |
           python -u auto_music_video_pipeline.py
+
+      - name: Auto-Publish Clean Videos (>24h Quarantine)
+        env:
+          YOUTUBE_CLIENT_ID: ${{ secrets.YOUTUBE_CLIENT_ID }}
+          YOUTUBE_CLIENT_SECRET: ${{ secrets.YOUTUBE_CLIENT_SECRET }}
+          YOUTUBE_REFRESH_TOKEN: ${{ secrets.YOUTUBE_REFRESH_TOKEN }}
+        run: python -u auto_publish_entire_channel.py || true
 
       - name: Auto-Cleanup Old Temporary Music Video Media
         run: |

@@ -1,0 +1,34 @@
+name: Auto-Publish 24h Clean YouTube Videos & Shorts
+
+on:
+  schedule:
+    # Runs automatically every 2 hours on GitHub Actions (24/7/365)
+    - cron: '0 */2 * * *'
+  workflow_dispatch: # Allows manual 1-click trigger from GitHub Actions tab
+
+concurrency:
+  group: youtube-quarantine-publisher
+  cancel-in-progress: false
+
+jobs:
+  auto-publish-clean-videos:
+    name: Scan & Auto-Publish 24h Clean Videos
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python 3.10
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.10'
+
+      - name: Install dependencies
+        run: pip install requests google-api-python-client google-auth-oauthlib google-auth
+
+      - name: Scan & Publish Videos >= 24h Clean to Public
+        env:
+          YOUTUBE_CLIENT_ID: ${{ secrets.YOUTUBE_CLIENT_ID }}
+          YOUTUBE_CLIENT_SECRET: ${{ secrets.YOUTUBE_CLIENT_SECRET }}
+          YOUTUBE_REFRESH_TOKEN: ${{ secrets.YOUTUBE_REFRESH_TOKEN }}
+        run: python -u auto_publish_entire_channel.py
