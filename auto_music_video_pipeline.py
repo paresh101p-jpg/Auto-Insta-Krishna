@@ -2148,10 +2148,42 @@ def render_video(slides, duration_sec=900, is_krishna=True):
 
 
 def generate_thumbnail(slides, theme):
-    """Creates a world-class high-CTR 16:9 YouTube Thumbnail using 100% genuine AI artwork and Devanagari typography."""
+    """Creates a world-class high-CTR 16:9 YouTube Thumbnail using 100% genuine AI artwork."""
     print("[3/4] Generating High-CTR AI Artwork YouTube Thumbnail...", flush=True)
     import shutil
     try:
+        cat = theme.get("category", "").lower()
+        title = theme.get("title", "").lower()
+        hindi = theme.get("hindi_main", "").lower()
+
+        # Prioritize matching pure 3D AI Master Thumbnails (Zero HTML, Zero Flat Cards)
+        pool = []
+        if any(w in cat or w in title or w in hindi for w in ["sleep", "neend", "निद्रा", "रात", "night", "अनिद्रा"]):
+            pool = ["master_ai_thumb_sleep_peace.jpg", "master_ai_thumb_insomnia_sleep_flute.jpg", "master_ai_thumb_peace_sleep.jpg"]
+        elif any(w in cat or w in title or w in hindi for w in ["morning", "subah", "प्रभात", "सवेरा"]):
+            pool = ["master_ai_thumb_morning_awakening.jpg", "master_ai_thumb_morning_peace.jpg"]
+        elif any(w in cat or w in title or w in hindi for w in ["tabla", "तबला", "jugalbandi", "धून"]):
+            pool = ["master_ai_thumb_bansuri_tabla_awakening.jpg"]
+        elif any(w in cat or w in title or w in hindi for w in ["soul", "dhyan", "ध्यान", "healing"]):
+            pool = ["master_ai_thumb_soul_healing.jpg", "master_ai_thumb_peace_sleep.jpg"]
+        else:
+            all_masters = glob.glob(os.path.join(BASE_DIR, "master_ai_thumb_*.jpg"))
+            pool = [os.path.basename(p) for p in all_masters]
+
+        chosen = None
+        for p in pool:
+            full_p = os.path.join(BASE_DIR, p)
+            if os.path.exists(full_p):
+                chosen = full_p
+                break
+
+        if chosen:
+            shutil.copy2(chosen, TEMP_THUMBNAIL)
+            sample_thumb = os.path.join(BASE_DIR, "MUSIC_VIDEO_HIGH_CTR_SAMPLE_THUMBNAIL.jpg")
+            shutil.copy2(chosen, sample_thumb)
+            print(f"  -> SUCCESS! Attached 100% Genuine 3D Master AI Artwork Thumbnail: {os.path.basename(chosen)}", flush=True)
+            return TEMP_THUMBNAIL
+
         import create_music_thumbnail as cmt
         selected_slide = random.choice(slides) if slides else None
         cmt.create_thumbnail(theme=theme, image_path=selected_slide, output_path=TEMP_THUMBNAIL)
