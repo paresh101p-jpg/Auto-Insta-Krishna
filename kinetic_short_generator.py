@@ -471,12 +471,16 @@ def synthesize_voice(phrases, output_audio_path, temp_dir):
         except Exception as ge:
             print(f"Google TTS init note: {ge}")
 
-    # 3-Tier Multi-Engine Voice System:
+    # 4-Tier Multi-Engine Voice System:
     # Tier 1: ElevenLabs (100% Real Human Voice, Multilingual v2)
-    # Tier 2: Google Cloud Neural2-B (1M Free Chars/month)
-    # Tier 3: Microsoft Edge-TTS (Safety fallback)
+    # Tier 2: Cartesia Sonic (Ultra-Realistic Human Hindi Narrator)
+    # Tier 3: Google Cloud Neural2-B (1M Free Chars/month)
+    # Tier 4: Microsoft Edge-TTS (Safety fallback)
     eleven_key = os.environ.get("ELEVENLABS_API_KEY", "sk_3a70ca540c7a6de1700b2ffb22ba4686ee217368a8445881")
     eleven_voice_id = "JBFqnCBsd6RMkjVDRZzb"  # George - deep, warm, authentic male spiritual voice
+
+    cartesia_key = os.environ.get("CARTESIA_API_KEY", "sk_car_N9Q78thDifsd7Ts5RSfvQ2")
+    cartesia_voice_id = "9bde82b6-70e6-4df6-b964-e897cc526b2b"  # Aryan - Hindi Male Spiritual Narrator
 
     def synthesize_with_elevenlabs(text, out_p):
         import urllib.request, json
@@ -490,6 +494,30 @@ def synthesize_voice(phrases, output_audio_path, temp_dir):
             url,
             data=json.dumps(payload).encode("utf-8"),
             headers={"xi-api-key": eleven_key, "Content-Type": "application/json"}
+        )
+        with urllib.request.urlopen(req, timeout=20) as resp:
+            with open(out_p, "wb") as f_out:
+                f_out.write(resp.read())
+        return True
+
+    def synthesize_with_cartesia(text, out_p):
+        import urllib.request, json
+        url = "https://api.cartesia.ai/tts/bytes"
+        payload = {
+            "model_id": "sonic-latest",
+            "transcript": text,
+            "voice": {"mode": "id", "id": cartesia_voice_id},
+            "output_format": {"container": "mp3", "encoding": "mp3", "sample_rate": 44100},
+            "language": "hi"
+        }
+        req = urllib.request.Request(
+            url,
+            data=json.dumps(payload).encode("utf-8"),
+            headers={
+                "X-API-Key": cartesia_key,
+                "Cartesia-Version": "2024-06-10",
+                "Content-Type": "application/json"
+            }
         )
         with urllib.request.urlopen(req, timeout=20) as resp:
             with open(out_p, "wb") as f_out:
@@ -514,7 +542,16 @@ def synthesize_voice(phrases, output_audio_path, temp_dir):
             except Exception as ele_err:
                 print(f"⚠️ ElevenLabs note (phrase {p_idx}): {ele_err}")
 
-        # Tier 2: Google Cloud Text-to-Speech (Neural2-B)
+        # Tier 2: Cartesia Sonic (Ultra-Realistic Human Hindi Narrator)
+        if not synthesized and cartesia_key:
+            try:
+                synthesize_with_cartesia(p_text, p_audio)
+                synthesized = True
+                print(f"⚡ Phrase {p_idx} synthesized with Cartesia Sonic (Aryan Hindi Narrator): '{p_text}'")
+            except Exception as cart_err:
+                print(f"⚠️ Cartesia note (phrase {p_idx}): {cart_err}")
+
+        # Tier 3: Google Cloud Text-to-Speech (Neural2-B)
         if not synthesized and use_google:
             try:
                 resp = client.synthesize_speech(
