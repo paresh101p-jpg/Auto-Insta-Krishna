@@ -1,9 +1,9 @@
 # -*- coding: utf-8 -*-
 """
-Apply 100% Pure 8K 3D Master AI Artwork Thumbnails to All Playlists
-- STRICT ZERO TEXT, ZERO WORDS, ZERO LETTERS, ZERO BADGES, ZERO CSS/HTML BOXES.
-- Pure photorealistic cinematic visual masterpieces.
-- Uploads to Lead Video (Position 0) and refreshes playlist server cache.
+Apply 100% Pure High-CTR 3D AI Hook Thumbnails to All Playlists
+- 100% ONE-SHOT AI MODEL GENERATED TYPOGRAPHY (3D EMBOSSED GOLD/METALLIC).
+- ZERO HTML, ZERO CSS, ZERO PIL DRAWTEXT, ZERO POST-PROCESSING OVERLAYS.
+- Uploads directly to Lead Video (Position 0) and refreshes playlist server cache.
 """
 
 import os
@@ -21,67 +21,77 @@ def log(msg):
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 TOKEN_PATH = os.path.join(BASE_DIR, "youtube_token.json")
 
-# 10 Playlists strictly mapped to 100% PURE Master AI Artworks (ZERO TEXT)
+# 10 Playlists strictly mapped to 100% Pure 3D AI Hook Artworks (ZERO HTML)
 PLAYLIST_AI_MAP = [
     {
         "id": "PLTS50VUZ5khw",
         "name": "🧘 Stress Relief & Mental Peace | Flute Meditation",
         "lead_vid": "X0EMsuBBhr4",
-        "ai_file": "master_ai_thumb_stress_relief_emerald.jpg"
+        "ai_file": "hook_thumb_stress_relief.jpg",
+        "hook": "STRESS RELIEF - CALM YOUR MIND"
     },
     {
         "id": "PLEwYNfw5fPiA",
         "name": "🔴 24/7 Live Spiritual Chanting & Meditation Streams",
         "lead_vid": "_65f6xs_WUk",
-        "ai_file": "master_ai_thumb_live_temple_sanctum.jpg"
+        "ai_file": "hook_thumb_live_247.jpg",
+        "hook": "24/7 LIVE - DIVINE PEACE"
     },
     {
         "id": "PLYl7L1G0M6Oc",
         "name": "🌸 Peaceful Lotus Lake Meditation Flute",
         "lead_vid": "VDEvUok3pT8",
-        "ai_file": "master_ai_thumb_lotus_lake_sanctum.jpg"
+        "ai_file": "hook_thumb_lotus_lake.jpg",
+        "hook": "STOP OVERTHINKING - PEACEFUL FLUTE"
     },
     {
         "id": "PLJ_ReLRXXG2k",
         "name": "🪕 Pure Bansuri & Tabla Classical Jugalbandi",
         "lead_vid": "aOMg-IAezXY",
-        "ai_file": "master_ai_thumb_bansuri_tabla_pure.jpg"
+        "ai_file": "hook_thumb_bansuri_tabla.jpg",
+        "hook": "MELODIC BANSURI & SOFT TABLA"
     },
     {
         "id": "PLd-E2kzfVUEg",
         "name": "🕉️ Divine Flute & Pure Meditation Music | Krishna Vibez",
         "lead_vid": "vuoOW98h96c",
-        "ai_file": "master_ai_thumb_divine_krishna_pure.jpg"
+        "ai_file": "hook_thumb_soul_healing.jpg",
+        "hook": "HEAL YOUR SOUL & FIND CALM"
     },
     {
         "id": "PLfXTB8iO3Gik",
         "name": "👑 Raga Darbari Deep Meditation Flute",
         "lead_vid": "Zb9E7V9LiVM",
-        "ai_file": "master_ai_thumb_raga_darbari_royal.jpg"
+        "ai_file": "master_ai_thumb_raga_darbari_royal.jpg",
+        "hook": "RAGA DARBARI ROYAL SANCTUM"
     },
     {
         "id": "PLPKE2BWZ7HwI",
         "name": "🌙 Deep Meditative Sleep Music | Pure Night Peace",
         "lead_vid": "sUctWLbOpmY",
-        "ai_file": "master_ai_thumb_zen_bamboo_pure.jpg"
+        "ai_file": "hook_thumb_deep_sleep.jpg",
+        "hook": "INSTANT CALM - SLEEP DEEP"
     },
     {
         "id": "PLbrKp-ssSkJc",
         "name": "🌊 Sacred Yamuna River & Ghats Meditation Flute",
         "lead_vid": "PZes6Z-cU8s",
-        "ai_file": "master_ai_thumb_yamuna_ghats_dusk.jpg"
+        "ai_file": "master_ai_thumb_yamuna_ghats_dusk.jpg",
+        "hook": "YAMUNA RIVER TWILIGHT PEACE"
     },
     {
         "id": "PLJD6PGkODrOs",
         "name": "🌅 Golden Sunrise & Morning Meditation Flute",
         "lead_vid": "CJF8tZpJI8Y",
-        "ai_file": "master_ai_thumb_golden_sunrise_pure.jpg"
+        "ai_file": "hook_thumb_morning_awakening.jpg",
+        "hook": "MORNING AWAKENING & INNER PEACE"
     },
     {
         "id": "PLP-XF1dRgWNk",
         "name": "☀️ Peaceful Morning Flute & Sacred Meditation",
         "lead_vid": "InfDz_ftdGE",
-        "ai_file": "master_ai_thumb_temple_dawn_pure.jpg"
+        "ai_file": "hook_thumb_morning_peace.jpg",
+        "hook": "MORNING PEACE & POSITIVITY"
     }
 ]
 
@@ -98,7 +108,7 @@ def get_oauth_token():
 
 def main():
     log("=" * 65)
-    log("🚀 APPLYING 100% PURE 8K 3D MASTER AI ARTWORKS (ZERO TEXT/ZERO HTML)")
+    log("🚀 APPLYING 100% PURE HIGH-CTR 3D AI HOOK THUMBNAILS (ZERO HTML)")
     log("=" * 65)
 
     access_token = get_oauth_token()
@@ -112,6 +122,7 @@ def main():
         pl_name = item["name"]
         vid = item["lead_vid"]
         img_name = item["ai_file"]
+        hook_text = item["hook"]
         img_path = os.path.join(BASE_DIR, img_name)
 
         if not os.path.exists(img_path):
@@ -121,7 +132,8 @@ def main():
         file_size = os.path.getsize(img_path)
         log(f"\n[Playlist: {pl_name}]")
         log(f"  -> Lead Video: {vid}")
-        log(f"  -> Attaching Pure 8K AI Artwork: {img_name} ({file_size / 1024:.1f} KB)")
+        log(f"  -> Hook: \"{hook_text}\"")
+        log(f"  -> Attaching Pure 3D AI Thumbnail: {img_name} ({file_size / 1024:.1f} KB)")
 
         # 1. Upload to YouTube Video
         thumb_url = f"https://www.googleapis.com/upload/youtube/v3/thumbnails/set?videoId={vid}&uploadType=media"
@@ -133,7 +145,7 @@ def main():
             up_res = requests.post(thumb_url, headers=headers, data=tf, timeout=30)
 
         if up_res.status_code in [200, 201]:
-            log(f"  -> 🌟 SUCCESS! Uploaded Pure AI Artwork to Video [{vid}]")
+            log(f"  -> 🌟 SUCCESS! Uploaded Pure 3D AI Hook Thumbnail to Video [{vid}]")
         else:
             log(f"  -> Upload notice ({up_res.status_code}): {up_res.text}")
 
@@ -148,7 +160,7 @@ def main():
             log(f"  -> Cache touch notice: {cache_err}")
 
     log("\n" + "=" * 65)
-    log("🎉 ALL 10 PLAYLISTS ARE NOW 100% PURE AI ARTWORKS (ZERO TEXT/ZERO HTML)!")
+    log("🎉 ALL PLAYLISTS ARE NOW LIVE WITH HIGH-CTR 3D AI HOOKS (ZERO HTML)!")
     log("=" * 65)
 
 if __name__ == "__main__":
