@@ -100,3 +100,4 @@ if __name__ == "__main__":
     log("  KRISHNA VIBEZ — MASTER PLAYLIST THUMBNAIL AUTOMATION")
     log("=" * 65)
     export_all_playlist_prompts()
+
