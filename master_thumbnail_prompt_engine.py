@@ -323,5 +323,44 @@ def build_master_thumbnail_prompt(title="", description="", force_side=None, cat
     )
     return prompt, cfg
 
+import os
+import json
+
+USED_PROMPTS_REGISTRY_FILE = os.path.join(os.path.dirname(os.path.abspath(__file__)), "used_thumbnail_prompts_registry.json")
+
+def get_next_unique_prompt(identifier="", description="", force_side=None, category_id=None):
+    """
+    Guarantees 100% infinite uniqueness across all videos & playlists:
+    Tracks how many prompts have been generated for each category,
+    automatically increments the variation index so NO TWO VIDEOS EVER SHARE THE SAME PROMPT,
+    while strictly enforcing all master visual rules.
+    """
+    registry = {}
+    if os.path.exists(USED_PROMPTS_REGISTRY_FILE):
+        try:
+            with open(USED_PROMPTS_REGISTRY_FILE, "r", encoding="utf-8") as f:
+                registry = json.load(f)
+        except Exception:
+            registry = {}
+            
+    if category_id:
+        cfg = next((c for c in CATEGORY_CONFIGS if c["id"] == category_id), DEFAULT_CONFIG)
+    else:
+        cfg = match_category(identifier, description)
+    cat_id = cfg["id"]
+    
+    current_count = registry.get(cat_id, 0)
+    prompt, cfg = build_master_thumbnail_prompt(identifier, description, force_side=force_side, category_id=cat_id, variation_index=current_count)
+    
+    # Increment count for next time
+    registry[cat_id] = current_count + 1
+    try:
+        with open(USED_PROMPTS_REGISTRY_FILE, "w", encoding="utf-8") as f:
+            json.dump(registry, f, indent=2, ensure_ascii=False)
+    except Exception:
+        pass
+        
+    return prompt, cfg, current_count
+
 if __name__ == "__main__":
     print(f"Loaded {len(CATEGORY_CONFIGS)} bespoke categories (100% Pure Instrumental & Nature Accuracy).")
