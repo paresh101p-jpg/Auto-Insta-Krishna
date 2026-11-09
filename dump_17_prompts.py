@@ -22,3 +22,4 @@ with open("all_17_category_prompts.txt", "w", encoding="utf-8") as f:
     f.write(all_text)
 
 print(f"Successfully generated all {len(m.CATEGORY_CONFIGS)} category prompts in all_17_category_prompts.txt")
+
