@@ -2148,10 +2148,44 @@ def render_video(slides, duration_sec=900, is_krishna=True):
 
 
 def generate_thumbnail(slides, theme):
-    """Creates a world-class high-CTR 16:9 YouTube Thumbnail using 100% genuine AI artwork."""
+    """Creates a world-class high-CTR 16:9 YouTube Thumbnail using 100% genuine AI artwork and master prompt architecture."""
     print("[3/4] Generating High-CTR AI Artwork YouTube Thumbnail...", flush=True)
     import shutil
     try:
+        from master_thumbnail_prompt_engine import get_next_unique_prompt
+        title_str = theme.get("title", "")
+        hindi_str = theme.get("hindi_main", "")
+        cat_str = theme.get("category", "")
+        
+        # Get bespoke, 100% unique prompt with dynamic variation (different pose, choli color, lighting)
+        unique_prompt, cfg, var_count = get_next_unique_prompt(identifier=f"{title_str} {cat_str}", description=hindi_str)
+        print(f"  -> Generated Master AI Prompt for Category '{cfg['id']}' (Variation #{var_count})", flush=True)
+        print(f"  -> 3D Gold Text: {cfg['hook_title']}", flush=True)
+
+        # Attempt Live Generation via Gemini if key is provided and available
+        api_key = os.environ.get("GEMINI_API_KEY")
+        if api_key:
+            try:
+                from google import genai
+                client = genai.Client(api_key=api_key)
+                response = client.models.generate_images(
+                    model='imagen-3.0-generate-002',
+                    prompt=unique_prompt,
+                    config=dict(
+                        number_of_images=1,
+                        output_mime_type="image/jpeg",
+                        aspect_ratio="16:9",
+                        person_generation="ALLOW_ADULT"
+                    )
+                )
+                if response.generated_images:
+                    with open(TEMP_THUMBNAIL, "wb") as f:
+                        f.write(response.generated_images[0].image.image_bytes)
+                    print("  -> ✅ SUCCESS! Generated live bespoke AI thumbnail on the fly via Gemini!", flush=True)
+                    return TEMP_THUMBNAIL
+            except Exception as gen_err:
+                print(f"  -> [Info] Live Gemini image gen skipped/unavailable: {gen_err}", flush=True)
+
         cat = theme.get("category", "").lower()
         title = theme.get("title", "").lower()
         hindi = theme.get("hindi_main", "").lower()
