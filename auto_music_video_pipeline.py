@@ -387,12 +387,12 @@ MEDITATION_THEMES_36 = [
     },
     {
         "category": "Bansuri & Tabla Jugalbandi",
-        "badge": "TRANSCENDENTAL NAAD",
-        "hindi_main": "अलौकिक नाद ब्रह्म धुन",
-        "hindi_sub": "संगीत के माध्यम से ईश्वर से जुड़ें",
-        "hook_pill": "नाद ब्रह्म   |   दिव्य तरंग   |   ईश्वर मिलन",
-        "title": "अलौकिक नाद ब्रह्म बाँसुरी एवं तबला | Transcendental Sound & Rhythmic Harmony",
-        "tags": ["Naad Brahma", "Transcendental Flute", "Divya Tarang", "Cosmic Music", "Ishwar Milan", "Divine Harmony"]
+        "badge": "TRANSCENDENTAL JUGALBANDI",
+        "hindi_main": "अलौकिक बाँसुरी तबला जुगलबंदी",
+        "hindi_sub": "दिव्य शास्त्रीय संगीत से पाएं परम शांति",
+        "hook_pill": "शास्त्रीय जुगलबंदी   |   दिव्य बाँसुरी   |   कोमल तबला",
+        "title": "अलौकिक शास्त्रीय बाँसुरी एवं तबला | Transcendental Bansuri & Tabla Jugalbandi",
+        "tags": ["Transcendental Jugalbandi", "Transcendental Flute", "Divya Tarang", "Cosmic Music", "Classical Tabla", "Divine Harmony"]
     },
 
     # ── Category 7: Lo-Fi Chill & Night Relaxation (लो-फाई बांसुरी एवं शांत बीट्स) ──

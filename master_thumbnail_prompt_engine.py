@@ -259,23 +259,59 @@ def match_category(title, description=""):
                 return cfg
     return DEFAULT_CONFIG
 
-def build_master_thumbnail_prompt(title="", description="", force_side=None, category_id=None):
+# Dynamic Variation Pools for Infinite Freshness per Category
+VARIATION_POSES = [
+    "Her torso is physically angled sideways at a 60-degree diagonal away from the camera. Her head is tilted backwards with blissful feminine grace, her captivating almond eyes softly closed with an enchanting, sweet serene smile on her parted glossy pink lips, completely lost in deep musical melody, NEVER facing or looking towards the camera.",
+    "Her body is physically angled diagonally at 60-degrees. Her chin is gently lifted towards the warm sky with an expression of pure musical ecstasy, a radiant, tender smile playing across her glossy parted lips, eyes half-closed in meditative bliss, NEVER looking at the camera.",
+    "She is gracefully reclined sideways, resting her smooth bare shoulder gently against an ornate carved marble pillar in sublime relaxation. Her chin rests sideways, deep almond eyes looking dreamily into the distance with a wistful, seductive smile on her pink lips, NEVER facing camera.",
+    "Her torso is turned away at a 60-degree angle, head titled softly to the side as if listening intently to the divine acoustic notes, a glowing, joyous smile illuminating her flawless face, eyes gently shut in sheer tranquility, NEVER looking at the camera."
+]
+
+VARIATION_CHOLIS = [
+    "deep emerald-green velvet with intricate antique gold mirror-work and zardozi embroidery",
+    "rich royal wine-burgundy velvet with heavy antique gold zardozi and pearl cutwork",
+    "royal crimson-ruby red velvet with shimmering gold threadwork and delicate pearl borders",
+    "regal midnight sapphire-blue silk with silver and gold filigree embroidery",
+    "vibrant sunrise saffron-marigold silk with heavy gold zari borders and crystal accents",
+    "opulent royal magenta-purple brocade silk with antique gold marodi embroidery"
+]
+
+VARIATION_LIGHTINGS = [
+    "at glorious golden sunrise with warm sunbeams slicing through morning mist and floating magical amber bokeh motes",
+    "at atmospheric twilight with hundreds of warm glowing clay oil lamps (diyas), gentle incense mist, and soft golden bokeh",
+    "under soft glowing golden hour light with gentle reflections shimmering on tranquil sacred water and dreamy dust motes",
+    "at enchanting dawn with gentle pastel sunrise hues, morning haze, and soft warm volumetric god rays"
+]
+
+def build_master_thumbnail_prompt(title="", description="", force_side=None, category_id=None, variation_index=0):
     if category_id:
         cfg = next((c for c in CATEGORY_CONFIGS if c["id"] == category_id), DEFAULT_CONFIG)
     else:
         cfg = match_category(title, description)
-    model_side = force_side or cfg.get("model_side", "right")
+        
+    # Dynamic variation rotation: guarantees that every video/image in the same category gets a completely unique look!
+    v_idx = variation_index
+    pose = VARIATION_POSES[v_idx % len(VARIATION_POSES)] if v_idx > 0 else cfg["pose"]
+    choli = VARIATION_CHOLIS[v_idx % len(VARIATION_CHOLIS)] if v_idx > 0 else cfg["choli"]
+    
+    # 50/50 side alternation can also toggle with variation_index
+    if force_side:
+        model_side = force_side
+    else:
+        base_side = cfg.get("model_side", "right")
+        model_side = ("left" if base_side == "right" else "right") if (v_idx % 2 == 1) else base_side
+        
     text_side = "left" if model_side == "right" else "right"
     
     prompt = (
         f"A viral high-CTR 16:9 cinematic YouTube meditation thumbnail. "
         f"A single continuous, unified cinematic wide scene with ZERO split lines, ZERO divider borders, and ZERO partitions. "
-        f"Framed prominently on the {model_side.upper()} side of the environment in an extreme tight macro close-up portrait, framed strictly from the upper-to-mid bustline upwards to the top of her head (only face, slender neck, bare shoulders, and full voluptuous bosom shape visible, with ZERO waist, ZERO navel, and ZERO midriff in frame)—is an extraordinarily gorgeous, fair-skinned Indian woman with radiant glowing porcelain skin and an alluringly full, prominent voluptuous bustline. "
-        f"{cfg['pose']} "
+        f"Framed prominently on the {model_side.upper()} side of the environment in an extreme tight macro close-up portrait, framed strictly from the lower-to-mid bustline upwards to the top of her head (only face, glowing neck, bare shoulders, and large, beautifully contoured voluptuous bosom shape visible, with ZERO waist, ZERO navel, and ZERO midriff in frame)—is an extraordinarily gorgeous, fair-skinned Indian woman with radiant glowing porcelain skin and an alluringly full, prominent voluptuous bustline. "
+        f"{pose} "
         f"On her smooth fair forehead sits a delicate, vibrant red traditional Indian bindi. "
-        f"Razor-sharp macro focus captures her soft parted glossy pink lips with a gentle captivating smile, glowing jawline, slender neck adorned with a layered royal gold choker, prominent collarbones, and sculpted décolletage. "
-        f"She wears a completely strapless, low-cut off-the-shoulder couture choli bodice in {cfg['choli']} with ZERO shoulder straps and ZERO shoulder fabric, sitting entirely below her shoulders to leave both smooth glowing shoulders, neck, and upper chest completely bare, with a deep plunging sweetheart neckline showcasing her full, beautifully sculpted voluptuous bust curves. "
-        f"A sheer transparent gossamer dupatta rests loosely behind her bare shoulders, leaving her chest, neckline, and shoulders completely uncovered and glowing. Hands are strictly off-frame. "
+        f"Razor-sharp macro focus captures her soft parted glossy pink lips with a gentle captivating smile, glowing jawline, slender neck adorned with a layered royal gold choker, prominent collarbones, and deeply sculpted décolletage. "
+        f"She wears a completely strapless, low-cut off-the-shoulder couture choli bodice in {choli} with ZERO shoulder straps and ZERO sleeve fabric, resting entirely below both shoulders to leave both smooth glowing shoulders, collarbones, and upper chest completely bare. The choli features an elongated, deeply plunging low-cut sweetheart neckline cutting deep into the cleavage, dramatically accentuating her large, prominently contoured bust curves and seductive décolletage in sharp high-definition focus. "
+        f"A delicate sheer transparent gossamer dupatta rests loosely behind her bare shoulders, leaving her chest, neckline, and shoulders completely uncovered and glowing. Hands are strictly off-frame. "
         f"On the {text_side.upper()} side of the SAME continuous environment: "
         f"In the upper area, floating naturally and cleanly directly in the open air with ZERO background box, ZERO black banner strip, "
         f"ZERO dark backing rectangle, and ZERO drop-shadow bar, is extra-large, massive bold 3D embossed gleaming polished 24K metallic gold luxury typography "
