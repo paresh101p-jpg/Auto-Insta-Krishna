@@ -2335,6 +2335,7 @@ def add_video_to_category_playlist(video_id, category_name=None, access_token=No
                 break
 
         # 2. If playlist doesn't exist, create it legally via official API
+        is_new_playlist = False
         if not playlist_id:
             print(f"  -> 📂 Creating new dedicated Category Playlist: '{target_title}'...")
             create_url = "https://www.googleapis.com/youtube/v3/playlists?part=snippet,status"
@@ -2350,6 +2351,7 @@ def add_video_to_category_playlist(video_id, category_name=None, access_token=No
             c_resp = requests.post(create_url, headers=headers, json=create_payload)
             if c_resp.status_code in [200, 201]:
                 playlist_id = c_resp.json().get("id")
+                is_new_playlist = True
                 print(f"  -> ✅ Playlist created successfully (ID: {playlist_id})")
             else:
                 print(f"  Notice creating playlist: {c_resp.status_code} - {c_resp.text}")
@@ -2376,6 +2378,13 @@ def add_video_to_category_playlist(video_id, category_name=None, access_token=No
             i_resp = requests.post(item_url, headers=headers, json=item_payload)
             if i_resp.status_code in [200, 201]:
                 print(f"  -> 🎯 SUCCESS! Video automatically added to Playlist: '{target_title}'")
+                if is_new_playlist:
+                    try:
+                        from auto_playlist_thumbnail_manager import generate_and_apply_cover
+                        print(f"  -> 🎨 New Playlist detected! Auto-generating and applying custom hook cover...")
+                        generate_and_apply_cover(playlist_id, target_title, video_id, access_token)
+                    except Exception as cov_err:
+                        print(f"  -> Notice applying new playlist cover: {cov_err}")
             else:
                 print(f"  Notice adding to playlist: {i_resp.status_code} - {i_resp.text}")
 
