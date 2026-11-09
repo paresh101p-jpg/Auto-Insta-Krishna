@@ -135,7 +135,7 @@ Whenever uploading or generating metadata for YouTube Shorts:
    - Every reel must incorporate the 4-layer signature: (a) Emotion-Adaptive Voiceover with pauses, (b) 0 to 3.5s Focus-Reveal Unblur Hook, (c) Studio-mastered Flute BGM, and (d) Visible creator brand watermark (`@PareshPadsala_` / `Krishna Vibez`).
 4. **Description & Cross-Promotion (100% Thought-Adaptive Keywords & Hashtags):**
    - Include a concise 2-3 line spiritual summary of the thought + 3 practical life lessons + English wisdom summary.
-   - **Reel-Specific Searches & Topics Block**: Dynamically generated `🔍 Searches & Topics Covered` block containing 6-8 search queries specifically matching what the reel is about (e.g., patience, anger, karma, hard times, faith) in Hindi and Hinglish.
+   - **STRICT PROHIBITION ON KEYWORD STUFFING (ZERO 'Searches & Topics Covered')**: NEVER include any "Searches & Topics Covered", search queries lists, or keyword dump blocks in descriptions. Descriptions must be 100% human-first, soulful, spiritual, and clean. Keep only 3-5 clean hashtags at the end.
    - **Reel-Specific Hashtags**: Base platform tags (`#Shorts #Krishna #RadheKrishna #KrishnaVibez #DailySuvichar`) followed by 5-8 hashtags that directly reflect the core topic of the reel (e.g. `#Dhairya #Patience #BuraWaqt #Samay` or `#Karma #KarmFal #Duty`).
    - **Thought-First Backend Tags**: YouTube API backend `tags` prioritizes the reel's specific search tags first, followed by anchor tags, capped at 480 chars.
    - Include direct links to the website (`https://krishnavibez.in/`), WhatsApp Channel (`https://whatsapp.com/channel/0029VbDxJHk30LKNtj4Er62J`), and Telegram (`https://t.me/krishnavibezz`).

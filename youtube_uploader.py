@@ -332,9 +332,6 @@ def generate_youtube_metadata_from_video(video_path):
         "✨ English Wisdom Summary:\n"
         "\"Focus on your sincere efforts without being attached to the results. Pure dedication brings true peace of mind.\"\n\n"
         "━━━━━━━━━━━━━━━━━━━━━━━━━━\n"
-        "🔍 Searches & Topics Covered:\n"
-        "Karm Ka Fal | Bhagavad Gita Karma Yoga | Nishkam Karma Hindi | Krishna Suvichar Karma | कर्म का सिद्धांत\n"
-        "━━━━━━━━━━━━━━━━━━━━━━━━━━\n"
         "🕊️ श्री कृष्ण के दिव्य सान्निध्य और दैनिक प्रेरणा के लिए हमसे जुड़ें:\n"
         f"🌐 आधिकारिक वेबसाइट: {OFFICIAL_LINKS['website']}\n"
         f"▶️ आधिकारिक YouTube चैनल: {OFFICIAL_LINKS['youtube']}\n"
@@ -378,7 +375,6 @@ def generate_youtube_metadata_from_video(video_path):
             "   - 'practical_lessons': List of 3 concise, actionable bullet points in Hindi for daily life based on this thought.\n"
             "   - 'english_summary': 1-2 soulful sentences in English explaining the core wisdom of this specific thought.\n"
             "   - 'thought_hashtags': 5-8 hashtags that DIRECTLY reflect this specific thought and its topic (e.g. if about Dhairya: #Dhairya, #Patience, #BuraWaqt, #Samay; if about Karma: #Karma, #KarmFal, #Duty; if about Anger: #Krodh, #AngerManagement, #InnerPeace).\n"
-            "   - 'thought_search_queries': 6-8 exact long-tail search queries in Hindi and Hinglish that people search on YouTube for this specific topic (e.g. 'mushkil samay me kya kare', 'dhairya par krishna suvichar', 'krodh par geeta gyan').\n"
             "   - 'thought_tags': 10-15 YouTube search tags specifically matching this thought's theme.\n"
             "Return valid JSON ONLY."
         )
@@ -451,20 +447,7 @@ def generate_youtube_metadata_from_video(video_path):
         all_hashtags = base_hashtags + [t for t in formatted_thought_tags if t not in base_hashtags]
         hashtags_str = " ".join(all_hashtags)
 
-        # 2. Thought-specific search queries matching the exact reel
-        raw_searches = data.get("thought_search_queries", [])
-        if raw_searches and isinstance(raw_searches, list):
-            dynamic_searches_str = " | ".join([str(s).strip() for s in raw_searches if str(s).strip()])
-        else:
-            dynamic_searches_str = f"{hook} | श्री कृष्ण अमृत वचन | Krishna Suvichar Hindi | Radha Krishna Status"
-
-        reel_seo_block = (
-            "━━━━━━━━━━━━━━━━━━━━━━━━━━\n"
-            "🔍 Searches & Topics Covered:\n"
-            f"{dynamic_searches_str}\n"
-        )
-
-        # 3. Thought-specific backend tags: Reel-specific tags FIRST, then anchor tags
+        # 2. Thought-specific backend tags: Reel-specific tags FIRST, then anchor tags
         thought_tags = data.get("thought_tags", []) or data.get("tags", [])
         anchor_tags = ["Krishna Shorts", "Radhe Krishna", "श्री कृष्ण", "Krishna Vibez", "Shorts", "Daily Suvichar", "Geeta Gyan"]
         
@@ -502,7 +485,6 @@ def generate_youtube_metadata_from_video(video_path):
             f"{lessons_text}\n\n"
             "✨ English Wisdom Summary:\n"
             f"\"{english}\"\n\n"
-            + reel_seo_block +
             "━━━━━━━━━━━━━━━━━━━━━━━━━━\n"
             "🕊️ श्री कृष्ण के दिव्य सान्निध्य और दैनिक प्रेरणा के लिए हमसे जुड़ें:\n"
             f"🌐 आधिकारिक वेबसाइट: {OFFICIAL_LINKS['website']}\n"
