@@ -2163,26 +2163,41 @@ def generate_thumbnail(slides, theme):
         print(f"  -> Generated Master AI Prompt for Category '{cfg['id']}' (Variation #{var_count})", flush=True)
         print(f"  -> 3D Gold Text: {cfg['hook_title']}", flush=True)
 
-        # Attempt Live Generation via Gemini if key is provided and available
+        # Attempt Live Generation via Gemini Imagen 3 Fast ($0.02) with fallback to Standard
         api_key = os.environ.get("GEMINI_API_KEY")
         if api_key:
             try:
                 from google import genai
                 client = genai.Client(api_key=api_key)
-                response = client.models.generate_images(
-                    model='imagen-3.0-generate-002',
-                    prompt=unique_prompt,
-                    config=dict(
-                        number_of_images=1,
-                        output_mime_type="image/jpeg",
-                        aspect_ratio="16:9",
-                        person_generation="ALLOW_ADULT"
+                img_model = "imagen-3.0-fast-generate-001"
+                try:
+                    response = client.models.generate_images(
+                        model=img_model,
+                        prompt=unique_prompt,
+                        config=dict(
+                            number_of_images=1,
+                            output_mime_type="image/jpeg",
+                            aspect_ratio="16:9",
+                            person_generation="ALLOW_ADULT"
+                        )
                     )
-                )
+                except Exception as fast_err:
+                    print(f"  -> [Info] Fast model fallback to standard: {fast_err}", flush=True)
+                    img_model = "imagen-3.0-generate-002"
+                    response = client.models.generate_images(
+                        model=img_model,
+                        prompt=unique_prompt,
+                        config=dict(
+                            number_of_images=1,
+                            output_mime_type="image/jpeg",
+                            aspect_ratio="16:9",
+                            person_generation="ALLOW_ADULT"
+                        )
+                    )
                 if response.generated_images:
                     with open(TEMP_THUMBNAIL, "wb") as f:
                         f.write(response.generated_images[0].image.image_bytes)
-                    print("  -> ✅ SUCCESS! Generated live bespoke AI thumbnail on the fly via Gemini!", flush=True)
+                    print(f"  -> ✅ SUCCESS! Generated live bespoke AI thumbnail via Gemini Imagen 3 Fast ({img_model})!", flush=True)
                     return TEMP_THUMBNAIL
             except Exception as gen_err:
                 print(f"  -> [Info] Live Gemini image gen skipped/unavailable: {gen_err}", flush=True)
