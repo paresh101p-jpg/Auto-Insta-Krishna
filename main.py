@@ -20,6 +20,15 @@ from datetime import datetime
 GEMINI_API_KEY = os.environ.get("GEMINI_API_KEY")
 FB_ACCESS_TOKEN = os.environ.get("FB_ACCESS_TOKEN")
 
+if not FB_ACCESS_TOKEN:
+    fb_file = os.path.join(os.path.dirname(os.path.abspath(__file__)), "fb_permanent_token.txt")
+    if os.path.exists(fb_file):
+        try:
+            with open(fb_file, "r", encoding="utf-8") as ftf:
+                FB_ACCESS_TOKEN = ftf.read().strip()
+        except Exception:
+            pass
+
 # NAYE PAGE KA ID YAHAN HARDCODE KAREIN
 FB_PAGE_ID = "1808917602588221" 
 
@@ -543,18 +552,62 @@ def post_fb_feed(caption, image_url):
         return False
 
 def post_fb_video(caption, local_file):
-    print("Posting to Facebook Feed (Video) via direct file upload...")
+    """Uploads video to Facebook Page as a native 9:16 Reel using Meta Video Reels API with fallback to Videos API."""
+    file_size = os.path.getsize(local_file) if os.path.exists(local_file) else 0
+    filename = os.path.basename(local_file)
+
+    # Method 1: Modern Meta Video Reels API (Native Facebook Reel)
+    try:
+        print(f"Posting to Facebook Reels ({file_size / (1024*1024):.2f} MB)...")
+        init_url = f"https://graph.facebook.com/v20.0/{FB_PAGE_ID}/video_reels"
+        init_res = requests.post(init_url, data={
+            "upload_phase": "start",
+            "access_token": FB_ACCESS_TOKEN
+        }, timeout=20).json()
+
+        if "video_id" in init_res and "upload_url" in init_res:
+            vid = init_res["video_id"]
+            upload_url = init_res["upload_url"]
+
+            with open(local_file, "rb") as vf:
+                video_bytes = vf.read()
+
+            upload_headers = {
+                "Authorization": f"OAuth {FB_ACCESS_TOKEN}",
+                "offset": "0",
+                "file_size": str(file_size)
+            }
+            requests.post(upload_url, data=video_bytes, headers=upload_headers, timeout=90)
+
+            fin_res = requests.post(init_url, data={
+                "upload_phase": "finish",
+                "access_token": FB_ACCESS_TOKEN,
+                "video_id": vid,
+                "video_state": "PUBLISHED",
+                "description": caption
+            }, timeout=30).json()
+
+            if fin_res.get("success") or "id" in fin_res or "video_id" in fin_res:
+                print(f"✅ FB Reel Success (ID: {vid})")
+                return True
+            else:
+                print(f"Notice: FB Reel finish response: {fin_res}")
+    except Exception as reel_err:
+        print(f"Notice: FB Video Reels API notice: {reel_err}")
+
+    # Method 2: Standard Page Videos API fallback
+    print("Posting to Facebook Feed (Video) via direct file upload fallback...")
     url = f"https://graph.facebook.com/v20.0/{FB_PAGE_ID}/videos"
     try:
         with open(local_file, "rb") as vf:
             files = {
-                'source': (local_file, vf, 'video/mp4')
+                'source': (filename, vf, 'video/mp4')
             }
             payload = {
                 'description': caption,
                 'access_token': FB_ACCESS_TOKEN
             }
-            res = requests.post(url, data=payload, files=files).json()
+            res = requests.post(url, data=payload, files=files, timeout=75).json()
             
         if 'id' in res:
             print(f"✅ FB Video Success (ID: {res['id']})")
@@ -961,16 +1014,61 @@ if __name__ == "__main__":
         # Always syndicate to Website, Telegram, Threads, and Pinterest
         print("Broadcasting to Krishna Vibez Website, Telegram & Multi-channel Social ecosystem...")
         web_success = False
+        target_post_url = "https://krishnavibez.in/"
         try:
             import website_publisher
-            web_success, _ = website_publisher.publish_to_website(
+            web_success, post_id = website_publisher.publish_to_website(
                 media_url=media_info["media_url"],
                 caption=caption,
                 is_video=media_info["is_video"],
                 custom_post_id=planned_post_id
             )
+            if post_id:
+                target_post_url = f"https://krishnavibez.in/post.html?id={post_id}"
         except Exception as web_err:
             print(f"Warning: Website auto-publish error: {web_err}")
+
+        # Telegram Channel Syndication (@krishnavibezz)
+        try:
+            import social_publisher
+            local_media = media_info.get("local_path")
+            media_for_tg = local_media if (local_media and os.path.exists(local_media)) else media_info["media_url"]
+            tg_ok = social_publisher.publish_to_telegram(
+                media_url=media_for_tg,
+                caption=caption,
+                post_url=target_post_url,
+                is_video=media_info["is_video"]
+            )
+            if tg_ok:
+                print("✅ Successfully syndicated to Telegram Channel (@krishnavibezz)!")
+        except Exception as tg_err:
+            print(f"Notice: Telegram syndication error: {tg_err}")
+
+        # Meta Threads Syndication
+        try:
+            import social_publisher
+            social_publisher.publish_to_threads(
+                media_url=media_info["media_url"],
+                caption=caption,
+                post_url=target_post_url,
+                is_video=media_info["is_video"]
+            )
+        except Exception as th_err:
+            print(f"Notice: Threads syndication: {th_err}")
+
+        # Pinterest Board Syndication
+        try:
+            import social_publisher
+            clean_title = f"श्री कृष्ण अमृत विचार: {caption[:60]}"
+            social_publisher.publish_to_pinterest(
+                media_url=media_info["media_url"],
+                title=clean_title,
+                description=caption,
+                post_url=target_post_url,
+                is_video=media_info["is_video"]
+            )
+        except Exception as pin_err:
+            print(f"Notice: Pinterest syndication: {pin_err}")
 
         if success or web_success:
             print("Successfully published to channels!")

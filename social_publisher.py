@@ -99,8 +99,10 @@ def publish_to_telegram(media_url, caption, post_url, is_video=False, youtube_ur
         api_url = f"https://api.telegram.org/bot{bot_token}/{endpoint}"
 
         if os.path.exists(str(media_url)):
+            filename = os.path.basename(str(media_url))
+            mime = "video/mp4" if is_video else "image/jpeg"
             with open(media_url, "rb") as mf:
-                response = requests.post(api_url, data=payload, files={param_name: mf}, timeout=60)
+                response = requests.post(api_url, data=payload, files={param_name: (filename, mf, mime)}, timeout=75)
                 res_data = response.json()
         else:
             payload[param_name] = media_url
@@ -127,6 +129,8 @@ def publish_to_telegram(media_url, caption, post_url, is_video=False, youtube_ur
             # Also send personal reminder to Paresh bhai so they can 1-click share to WhatsApp Channel & YouTube!
             if admin_chat_id:
                 try:
+                    reflection = caption.strip()
+                    whatsapp_channel = "https://whatsapp.com/channel/0029VbDxJHk30LKNtj4Er62J"
                     admin_caption = (
                         f"🔔 <b>परेश भाई, आज का नया पोस्ट तैयार है!</b>\n"
                         f"👉 <i>इस फ़ोटो/रील को अपने WhatsApp Channel और YouTube पर शेयर कर दीजिए:</i>\n\n"
@@ -135,7 +139,7 @@ def publish_to_telegram(media_url, caption, post_url, is_video=False, youtube_ur
                     admin_reply_markup = {
                         "inline_keyboard": [
                             [
-                                {"text": "🟢 WhatsApp चैनल खोलें", "url": "https://whatsapp.com/channel/0029VbDxJHk30LKNtj4Er62J"},
+                                {"text": "🟢 WhatsApp चैनल खोलें", "url": whatsapp_channel},
                                 {"text": "▶️ YouTube Community खोलें", "url": "https://youtube.com/@krishnavibezofficial/community"}
                             ],
                             [
@@ -145,12 +149,16 @@ def publish_to_telegram(media_url, caption, post_url, is_video=False, youtube_ur
                     }
                     admin_payload = {
                         "chat_id": admin_chat_id,
-                        param_name: media_url,
                         "caption": admin_caption[:1024],
                         "parse_mode": "HTML",
                         "reply_markup": json.dumps(admin_reply_markup)
                     }
-                    requests.post(api_url, data=admin_payload, timeout=20)
+                    if os.path.exists(str(media_url)):
+                        with open(media_url, "rb") as mf:
+                            requests.post(api_url, data=admin_payload, files={param_name: (filename, mf, mime)}, timeout=60)
+                    else:
+                        admin_payload[param_name] = media_url
+                        requests.post(api_url, data=admin_payload, timeout=20)
 
                     # Send 1-tap instant copy message so Paresh bhai never has to manually select text
                     clean_wa_caption = (

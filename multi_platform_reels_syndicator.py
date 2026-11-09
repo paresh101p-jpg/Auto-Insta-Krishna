@@ -120,13 +120,58 @@ def post_ig_reel(ig_account_id, caption, local_video_path, fb_token, fallback_vi
         print(f"[Instagram Reel] ⚠️ Notice: {e}")
     return False
 
-def post_fb_video(fb_page_id, caption, local_video_path, fb_token):
-    """Uploads video to Facebook Page as a Reel / Video."""
+def post_fb_reel(fb_page_id, caption, local_video_path, fb_token):
+    """Uploads video to Facebook Page as a native 9:16 Reel using Meta Video Reels API."""
+    file_size = os.path.getsize(local_video_path) if os.path.exists(local_video_path) else 0
+    filename = os.path.basename(local_video_path)
+
+    # Method 1: Modern Meta Video Reels API
     try:
+        print(f"[Facebook Reel] Initializing Reel upload ({file_size / (1024*1024):.2f} MB)...")
+        init_url = f"https://graph.facebook.com/v20.0/{fb_page_id}/video_reels"
+        init_res = requests.post(init_url, data={
+            "upload_phase": "start",
+            "access_token": fb_token
+        }, timeout=20).json()
+
+        if "video_id" in init_res and "upload_url" in init_res:
+            vid = init_res["video_id"]
+            upload_url = init_res["upload_url"]
+
+            with open(local_video_path, "rb") as vf:
+                video_bytes = vf.read()
+
+            upload_headers = {
+                "Authorization": f"OAuth {fb_token}",
+                "offset": "0",
+                "file_size": str(file_size)
+            }
+            requests.post(upload_url, data=video_bytes, headers=upload_headers, timeout=90)
+
+            # Finish Reel upload
+            fin_res = requests.post(init_url, data={
+                "upload_phase": "finish",
+                "access_token": fb_token,
+                "video_id": vid,
+                "video_state": "PUBLISHED",
+                "description": caption
+            }, timeout=30).json()
+
+            if fin_res.get("success") or "id" in fin_res or "video_id" in fin_res:
+                print(f"[Facebook Reel] ✅ Published Successfully as Facebook Reel! (ID: {vid})")
+                return True
+            else:
+                print(f"[Facebook Reel] Finish response: {fin_res}")
+    except Exception as e:
+        print(f"[Facebook Reel] ⚠️ Video Reels API notice: {e}")
+
+    # Method 2: Standard Page Videos API fallback
+    try:
+        print("[Facebook Reel] Attempting Page Videos API fallback...")
         url = f"https://graph.facebook.com/v20.0/{fb_page_id}/videos"
         with open(local_video_path, "rb") as vf:
             payload = {"description": caption, "access_token": fb_token}
-            files = {"source": vf}
+            files = {"source": (filename, vf, "video/mp4")}
             res = requests.post(url, data=payload, files=files, timeout=75).json()
             if "id" in res:
                 print(f"[Facebook Video] ✅ Published Successfully! (ID: {res['id']})")
@@ -136,6 +181,9 @@ def post_fb_video(fb_page_id, caption, local_video_path, fb_token):
     except Exception as e:
         print(f"[Facebook Video] ⚠️ Notice: {e}")
     return False
+
+def post_fb_video(fb_page_id, caption, local_video_path, fb_token):
+    return post_fb_reel(fb_page_id, caption, local_video_path, fb_token)
 
 def syndicate_kinetic_reel(video_path, spoken_thought, title, youtube_video_id, image_path=None):
     """
@@ -189,6 +237,14 @@ def syndicate_kinetic_reel(video_path, spoken_thought, title, youtube_video_id, 
     # 4. Meta Credentials for Instagram & Facebook
     fb_page_id = os.environ.get("FB_PAGE_ID") or "1808917602588221"
     fb_token = os.environ.get("FB_ACCESS_TOKEN")
+    if not fb_token:
+        token_file = os.path.join(BASE_DIR, "fb_permanent_token.txt")
+        if os.path.exists(token_file):
+            try:
+                with open(token_file, "r", encoding="utf-8") as ftf:
+                    fb_token = ftf.read().strip()
+            except Exception:
+                pass
 
     if fb_token:
         # A. Instagram Reel

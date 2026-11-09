@@ -549,7 +549,7 @@ def git_commit_and_push(commit_msg):
     try:
         subprocess.run(["git", "config", "user.email", "actions@github.com"], check=False)
         subprocess.run(["git", "config", "user.name", "Auto Insta Bot"], check=False)
-        subprocess.run(["git", "add", "quotes.txt", "used_quotes.txt", "used_kinetic_images.txt", "youtube_reels_urls.txt", "youtube_used_urls.txt", "youtube_cycle_tracker.txt", "youtube_quarantine_queue.json", "youtube_quarantine_audit.log"], check=False)
+        subprocess.run(["git", "add", "website", "quotes.txt", "used_quotes.txt", "used_kinetic_images.txt", "youtube_reels_urls.txt", "youtube_used_urls.txt", "youtube_cycle_tracker.txt", "youtube_quarantine_queue.json", "youtube_quarantine_audit.log"], check=False)
         subprocess.run(["git", "commit", "-m", commit_msg], check=False)
         for _ in range(3):
             subprocess.run(["git", "pull", "--rebase", "origin", "master"], check=False)

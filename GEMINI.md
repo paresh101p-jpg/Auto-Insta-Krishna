@@ -236,6 +236,17 @@ Whenever power cuts, system reboots, or execution stops, the entire pipeline is 
 5. **AI Vision Thought-Matching**:
    - Gemini Vision reads the exact thought from the image or reel's 4.0s video frame, formats divine hook, spiritual meaning, and practical lessons using WhatsApp typography (`*bold*` & bullet points `•`).
 
+### 8.2 MANDATORY SAME-TIME MULTI-PLATFORM REEL SYNDICATION RULE
+
+**CRITICAL MANDATORY & UNBREAKABLE RULE**:
+Whenever a reel is generated or posted in Krishna (whether via `youtube_uploader.py`, `main.py`, or batch runners):
+It MUST AT THE EXACT SAME TIME be posted and syndicated across ALL approved channels:
+1. **Facebook Reels & Video**: Directly posted to the official Facebook Page (`Krishna Vibez`, Page ID `1808917602588221`) using Meta Video Reels API (`/{page_id}/video_reels`) with automatic fallback to `/{page_id}/videos`.
+2. **Telegram Channel**: Directly posted to the official Telegram Channel (`@krishnavibezz`) with clean thought quote and 4 interactive buttons (Website, YouTube, WhatsApp, Share), plus 1-tap admin copy reminder.
+3. **Website (`krishnavibez.in`)**: Automatically generates an AdSense-compliant article, appends to `website/public/js/posts-data.js`, updates sitemap/RSS, and commits changes to Git.
+4. **Instagram Reels**: Uploaded to Instagram Business Account (`krishnavibez`, ID `17841414531048670`) via Meta Graph API resumable upload.
+5. **Meta Threads & Pinterest**: Broadcasted to Threads (`@krishnavibez`) and Pinterest.
+
 ### 9. Website UI/UX, SEO & Engagement Engine Rules (`krishnavibez.in`)
 
 1. **Floating Like Button & Divine Petal Burst (`🪶`, `🌸`, `🪷`, `✨`)**:
