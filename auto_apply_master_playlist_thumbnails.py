@@ -43,7 +43,7 @@ def export_all_playlist_prompts():
     """Generates and exports bespoke master prompts for all playlists."""
     exported = []
     for pl in PLAYLIST_REGISTRY:
-        prompt, cfg = build_master_thumbnail_prompt(pl["name"])
+        prompt, cfg = build_master_thumbnail_prompt(pl["name"], is_playlist=True)
         entry = {
             "playlist_id": pl["id"],
             "playlist_name": pl["name"],

@@ -81,7 +81,7 @@ CATEGORY_CONFIGS = [
     # 05. COSMIC TANPURA STRINGS (100% PURE INSTRUMENTAL - ZERO VOCAL OM)
     {
         "id": "cosmic_tanpura",
-        "keywords": ["tanpura", "tambura", "dhyan", "drone", "meditation", "inner"],
+        "keywords": ["tanpura", "tambura", "drone", "cosmic"],
         "model_side": "right",
         "hook_title": "तानपुरा संगीत - गहरा ध्यान और आत्मिक शांति",
         "hook_sub": "DEEP ACOUSTIC TANPURA MEDITATION - 15 MIN",
@@ -251,9 +251,33 @@ CATEGORY_CONFIGS = [
 
 DEFAULT_CONFIG = CATEGORY_CONFIGS[0]
 
+SPECIFICITY_PRIORITY = [
+    "midnight_sleep_flute",
+    "yamuna_ghats_flute",
+    "bansuri_tabla_jugalbandi",
+    "lotus_lake_flute",
+    "morning_awakening_flute",
+    "raga_darbari_sitar",
+    "classical_veena",
+    "devotional_mridanga",
+    "stepwell_baori",
+    "temple_bell_aarti",
+    "forest_birds",
+    "monsoon_rain",
+    "mountain_river",
+    "ocean_waves",
+    "classical_tabla",
+    "cosmic_tanpura",
+    "stress_relief_flute"
+]
+
 def match_category(title, description=""):
     text = f"{title} {description}".lower()
-    for cfg in CATEGORY_CONFIGS:
+    cat_map = {c["id"]: c for c in CATEGORY_CONFIGS}
+    for cat_id in SPECIFICITY_PRIORITY:
+        cfg = cat_map.get(cat_id)
+        if not cfg:
+            continue
         for kw in cfg["keywords"]:
             if re.search(r"\b" + re.escape(kw) + r"\b", text):
                 return cfg
@@ -283,7 +307,7 @@ VARIATION_LIGHTINGS = [
     "at enchanting dawn with gentle pastel sunrise hues, morning haze, and soft warm volumetric god rays"
 ]
 
-def build_master_thumbnail_prompt(title="", description="", force_side=None, category_id=None, variation_index=0):
+def build_master_thumbnail_prompt(title="", description="", force_side=None, category_id=None, variation_index=0, is_playlist=False):
     if category_id:
         cfg = next((c for c in CATEGORY_CONFIGS if c["id"] == category_id), DEFAULT_CONFIG)
     else:
@@ -303,6 +327,8 @@ def build_master_thumbnail_prompt(title="", description="", force_side=None, cat
         
     text_side = "left" if model_side == "right" else "right"
     
+    subtitle_text = "✨ संपूर्ण प्लेलिस्ट | COMPLETE MASTER PLAYLIST ✨" if is_playlist else cfg['hook_sub']
+    
     prompt = (
         f"A viral high-CTR 16:9 cinematic YouTube meditation thumbnail. "
         f"A single continuous, unified cinematic wide scene with ZERO split lines, ZERO divider borders, and ZERO partitions. "
@@ -315,7 +341,7 @@ def build_master_thumbnail_prompt(title="", description="", force_side=None, cat
         f"On the {text_side.upper()} side of the SAME continuous environment: "
         f"In the upper area, floating naturally and cleanly directly in the open air with ZERO background box, ZERO black banner strip, "
         f"ZERO dark backing rectangle, and ZERO drop-shadow bar, is extra-large, massive bold 3D embossed gleaming polished 24K metallic gold luxury typography "
-        f"reading \"{cfg['hook_title']}\" with an elegant glowing golden subtitle \"{cfg['hook_sub']}\". "
+        f"reading \"{cfg['hook_title']}\" with an ultra-prominent glowing golden 3D badge subtitle reading \"{subtitle_text}\". "
         f"Directly below the floating letters: {cfg['instrument']} "
         f"The entire environment is a seamless, {cfg['background']}. "
         f"8K commercial fashion portrait photography, extreme shallow depth of field, dramatic cinematic rim lighting, pure single-shot unified scene, "
