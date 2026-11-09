@@ -259,8 +259,11 @@ def match_category(title, description=""):
                 return cfg
     return DEFAULT_CONFIG
 
-def build_master_thumbnail_prompt(title, description="", force_side=None):
-    cfg = match_category(title, description)
+def build_master_thumbnail_prompt(title="", description="", force_side=None, category_id=None):
+    if category_id:
+        cfg = next((c for c in CATEGORY_CONFIGS if c["id"] == category_id), DEFAULT_CONFIG)
+    else:
+        cfg = match_category(title, description)
     model_side = force_side or cfg.get("model_side", "right")
     text_side = "left" if model_side == "right" else "right"
     
