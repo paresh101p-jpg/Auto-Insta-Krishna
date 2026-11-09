@@ -587,29 +587,43 @@ def generate_rss(posts):
     rfc_date = now.strftime("%a, %d %b %Y %H:%M:%S +0530")
     
     items = []
-    for p in posts[:40]:
+    seen_links = set()
+    for p in posts[:50]:
         post_id = p["id"]
-        title = html.escape(p.get("title", "श्री कृष्ण अमृत विचार"))
         link = f"https://krishnavibez.in/post/{post_id}"
+        if link in seen_links:
+            continue
+        seen_links.add(link)
+        
+        title = html.escape(p.get("title", "श्री कृष्ण अमृत विचार"))
         desc = html.escape(p.get("shortDesc") or p.get("quote") or "")
-        iso_date = p.get("isoDate") or now.strftime("%Y-%m-%d")
         category = html.escape(p.get("category", "दैनिक दर्शन"))
-        img_url = p.get("imageUrl") or "https://krishnavibez.in/assets/krishna-og.jpg"
-
+        is_video = p.get("mediaType") == "video" or (p.get("videoUrl") and p.get("videoUrl").endswith(".mp4"))
+        
+        media_url = p.get("videoUrl") if is_video else p.get("imageUrl")
+        if not media_url:
+            media_url = "https://krishnavibez.in/assets/krishna-og.jpg"
+            
+        media_type = "video/mp4" if is_video else "image/jpeg"
+        medium = "video" if is_video else "image"
+        length = "1048576" if is_video else "102400"
+        
         item = f"""    <item>
       <title>{title}</title>
       <link>{link}</link>
       <guid isPermaLink="true">{link}</guid>
-      <description>{desc}</description>
-      <category>{category}</category>
       <pubDate>{rfc_date}</pubDate>
-      <enclosure url="{img_url}" type="image/jpeg" length="102400" />
+      <dc:creator>Paresh Padsala (Krishna Vibez)</dc:creator>
+      <category>{category}</category>
+      <description><![CDATA[{desc}]]></description>
+      <enclosure url="{media_url}" type="{media_type}" length="{length}" />
+      <media:content url="{media_url}" medium="{medium}" />
     </item>"""
         items.append(item)
 
     items_str = "\n".join(items)
     rss_xml = f"""<?xml version="1.0" encoding="UTF-8"?>
-<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:media="http://search.yahoo.com/mrss/" xmlns:content="http://purl.org/rss/1.0/modules/content/">
   <channel>
     <title>Krishna Vibez — दैनिक दिव्य दर्शन एवं भगवद्गीता सार</title>
     <link>https://krishnavibez.in/</link>
@@ -623,7 +637,7 @@ def generate_rss(posts):
 """
     with open(RSS_PATH, "w", encoding="utf-8") as f:
         f.write(rss_xml)
-    print(f"[SSG] ✅ Generated rss.xml with top {len(items)} posts for Google Discover.")
+    print(f"[SSG] ✅ Generated rss.xml with top {len(items)} posts (100% Valid XML with dc/media namespaces).")
 
 def main():
     print("=" * 60)

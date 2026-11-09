@@ -388,17 +388,28 @@ def publish_to_website(media_url, caption, is_video=False, custom_post_id=None):
                 with open(RSS_PATH, "r", encoding="utf-8") as f:
                     rss_content = f.read()
 
+                # Ensure all required namespaces are defined on <rss>
+                if 'xmlns:dc=' not in rss_content:
+                    rss_content = re.sub(
+                        r'<rss\s+version="2.0"[^>]*>',
+                        '<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:media="http://search.yahoo.com/mrss/" xmlns:content="http://purl.org/rss/1.0/modules/content/">',
+                        rss_content
+                    )
+
                 rfc_date = now.strftime("%a, %d %b %Y %H:%M:%S +0530")
                 rss_content = re.sub(r'<lastBuildDate>.*?</lastBuildDate>', f'<lastBuildDate>{rfc_date}</lastBuildDate>', rss_content)
 
                 post_link = f"https://krishnavibez.in/post/{post_id}"
-                media_type = "video/mp4" if is_video else "image/jpeg"
-                medium = "video" if is_video else "image"
-                length = "1048576" if is_video else "524288"
-                dims = "" if is_video else ' width="1200" height="1600"'
-                clean_desc = f"भगवान श्री कृष्ण का पावन विचार: {quote[:120]}… 4K दर्शन एवं डाउनलोड।"
+                
+                # Check for duplicate
+                if post_link not in rss_content:
+                    media_type = "video/mp4" if is_video else "image/jpeg"
+                    medium = "video" if is_video else "image"
+                    length = "1048576" if is_video else "524288"
+                    dims = "" if is_video else ' width="1200" height="1600"'
+                    clean_desc = f"भगवान श्री कृष्ण का पावन विचार: {quote[:120]}… 4K दर्शन एवं डाउनलोड।"
 
-                new_item = f"""    <item>
+                    new_item = f"""    <item>
       <title>{title}</title>
       <link>{post_link}</link>
       <guid isPermaLink="true">{post_link}</guid>
@@ -410,15 +421,15 @@ def publish_to_website(media_url, caption, is_video=False, custom_post_id=None):
       <media:content url="{media_url}" medium="{medium}"{dims}/>
     </item>\n\n"""
 
-                if "<item>" in rss_content:
-                    idx = rss_content.find("<item>")
-                    rss_content = rss_content[:idx] + new_item + rss_content[idx:]
-                elif "</channel>" in rss_content:
-                    rss_content = rss_content.replace("</channel>", new_item + "  </channel>")
+                    if "<item>" in rss_content:
+                        idx = rss_content.find("<item>")
+                        rss_content = rss_content[:idx] + new_item + rss_content[idx:]
+                    elif "</channel>" in rss_content:
+                        rss_content = rss_content.replace("</channel>", new_item + "  </channel>")
 
-                with open(RSS_PATH, "w", encoding="utf-8") as f:
-                    f.write(rss_content)
-                print(f"[WebsitePublisher] ✅ Updated rss.xml for Google Discover.")
+                    with open(RSS_PATH, "w", encoding="utf-8") as f:
+                        f.write(rss_content)
+                    print(f"[WebsitePublisher] ✅ Updated rss.xml for Google Discover & Pinterest.")
             except Exception as rss_err:
                 print(f"[WebsitePublisher] Warning updating rss.xml: {rss_err}")
 
