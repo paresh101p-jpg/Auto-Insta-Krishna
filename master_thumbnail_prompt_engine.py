@@ -2,16 +2,17 @@
 """
 Master Thumbnail Prompt Engine for YouTube Playlists & 15-Minute Music Videos
 - 100% EXCLUSIVE PURE ONE-SHOT AI PROMPT ARCHITECTURE (ZERO HTML, ZERO CROP/PASTE).
+- 100% PURE INSTRUMENTAL & NATURE SOUND ACCURACY (ZERO VOCAL CLAIMS, ZERO FAKE OM CHANT WORDS).
 - STRICT CATEGORY-INSTRUMENT COHERENCE:
-  * Only use Bansuri/Flute when the track is actually Flute.
   * Sitar tracks feature Classical Sitar (NO flute).
   * Tabla tracks feature Classical Tabla Pair (NO flute).
-  * Tanpura tracks feature Classical Tanpura (NO flute).
+  * Tanpura tracks feature Classical Tanpura Strings (NO flute).
   * Veena tracks feature Saraswati Veena (NO flute).
   * Nature / Rain / Ocean / Birds feature authentic ambient instruments (Rainstick, Singing Bowl, Conch Shell, Windchimes).
+  * Mridanga / Karatals feature acoustic Indian percussion (NO flute).
   * Iridescent Peacock Feather (Morpankh) is ALWAYS visually present in EVERY scene.
-- EXPLICIT TRACK IDENTIFICATION IN 3D GOLD TEXT:
-  * Viewer immediately knows the exact instrument and music genre from the text!
+- EXPLICIT PURE INSTRUMENTAL IDENTIFICATION IN 3D GOLD TEXT:
+  * Viewer immediately knows the exact acoustic instrument and music genre!
 - DYNAMIC SIDE ALTERNATION (50/50 LEFT VS RIGHT):
   * Alternates model placement between Left and Right to guarantee visual freshness.
 - MANDATORY VISUAL ATTRIBUTES:
@@ -23,7 +24,6 @@ Master Thumbnail Prompt Engine for YouTube Playlists & 15-Minute Music Videos
 """
 
 import re
-import random
 
 CATEGORY_CONFIGS = [
     # 01. STRESS RELIEF BANSURI FLUTE
@@ -78,16 +78,16 @@ CATEGORY_CONFIGS = [
         "instrument": "An authentic dark rosewood classical Tabla pair and a handcrafted golden bamboo bansuri flute adorned with a vibrant iridescent peacock feather (morpankh), resting together on royal red velvet with fresh rose and jasmine petals.",
         "background": "a grand royal Mughal pavilion overlooking serene reflective lotus ponds at golden hour twilight with warm chandeliers and soft amber bokeh"
     },
-    # 05. COSMIC TANPURA & DEEP DHYAN
+    # 05. COSMIC TANPURA STRINGS (100% PURE INSTRUMENTAL - ZERO VOCAL OM)
     {
         "id": "cosmic_tanpura",
-        "keywords": ["tanpura", "tambura", "om", "dhyan", "drone", "meditation", "inner"],
+        "keywords": ["tanpura", "tambura", "dhyan", "drone", "meditation", "inner"],
         "model_side": "right",
-        "hook_title": "गहरा ध्यान तानपुरा और ॐ नाद - आत्मिक शांति",
-        "hook_sub": "DEEP MEDITATIVE TANPURA DRONE - 15 MIN",
+        "hook_title": "तानपुरा संगीत - गहरा ध्यान और आत्मिक शांति",
+        "hook_sub": "DEEP ACOUSTIC TANPURA MEDITATION - 15 MIN",
         "choli": "opulent ivory-gold raw silk with intricate antique gold filigree and sparkling crystal cutwork",
         "dupatta": "ultra-sheer transparent ivory-gold net dupatta draped loosely over one shoulder",
-        "pose": "Her torso is angled diagonally at 60-degrees. Her head is tilted gently back in spiritual transcendence, a luminous, serene smile adorning her lips, eyes closed in divine resonance with the deep humming tanpura drone, exuding boundless calm, NEVER facing the camera.",
+        "pose": "Her torso is angled diagonally at 60-degrees. Her head is tilted gently back in spiritual transcendence, a luminous, serene smile adorning her lips, eyes closed in divine resonance with the deep acoustic tanpura drone strings, exuding boundless calm, NEVER facing the camera.",
         "instrument": "A majestic handcrafted Indian classical Tanpura with four bronze drone strings and fine floral ivory inlay, with an iridescent peacock feather (morpankh) resting across its soundboard beside a warm glowing brass lamp.",
         "background": "a celestial ancient temple sanctum with hanging brass bells, glowing carved pillars bathed in divine golden volumetric light, and soft ethereal floating particles"
     },
@@ -100,7 +100,7 @@ CATEGORY_CONFIGS = [
         "hook_sub": "SOOTHING MONSOON RAIN SOUNDS - 15 MIN",
         "choli": "deep monsoon indigo-blue silk with silver raindrop sequin work",
         "dupatta": "ultra-sheer transparent blue net dupatta draped loosely over one shoulder",
-        "pose": "Her body is angled towards the right at 60-degrees, head gently resting against a wet marble jharokha window sill, eyes softly closed with a blissful refreshed smile, deeply enjoying the scent of fresh rain and the rhythm of raindrops, NEVER facing the camera.",
+        "pose": "Her body is angled towards the right at 60-degrees, head gently resting against a wet marble jharokha window sill, eyes softly closed with a blissful refreshed smile, deeply enjoying the natural scent of fresh rain and the rhythm of raindrops, NEVER facing the camera.",
         "instrument": "A natural handcrafted bamboo rainstick and an authentic earthen water urn adorned with an iridescent peacock feather (morpankh) resting on wet carved marble beside scattered fresh wet jasmine buds.",
         "background": "an ancient royal palace terrace overlooking lush green Vrindavan gardens under gentle monsoon drizzle and soft misty twilight with falling water droplets"
     },
@@ -130,18 +130,18 @@ CATEGORY_CONFIGS = [
         "instrument": "A natural sacred white spiral Conch Shell (shankha) and an iridescent peacock feather (morpankh) resting elegantly on clean golden sand beside gentle ocean foam.",
         "background": "a calm tropical ocean coastline at golden sunset with gentle pastel waves rolling onto the shore and warm amber horizon glow"
     },
-    # 09. DEVOTIONAL MRIDANGA & KIRTAN
+    # 09. DEVOTIONAL MRIDANGA & KARATALS (100% PURE INSTRUMENTAL PERCUSSION)
     {
         "id": "devotional_mridanga",
         "keywords": ["kirtan", "mridanga", "satsang", "bhajan", "sankirtan"],
         "model_side": "right",
-        "hook_title": "मृदंग और हरि नाम संकीर्तन - परमानंद की अनुभूति",
-        "hook_sub": "SOULFUL DEVOTIONAL MRIDANGA KIRTAN - 15 MIN",
+        "hook_title": "मृदंग और करताल की मधुर ताल - असीम शांति",
+        "hook_sub": "ACOUSTIC DEVOTIONAL MRIDANGA & KARATALS - 15 MIN",
         "choli": "rich maroon-garnet silk with gold temple border embroidery",
         "dupatta": "sheer maroon net dupatta draped loosely over one shoulder",
-        "pose": "Her torso is angled sideways at 60-degrees, head swaying in joyful kirtan devotion, glowing smile of supreme spiritual bliss on her lips, eyes closed in heartfelt chanting, NEVER facing camera.",
-        "instrument": "A traditional clay Indian Mridanga drum with red ceremonial strap, a pair of brass karatals (hand cymbals), and a vibrant iridescent peacock feather (morpankh) resting on an embroidered altar cloth with tulsi leaves.",
-        "background": "an open-air riverbank pavilion in Braj during evening twilight with warm hanging paper lanterns and gentle devotional atmosphere"
+        "pose": "Her torso is angled sideways at 60-degrees, head swaying gently to the rhythmic acoustic mridanga beats, glowing smile of serene musical joy on her lips, eyes closed listening peacefully, NEVER facing camera.",
+        "instrument": "A traditional clay Indian Mridanga drum with red ceremonial strap, a pair of polished brass karatals (hand cymbals), and a vibrant iridescent peacock feather (morpankh) resting on an embroidered altar cloth with tulsi leaves.",
+        "background": "an open-air riverbank pavilion in Braj during evening twilight with warm hanging paper lanterns and gentle peaceful ambient lighting"
     },
     # 10. SACRED LOTUS LAKE FLUTE
     {
@@ -182,20 +182,20 @@ CATEGORY_CONFIGS = [
         "instrument": "An authentic handcrafted golden bamboo bansuri flute adorned with a vibrant iridescent peacock feather (morpankh) resting on an ornate carved brass thali with scattered fresh yellow marigold and orange flower petals.",
         "background": "an ancient Vrindavan marble temple ghat at golden sunrise, with glorious warm sunbeams cutting through morning haze, Yamuna river shimmering in the distance, and dreamy floating golden dust motes"
     },
-    # 13. TEMPLE BELL & SACRED AARTI
+    # 13. TEMPLE BELL & SACRED SHANKHA (100% PURE ACOUSTIC BELL & CONCH)
     {
         "id": "temple_bell_aarti",
         "keywords": ["aarti", "bell", "ghanti", "pooja", "deepam", "mandir"],
         "model_side": "right",
-        "hook_title": "मंदिर की पावन घंटी और शंख नाद - आत्मिक शांति",
-        "hook_sub": "SACRED TEMPLE BELLS & AARTI CHANTS - 15 MIN",
+        "hook_title": "मंदिर की पावन घंटी और शंख ध्वनि - आत्मिक शांति",
+        "hook_sub": "SACRED TEMPLE BRASS BELLS & CONCH SHELL - 15 MIN",
         "choli": "deep ceremonial vermilion-red silk with heavy gold zardozi borders",
         "dupatta": "sheer red net dupatta draped loosely over one shoulder",
         "pose": "Her torso is angled at 60-degrees, chin slightly raised with an expression of divine devotion and bliss, a subtle pious smile on her parted lips, warm firelight dancing on her glowing cheeks, NEVER looking at camera.",
-        "instrument": "A heavy carved temple brass hanging bell (ghanti), a sacred white conch shell (shankha), and an iridescent peacock feather (morpankh) resting beside a multi-tiered brass deepam lamp with warm dancing flames.",
+        "instrument": "A heavy carved temple brass hanging bell (ghanti), an authentic white sacred conch shell (shankha), and an iridescent peacock feather (morpankh) resting beside a multi-tiered brass deepam lamp with warm dancing flames.",
         "background": "an ancient stone temple sanctum illuminated by hundreds of golden oil lamps, swirling dhoop incense smoke, and hanging temple bells"
     },
-    # 14. FOREST BIRDS & NATURE AMBIENCE
+    # 14. FOREST BIRDS & NATURAL AMBIENCE
     {
         "id": "forest_birds",
         "keywords": ["birds", "forest", "jungle", "pakshi", "chidiya"],
@@ -214,14 +214,14 @@ CATEGORY_CONFIGS = [
         "keywords": ["stepwell", "baori", "bavdi", "heritage", "ancient"],
         "model_side": "right",
         "hook_title": "प्राचीन बावड़ी में सुर नाद - मन को एकाग्र करें",
-        "hook_sub": "ANCIENT STEPWELL MEDITATION MUSIC - 15 MIN",
+        "hook_sub": "ANCIENT STEPWELL SWARPETI & TANPURA - 15 MIN",
         "choli": "rich amber-ochre silk with antique copper-gold zari work",
         "dupatta": "sheer transparent amber dupatta draped loosely over one shoulder",
         "pose": "Her body is physically angled away at 60-degrees, head tilted slightly downward in peaceful musical contemplation, a sweet captivating smile on her glossy lips, eyes half-closed enjoying deep acoustic resonance, NEVER facing the camera.",
         "instrument": "An authentic wooden Indian Swarpeti (shrutibox), an antique tanpura soundboard, and an iridescent peacock feather (morpankh) resting on sandstone beside rows of warm glowing brass oil lamps.",
         "background": "an ancient subterranean stepwell with symmetrical geometric sandstone stairs descending into tranquil turquoise water, illuminated by flickering diyas"
     },
-    # 16. SARASWATI VEENA CLASSICAL
+    # 16. SARASWATI VEENA CLASSICAL HERITAGE
     {
         "id": "classical_veena",
         "keywords": ["veena", "saraswati", "shastriya", "vina"],
@@ -288,6 +288,4 @@ def build_master_thumbnail_prompt(title, description="", force_side=None):
     return prompt, cfg
 
 if __name__ == "__main__":
-    print(f"Loaded {len(CATEGORY_CONFIGS)} bespoke categories.")
-    for c in CATEGORY_CONFIGS:
-        print(f"[{c['id']}] Side: {c['model_side'].upper()} | Hook: {c['hook_title'][:30]}... | Instrument: {c['instrument'][:40]}...")
+    print(f"Loaded {len(CATEGORY_CONFIGS)} bespoke categories (100% Pure Instrumental & Nature Accuracy).")
