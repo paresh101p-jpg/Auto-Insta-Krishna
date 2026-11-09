@@ -1,3 +1,11 @@
+# MANDATORY 100% EXCLUSIVE GOOGLE GEMINI / NANO BANANA IMAGE GENERATION RULE
+1. **STRICT ZERO POLLINATIONS / ZERO 3RD-PARTY INFERIOR AI**:
+   - Pollinations AI and any other low-quality AI image services are PERMANENTLY BANNED and PROHIBITED.
+   - All playlist covers, video thumbnails, and channel imagery MUST strictly be generated using Google Gemini / Nano Banana 2.
+2. **ALWAYS FRESH PROMPT-RENDERED IMAGES**:
+   - Every single playlist cover and thumbnail must be generated fresh from pure detailed prompts in one shot.
+   - Crucial composition mandate: Extreme close-up zoomed-in face of a gorgeous Indian woman in traditional saree with temple jewelry + category musical instrument (Murli, Tabla, Sitar) + 100% prompt-rendered 3D embossed metallic gold typography (ZERO HTML, ZERO CSS, ZERO PIL DRAWTEXT).
+
 # STRICT 24/7 LIVE STREAM HOSTING RULE (VPS ONLY — ZERO PC STREAMING)
 **MANDATORY & UNBREAKABLE RULE**:
 1. **ALL 24/7 Live Streams MUST ALWAYS run 100% on the Oracle Cloud VPS (`ubuntu@92.4.66.182`)**.
