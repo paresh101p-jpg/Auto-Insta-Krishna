@@ -213,8 +213,8 @@ CATEGORY_CONFIGS = [
         "id": "stepwell_baori",
         "keywords": ["stepwell", "baori", "bavdi", "heritage", "ancient"],
         "model_side": "right",
-        "hook_title": "प्राचीन बावड़ी में सुर नाद - मन को एकाग्र करें",
-        "hook_sub": "ANCIENT STEPWELL SWARPETI & TANPURA - 15 MIN",
+        "hook_title": "प्राचीन बावड़ी स्वरपेटी संगीत - गहरा सुकून और एकाग्रता",
+        "hook_sub": "ANCIENT STEPWELL SWARPETI & TANPURA INSTRUMENTAL - 15 MIN",
         "choli": "rich amber-ochre silk with antique copper-gold zari work",
         "dupatta": "sheer transparent amber dupatta draped loosely over one shoulder",
         "pose": "Her body is physically angled away at 60-degrees, head tilted slightly downward in peaceful musical contemplation, a sweet captivating smile on her glossy lips, eyes half-closed enjoying deep acoustic resonance, NEVER facing the camera.",
@@ -278,8 +278,8 @@ def build_master_thumbnail_prompt(title, description="", force_side=None):
         f"with an {cfg['dupatta']}, leaving the opposite shoulder completely bare and glowing. Hands are off-frame. "
         f"On the {text_side.upper()} side of the SAME continuous environment: "
         f"In the upper area, floating naturally and cleanly directly in the open air with ZERO background box, ZERO black banner strip, "
-        f"ZERO dark backing rectangle, and ZERO drop-shadow bar, are massive individual 3D embossed gleaming polished metallic gold luxury letters "
-        f"reading \"{cfg['hook_title']}\" with a glowing subtitle \"{cfg['hook_sub']}\". "
+        f"ZERO dark backing rectangle, and ZERO drop-shadow bar, is extra-large, massive bold 3D embossed gleaming polished 24K metallic gold luxury typography "
+        f"reading \"{cfg['hook_title']}\" with an elegant glowing golden subtitle \"{cfg['hook_sub']}\". "
         f"Directly below the floating letters: {cfg['instrument']} "
         f"The entire environment is a seamless, {cfg['background']}. "
         f"8K commercial fashion portrait photography, extreme shallow depth of field, dramatic cinematic rim lighting, pure single-shot unified scene, "
