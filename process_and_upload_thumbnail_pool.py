@@ -18,20 +18,48 @@ os.makedirs(CLEAN_DIR, exist_ok=True)
 
 CATEGORIES = ["morning_pooja", "bansuri_tabla", "raag_darbari", "lotus_lake", "sleep_insomnia"]
 
-def categorize(fname):
+def get_matched_categories(fname):
+    """
+    Multi-category matching: A single image can match 2 or more categories.
+    The URL is automatically copied to ALL matching categories!
+    """
     fl = fname.lower()
-    if any(k in fl for k in ['sleep', 'night', 'moon', 'star', 'insomnia', 'deep_sleep', 'relaxing', 'rain', 'blue', 'dark', 'midnight']):
-        return 'sleep_insomnia'
-    elif any(k in fl for k in ['lotus', 'lake', 'sarovar', 'water', 'pond', 'swan', 'river', 'mist', 'ghat', 'tranquil']):
-        return 'lotus_lake'
-    elif any(k in fl for k in ['royal', 'darbari', 'darbar', 'palace', 'rajkumari', 'attire', 'queen', 'princess', 'bride', 'bridal', 'kundan', 'jewelry', 'saree', 'choli', 'classical', 'veena']):
-        return 'raag_darbari'
-    elif any(k in fl for k in ['tabla', 'jugalbandi', 'rhythm', 'tanpura', 'sitar', 'instrument', 'flute', 'bansuri', 'bamboo']):
-        return 'bansuri_tabla'
-    elif any(k in fl for k in ['sunrise', 'morning', 'dawn', 'sun', 'prabhat', 'temple', 'courtyard', 'pooja', 'golden']):
-        return 'morning_pooja'
-    else:
-        return 'morning_pooja'
+    cats = set()
+    
+    # 1. Sleep & Insomnia (night, sleep, closing eyes, blue sapphire, relaxing, trance)
+    if any(k in fl for k in ['closing_eyes', 'closing', 'sapphire', 'blue', 'sleep', 'night', 'moon', 'stars', 'dark', 'tilting', 'head_back', 'relax', 'rain']):
+        cats.add('sleep_insomnia')
+        
+    # 2. Lotus Lake & Water (lake, lotus, river, fortress balcony over water, water ripples)
+    if any(k in fl for k in ['lotus', 'lake', 'water', 'pond', 'river', 'balcony', 'fortress_balcony', 'mist', 'tranquil', 'sarovar']):
+        cats.add('lotus_lake')
+        
+    # 3. Raag Darbari & Royal Classical (royal choli, magenta, ruby, kundan, royal necklace, gold choker, fortress)
+    if any(k in fl for k in ['choli', 'magenta', 'ruby', 'kundan', 'necklace', 'choker', 'gold_choker', 'fortress', 'royal', 'princess', 'bride', 'attire', 'classical', 'veena']):
+        cats.add('raag_darbari')
+        
+    # 4. Bansuri & Tabla / Spiritual Instruments (peacock feather, morpankh, flute, bansuri, tabla)
+    if any(k in fl for k in ['peacock', 'feather', 'morpankh', 'flute', 'bansuri', 'bamboo', 'tabla', 'instrument', 'tanpura']):
+        cats.add('bansuri_tabla')
+        
+    # 5. Morning Pooja (gold, smiling, courtyard, temple, sunrise, morning)
+    if any(k in fl for k in ['smiling', 'gold', 'temple', 'courtyard', 'sunrise', 'morning', 'dawn', 'sun', 'prabhat', 'balcony', 'pooja']):
+        cats.add('morning_pooja')
+        
+    if not cats:
+        cats = {'morning_pooja', 'raag_darbari'}
+    elif len(cats) == 1:
+        c = list(cats)[0]
+        if c == 'raag_darbari':
+            cats.add('lotus_lake')
+        elif c == 'bansuri_tabla':
+            cats.add('morning_pooja')
+        elif c == 'sleep_insomnia':
+            cats.add('lotus_lake')
+        elif c == 'lotus_lake':
+            cats.add('sleep_insomnia')
+            
+    return list(cats)
 
 def clean_watermark(raw_path, clean_path):
     data = np.fromfile(raw_path, dtype=np.uint8)
@@ -84,11 +112,11 @@ def process_single_image(fname):
 
     if not os.path.exists(clean_path):
         if not clean_watermark(raw_path, clean_path):
-            return fname, None, None
+            return fname, [], None
 
-    cat = categorize(fname)
+    matched_cats = get_matched_categories(fname)
     url = upload_file_to_catbox(clean_path)
-    return fname, cat, url
+    return fname, matched_cats, url
 
 def main():
     uploaded_files = set()
@@ -99,48 +127,53 @@ def main():
     all_files = [f for f in os.listdir(RAW_DIR) if f.lower().endswith(('.jpg', '.jpeg', '.png'))]
     to_process = [f for f in all_files if f not in uploaded_files]
 
-    print(f"Total raw images: {len(all_files)}")
+    print(f"Total raw images in pool: {len(all_files)}")
     print(f"Already uploaded: {len(uploaded_files)}")
-    print(f"Pending upload: {len(to_process)}")
+    print(f"Pending upload (new batch): {len(to_process)}")
 
     if not to_process:
-        print("All thumbnail images are already uploaded!")
+        print("All images are already uploaded and synced!")
         return
-
-    # Categorized file handlers
-    cat_files = {}
-    cat_backups = {}
-    for c in CATEGORIES:
-        cat_files[c] = open(os.path.join(BASE_DIR, f"thumbnail_urls_{c}.txt"), "a", encoding="utf-8")
-        cat_backups[c] = open(os.path.join(BASE_DIR, f"thumbnail_urls_{c}_backup.txt"), "a", encoding="utf-8")
 
     tracker_f = open(TRACKER_FILE, "a", encoding="utf-8")
 
-    print(f"\nStarting multi-threaded upload with 10 workers...")
+    print(f"\nStarting multi-threaded upload of {len(to_process)} images with 10 workers...")
     start_time = time.time()
     success_count = 0
 
     with ThreadPoolExecutor(max_workers=10) as executor:
         futures = {executor.submit(process_single_image, f): f for f in to_process}
         for future in as_completed(futures):
-            fname, cat, url = future.result()
+            fname, matched_cats, url = future.result()
             if url:
                 success_count += 1
-                cat_files[cat].write(url + "\n")
-                cat_files[cat].flush()
-                cat_backups[cat].write(url + "\n")
-                cat_backups[cat].flush()
+                # Multi-category sync: copy URL into ALL matching category queues!
+                for cat in matched_cats:
+                    q_path = os.path.join(BASE_DIR, f"thumbnail_urls_{cat}.txt")
+                    b_path = os.path.join(BASE_DIR, f"thumbnail_urls_{cat}_backup.txt")
+                    with open(q_path, "a", encoding="utf-8") as qf:
+                        qf.write(url + "\n")
+                    with open(b_path, "a", encoding="utf-8") as bf:
+                        bf.write(url + "\n")
+
+                    # Also sync into music video slide queues if matching
+                    slide_q = os.path.join(BASE_DIR, f"music_slide_urls_{cat}.txt")
+                    slide_b = os.path.join(BASE_DIR, f"music_slide_urls_{cat}_backup.txt")
+                    if os.path.exists(slide_q):
+                        with open(slide_q, "a", encoding="utf-8") as sq:
+                            sq.write(url + "\n")
+                        with open(slide_b, "a", encoding="utf-8") as sb:
+                            sb.write(url + "\n")
+
                 tracker_f.write(fname + "\n")
                 tracker_f.flush()
-                if success_count % 25 == 0 or success_count == len(to_process):
+
+                if success_count % 15 == 0 or success_count == len(to_process):
                     elapsed = round(time.time() - start_time, 1)
-                    print(f"  [+] Uploaded {success_count}/{len(to_process)} images in {elapsed}s... (Latest: {cat})")
+                    print(f"  [+] Uploaded {success_count}/{len(to_process)} in {elapsed}s... (Cats: {matched_cats})")
             else:
                 print(f"  [-] Failed to upload: {fname}")
 
-    for c in CATEGORIES:
-        cat_files[c].close()
-        cat_backups[c].close()
     tracker_f.close()
 
     total_time = round(time.time() - start_time, 1)
@@ -150,4 +183,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-
