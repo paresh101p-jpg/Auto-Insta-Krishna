@@ -40,6 +40,8 @@ USED_IMAGES_TRACKER = os.path.join(BASE_DIR, "used_music_images_tracker.txt")
 OUTPUT_VIDEO = os.path.join(BASE_DIR, "temp_music_video_render.mp4")
 TEMP_AUDIO = os.path.join(BASE_DIR, "temp_music_video_audio.mp3")
 TEMP_THUMBNAIL = os.path.join(BASE_DIR, "temp_music_thumbnail.jpg")
+TEMP_DIR = os.path.join(BASE_DIR, "temp_render_cache")
+os.makedirs(TEMP_DIR, exist_ok=True)
 TREBLO_URLS_FILE = os.path.join(BASE_DIR, "treblo_music_urls.txt")
 TREBLO_VIDEO_ONLY_URLS = os.path.join(BASE_DIR, "treblo_music_video_only_urls.txt")
 TREBLO_BACKUP_URLS_FILE = os.path.join(BASE_DIR, "treblo_music_urls_backup.txt")
@@ -2232,7 +2234,7 @@ def render_full_length_base_thumbnail(base_image_path, theme, output_path):
     3. Full-length high-contrast luxury bottom base line badge bar (tag, title, 15 MIN pill).
     """
     edge_path = r"C:\Program Files (x86)\Microsoft\Edge\Application\msedge.exe"
-    ffmpeg_path = FFMPEG_CMD
+    ffmpeg_path = FFMPEG_EXE
     if not os.path.exists(edge_path) or not os.path.exists(base_image_path):
         return base_image_path
 
@@ -2259,11 +2261,44 @@ def render_full_length_base_thumbnail(base_image_path, theme, output_path):
         else:
             cleaned = img
 
-        clean_tmp = os.path.join(TEMP_DIR, "clean_bg_for_thumb.jpg")
+        temp_dir = os.path.dirname(output_path) or BASE_DIR
+        clean_tmp = os.path.join(temp_dir, "clean_bg_for_thumb.jpg")
         cv2.imwrite(clean_tmp, cleaned if cleaned is not None else img)
 
         with open(clean_tmp, "rb") as f:
             bg_b64 = base64.b64encode(f.read()).decode("utf-8")
+
+        # 2. Intelligent Subject Side Detection (LEFT vs RIGHT)
+        # Prevents covering the woman's face, neckline, shoulders and choli!
+        def detect_subject_side(image_mat):
+            h, w = image_mat.shape[:2]
+            upper_img = image_mat[:int(h * 0.75), :]
+            hsv = cv2.cvtColor(upper_img, cv2.COLOR_BGR2HSV)
+            lower_skin = np.array([0, 25, 60], dtype=np.uint8)
+            upper_skin = np.array([25, 255, 255], dtype=np.uint8)
+            skin_mask = cv2.inRange(hsv, lower_skin, upper_skin)
+            left_skin = np.sum(skin_mask[:, :w//2])
+            right_skin = np.sum(skin_mask[:, w//2:])
+            gray = cv2.cvtColor(upper_img, cv2.COLOR_BGR2GRAY)
+            edges = cv2.Canny(gray, 50, 150)
+            left_edges = np.sum(edges[:, :w//2])
+            right_edges = np.sum(edges[:, w//2:])
+            left_score = left_skin * 1.5 + left_edges
+            right_score = right_skin * 1.5 + right_edges
+            return "LEFT" if left_score > right_score else "RIGHT"
+
+        subject_side = detect_subject_side(cleaned if cleaned is not None else img)
+        text_side = "right" if subject_side == "LEFT" else "left"
+        print(f"  -> 👁️ [Smart Vision Layout] Subject detected on {subject_side} side. Placing typography on {text_side.upper()} side!", flush=True)
+
+        if text_side == "right":
+            text_container_css = "position: absolute; top: 60px; right: 80px; max-width: 1050px; z-index: 10; overflow: visible; padding-top: 20px; text-align: right;"
+            pill_align_css = "display: inline-flex; margin-left: auto;"
+            vignette_css = "position: absolute; top: 0; left: 0; width: 1920px; height: 1080px; background: radial-gradient(circle at 75% 30%, rgba(0,0,0,0.85) 0%, rgba(0,0,0,0.5) 45%, rgba(0,0,0,0) 75%), linear-gradient(270deg, rgba(0,0,0,0.75) 0%, rgba(0,0,0,0.3) 45%, rgba(0,0,0,0) 65%); pointer-events: none;"
+        else:
+            text_container_css = "position: absolute; top: 60px; left: 80px; max-width: 1050px; z-index: 10; overflow: visible; padding-top: 20px; text-align: left;"
+            pill_align_css = "display: inline-flex;"
+            vignette_css = "position: absolute; top: 0; left: 0; width: 1920px; height: 1080px; background: radial-gradient(circle at 25% 30%, rgba(0,0,0,0.85) 0%, rgba(0,0,0,0.5) 45%, rgba(0,0,0,0) 75%), linear-gradient(90deg, rgba(0,0,0,0.75) 0%, rgba(0,0,0,0.3) 45%, rgba(0,0,0,0) 65%); pointer-events: none;"
 
         # Category and Hook details
         cat = theme.get("category", "").lower()
@@ -2318,23 +2353,13 @@ def render_full_length_base_thumbnail(base_image_path, theme, output_path):
     background-position: center;
   }}
   .vignette {{
-    position: absolute;
-    top: 0; left: 0; width: 1920px; height: 1080px;
-    background: radial-gradient(circle at 25% 30%, rgba(0,0,0,0.85) 0%, rgba(0,0,0,0.5) 45%, rgba(0,0,0,0) 75%),
-                linear-gradient(90deg, rgba(0,0,0,0.65) 0%, rgba(0,0,0,0.2) 45%, rgba(0,0,0,0) 65%);
-    pointer-events: none;
+    {vignette_css}
   }}
   .text-container {{
-    position: absolute;
-    top: 60px;
-    left: 80px;
-    max-width: 1050px;
-    z-index: 10;
-    overflow: visible;
-    padding-top: 20px;
+    {text_container_css}
   }}
   .hook-pill {{
-    display: inline-flex;
+    {pill_align_css}
     align-items: center;
     background: linear-gradient(90deg, #D50000 0%, #FF1744 100%);
     border: 3px solid #FFF;
