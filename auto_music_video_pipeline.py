@@ -2334,16 +2334,16 @@ def render_full_length_base_thumbnail(base_image_path, theme, output_path):
 
         subject_side = detect_subject_side(cleaned if cleaned is not None else img)
         text_side = "right" if subject_side == "LEFT" else "left"
-        print(f"  -> 👁️ [Smart Vision Layout] Subject detected on {subject_side} side. Placing typography strictly on {text_side.upper()} side (max-width: 760px)!", flush=True)
+        print(f"  -> 👁️ [Smart Vision Layout] Subject detected on {subject_side} side. Placing typography strictly on {text_side.upper()} side (50% screen: max-width 920px)!", flush=True)
 
         if text_side == "right":
-            text_container_css = "position: absolute; top: 50px; right: 60px; width: 760px; max-width: 760px; z-index: 10; overflow: visible; padding-top: 10px; text-align: right;"
+            text_container_css = "position: absolute; top: 45px; right: 45px; width: 920px; max-width: 920px; z-index: 10; overflow: visible; padding-top: 10px; text-align: right;"
             pill_align_css = "display: inline-flex; margin-left: auto;"
-            vignette_css = "position: absolute; top: 0; left: 0; width: 1920px; height: 1080px; background: linear-gradient(270deg, rgba(0,0,0,0.88) 0%, rgba(0,0,0,0.65) 30%, rgba(0,0,0,0) 58%); pointer-events: none;"
+            vignette_css = "position: absolute; top: 0; left: 0; width: 1920px; height: 1080px; background: linear-gradient(270deg, rgba(0,0,0,0.92) 0%, rgba(0,0,0,0.78) 32%, rgba(0,0,0,0) 62%); pointer-events: none;"
         else:
-            text_container_css = "position: absolute; top: 50px; left: 60px; width: 760px; max-width: 760px; z-index: 10; overflow: visible; padding-top: 10px; text-align: left;"
+            text_container_css = "position: absolute; top: 45px; left: 45px; width: 920px; max-width: 920px; z-index: 10; overflow: visible; padding-top: 10px; text-align: left;"
             pill_align_css = "display: inline-flex;"
-            vignette_css = "position: absolute; top: 0; left: 0; width: 1920px; height: 1080px; background: linear-gradient(90deg, rgba(0,0,0,0.88) 0%, rgba(0,0,0,0.65) 30%, rgba(0,0,0,0) 58%); pointer-events: none;"
+            vignette_css = "position: absolute; top: 0; left: 0; width: 1920px; height: 1080px; background: linear-gradient(90deg, rgba(0,0,0,0.92) 0%, rgba(0,0,0,0.78) 32%, rgba(0,0,0,0) 62%); pointer-events: none;"
 
         # Category and Hook details
         cat = theme.get("category", "").lower()
@@ -2408,12 +2408,12 @@ def render_full_length_base_thumbnail(base_image_path, theme, output_path):
     align-items: center;
     background: linear-gradient(90deg, #D50000 0%, #FF1744 100%);
     border: 3px solid #FFF;
-    border-radius: 12px;
-    padding: 8px 24px;
+    border-radius: 14px;
+    padding: 10px 28px;
     margin-bottom: 18px;
     color: #FFFFFF;
     font-family: 'Poppins', 'Tiro Devanagari Hindi', sans-serif;
-    font-size: 32px;
+    font-size: 36px;
     font-weight: 900;
     letter-spacing: 1px;
     box-shadow: 0 8px 25px rgba(0,0,0,0.9), 0 0 25px rgba(255, 23, 68, 0.7);
@@ -2421,9 +2421,9 @@ def render_full_length_base_thumbnail(base_image_path, theme, output_path):
   }}
   .hook-lead {{
     font-family: 'Tiro Devanagari Hindi', 'Nirmala UI', serif;
-    font-size: 70px;
+    font-size: 86px;
     font-weight: 700;
-    line-height: 1.25;
+    line-height: 1.22;
     padding-top: 8px;
     color: #FFE600;
     letter-spacing: 1px;
@@ -2433,9 +2433,9 @@ def render_full_length_base_thumbnail(base_image_path, theme, output_path):
   }}
   .hook-benefit {{
     font-family: 'Tiro Devanagari Hindi', 'Nirmala UI', serif;
-    font-size: 82px;
+    font-size: 98px;
     font-weight: 700;
-    line-height: 1.25;
+    line-height: 1.22;
     padding-top: 8px;
     letter-spacing: 1px;
     color: #FFF8E1;
