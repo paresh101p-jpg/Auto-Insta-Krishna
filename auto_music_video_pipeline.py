@@ -2148,6 +2148,249 @@ def render_video(slides, duration_sec=900, is_krishna=True):
     print(f"  -> Video Rendered with Smooth Morpankh & Zoom: {OUTPUT_VIDEO} ({dur_min} Mins / {duration_sec}s)")
 
 
+def render_full_length_base_thumbnail(base_image_path, theme, output_path):
+    """
+    Renders 16:9 YouTube master thumbnail with:
+    1. Automated Telea watermark inpainting (removes Flow star).
+    2. Category-adaptive top hook typography with zero clipped matras.
+    3. Full-length high-contrast luxury bottom base line badge bar (tag, title, 15 MIN pill).
+    """
+    edge_path = r"C:\Program Files (x86)\Microsoft\Edge\Application\msedge.exe"
+    ffmpeg_path = FFMPEG_CMD
+    if not os.path.exists(edge_path) or not os.path.exists(base_image_path):
+        return base_image_path
+
+    try:
+        import cv2
+        import numpy as np
+        import base64
+        import subprocess
+
+        # 1. Inpaint Flow watermark
+        img = cv2.imread(base_image_path)
+        if img is not None:
+            h, w = img.shape[:2]
+            mask = np.zeros((h, w), dtype=np.uint8)
+            x1, x2 = int(w * 0.88), int(w * 0.99)
+            y1, y2 = int(h * 0.80), int(h * 0.96)
+            corner = img[y1:y2, x1:x2]
+            corner_gray = cv2.cvtColor(corner, cv2.COLOR_BGR2GRAY)
+            mean_val = np.mean(corner_gray)
+            _, thresh = cv2.threshold(corner_gray, int(mean_val + 18), 255, cv2.THRESH_BINARY)
+            kernel = np.ones((5, 5), np.uint8)
+            mask[y1:y2, x1:x2] = cv2.dilate(thresh, kernel, iterations=2)
+            cleaned = cv2.inpaint(img, mask, inpaintRadius=7, flags=cv2.INPAINT_TELEA)
+        else:
+            cleaned = img
+
+        clean_tmp = os.path.join(TEMP_DIR, "clean_bg_for_thumb.jpg")
+        cv2.imwrite(clean_tmp, cleaned if cleaned is not None else img)
+
+        with open(clean_tmp, "rb") as f:
+            bg_b64 = base64.b64encode(f.read()).decode("utf-8")
+
+        # Category and Hook details
+        cat = theme.get("category", "").lower()
+        title = theme.get("title", "")
+        hindi = theme.get("hindi_main", "") or title
+
+        pill = "🔔 सिर्फ 10 मिनट रोज सुनो"
+        lead = "सारे कष्ट व तनाव दूर होंगे"
+        benefit = "मन को असीम शांति मिलेगी"
+        tag = "✨ DAILY POOJA BANSURI"
+
+        if any(w in cat for w in ["sleep", "neend", "insomnia", "निद्रा"]):
+            pill = "🌙 सोने से पहले 5 मिनट सुनो"
+            lead = "तनाव और बेचैनी तुरंत दूर होगी"
+            benefit = "गहरी और मीठी नींद आएगी"
+            tag = "✨ DEEP SLEEP BANSURI"
+        elif any(w in cat for w in ["tabla", "तबला", "jugalbandi"]):
+            pill = "🥁 दिन की शुरुआत इस धुन से करो"
+            lead = "सारे नकारात्मक विचार दूर होंगे"
+            benefit = "सकारात्मक ऊर्जा का प्रवाह होगा"
+            tag = "✨ BANSURI & LIVE TABLA"
+        elif any(w in cat for w in ["lake", "सरोवर", "lotus"]):
+            pill = "🪷 आँखें बंद करके इसे सुनो"
+            lead = "मन की सारी अशांति शांत होगी"
+            benefit = "अलौकिक सुख और शांति मिलेगी"
+            tag = "✨ SERENE LOTUS LAKE"
+        elif any(w in cat for w in ["darbari", "दरबारी"]):
+            pill = "👑 शुद्ध शास्त्रीय संगीत का आनंद"
+            lead = "गंभीर शांति और आत्मिक गहराई"
+            benefit = "मन के सारे द्वंद्व शांत होंगे"
+            tag = "✨ MAJESTIC RAAG DARBARI"
+
+        html_content = f"""<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Tiro+Devanagari+Hindi:ital,wght@0,400;0,700;1,400&family=Montserrat:wght@800;900&family=Poppins:wght@700;800;900&display=swap');
+  * {{ box-sizing: border-box; margin: 0; padding: 0; }}
+  body {{
+    width: 1920px;
+    height: 1080px;
+    position: relative;
+    overflow: hidden;
+    background-color: #000;
+  }}
+  .bg {{
+    position: absolute;
+    top: 0; left: 0; width: 1920px; height: 1080px;
+    background-image: url('data:image/jpeg;base64,{bg_b64}');
+    background-size: cover;
+    background-position: center;
+  }}
+  .vignette {{
+    position: absolute;
+    top: 0; left: 0; width: 1920px; height: 1080px;
+    background: radial-gradient(circle at 25% 30%, rgba(0,0,0,0.85) 0%, rgba(0,0,0,0.5) 45%, rgba(0,0,0,0) 75%),
+                linear-gradient(90deg, rgba(0,0,0,0.65) 0%, rgba(0,0,0,0.2) 45%, rgba(0,0,0,0) 65%);
+    pointer-events: none;
+  }}
+  .text-container {{
+    position: absolute;
+    top: 60px;
+    left: 80px;
+    max-width: 1050px;
+    z-index: 10;
+    overflow: visible;
+    padding-top: 20px;
+  }}
+  .hook-pill {{
+    display: inline-flex;
+    align-items: center;
+    background: linear-gradient(90deg, #D50000 0%, #FF1744 100%);
+    border: 3px solid #FFF;
+    border-radius: 12px;
+    padding: 10px 30px;
+    margin-bottom: 25px;
+    color: #FFFFFF;
+    font-family: 'Poppins', sans-serif;
+    font-size: 38px;
+    font-weight: 900;
+    letter-spacing: 1px;
+    box-shadow: 0 8px 25px rgba(0,0,0,0.9), 0 0 25px rgba(255, 23, 68, 0.7);
+    text-shadow: 0 2px 4px rgba(0,0,0,0.8);
+  }}
+  .hook-lead {{
+    font-family: 'Tiro Devanagari Hindi', 'Nirmala UI', serif;
+    font-size: 92px;
+    font-weight: 700;
+    line-height: 1.35;
+    padding-top: 15px;
+    color: #FFE600;
+    letter-spacing: 1px;
+    text-shadow: 0 4px 0 #1A0D00, 0 8px 0 #000, 0 12px 28px rgba(0,0,0,0.98), 0 0 35px rgba(255, 230, 0, 0.85);
+    margin-bottom: 5px;
+    overflow: visible;
+  }}
+  .hook-benefit {{
+    font-family: 'Tiro Devanagari Hindi', 'Nirmala UI', serif;
+    font-size: 118px;
+    font-weight: 700;
+    line-height: 1.35;
+    padding-top: 15px;
+    letter-spacing: 1px;
+    color: #FFF8E1;
+    text-shadow: 0 4px 0 #FF8F00, 0 7px 0 #C43800, 0 10px 0 #200800, 0 14px 30px rgba(0,0,0,0.98), 0 0 45px rgba(255, 179, 0, 0.9);
+    overflow: visible;
+  }}
+
+  /* High-Contrast Luxury Full-Length Bottom Base Line */
+  .bottom-badge-container {{
+    position: absolute;
+    bottom: 30px;
+    left: 50px;
+    right: 50px;
+    z-index: 20;
+    display: flex;
+    justify-content: center;
+  }}
+  .bottom-badge {{
+    width: 100%;
+    background: linear-gradient(90deg, rgba(8, 4, 1, 0.98) 0%, rgba(28, 14, 2, 0.96) 20%, rgba(45, 20, 0, 0.96) 50%, rgba(28, 14, 2, 0.96) 80%, rgba(8, 4, 1, 0.98) 100%);
+    border: 3.5px solid #FFD54F;
+    border-radius: 60px;
+    padding: 16px 45px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    box-shadow: 0 15px 40px rgba(0,0,0,0.98), 0 0 35px rgba(255, 213, 79, 0.5);
+  }}
+  .badge-tag {{
+    font-family: 'Poppins', 'Montserrat', sans-serif;
+    font-size: 38px;
+    font-weight: 900;
+    color: #FFD54F;
+    text-shadow: 0 3px 6px #000, 0 0 20px rgba(255, 213, 79, 0.7);
+    letter-spacing: 2px;
+  }}
+  .badge-title {{
+    font-family: 'Tiro Devanagari Hindi', 'Nirmala UI', serif;
+    font-size: 52px;
+    font-weight: 700;
+    color: #FFFFFF;
+    text-shadow: 0 3px 8px #000, 0 0 25px rgba(255, 255, 255, 0.8);
+    letter-spacing: 1px;
+    padding-top: 6px;
+  }}
+  .badge-dur {{
+    background: linear-gradient(135deg, #FFD54F 0%, #FF8F00 100%);
+    color: #1A0D00;
+    border: 3px solid #FFFDE7;
+    border-radius: 35px;
+    padding: 10px 30px;
+    font-family: 'Poppins', sans-serif;
+    font-size: 34px;
+    font-weight: 900;
+    letter-spacing: 2px;
+    box-shadow: 0 6px 20px rgba(0,0,0,0.9), 0 0 25px rgba(255, 213, 79, 0.6);
+  }}
+</style>
+</head>
+<body>
+  <div class="bg"></div>
+  <div class="vignette"></div>
+  
+  <div class="text-container">
+    <div class="hook-pill">{pill}</div>
+    <div class="hook-lead">{lead}</div>
+    <div class="hook-benefit">{benefit}</div>
+  </div>
+
+  <div class="bottom-badge-container">
+    <div class="bottom-badge">
+      <span class="badge-tag">{tag}</span>
+      <span class="badge-title">{hindi}</span>
+      <span class="badge-dur">15 MIN</span>
+    </div>
+  </div>
+</body>
+</html>
+"""
+        html_tmp = os.path.join(TEMP_DIR, "pipeline_thumb_render.html")
+        png_tmp = os.path.join(TEMP_DIR, "pipeline_thumb_render.png")
+        with open(html_tmp, "w", encoding="utf-8") as f:
+            f.write(html_content)
+
+        file_uri = "file:///" + os.path.abspath(html_tmp).replace("\\", "/")
+        subprocess.run([
+            edge_path, "--headless", "--disable-gpu", "--hide-scrollbars",
+            "--virtual-time-budget=5000", "--run-all-compositor-stages-before-draw",
+            "--window-size=1920,1080", f"--screenshot={png_tmp}", file_uri
+        ], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, check=True)
+
+        subprocess.run([
+            ffmpeg_path, "-y", "-i", png_tmp, "-vf", "scale=1280:720", "-q:v", "2", output_path
+        ], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, check=True)
+        print(f"  -> ✅ Full-Length Base Line Master Thumbnail rendered: {output_path}", flush=True)
+        return output_path
+    except Exception as render_err:
+        print(f"  -> [Info] Master text overlay fallback to raw: {render_err}", flush=True)
+        return base_image_path
+
+
 def generate_thumbnail(slides, theme):
     """Creates a world-class high-CTR 16:9 YouTube Thumbnail using 100% genuine AI artwork and master prompt architecture."""
     print("[3/4] Generating High-CTR AI Artwork YouTube Thumbnail...", flush=True)
@@ -2163,44 +2406,110 @@ def generate_thumbnail(slides, theme):
         print(f"  -> Generated Master AI Prompt for Category '{cfg['id']}' (Variation #{var_count})", flush=True)
         print(f"  -> 3D Gold Text: {cfg['hook_title']}", flush=True)
 
-        # Attempt Live Generation via Gemini Imagen 3 Fast ($0.02) with fallback to Standard
+        # Attempt Live Generation via Gemini AI Image Models
         api_key = os.environ.get("GEMINI_API_KEY")
+        if not api_key:
+            _kf = os.path.join(BASE_DIR, "gemini_key.txt")
+            if os.path.exists(_kf):
+                try:
+                    with open(_kf, "r", encoding="utf-8") as kf:
+                        api_key = kf.read().strip()
+                except Exception:
+                    pass
+
         if api_key:
             try:
                 from google import genai
+                from google.genai import types
                 client = genai.Client(api_key=api_key)
-                img_model = "imagen-3.0-fast-generate-001"
-                try:
-                    response = client.models.generate_images(
-                        model=img_model,
-                        prompt=unique_prompt,
-                        config=dict(
-                            number_of_images=1,
-                            output_mime_type="image/jpeg",
-                            aspect_ratio="16:9",
-                            person_generation="ALLOW_ADULT"
+                
+                # Modern Gemini Developer API Image Models
+                image_models = [
+                    "gemini-2.5-flash-image",
+                    "gemini-3.1-flash-image",
+                    "gemini-3.1-flash-lite-image",
+                    "gemini-3-pro-image"
+                ]
+                
+                for img_model in image_models:
+                    try:
+                        response = client.models.generate_content(
+                            model=img_model,
+                            contents=unique_prompt,
+                            config=types.GenerateContentConfig(
+                                response_modalities=["IMAGE"]
+                            )
                         )
-                    )
-                except Exception as fast_err:
-                    print(f"  -> [Info] Fast model fallback to standard: {fast_err}", flush=True)
-                    img_model = "imagen-3.0-generate-002"
-                    response = client.models.generate_images(
-                        model=img_model,
-                        prompt=unique_prompt,
-                        config=dict(
-                            number_of_images=1,
-                            output_mime_type="image/jpeg",
-                            aspect_ratio="16:9",
-                            person_generation="ALLOW_ADULT"
-                        )
-                    )
-                if response.generated_images:
-                    with open(TEMP_THUMBNAIL, "wb") as f:
-                        f.write(response.generated_images[0].image.image_bytes)
-                    print(f"  -> ✅ SUCCESS! Generated live bespoke AI thumbnail via Gemini Imagen 3 Fast ({img_model})!", flush=True)
-                    return TEMP_THUMBNAIL
+                        if response.candidates and response.candidates[0].content and response.candidates[0].content.parts:
+                            for part in response.candidates[0].content.parts:
+                                if part.inline_data:
+                                    raw_api_thumb = os.path.join(TEMP_DIR, "raw_api_thumb.jpg")
+                                    with open(raw_api_thumb, "wb") as f:
+                                        f.write(part.inline_data.data)
+                                    print(f"  -> ✅ SUCCESS! Generated live bespoke AI background via Gemini ({img_model})!", flush=True)
+                                    # Apply full-length base line and top hook overlay
+                                    final_thumb = render_full_length_base_thumbnail(raw_api_thumb, theme, TEMP_THUMBNAIL)
+                                    return final_thumb
+                    except Exception as model_err:
+                        print(f"  -> [Info] Gemini image model {img_model} unavailable: {model_err}", flush=True)
             except Exception as gen_err:
                 print(f"  -> [Info] Live Gemini image gen skipped/unavailable: {gen_err}", flush=True)
+
+        # Check Categorized Catbox URL Pool (442+ images, 0% CPU, infinite rotation)
+        try:
+            cat_raw = theme.get("category", "").lower()
+            title_raw = theme.get("title", "").lower()
+            hindi_raw = theme.get("hindi_main", "").lower()
+
+            if any(k in cat_raw or k in title_raw or k in hindi_raw for k in ["sleep", "neend", "निद्रा", "रात", "night", "अनिद्रा", "insomnia", "rain"]):
+                cat_key = "sleep_insomnia"
+            elif any(k in cat_raw or k in title_raw or k in hindi_raw for k in ["lotus", "lake", "sarovar", "सरोवर", "कमल", "जल", "water"]):
+                cat_key = "lotus_lake"
+            elif any(k in cat_raw or k in title_raw or k in hindi_raw for k in ["darbari", "दरबारी", "raag", "राग", "royal", "classical"]):
+                cat_key = "raag_darbari"
+            elif any(k in cat_raw or k in title_raw or k in hindi_raw for k in ["tabla", "तबला", "jugalbandi", "जुगलबंदी"]):
+                cat_key = "bansuri_tabla"
+            else:
+                cat_key = "morning_pooja"
+
+            queue_f = os.path.join(BASE_DIR, f"thumbnail_urls_{cat_key}.txt")
+            backup_f = os.path.join(BASE_DIR, f"thumbnail_urls_{cat_key}_backup.txt")
+            used_f = os.path.join(BASE_DIR, "used_thumbnail_urls.txt")
+
+            urls = []
+            if os.path.exists(queue_f):
+                with open(queue_f, "r", encoding="utf-8") as qf:
+                    urls = [line.strip() for line in qf if line.strip()]
+
+            if not urls and os.path.exists(backup_f):
+                print(f"  -> Thumbnail queue for [{cat_key}] exhausted. Refilling from backup pool...", flush=True)
+                with open(backup_f, "r", encoding="utf-8") as bf:
+                    backup_urls = [line.strip() for line in bf if line.strip()]
+                if backup_urls:
+                    random.shuffle(backup_urls)
+                    urls = backup_urls
+                    with open(queue_f, "w", encoding="utf-8") as qf:
+                        qf.write("\n".join(urls) + "\n")
+
+            if urls:
+                chosen_url = urls.pop(0)
+                with open(queue_f, "w", encoding="utf-8") as qf:
+                    qf.write("\n".join(urls) + "\n" if urls else "")
+                with open(used_f, "a", encoding="utf-8") as uf:
+                    uf.write(chosen_url + "\n")
+
+                print(f"  -> [Catbox Pool] Picked image for [{cat_key}]: {chosen_url} ({len(urls)} remaining)", flush=True)
+                local_catbox_bg = os.path.join(TEMP_DIR, f"catbox_bg_{int(time.time())}.jpg")
+                headers = {'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)'}
+                r = requests.get(chosen_url, headers=headers, timeout=25)
+                if r.status_code == 200:
+                    with open(local_catbox_bg, "wb") as bf:
+                        bf.write(r.content)
+                    final_thumb = render_full_length_base_thumbnail(local_catbox_bg, theme, TEMP_THUMBNAIL)
+                    if final_thumb and os.path.exists(final_thumb):
+                        return final_thumb
+        except Exception as catbox_pool_err:
+            print(f"  -> [Info] Catbox pool fallback to local masters: {catbox_pool_err}", flush=True)
 
         cat = theme.get("category", "").lower()
         title = theme.get("title", "").lower()
@@ -2265,10 +2574,6 @@ def generate_thumbnail(slides, theme):
 
         if chosen_name:
             chosen = os.path.join(BASE_DIR, chosen_name)
-            shutil.copy2(chosen, TEMP_THUMBNAIL)
-            sample_thumb = os.path.join(BASE_DIR, "MUSIC_VIDEO_HIGH_CTR_SAMPLE_THUMBNAIL.jpg")
-            shutil.copy2(chosen, sample_thumb)
-
             # Record used thumbnail
             try:
                 with open(used_thumbs_file, "a", encoding="utf-8") as f:
@@ -2276,15 +2581,18 @@ def generate_thumbnail(slides, theme):
             except Exception:
                 pass
 
-            print(f"  -> SUCCESS! Attached 100% Genuine 3D Master AI Artwork Thumbnail: {chosen_name}", flush=True)
-            return TEMP_THUMBNAIL
+            final_thumb = render_full_length_base_thumbnail(chosen, theme, TEMP_THUMBNAIL)
+            sample_thumb = os.path.join(BASE_DIR, "MUSIC_VIDEO_HIGH_CTR_SAMPLE_THUMBNAIL.jpg")
+            shutil.copy2(final_thumb, sample_thumb)
+            print(f"  -> SUCCESS! Attached Full-Length Base Line Master Thumbnail: {chosen_name}", flush=True)
+            return final_thumb
 
-        # Hard safety fallback: Pick from clean 16:9 cinematic slides (NEVER the HTML drawbox template)
+        # Hard safety fallback: Pick from clean 16:9 cinematic slides
         if slides:
             chosen_slide = random.choice(slides)
-            shutil.copy2(chosen_slide, TEMP_THUMBNAIL)
-            print(f"  -> Fallback to clean 16:9 cinematic slide: {os.path.basename(chosen_slide)}", flush=True)
-            return TEMP_THUMBNAIL
+            final_thumb = render_full_length_base_thumbnail(chosen_slide, theme, TEMP_THUMBNAIL)
+            print(f"  -> Rendered full-length base line thumbnail from slide: {os.path.basename(chosen_slide)}", flush=True)
+            return final_thumb
 
         return None
     except Exception as e:
@@ -2307,7 +2615,7 @@ def post_pinned_divine_blessing_comment(video_id, access_token, metadata=None):
     blessing_messages = [
         "🌸 पावन बाँसुरी एवं असीम शांति:\n'यह मधुर दिव्य बाँसुरी आपके मन और घर में असीम शांति, सकारात्मक ऊर्जा और मानसिक सुकून लेकर आए।'\n\n✨ एक बार 'जय श्री कृष्णा' या 'राधे राधे' लिखकर अपनी पावन उपस्थिति ज़रूर दर्ज करें। ॐ नमो भगवते वासुदेवाय नमः! 🦚",
         "🦚 दिव्य ध्यान एवं विश्राम:\n'जब भी मन अशांत या थका हुआ हो, इस दिव्य बाँसुरी की धुन में स्वयं को लीन करें।'\n\n✨ कमेंट्स में 'राधे राधे' लिखकर आज की पावन शुरुआत करें और चैनल को सब्सक्राइब ज़रूर करें! 🌸",
-        "🪕 पावन नाद एवं अंतःशांति:\n'मन के समस्त तनाव और चिंताओं को दूर करने वाली यह पावन बाँसुरी आपको गहरी निद्रा और सुकून प्रदान करे।'\n\n✨ कमेंट्स में 'जय श्री कृष्णा' लिखकर प्रभु का आशीर्वाद प्राप्त करें! ॐ शांति शांति शांतिः। 🦚"
+        "🪕 पावन धुन एवं अंतःशांति:\n'मन के समस्त तनाव और चिंताओं को दूर करने वाली यह पावन बाँसुरी आपको गहरी निद्रा और सुकून प्रदान करे।'\n\n✨ कमेंट्स में 'जय श्री कृष्णा' लिखकर प्रभु का आशीर्वाद प्राप्त करें! ॐ शांति शांति शांतिः। 🦚"
     ]
     comment_text = random.choice(blessing_messages)
     
