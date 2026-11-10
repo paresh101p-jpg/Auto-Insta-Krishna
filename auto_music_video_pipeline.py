@@ -708,14 +708,90 @@ def generate_pollinations_nature_image(prompt, output_path):
 def ensure_images(num_needed=5, track_info=None, theme=None):
     """
     Ensures images for video:
-    1. If Krishna Flute track: Uses existing library from music_video_images/. 
-       Archived to used/ and auto-recycled in infinite loop (NEVER deleted).
-    2. If Nature / River / Rain / Non-Krishna: Dynamically generates brand new 16:9 artworks
-       via Pollinations AI without watermarks. Cleaned up after upload so storage stays clean.
+    1. First checks Cloud-Native 7-Category Catbox Slides Pool (Thousands of 16:9 images, 0 MB disk, infinite rotation).
+    2. Falls back to local library from music_video_images/.
     """
     track_name = track_info.get("track_name", "") if track_info else ""
     theme_cat = theme.get("category", "") if theme else ""
     is_krishna = is_krishna_track(track_name, theme_cat)
+
+    # ── 1. Cloud-Native 7-Category Catbox Slides Pool (Thousands of 16:9 images, 0 MB disk, infinite rotation) ──
+    try:
+        cat_text = (theme_cat + " " + track_name).lower()
+        if any(k in cat_text for k in ["sleep", "night", "neend", "निद्रा", "रात", "insomnia", "अनिद्रा", "rain"]):
+            parent_cat = "sleep_insomnia"
+        elif any(k in cat_text for k in ["stress", "anxiety", "तनाव", "चिंता", "peace", "calm", "healing"]):
+            parent_cat = "stress_relief"
+        elif any(k in cat_text for k in ["lotus", "lake", "sarovar", "कमल", "सरोवर", "yamuna", "river", "soul", "dhyan", "ध्यान"]):
+            parent_cat = "lotus_lake"
+        elif any(k in cat_text for k in ["darbari", "दरबारी", "raag", "राग", "royal"]):
+            parent_cat = "raag_darbari"
+        elif any(k in cat_text for k in ["tabla", "तबला", "jugalbandi", "जुगलबंदी", "rhythm"]):
+            parent_cat = "bansuri_tabla"
+        elif any(k in cat_text for k in ["lofi", "chill", "beat"]):
+            parent_cat = "lofi_beats"
+        else:
+            parent_cat = "morning_pooja"
+
+        queue_path = os.path.join(BASE_DIR, f"music_slide_urls_{parent_cat}.txt")
+        backup_path = os.path.join(BASE_DIR, f"music_slide_urls_{parent_cat}_backup.txt")
+        used_path = os.path.join(BASE_DIR, "used_music_slide_urls.txt")
+
+        slide_urls = []
+        if os.path.exists(queue_path):
+            with open(queue_path, "r", encoding="utf-8") as qf:
+                slide_urls = [line.strip() for line in qf if line.strip()]
+
+        # Infinite rotation: reload from backup if queue exhausted
+        if len(slide_urls) < num_needed and os.path.exists(backup_path):
+            print(f"  -> Slide queue for [{parent_cat}] low/exhausted. Refilling from backup pool...", flush=True)
+            with open(backup_path, "r", encoding="utf-8") as bf:
+                backup_urls = [line.strip() for line in bf if line.strip()]
+            if backup_urls:
+                random.shuffle(backup_urls)
+                slide_urls = backup_urls
+                with open(queue_path, "w", encoding="utf-8") as qf:
+                    qf.write("\n".join(slide_urls) + "\n")
+
+        if len(slide_urls) >= num_needed:
+            selected_urls = [slide_urls.pop(0) for _ in range(num_needed)]
+            with open(queue_path, "w", encoding="utf-8") as qf:
+                qf.write("\n".join(slide_urls) + "\n" if slide_urls else "")
+            with open(used_path, "a", encoding="utf-8") as uf:
+                for u in selected_urls:
+                    uf.write(u + "\n")
+
+            print(f"  -> 🎯 [7-Category Cloud Pool] Picked {num_needed} images for [{parent_cat}] ({len(slide_urls)} remaining)", flush=True)
+
+            slide_cache_dir = os.path.join(BASE_DIR, "temp_video_slides")
+            os.makedirs(slide_cache_dir, exist_ok=True)
+            from concurrent.futures import ThreadPoolExecutor
+
+            headers = {'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)'}
+
+            def download_slide(item):
+                idx, url = item
+                ext = ".jpg" if not url.endswith(".png") else ".png"
+                dest = os.path.join(slide_cache_dir, f"slide_{idx:03d}_{parent_cat}{ext}")
+                try:
+                    r = requests.get(url, headers=headers, timeout=25)
+                    if r.status_code == 200:
+                        with open(dest, "wb") as sf:
+                            sf.write(r.content)
+                        return dest
+                except Exception as err:
+                    print(f"  -> [Warning] Failed to download {url}: {err}")
+                return None
+
+            with ThreadPoolExecutor(max_workers=min(num_needed, 6)) as executor:
+                results = list(executor.map(download_slide, enumerate(selected_urls)))
+
+            downloaded_slides = [p for p in results if p and os.path.exists(p)]
+            if len(downloaded_slides) >= num_needed:
+                print(f"  -> 🖼️ Successfully downloaded {len(downloaded_slides)} clean 16:9 slides from Catbox [{parent_cat}]!", flush=True)
+                return downloaded_slides
+    except Exception as cloud_slide_err:
+        print(f"  -> [Info] Cloud slide pool fallback to local directory: {cloud_slide_err}", flush=True)
 
     # All tracks (Krishna, Temple, Nature, River, Rain, Sleep, etc.)
     # strictly read from our 883 Master Categorized Images Pool (100% Zero-Risk, 0% Watermark)
@@ -3079,6 +3155,13 @@ def cleanup():
             for c in os.listdir(clips_dir):
                 os.remove(os.path.join(clips_dir, c))
             os.rmdir(clips_dir)
+        except Exception: pass
+    slide_cache = os.path.join(BASE_DIR, "temp_video_slides")
+    if os.path.exists(slide_cache):
+        try:
+            for sf in os.listdir(slide_cache):
+                os.remove(os.path.join(slide_cache, sf))
+            os.rmdir(slide_cache)
         except Exception: pass
     print("[Cleanup] All temporary media deleted. Workspace is clean and light.")
 
