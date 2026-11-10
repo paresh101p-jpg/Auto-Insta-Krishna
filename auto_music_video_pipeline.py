@@ -2334,47 +2334,124 @@ def render_full_length_base_thumbnail(base_image_path, theme, output_path):
 
         subject_side = detect_subject_side(cleaned if cleaned is not None else img)
         text_side = "right" if subject_side == "LEFT" else "left"
-        print(f"  -> 👁️ [Smart Vision Layout] Subject detected on {subject_side} side. Placing typography strictly on {text_side.upper()} side (60% screen: max-width 1120px)!", flush=True)
+
+        # 3. Intelligent Face / Subject Collision Shield
+        # If face/subject extends into the text area, move text vertically (UP or DOWN) without shrinking font size!
+        top_offset = 35
+        try:
+            h_im, w_im = (cleaned if cleaned is not None else img).shape[:2]
+            hsv_im = cv2.cvtColor(cleaned if cleaned is not None else img, cv2.COLOR_BGR2HSV)
+            lower_s1 = np.array([0, 25, 60], dtype=np.uint8)
+            upper_s1 = np.array([28, 255, 255], dtype=np.uint8)
+            lower_s2 = np.array([170, 25, 60], dtype=np.uint8)
+            upper_s2 = np.array([180, 255, 255], dtype=np.uint8)
+            s_mask = cv2.bitwise_or(cv2.inRange(hsv_im, lower_s1, upper_s1),
+                                    cv2.inRange(hsv_im, lower_s2, upper_s2))
+            k_elem = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (15, 15))
+            s_mask_clean = cv2.morphologyEx(s_mask, cv2.MORPH_OPEN, k_elem)
+
+            # Analyze text zone (60% width)
+            text_x1 = int(w_im * 0.42) if text_side == "right" else 0
+            text_x2 = w_im if text_side == "right" else int(w_im * 0.58)
+            top_zone_mask = s_mask_clean[20:int(h_im * 0.45), text_x1:text_x2]
+            contours_top, _ = cv2.findContours(top_zone_mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+
+            max_y2 = 0
+            face_detected_in_top = False
+            for cnt in contours_top:
+                if cv2.contourArea(cnt) > 10000:
+                    _, y, _, ch = cv2.boundingRect(cnt)
+                    abs_y = 20 + y + ch
+                    if abs_y > max_y2:
+                        max_y2 = abs_y
+                    face_detected_in_top = True
+
+            if face_detected_in_top and max_y2 > 60:
+                # Move text DOWN below face without shrinking text size
+                suggested_top = max_y2 + 15
+                top_offset = min(340, max(260, suggested_top))
+                print(f"  -> 🛡️ [Face Collision Shield] Face/Subject detected in upper text quadrant (down to y={max_y2}). Moving text DOWN to top={top_offset}px (Zero font downsizing)!", flush=True)
+            else:
+                top_offset = 35
+                print(f"  -> 👁️ [Smart Vision Layout] Upper quadrant clear. Using standard top={top_offset}px.", flush=True)
+        except Exception as face_shield_err:
+            print(f"  -> [Info] Face collision shield check skipped: {face_shield_err}", flush=True)
+            top_offset = 35
+
+        print(f"  -> 👁️ [Smart Vision Layout] Subject detected on {subject_side} side. Placing typography strictly on {text_side.upper()} side (60% screen: max-width 1120px, top={top_offset}px)!", flush=True)
 
         if text_side == "right":
-            text_container_css = "position: absolute; top: 40px; right: 35px; width: 1120px; max-width: 1120px; z-index: 10; overflow: visible; padding-top: 10px; text-align: right;"
+            text_container_css = f"position: absolute; top: {top_offset}px; right: 35px; width: 1120px; max-width: 1120px; z-index: 10; overflow: visible; padding-top: 5px; text-align: right;"
             pill_align_css = "display: inline-flex; margin-left: auto;"
-            vignette_css = "position: absolute; top: 0; left: 0; width: 1920px; height: 1080px; background: linear-gradient(270deg, rgba(0,0,0,0.95) 0%, rgba(0,0,0,0.85) 35%, rgba(0,0,0,0.45) 55%, rgba(0,0,0,0) 68%); pointer-events: none;"
+            vignette_css = "position: absolute; top: 0; left: 0; width: 1920px; height: 1080px; background: linear-gradient(270deg, rgba(0,0,0,0.96) 0%, rgba(0,0,0,0.85) 35%, rgba(0,0,0,0.45) 55%, rgba(0,0,0,0) 68%); pointer-events: none;"
         else:
-            text_container_css = "position: absolute; top: 40px; left: 35px; width: 1120px; max-width: 1120px; z-index: 10; overflow: visible; padding-top: 10px; text-align: left;"
+            text_container_css = f"position: absolute; top: {top_offset}px; left: 35px; width: 1120px; max-width: 1120px; z-index: 10; overflow: visible; padding-top: 5px; text-align: left;"
             pill_align_css = "display: inline-flex;"
-            vignette_css = "position: absolute; top: 0; left: 0; width: 1920px; height: 1080px; background: linear-gradient(90deg, rgba(0,0,0,0.95) 0%, rgba(0,0,0,0.85) 35%, rgba(0,0,0,0.45) 55%, rgba(0,0,0,0) 68%); pointer-events: none;"
+            vignette_css = "position: absolute; top: 0; left: 0; width: 1920px; height: 1080px; background: linear-gradient(90deg, rgba(0,0,0,0.96) 0%, rgba(0,0,0,0.85) 35%, rgba(0,0,0,0.45) 55%, rgba(0,0,0,0) 68%); pointer-events: none;"
 
-        # Category and Hook details
+        # Category and 4-Line Hook details
         cat = theme.get("category", "").lower()
         title = theme.get("title", "")
         hindi = theme.get("hindi_main", "") or title
 
+        def split_to_two(txt):
+            words = txt.strip().split()
+            if len(words) <= 1:
+                return txt, ""
+            mid = (len(words) + 1) // 2
+            return " ".join(words[:mid]), " ".join(words[mid:])
+
         pill = "🔔 सिर्फ 10 मिनट रोज सुनो"
-        lead = "सारे कष्ट व तनाव दूर होंगे"
-        benefit = "मन को असीम शांति मिलेगी"
+        line1 = "सारे कष्ट व तनाव"
+        line2 = "पल में दूर होंगे"
+        line3 = "मन को असीम"
+        line4 = "शांति मिलेगी"
         tag = "✨ DAILY POOJA BANSURI"
 
         if any(w in cat for w in ["sleep", "neend", "insomnia", "निद्रा"]):
             pill = "🌙 सोने से पहले 5 मिनट सुनो"
-            lead = "तनाव और बेचैनी तुरंत दूर होगी"
-            benefit = "गहरी और मीठी नींद आएगी"
+            line1 = "तनाव और बेचैनी"
+            line2 = "तुरंत दूर होगी"
+            line3 = "गहरी और मीठी"
+            line4 = "नींद आएगी"
             tag = "✨ DEEP SLEEP BANSURI"
+        elif any(w in cat for w in ["lofi", "stress", "relief", "सुकून", "तनाव"]):
+            pill = "🎧 मन को शांत करने की धुन"
+            line1 = "मानसिक तनाव और"
+            line2 = "चिंता मिट जाएगी"
+            line3 = "हर पल असीम"
+            line4 = "शांति मिलेगी"
+            tag = "✨ PEACEFUL LOFI BEATS"
         elif any(w in cat for w in ["tabla", "तबला", "jugalbandi"]):
             pill = "🥁 दिन की शुरुआत इस धुन से करो"
-            lead = "सारे नकारात्मक विचार दूर होंगे"
-            benefit = "सकारात्मक ऊर्जा का प्रवाह होगा"
+            line1 = "सारे नकारात्मक विचार"
+            line2 = "पल में दूर होंगे"
+            line3 = "सकारात्मक ऊर्जा का"
+            line4 = "प्रवाह होगा"
             tag = "✨ BANSURI & LIVE TABLA"
         elif any(w in cat for w in ["lake", "सरोवर", "lotus"]):
             pill = "🪷 आँखें बंद करके इसे सुनो"
-            lead = "मन की सारी अशांति शांत होगी"
-            benefit = "अलौकिक सुख और शांति मिलेगी"
+            line1 = "मन की सारी अशांति"
+            line2 = "तुरंत शांत होगी"
+            line3 = "अलौकिक सुख और"
+            line4 = "आनंद मिलेगा"
             tag = "✨ SERENE LOTUS LAKE"
         elif any(w in cat for w in ["darbari", "दरबारी"]):
             pill = "👑 शुद्ध शास्त्रीय संगीत का आनंद"
-            lead = "गंभीर शांति और आत्मिक गहराई"
-            benefit = "मन के सारे द्वंद्व शांत होंगे"
+            line1 = "गंभीर आत्मिक शांति"
+            line2 = "का अनुभव होगा"
+            line3 = "मन के सारे द्वंद्व"
+            line4 = "शांत होंगे"
             tag = "✨ MAJESTIC RAAG DARBARI"
+
+        # If custom lead/benefit passed in theme, auto-split to 4 lines
+        if "lead" in theme and "benefit" in theme:
+            l1, l2 = split_to_two(theme["lead"])
+            b1, b2 = split_to_two(theme["benefit"])
+            if l1: line1 = l1
+            if l2: line2 = l2
+            if b1: line3 = b1
+            if b2: line4 = b2
 
         html_content = f"""<!DOCTYPE html>
 <html>
@@ -2407,10 +2484,10 @@ def render_full_length_base_thumbnail(base_image_path, theme, output_path):
     {pill_align_css}
     align-items: center;
     background: linear-gradient(90deg, #D50000 0%, #FF1744 100%);
-    border: 3px solid #FFF;
+    border: 3.5px solid #FFF;
     border-radius: 14px;
-    padding: 10px 32px;
-    margin-bottom: 18px;
+    padding: 8px 32px;
+    margin-bottom: 12px;
     color: #FFFFFF;
     font-family: 'Poppins', 'Tiro Devanagari Hindi', sans-serif;
     font-size: 38px;
@@ -2419,27 +2496,28 @@ def render_full_length_base_thumbnail(base_image_path, theme, output_path):
     box-shadow: 0 8px 25px rgba(0,0,0,0.9), 0 0 25px rgba(255, 23, 68, 0.7);
     text-shadow: 0 2px 4px rgba(0,0,0,0.8);
   }}
-  .hook-lead {{
+  .line-lead {{
     font-family: 'Tiro Devanagari Hindi', 'Nirmala UI', serif;
-    font-size: 96px;
+    font-size: 114px;
     font-weight: 800;
-    line-height: 1.2;
-    padding-top: 8px;
+    line-height: 1.12;
+    padding-top: 4px;
     color: #FFE600;
     letter-spacing: 1px;
-    text-shadow: 0 4px 0 #1A0D00, 0 8px 0 #000, 0 12px 28px rgba(0,0,0,0.98), 0 0 35px rgba(255, 230, 0, 0.85);
-    margin-bottom: 6px;
+    text-shadow: 0 5px 0 #1A0D00, 0 10px 0 #000, 0 14px 28px rgba(0,0,0,0.98), 0 0 35px rgba(255, 230, 0, 0.85);
+    margin-bottom: 2px;
     overflow: visible;
   }}
-  .hook-benefit {{
+  .line-benefit {{
     font-family: 'Tiro Devanagari Hindi', 'Nirmala UI', serif;
-    font-size: 110px;
+    font-size: 122px;
     font-weight: 800;
-    line-height: 1.2;
-    padding-top: 8px;
+    line-height: 1.12;
+    padding-top: 4px;
     letter-spacing: 1px;
     color: #FFF8E1;
-    text-shadow: 0 4px 0 #FF8F00, 0 7px 0 #C43800, 0 10px 0 #200800, 0 14px 30px rgba(0,0,0,0.98), 0 0 45px rgba(255, 179, 0, 0.9);
+    text-shadow: 0 5px 0 #FF8F00, 0 9px 0 #C43800, 0 13px 0 #200800, 0 16px 30px rgba(0,0,0,0.98), 0 0 45px rgba(255, 179, 0, 0.9);
+    margin-bottom: 2px;
     overflow: visible;
   }}
 
@@ -2501,8 +2579,10 @@ def render_full_length_base_thumbnail(base_image_path, theme, output_path):
   
   <div class="text-container">
     <div class="hook-pill">{pill}</div>
-    <div class="hook-lead">{lead}</div>
-    <div class="hook-benefit">{benefit}</div>
+    <div class="line-lead line-1">{line1}</div>
+    <div class="line-lead line-2">{line2}</div>
+    <div class="line-benefit line-3">{line3}</div>
+    <div class="line-benefit line-4">{line4}</div>
   </div>
 
   <div class="bottom-badge-container">
