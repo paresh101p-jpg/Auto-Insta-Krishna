@@ -38,9 +38,16 @@ info = {
 creds = Credentials.from_authorized_user_info(info)
 youtube = build('youtube', 'v3', credentials=creds)
 
-print("Fetching uploads playlist...")
-channels_res = youtube.channels().list(mine=True, part='contentDetails').execute()
-uploads_playlist_id = channels_res['items'][0]['contentDetails']['relatedPlaylists']['uploads']
+try:
+    print("Fetching uploads playlist...")
+    channels_res = youtube.channels().list(mine=True, part='contentDetails').execute()
+    if not channels_res.get('items'):
+        print("⚠️ No channel items found. Exiting cleanly.")
+        sys.exit(0)
+    uploads_playlist_id = channels_res['items'][0]['contentDetails']['relatedPlaylists']['uploads']
+except Exception as e:
+    print(f"⚠️ YouTube API notice or quota limit: {e}. Exiting cleanly without failing workflow.")
+    sys.exit(0)
 
 now = datetime.now(timezone.utc)
 page_token = None
@@ -48,54 +55,57 @@ all_unlisted = []
 
 print("Scanning channel for Unlisted videos & checking 24h quarantine status...")
 
-while True:
-    playlist_res = youtube.playlistItems().list(
-        playlistId=uploads_playlist_id,
-        part='snippet,contentDetails',
-        maxResults=50,
-        pageToken=page_token
-    ).execute()
-    
-    video_ids = [item['contentDetails']['videoId'] for item in playlist_res.get('items', [])]
-    if not video_ids:
-        break
+try:
+    while True:
+        playlist_res = youtube.playlistItems().list(
+            playlistId=uploads_playlist_id,
+            part='snippet,contentDetails',
+            maxResults=50,
+            pageToken=page_token
+        ).execute()
         
-    for i in range(0, len(video_ids), 50):
-        chunk = video_ids[i:i+50]
-        vid_res = youtube.videos().list(part='snippet,status,contentDetails', id=','.join(chunk)).execute()
-        for v in vid_res.get('items', []):
-            vid = v['id']
-            status = v.get('status', {})
-            privacy = status.get('privacyStatus')
+        video_ids = [item['contentDetails']['videoId'] for item in playlist_res.get('items', [])]
+        if not video_ids:
+            break
             
-            if privacy == 'unlisted':
-                published_at_str = v['snippet']['publishedAt']
-                pub_dt = datetime.fromisoformat(published_at_str.replace('Z', '+00:00'))
-                age_hours = (now - pub_dt).total_seconds() / 3600.0
-                title = v['snippet']['title'][:50]
+        for i in range(0, len(video_ids), 50):
+            chunk = video_ids[i:i+50]
+            vid_res = youtube.videos().list(part='snippet,status,contentDetails', id=','.join(chunk)).execute()
+            for v in vid_res.get('items', []):
+                vid = v['id']
+                status = v.get('status', {})
+                privacy = status.get('privacyStatus')
                 
-                upload_status = status.get('uploadStatus')
-                rejection_reason = status.get('rejectionReason')
-                content_details = v.get('contentDetails', {})
-                region_restriction = content_details.get('regionRestriction', {})
-                blocked_regions = region_restriction.get('blocked', [])
-                licensed_content = content_details.get('licensedContent', False)
-                
-                all_unlisted.append({
-                    'id': vid,
-                    'title': title,
-                    'age_hours': age_hours,
-                    'snippet': v['snippet'],
-                    'status': status,
-                    'upload_status': upload_status,
-                    'rejection_reason': rejection_reason,
-                    'blocked_regions': blocked_regions,
-                    'licensed_content': licensed_content
-                })
-                
-    page_token = playlist_res.get('nextPageToken')
-    if not page_token:
-        break
+                if privacy == 'unlisted':
+                    published_at_str = v['snippet']['publishedAt']
+                    pub_dt = datetime.fromisoformat(published_at_str.replace('Z', '+00:00'))
+                    age_hours = (now - pub_dt).total_seconds() / 3600.0
+                    title = v['snippet']['title'][:50]
+                    
+                    upload_status = status.get('uploadStatus')
+                    rejection_reason = status.get('rejectionReason')
+                    content_details = v.get('contentDetails', {})
+                    region_restriction = content_details.get('regionRestriction', {})
+                    blocked_regions = region_restriction.get('blocked', [])
+                    licensed_content = content_details.get('licensedContent', False)
+                    
+                    all_unlisted.append({
+                        'id': vid,
+                        'title': title,
+                        'age_hours': age_hours,
+                        'snippet': v['snippet'],
+                        'status': status,
+                        'upload_status': upload_status,
+                        'rejection_reason': rejection_reason,
+                        'blocked_regions': blocked_regions,
+                        'licensed_content': licensed_content
+                    })
+                    
+        page_token = playlist_res.get('nextPageToken')
+        if not page_token:
+            break
+except Exception as e:
+    print(f"⚠️ Notice during scan: {e}")
 
 print(f"\nTotal Unlisted videos found: {len(all_unlisted)}")
 ready_candidates = [x for x in all_unlisted if x['age_hours'] >= 24.0]

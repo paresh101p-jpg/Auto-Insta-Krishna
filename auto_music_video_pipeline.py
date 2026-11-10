@@ -2226,16 +2226,41 @@ def render_video(slides, duration_sec=900, is_krishna=True):
     print(f"  -> Video Rendered with Smooth Morpankh & Zoom: {OUTPUT_VIDEO} ({dur_min} Mins / {duration_sec}s)")
 
 
+def get_browser_executable():
+    """Finds available Chromium-based browser (Edge or Chrome) across Windows and Linux."""
+    import shutil
+    candidates = [
+        r"C:\Program Files (x86)\Microsoft\Edge\Application\msedge.exe",
+        r"C:\Program Files\Microsoft\Edge\Application\msedge.exe",
+        r"C:\Program Files\Google\Chrome\Application\chrome.exe",
+        r"C:\Program Files (x86)\Google\Chrome\Application\chrome.exe",
+        "/usr/bin/google-chrome",
+        "/usr/bin/google-chrome-stable",
+        "/usr/bin/chromium",
+        "/usr/bin/chromium-browser",
+        "/snap/bin/chromium"
+    ]
+    for c in candidates:
+        if os.path.exists(c):
+            return c
+    for cmd in ["google-chrome", "google-chrome-stable", "chromium", "chromium-browser", "msedge", "chrome"]:
+        w = shutil.which(cmd)
+        if w: return w
+    return None
+
+
 def render_full_length_base_thumbnail(base_image_path, theme, output_path):
     """
     Renders 16:9 YouTube master thumbnail with:
     1. Automated Telea watermark inpainting (removes Flow star).
-    2. Category-adaptive top hook typography with zero clipped matras.
-    3. Full-length high-contrast luxury bottom base line badge bar (tag, title, 15 MIN pill).
+    2. Intelligent Subject Side Detection (places text on opposite side, never covering woman).
+    3. Category-adaptive top hook typography with zero clipped matras and strict width constraints.
+    4. Full-length high-contrast luxury bottom base line badge bar (tag, title, 15 MIN pill).
     """
-    edge_path = r"C:\Program Files (x86)\Microsoft\Edge\Application\msedge.exe"
+    browser_exe = get_browser_executable()
     ffmpeg_path = FFMPEG_EXE
-    if not os.path.exists(edge_path) or not os.path.exists(base_image_path):
+    if not browser_exe or not os.path.exists(base_image_path):
+        print(f"⚠️ [THUMBNAIL GEN] Missing browser ({browser_exe}) or base image: {base_image_path}", flush=True)
         return base_image_path
 
     try:
@@ -2269,36 +2294,56 @@ def render_full_length_base_thumbnail(base_image_path, theme, output_path):
             bg_b64 = base64.b64encode(f.read()).decode("utf-8")
 
         # 2. Intelligent Subject Side Detection (LEFT vs RIGHT)
-        # Prevents covering the woman's face, neckline, shoulders and choli!
+        # Prevents covering the woman's face, neckline, shoulders, and choli!
         def detect_subject_side(image_mat):
             h, w = image_mat.shape[:2]
             upper_img = image_mat[:int(h * 0.75), :]
-            hsv = cv2.cvtColor(upper_img, cv2.COLOR_BGR2HSV)
-            lower_skin = np.array([0, 25, 60], dtype=np.uint8)
-            upper_skin = np.array([25, 255, 255], dtype=np.uint8)
-            skin_mask = cv2.inRange(hsv, lower_skin, upper_skin)
-            left_skin = np.sum(skin_mask[:, :w//2])
-            right_skin = np.sum(skin_mask[:, w//2:])
-            gray = cv2.cvtColor(upper_img, cv2.COLOR_BGR2GRAY)
-            edges = cv2.Canny(gray, 50, 150)
-            left_edges = np.sum(edges[:, :w//2])
-            right_edges = np.sum(edges[:, w//2:])
-            left_score = left_skin * 1.5 + left_edges
-            right_score = right_skin * 1.5 + right_edges
-            return "LEFT" if left_score > right_score else "RIGHT"
+            
+            left = upper_img[:, :w//2]
+            right = upper_img[:, w//2:]
+            
+            gray_l = cv2.cvtColor(left, cv2.COLOR_BGR2GRAY)
+            gray_r = cv2.cvtColor(right, cv2.COLOR_BGR2GRAY)
+            
+            gx_l = cv2.Sobel(gray_l, cv2.CV_32F, 1, 0)
+            gy_l = cv2.Sobel(gray_l, cv2.CV_32F, 0, 1)
+            mag_l = cv2.magnitude(gx_l, gy_l)
+            
+            gx_r = cv2.Sobel(gray_r, cv2.CV_32F, 1, 0)
+            gy_r = cv2.Sobel(gray_r, cv2.CV_32F, 0, 1)
+            mag_r = cv2.magnitude(gx_r, gy_r)
+            
+            std_l = float(np.mean(np.std(left, axis=(0, 1))))
+            std_r = float(np.mean(np.std(right, axis=(0, 1))))
+            
+            score_l = float(np.mean(mag_l) * std_l)
+            score_r = float(np.mean(mag_r) * std_r)
+            
+            gx_all = cv2.Sobel(cv2.cvtColor(upper_img, cv2.COLOR_BGR2GRAY), cv2.CV_32F, 1, 0)
+            gy_all = cv2.Sobel(cv2.cvtColor(upper_img, cv2.COLOR_BGR2GRAY), cv2.CV_32F, 0, 1)
+            mag_all = cv2.magnitude(gx_all, gy_all)
+            x_coords = np.arange(w)
+            col_sum = np.sum(mag_all, axis=0)
+            com_x = float(np.sum(x_coords * col_sum) / (np.sum(col_sum) + 1e-6))
+            
+            if score_l > score_r * 1.15 or com_x < w * 0.46:
+                return "LEFT"
+            elif score_r > score_l * 1.15 or com_x > w * 0.54:
+                return "RIGHT"
+            return "RIGHT" if score_r >= score_l else "LEFT"
 
         subject_side = detect_subject_side(cleaned if cleaned is not None else img)
         text_side = "right" if subject_side == "LEFT" else "left"
-        print(f"  -> 👁️ [Smart Vision Layout] Subject detected on {subject_side} side. Placing typography on {text_side.upper()} side!", flush=True)
+        print(f"  -> 👁️ [Smart Vision Layout] Subject detected on {subject_side} side. Placing typography strictly on {text_side.upper()} side (max-width: 760px)!", flush=True)
 
         if text_side == "right":
-            text_container_css = "position: absolute; top: 60px; right: 80px; max-width: 1050px; z-index: 10; overflow: visible; padding-top: 20px; text-align: right;"
+            text_container_css = "position: absolute; top: 50px; right: 60px; width: 760px; max-width: 760px; z-index: 10; overflow: visible; padding-top: 10px; text-align: right;"
             pill_align_css = "display: inline-flex; margin-left: auto;"
-            vignette_css = "position: absolute; top: 0; left: 0; width: 1920px; height: 1080px; background: radial-gradient(circle at 75% 30%, rgba(0,0,0,0.85) 0%, rgba(0,0,0,0.5) 45%, rgba(0,0,0,0) 75%), linear-gradient(270deg, rgba(0,0,0,0.75) 0%, rgba(0,0,0,0.3) 45%, rgba(0,0,0,0) 65%); pointer-events: none;"
+            vignette_css = "position: absolute; top: 0; left: 0; width: 1920px; height: 1080px; background: linear-gradient(270deg, rgba(0,0,0,0.88) 0%, rgba(0,0,0,0.65) 30%, rgba(0,0,0,0) 58%); pointer-events: none;"
         else:
-            text_container_css = "position: absolute; top: 60px; left: 80px; max-width: 1050px; z-index: 10; overflow: visible; padding-top: 20px; text-align: left;"
+            text_container_css = "position: absolute; top: 50px; left: 60px; width: 760px; max-width: 760px; z-index: 10; overflow: visible; padding-top: 10px; text-align: left;"
             pill_align_css = "display: inline-flex;"
-            vignette_css = "position: absolute; top: 0; left: 0; width: 1920px; height: 1080px; background: radial-gradient(circle at 25% 30%, rgba(0,0,0,0.85) 0%, rgba(0,0,0,0.5) 45%, rgba(0,0,0,0) 75%), linear-gradient(90deg, rgba(0,0,0,0.75) 0%, rgba(0,0,0,0.3) 45%, rgba(0,0,0,0) 65%); pointer-events: none;"
+            vignette_css = "position: absolute; top: 0; left: 0; width: 1920px; height: 1080px; background: linear-gradient(90deg, rgba(0,0,0,0.88) 0%, rgba(0,0,0,0.65) 30%, rgba(0,0,0,0) 58%); pointer-events: none;"
 
         # Category and Hook details
         cat = theme.get("category", "").lower()
@@ -2364,11 +2409,11 @@ def render_full_length_base_thumbnail(base_image_path, theme, output_path):
     background: linear-gradient(90deg, #D50000 0%, #FF1744 100%);
     border: 3px solid #FFF;
     border-radius: 12px;
-    padding: 10px 30px;
-    margin-bottom: 25px;
+    padding: 8px 24px;
+    margin-bottom: 18px;
     color: #FFFFFF;
-    font-family: 'Poppins', sans-serif;
-    font-size: 38px;
+    font-family: 'Poppins', 'Tiro Devanagari Hindi', sans-serif;
+    font-size: 32px;
     font-weight: 900;
     letter-spacing: 1px;
     box-shadow: 0 8px 25px rgba(0,0,0,0.9), 0 0 25px rgba(255, 23, 68, 0.7);
@@ -2376,22 +2421,22 @@ def render_full_length_base_thumbnail(base_image_path, theme, output_path):
   }}
   .hook-lead {{
     font-family: 'Tiro Devanagari Hindi', 'Nirmala UI', serif;
-    font-size: 92px;
+    font-size: 70px;
     font-weight: 700;
-    line-height: 1.35;
-    padding-top: 15px;
+    line-height: 1.25;
+    padding-top: 8px;
     color: #FFE600;
     letter-spacing: 1px;
     text-shadow: 0 4px 0 #1A0D00, 0 8px 0 #000, 0 12px 28px rgba(0,0,0,0.98), 0 0 35px rgba(255, 230, 0, 0.85);
-    margin-bottom: 5px;
+    margin-bottom: 6px;
     overflow: visible;
   }}
   .hook-benefit {{
     font-family: 'Tiro Devanagari Hindi', 'Nirmala UI', serif;
-    font-size: 118px;
+    font-size: 82px;
     font-weight: 700;
-    line-height: 1.35;
-    padding-top: 15px;
+    line-height: 1.25;
+    padding-top: 8px;
     letter-spacing: 1px;
     color: #FFF8E1;
     text-shadow: 0 4px 0 #FF8F00, 0 7px 0 #C43800, 0 10px 0 #200800, 0 14px 30px rgba(0,0,0,0.98), 0 0 45px rgba(255, 179, 0, 0.9);
@@ -2477,7 +2522,7 @@ def render_full_length_base_thumbnail(base_image_path, theme, output_path):
 
         file_uri = "file:///" + os.path.abspath(html_tmp).replace("\\", "/")
         subprocess.run([
-            edge_path, "--headless", "--disable-gpu", "--hide-scrollbars",
+            browser_exe, "--headless", "--disable-gpu", "--hide-scrollbars",
             "--virtual-time-budget=5000", "--run-all-compositor-stages-before-draw",
             "--window-size=1920,1080", f"--screenshot={png_tmp}", file_uri
         ], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, check=True)
