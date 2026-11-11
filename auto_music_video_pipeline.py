@@ -2249,7 +2249,7 @@ def get_browser_executable():
     return None
 
 
-def render_full_length_base_thumbnail(base_image_path, theme, output_path):
+def render_full_length_base_thumbnail(base_image_path, theme, output_path, explicit_side=None):
     """
     Renders 16:9 YouTube master thumbnail with:
     1. Automated Telea watermark inpainting (removes Flow star).
@@ -2350,64 +2350,69 @@ def render_full_length_base_thumbnail(base_image_path, theme, output_path):
             return "RIGHT" if right_diff >= left_diff else "LEFT"
 
         target_img = cleaned if cleaned is not None else img
-        subject_side = detect_subject_side(target_img)
-        text_side = "right" if subject_side == "LEFT" else "left"
+        top_offset = 25
+        if explicit_side in ["RIGHT", "LEFT"]:
+            subject_side = explicit_side
+            text_side = "left" if subject_side == "RIGHT" else "right"
+            print(f"  -> 🎯 [Deterministic 0% Error Mode] Woman is on {subject_side} side -> Text strictly locked to {text_side.upper()} (top: 25px)!", flush=True)
+        else:
+            subject_side = detect_subject_side(target_img)
+            text_side = "right" if subject_side == "LEFT" else "left"
 
-        # 3. Intelligent Face / Subject Collision Shield & Fail-Safe Flip
-        top_offset = 35
-        try:
-            h_im, w_im = target_img.shape[:2]
-            hsv_im = cv2.cvtColor(target_img, cv2.COLOR_BGR2HSV)
-            lower_s1 = np.array([0, 20, 50], dtype=np.uint8)
-            upper_s1 = np.array([28, 255, 255], dtype=np.uint8)
-            lower_s2 = np.array([170, 20, 50], dtype=np.uint8)
-            upper_s2 = np.array([180, 255, 255], dtype=np.uint8)
-            s_mask = cv2.bitwise_or(cv2.inRange(hsv_im, lower_s1, upper_s1),
-                                    cv2.inRange(hsv_im, lower_s2, upper_s2))
-            k_elem = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (15, 15))
-            s_mask_clean = cv2.morphologyEx(s_mask, cv2.MORPH_OPEN, k_elem)
+            # 3. Intelligent Face / Subject Collision Shield & Fail-Safe Flip
+            try:
+                h_im, w_im = target_img.shape[:2]
+                hsv_im = cv2.cvtColor(target_img, cv2.COLOR_BGR2HSV)
+                lower_s1 = np.array([0, 20, 50], dtype=np.uint8)
+                upper_s1 = np.array([28, 255, 255], dtype=np.uint8)
+                lower_s2 = np.array([170, 20, 50], dtype=np.uint8)
+                upper_s2 = np.array([180, 255, 255], dtype=np.uint8)
+                s_mask = cv2.bitwise_or(cv2.inRange(hsv_im, lower_s1, upper_s1),
+                                        cv2.inRange(hsv_im, lower_s2, upper_s2))
+                k_elem = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (15, 15))
+                s_mask_clean = cv2.morphologyEx(s_mask, cv2.MORPH_OPEN, k_elem)
 
-            # Check if chosen text side has the majority of the subject (Fail-Safe Flip)
-            mid_im_x = w_im // 2
-            left_skin_tot = np.sum(s_mask_clean[:, :mid_im_x] > 0)
-            right_skin_tot = np.sum(s_mask_clean[:, mid_im_x:] > 0)
+                # Check if chosen text side has the majority of the subject (Fail-Safe Flip)
+                mid_im_x = w_im // 2
+                left_skin_tot = np.sum(s_mask_clean[:, :mid_im_x] > 0)
+                right_skin_tot = np.sum(s_mask_clean[:, mid_im_x:] > 0)
 
-            if text_side == "right" and right_skin_tot > left_skin_tot * 1.3:
-                print(f"  -> ⚠️ [Fail-Safe Flip] Flipped text from RIGHT to LEFT because RIGHT side has {right_skin_tot} skin pixels vs {left_skin_tot} on LEFT!", flush=True)
-                text_side = "left"
-                subject_side = "RIGHT"
-            elif text_side == "left" and left_skin_tot > right_skin_tot * 1.3:
-                print(f"  -> ⚠️ [Fail-Safe Flip] Flipped text from LEFT to RIGHT because LEFT side has {left_skin_tot} skin pixels vs {right_skin_tot} on RIGHT!", flush=True)
-                text_side = "right"
-                subject_side = "LEFT"
+                if text_side == "right" and right_skin_tot > left_skin_tot * 1.3:
+                    print(f"  -> ⚠️ [Fail-Safe Flip] Flipped text from RIGHT to LEFT because RIGHT side has {right_skin_tot} skin pixels vs {left_skin_tot} on LEFT!", flush=True)
+                    text_side = "left"
+                    subject_side = "RIGHT"
+                elif text_side == "left" and left_skin_tot > right_skin_tot * 1.3:
+                    print(f"  -> ⚠️ [Fail-Safe Flip] Flipped text from LEFT to RIGHT because LEFT side has {left_skin_tot} skin pixels vs {right_skin_tot} on RIGHT!", flush=True)
+                    text_side = "right"
+                    subject_side = "LEFT"
 
-            # Analyze chosen text zone for any vertical overlap in actual text occupancy zone:
-            # For LEFT text: words occupy x: 0 to 38%
-            # For RIGHT text: words occupy x: 62% to 100%
-            text_x1 = int(w_im * 0.62) if text_side == "right" else 0
-            text_x2 = w_im if text_side == "right" else int(w_im * 0.38)
-            top_zone_mask = s_mask_clean[20:int(h_im * 0.35), text_x1:text_x2]
-            contours_top, _ = cv2.findContours(top_zone_mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+                # Analyze chosen text zone for any vertical overlap in actual text occupancy zone:
+                # For LEFT text: words occupy x: 0 to 38%
+                # For RIGHT text: words occupy x: 62% to 100%
+                text_x1 = int(w_im * 0.62) if text_side == "right" else 0
+                text_x2 = w_im if text_side == "right" else int(w_im * 0.38)
+                top_zone_mask = s_mask_clean[20:int(h_im * 0.35), text_x1:text_x2]
+                contours_top, _ = cv2.findContours(top_zone_mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
 
-            max_y2 = 0
-            face_detected_in_top = False
-            for cnt in contours_top:
-                if cv2.contourArea(cnt) > 6000:
-                    _, y, _, ch = cv2.boundingRect(cnt)
-                    abs_y = 20 + y + ch
-                    if abs_y > max_y2:
-                        max_y2 = abs_y
-                    face_detected_in_top = True
+                max_y2 = 0
+                face_detected_in_top = False
+                for cnt in contours_top:
+                    if cv2.contourArea(cnt) > 6000:
+                        _, y, _, ch = cv2.boundingRect(cnt)
+                        abs_y = 20 + y + ch
+                        if abs_y > max_y2:
+                            max_y2 = abs_y
+                        face_detected_in_top = True
 
-            if face_detected_in_top and max_y2 > 40:
-                top_offset = min(120, max(50, max_y2 + 10))
-                print(f"  -> 🛡️ [Face Collision Shield] Subject edge detected in actual text zone (down to y={max_y2}). Moving text DOWN to top={top_offset}px (Zero font downsizing)!", flush=True)
-            else:
+                if face_detected_in_top and max_y2 > 40:
+                    top_offset = min(120, max(50, max_y2 + 10))
+                    print(f"  -> 🛡️ [Face Collision Shield] Subject edge detected in actual text zone (down to y={max_y2}). Moving text DOWN to top={top_offset}px (Zero font downsizing)!", flush=True)
+                else:
+                    top_offset = 25
+                    print(f"  -> 👁️ [Smart Vision Layout] Upper text zone completely clear. Locked at high top={top_offset}px.", flush=True)
+            except Exception as face_shield_err:
+                print(f"  -> [Info] Face collision shield check skipped: {face_shield_err}", flush=True)
                 top_offset = 25
-                print(f"  -> 👁️ [Smart Vision Layout] Upper text zone completely clear. Locked at high top={top_offset}px.", flush=True)
-        except Exception as face_shield_err:
-            print(f"  -> [Info] Face collision shield check skipped: {face_shield_err}", flush=True)
-            top_offset = 25
 
         print(f"  -> 👁️ [Smart Vision Layout] Subject detected on {subject_side} side. Placing typography strictly on {text_side.upper()} side (60% screen: max-width 1120px, top={top_offset}px)!", flush=True)
 
@@ -2729,40 +2734,75 @@ def generate_thumbnail(slides, theme):
             else:
                 cat_key = "morning_pooja"
 
-            queue_f = os.path.join(BASE_DIR, f"thumbnail_urls_{cat_key}.txt")
-            backup_f = os.path.join(BASE_DIR, f"thumbnail_urls_{cat_key}_backup.txt")
-            used_f = os.path.join(BASE_DIR, "used_thumbnail_urls.txt")
+            # 100% Deterministic Alternating Pool Selector
+            # 1st Video: Woman on RIGHT -> Text on LEFT
+            # 2nd Video: Woman on LEFT -> Text on RIGHT
+            # If one pool is empty, seamlessly continue with the available pool.
+            side_tracker_f = os.path.join(BASE_DIR, "last_thumbnail_side.json")
+            last_side = "LEFT"
+            if os.path.exists(side_tracker_f):
+                try:
+                    with open(side_tracker_f, "r", encoding="utf-8") as sf:
+                        last_side = json.load(sf).get("last_side", "LEFT")
+                except Exception:
+                    pass
 
-            urls = []
-            if os.path.exists(queue_f):
-                with open(queue_f, "r", encoding="utf-8") as qf:
-                    urls = [line.strip() for line in qf if line.strip()]
+            preferred_side = "RIGHT" if last_side == "LEFT" else "LEFT"
+            fallback_side = "LEFT" if preferred_side == "RIGHT" else "RIGHT"
 
-            if not urls and os.path.exists(backup_f):
-                print(f"  -> Thumbnail queue for [{cat_key}] exhausted. Refilling from backup pool...", flush=True)
-                with open(backup_f, "r", encoding="utf-8") as bf:
-                    backup_urls = [line.strip() for line in bf if line.strip()]
-                if backup_urls:
-                    random.shuffle(backup_urls)
-                    urls = backup_urls
-                    with open(queue_f, "w", encoding="utf-8") as qf:
-                        qf.write("\n".join(urls) + "\n")
+            def get_queue_and_urls(side):
+                q_f = os.path.join(BASE_DIR, f"thumbnail_urls_{cat_key}_{side.lower()}.txt")
+                b_f = os.path.join(BASE_DIR, f"thumbnail_urls_{cat_key}_{side.lower()}_backup.txt")
+                u_list = []
+                if os.path.exists(q_f):
+                    with open(q_f, "r", encoding="utf-8") as f:
+                        u_list = [line.strip() for line in f if line.strip()]
+                if not u_list and os.path.exists(b_f):
+                    print(f"  -> Thumbnail queue for [{cat_key}_{side.lower()}] exhausted. Refilling from backup...", flush=True)
+                    with open(b_f, "r", encoding="utf-8") as f:
+                        u_list = [line.strip() for line in f if line.strip()]
+                    if u_list:
+                        random.shuffle(u_list)
+                        with open(q_f, "w", encoding="utf-8") as f:
+                            f.write("\n".join(u_list) + "\n")
+                return q_f, u_list
+
+            chosen_side = preferred_side
+            q_file, urls = get_queue_and_urls(preferred_side)
+            if not urls:
+                print(f"  -> [{cat_key}] Preferred pool [{preferred_side}] is empty! Falling back to [{fallback_side}]...", flush=True)
+                chosen_side = fallback_side
+                q_file, urls = get_queue_and_urls(fallback_side)
+
+            # Ultimate legacy fallback if split pools don't exist yet
+            if not urls:
+                legacy_q = os.path.join(BASE_DIR, f"thumbnail_urls_{cat_key}.txt")
+                if os.path.exists(legacy_q):
+                    with open(legacy_q, "r", encoding="utf-8") as f:
+                        urls = [line.strip() for line in f if line.strip()]
+                    chosen_side = None
 
             if urls:
                 chosen_url = urls.pop(0)
-                with open(queue_f, "w", encoding="utf-8") as qf:
-                    qf.write("\n".join(urls) + "\n" if urls else "")
+                if q_file:
+                    with open(q_file, "w", encoding="utf-8") as qf:
+                        qf.write("\n".join(urls) + "\n" if urls else "")
+                used_f = os.path.join(BASE_DIR, "used_thumbnail_urls.txt")
                 with open(used_f, "a", encoding="utf-8") as uf:
                     uf.write(chosen_url + "\n")
 
-                print(f"  -> [Catbox Pool] Picked image for [{cat_key}]: {chosen_url} ({len(urls)} remaining)", flush=True)
+                if chosen_side:
+                    with open(side_tracker_f, "w", encoding="utf-8") as sf:
+                        json.dump({"last_side": chosen_side}, sf)
+
+                print(f"  -> [Catbox Pool] Picked image for [{cat_key}] ({chosen_side or 'Legacy'}): {chosen_url} ({len(urls)} remaining in pool)", flush=True)
                 local_catbox_bg = os.path.join(TEMP_DIR, f"catbox_bg_{int(time.time())}.jpg")
                 headers = {'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)'}
                 r = requests.get(chosen_url, headers=headers, timeout=25)
                 if r.status_code == 200:
                     with open(local_catbox_bg, "wb") as bf:
                         bf.write(r.content)
-                    final_thumb = render_full_length_base_thumbnail(local_catbox_bg, theme, TEMP_THUMBNAIL)
+                    final_thumb = render_full_length_base_thumbnail(local_catbox_bg, theme, TEMP_THUMBNAIL, explicit_side=chosen_side)
                     if final_thumb and os.path.exists(final_thumb):
                         return final_thumb
         except Exception as catbox_pool_err:

@@ -5,8 +5,11 @@ onesignal_key.txt
 telegram_token.txt
 threads_token.txt
 client_secret.json
+client_secret_v2.json
 youtube_token.json
+youtube_token_*.json
 youtube_refresh_token.txt
+test_bg_*.jpg
 __pycache__/
 *.pyc
 gemini_key.txt
