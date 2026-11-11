@@ -909,7 +909,7 @@ def generate_kinetic_reel(output_mp4, custom_quote=None, custom_image=None):
 </head>
 <body>
   <div class="card">
-    <div class="header-badge">✨ श्री कृष्ण अमृत विचार ✨</div>
+    <div class="header-badge">✨ आज का सुविचार ✨</div>
     <div class="divider"></div>
     <div class="thought-text">{full_thought_text}</div>
     <div class="divider"></div>
