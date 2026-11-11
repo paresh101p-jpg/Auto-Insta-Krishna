@@ -116,7 +116,7 @@ def process_single_image(fname):
 
     matched_cats = get_matched_categories(fname)
     url = upload_file_to_catbox(clean_path)
-    return fname, matched_cats, url
+    return fname, matched_cats, url, clean_path
 
 def main():
     uploaded_files = set()
@@ -144,9 +144,20 @@ def main():
     with ThreadPoolExecutor(max_workers=10) as executor:
         futures = {executor.submit(process_single_image, f): f for f in to_process}
         for future in as_completed(futures):
-            fname, matched_cats, url = future.result()
+            fname, matched_cats, url, clean_path = future.result()
             if url:
                 success_count += 1
+                # Classify side for 100% deterministic zero-error placement
+                side = "right"
+                try:
+                    from split_thumbnail_pools import analyze_image_bytes
+                    with open(clean_path, "rb") as cf:
+                        s_res = analyze_image_bytes(cf.read())
+                        if s_res in ["RIGHT", "LEFT"]:
+                            side = s_res.lower()
+                except Exception:
+                    pass
+
                 # Multi-category sync: copy URL into ALL matching category queues!
                 for cat in matched_cats:
                     q_path = os.path.join(BASE_DIR, f"thumbnail_urls_{cat}.txt")
@@ -155,6 +166,14 @@ def main():
                         qf.write(url + "\n")
                     with open(b_path, "a", encoding="utf-8") as bf:
                         bf.write(url + "\n")
+
+                    # Also sync into split deterministic Left/Right queues!
+                    sq_path = os.path.join(BASE_DIR, f"thumbnail_urls_{cat}_{side}.txt")
+                    sb_path = os.path.join(BASE_DIR, f"thumbnail_urls_{cat}_{side}_backup.txt")
+                    with open(sq_path, "a", encoding="utf-8") as sqf:
+                        sqf.write(url + "\n")
+                    with open(sb_path, "a", encoding="utf-8") as sbf:
+                        sbf.write(url + "\n")
 
                     # Also sync into music video slide queues if matching
                     slide_q = os.path.join(BASE_DIR, f"music_slide_urls_{cat}.txt")

@@ -2731,6 +2731,10 @@ def generate_thumbnail(slides, theme):
                 cat_key = "raag_darbari"
             elif any(k in cat_raw or k in title_raw or k in hindi_raw for k in ["tabla", "तबला", "jugalbandi", "जुगलबंदी"]):
                 cat_key = "bansuri_tabla"
+            elif any(k in cat_raw or k in title_raw or k in hindi_raw for k in ["lofi", "beats"]):
+                cat_key = "lofi_beats"
+            elif any(k in cat_raw or k in title_raw or k in hindi_raw for k in ["stress", "relief", "तनाव", "सुकून"]):
+                cat_key = "stress_relief"
             else:
                 cat_key = "morning_pooja"
 
