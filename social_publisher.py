@@ -59,6 +59,29 @@ def publish_to_telegram(media_url, caption, post_url, is_video=False, youtube_ur
         quote_text = clean_lines[0] if clean_lines else "तुम्हारा केवल कर्म है, बाक़ी सब मुझ पर छोड़ दो।"
         quote_text = quote_text.replace("- राधे कृष्ण", "").replace("- श्री कृष्ण", "").strip()
 
+        # 🛡️ ANTI-DUPLICATE SAFETY LOCK (Prevents duplicate posts on Telegram)
+        lock_file = os.path.join(os.path.dirname(os.path.abspath(__file__)), "last_telegram_post.json")
+        now_ts = time.time()
+        if os.path.exists(lock_file):
+            try:
+                with open(lock_file, "r", encoding="utf-8") as lf:
+                    lock_data = json.load(lf)
+                last_ts = lock_data.get("timestamp", 0)
+                last_quote = lock_data.get("quote", "")
+                elapsed = now_ts - last_ts
+
+                # If exact same quote was published within 24 hours -> Block duplicate!
+                if quote_text == last_quote and elapsed < 86400:
+                    print(f"[Telegram] 🛡️ Duplicate Post Blocked: Exact same thought was already published {int(elapsed//60)} minutes ago!")
+                    return True
+
+                # If ANY post was published within 25 minutes -> Block simultaneous double runs!
+                if elapsed < 1500: # 25 minutes
+                    print(f"[Telegram] 🛡️ Double-Post Blocked: A post was already published {int(elapsed//60)} minutes ago (minimum interval is 25 minutes)!")
+                    return True
+            except Exception as lock_err:
+                print(f"[Telegram] Notice (lock check): {lock_err}")
+
         # Clean short caption: Only thought and 2-4 keywords, strictly ZERO URLs (No forced Krishna header)
         formatted_caption = (
             f"\"{quote_text}\"\n\n"
@@ -126,8 +149,18 @@ def publish_to_telegram(media_url, caption, post_url, is_video=False, youtube_ur
                 except Exception:
                     pass
 
-            # Also send personal reminder to Paresh bhai so they can 1-click share to WhatsApp Channel & YouTube!
-            if admin_chat_id:
+            # Record successful post to lock file to permanently prevent double-posts
+            try:
+                with open(lock_file, "w", encoding="utf-8") as lf:
+                    json.dump({"timestamp": now_ts, "quote": quote_text, "message_id": message_id}, lf)
+            except Exception:
+                pass
+
+            # Also send personal reminder to Paresh bhai (ONLY if admin_chat_id is a private user ID, NEVER if channel)
+            admin_str = str(admin_chat_id).strip()
+            chat_str = str(chat_id).strip()
+            is_channel_target = admin_str.startswith("@") or admin_str.startswith("-100") or admin_str == chat_str
+            if admin_chat_id and not is_channel_target:
                 try:
                     reflection = caption.strip()
                     whatsapp_channel = "https://whatsapp.com/channel/0029VbDxJHk30LKNtj4Er62J"
