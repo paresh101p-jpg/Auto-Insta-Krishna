@@ -2293,90 +2293,121 @@ def render_full_length_base_thumbnail(base_image_path, theme, output_path):
         with open(clean_tmp, "rb") as f:
             bg_b64 = base64.b64encode(f.read()).decode("utf-8")
 
-        # 2. Intelligent Subject Side Detection (LEFT vs RIGHT)
-        # Prevents covering the woman's face, neckline, shoulders, and choli!
+        # 2. Ultra-Intelligent Subject Side Detection (Skin & Face First, Never Edge/Leaves)
+        # Prevents ever placing text on top of the woman's face, neckline, and royal attire!
         def detect_subject_side(image_mat):
             h, w = image_mat.shape[:2]
-            upper_img = image_mat[:int(h * 0.75), :]
+            upper_img = image_mat[:int(h * 0.80), :]
             
-            left = upper_img[:, :w//2]
-            right = upper_img[:, w//2:]
+            # Primary: HSV Skin Tone Segmentation
+            hsv = cv2.cvtColor(upper_img, cv2.COLOR_BGR2HSV)
+            lower1 = np.array([0, 20, 50], dtype=np.uint8)
+            upper1 = np.array([28, 255, 255], dtype=np.uint8)
+            lower2 = np.array([170, 20, 50], dtype=np.uint8)
+            upper2 = np.array([180, 255, 255], dtype=np.uint8)
+            mask = cv2.bitwise_or(cv2.inRange(hsv, lower1, upper1),
+                                  cv2.inRange(hsv, lower2, upper2))
             
-            gray_l = cv2.cvtColor(left, cv2.COLOR_BGR2GRAY)
-            gray_r = cv2.cvtColor(right, cv2.COLOR_BGR2GRAY)
+            kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (15, 15))
+            clean_mask = cv2.morphologyEx(mask, cv2.MORPH_OPEN, kernel)
+            contours, _ = cv2.findContours(clean_mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+            sig_contours = [c for c in contours if cv2.contourArea(c) > 3000]
             
-            gx_l = cv2.Sobel(gray_l, cv2.CV_32F, 1, 0)
-            gy_l = cv2.Sobel(gray_l, cv2.CV_32F, 0, 1)
-            mag_l = cv2.magnitude(gx_l, gy_l)
+            mid_x = w / 2.0
             
-            gx_r = cv2.Sobel(gray_r, cv2.CV_32F, 1, 0)
-            gy_r = cv2.Sobel(gray_r, cv2.CV_32F, 0, 1)
-            mag_r = cv2.magnitude(gx_r, gy_r)
-            
-            std_l = float(np.mean(np.std(left, axis=(0, 1))))
-            std_r = float(np.mean(np.std(right, axis=(0, 1))))
-            
-            score_l = float(np.mean(mag_l) * std_l)
-            score_r = float(np.mean(mag_r) * std_r)
-            
-            gx_all = cv2.Sobel(cv2.cvtColor(upper_img, cv2.COLOR_BGR2GRAY), cv2.CV_32F, 1, 0)
-            gy_all = cv2.Sobel(cv2.cvtColor(upper_img, cv2.COLOR_BGR2GRAY), cv2.CV_32F, 0, 1)
-            mag_all = cv2.magnitude(gx_all, gy_all)
-            x_coords = np.arange(w)
-            col_sum = np.sum(mag_all, axis=0)
-            com_x = float(np.sum(x_coords * col_sum) / (np.sum(col_sum) + 1e-6))
-            
-            if score_l > score_r * 1.15 or com_x < w * 0.46:
-                return "LEFT"
-            elif score_r > score_l * 1.15 or com_x > w * 0.54:
-                return "RIGHT"
-            return "RIGHT" if score_r >= score_l else "LEFT"
+            if sig_contours:
+                total_skin_area = 0
+                sum_cx = 0
+                left_skin_area = 0
+                right_skin_area = 0
+                
+                for c in sig_contours:
+                    area = cv2.contourArea(c)
+                    M = cv2.moments(c)
+                    if M['m00'] > 0:
+                        cx = M['m10'] / M['m00']
+                        sum_cx += cx * area
+                        total_skin_area += area
+                        if cx < mid_x:
+                            left_skin_area += area
+                        else:
+                            right_skin_area += area
+                            
+                com_skin_x = sum_cx / (total_skin_area + 1e-5)
+                
+                if right_skin_area > left_skin_area * 1.25 or com_skin_x > w * 0.52:
+                    return "RIGHT"
+                elif left_skin_area > right_skin_area * 1.25 or com_skin_x < w * 0.48:
+                    return "LEFT"
+                return "RIGHT" if right_skin_area >= left_skin_area else "LEFT"
 
-        subject_side = detect_subject_side(cleaned if cleaned is not None else img)
+            # Secondary Fallback: Visual Saliency / Contrast
+            gray = cv2.cvtColor(upper_img, cv2.COLOR_BGR2GRAY)
+            blurred = cv2.GaussianBlur(gray, (21, 21), 0)
+            diff = cv2.absdiff(gray, blurred)
+            left_diff = np.sum(diff[:, :int(mid_x)])
+            right_diff = np.sum(diff[:, int(mid_x):])
+            return "RIGHT" if right_diff >= left_diff else "LEFT"
+
+        target_img = cleaned if cleaned is not None else img
+        subject_side = detect_subject_side(target_img)
         text_side = "right" if subject_side == "LEFT" else "left"
 
-        # 3. Intelligent Face / Subject Collision Shield
-        # If face/subject extends into the text area, move text vertically (UP or DOWN) without shrinking font size!
+        # 3. Intelligent Face / Subject Collision Shield & Fail-Safe Flip
         top_offset = 35
         try:
-            h_im, w_im = (cleaned if cleaned is not None else img).shape[:2]
-            hsv_im = cv2.cvtColor(cleaned if cleaned is not None else img, cv2.COLOR_BGR2HSV)
-            lower_s1 = np.array([0, 25, 60], dtype=np.uint8)
+            h_im, w_im = target_img.shape[:2]
+            hsv_im = cv2.cvtColor(target_img, cv2.COLOR_BGR2HSV)
+            lower_s1 = np.array([0, 20, 50], dtype=np.uint8)
             upper_s1 = np.array([28, 255, 255], dtype=np.uint8)
-            lower_s2 = np.array([170, 25, 60], dtype=np.uint8)
+            lower_s2 = np.array([170, 20, 50], dtype=np.uint8)
             upper_s2 = np.array([180, 255, 255], dtype=np.uint8)
             s_mask = cv2.bitwise_or(cv2.inRange(hsv_im, lower_s1, upper_s1),
                                     cv2.inRange(hsv_im, lower_s2, upper_s2))
             k_elem = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (15, 15))
             s_mask_clean = cv2.morphologyEx(s_mask, cv2.MORPH_OPEN, k_elem)
 
-            # Analyze text zone (60% width)
-            text_x1 = int(w_im * 0.42) if text_side == "right" else 0
-            text_x2 = w_im if text_side == "right" else int(w_im * 0.58)
-            top_zone_mask = s_mask_clean[20:int(h_im * 0.45), text_x1:text_x2]
+            # Check if chosen text side has the majority of the subject (Fail-Safe Flip)
+            mid_im_x = w_im // 2
+            left_skin_tot = np.sum(s_mask_clean[:, :mid_im_x] > 0)
+            right_skin_tot = np.sum(s_mask_clean[:, mid_im_x:] > 0)
+
+            if text_side == "right" and right_skin_tot > left_skin_tot * 1.3:
+                print(f"  -> ⚠️ [Fail-Safe Flip] Flipped text from RIGHT to LEFT because RIGHT side has {right_skin_tot} skin pixels vs {left_skin_tot} on LEFT!", flush=True)
+                text_side = "left"
+                subject_side = "RIGHT"
+            elif text_side == "left" and left_skin_tot > right_skin_tot * 1.3:
+                print(f"  -> ⚠️ [Fail-Safe Flip] Flipped text from LEFT to RIGHT because LEFT side has {left_skin_tot} skin pixels vs {right_skin_tot} on RIGHT!", flush=True)
+                text_side = "right"
+                subject_side = "LEFT"
+
+            # Analyze chosen text zone for any vertical overlap in actual text occupancy zone:
+            # For LEFT text: words occupy x: 0 to 38%
+            # For RIGHT text: words occupy x: 62% to 100%
+            text_x1 = int(w_im * 0.62) if text_side == "right" else 0
+            text_x2 = w_im if text_side == "right" else int(w_im * 0.38)
+            top_zone_mask = s_mask_clean[20:int(h_im * 0.35), text_x1:text_x2]
             contours_top, _ = cv2.findContours(top_zone_mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
 
             max_y2 = 0
             face_detected_in_top = False
             for cnt in contours_top:
-                if cv2.contourArea(cnt) > 10000:
+                if cv2.contourArea(cnt) > 6000:
                     _, y, _, ch = cv2.boundingRect(cnt)
                     abs_y = 20 + y + ch
                     if abs_y > max_y2:
                         max_y2 = abs_y
                     face_detected_in_top = True
 
-            if face_detected_in_top and max_y2 > 60:
-                # Move text DOWN below face without shrinking text size
-                suggested_top = max_y2 + 15
-                top_offset = min(340, max(260, suggested_top))
-                print(f"  -> 🛡️ [Face Collision Shield] Face/Subject detected in upper text quadrant (down to y={max_y2}). Moving text DOWN to top={top_offset}px (Zero font downsizing)!", flush=True)
+            if face_detected_in_top and max_y2 > 40:
+                top_offset = min(120, max(50, max_y2 + 10))
+                print(f"  -> 🛡️ [Face Collision Shield] Subject edge detected in actual text zone (down to y={max_y2}). Moving text DOWN to top={top_offset}px (Zero font downsizing)!", flush=True)
             else:
-                top_offset = 35
-                print(f"  -> 👁️ [Smart Vision Layout] Upper quadrant clear. Using standard top={top_offset}px.", flush=True)
+                top_offset = 25
+                print(f"  -> 👁️ [Smart Vision Layout] Upper text zone completely clear. Locked at high top={top_offset}px.", flush=True)
         except Exception as face_shield_err:
             print(f"  -> [Info] Face collision shield check skipped: {face_shield_err}", flush=True)
-            top_offset = 35
+            top_offset = 25
 
         print(f"  -> 👁️ [Smart Vision Layout] Subject detected on {subject_side} side. Placing typography strictly on {text_side.upper()} side (60% screen: max-width 1120px, top={top_offset}px)!", flush=True)
 
