@@ -10,18 +10,81 @@ from concurrent.futures import ThreadPoolExecutor, as_completed
 sys.stdout.reconfigure(encoding='utf-8')
 
 BASE_DIR = r"E:\Paresh\Auto Post\Auto-Insta-Krishna"
-RAW_DIR = os.path.join(BASE_DIR, "thumbnail_pool_raw")
+RAW_DIR = os.path.join(BASE_DIR, "music_video_thumbnails") if os.path.exists(os.path.join(BASE_DIR, "music_video_thumbnails")) else os.path.join(BASE_DIR, "thumbnail_pool_raw")
 CLEAN_DIR = os.path.join(BASE_DIR, "thumbnail_pool_clean")
 TRACKER_FILE = os.path.join(BASE_DIR, "uploaded_thumbnail_images_tracker.txt")
 
 os.makedirs(CLEAN_DIR, exist_ok=True)
 
-CATEGORIES = ["morning_pooja", "bansuri_tabla", "raag_darbari", "lotus_lake", "sleep_insomnia"]
+CATEGORIES = ["morning_pooja", "bansuri_tabla", "raag_darbari", "lotus_lake", "sleep_insomnia", "stress_relief", "lofi_beats"]
 
-def get_matched_categories(fname):
+def classify_image_with_ai_vision(image_path):
     """
-    Multi-category matching: A single image can match 2 or more categories.
-    The URL is automatically copied to ALL matching categories!
+    AI Vision Classifier: Uses Gemini 3.8 Flash Vision to look at the image directly
+    when filename has no keywords (e.g. 01.jpg, 02.png, generic numbers).
+    """
+    if not image_path or not os.path.exists(image_path):
+        return []
+    try:
+        from google import genai
+        from PIL import Image
+        key_path = os.path.join(BASE_DIR, "gemini_key.txt")
+        if not os.path.exists(key_path):
+            return []
+        with open(key_path, "r", encoding="utf-8") as kf:
+            gemini_key = kf.read().strip()
+        if not gemini_key:
+            return []
+            
+        client = genai.Client(api_key=gemini_key, http_options={"timeout": 45000})
+        img = Image.open(image_path)
+        img.thumbnail((512, 512))
+        prompt = """Look at this thumbnail image of an Indian woman. Classify it into one or two of these exact categories:
+1. sleep_insomnia (night scene, lying in bed, sleeping, dark ambient, moonlight, deep relaxation, eyes closed, nightwear)
+2. lotus_lake (lake, water, pond, river, lotus flowers, serene water balcony)
+3. raag_darbari (royal palace, heavy royal choli, ornate gold/kundan necklace, fortress, classical sitar/veena)
+4. bansuri_tabla (flute, bansuri, tabla, musical performance, morpankh)
+5. morning_pooja (sunrise, dawn, temple, diya, morning golden sunlight, morning prayers)
+6. stress_relief (calm peaceful nature, soft light, meditation, relaxing serene atmosphere)
+7. lofi_beats (cozy, warm ambient, aesthetic lofi mood)
+
+Reply ONLY with the matching category name(s) separated by commas, nothing else."""
+        res = client.models.generate_content(
+            model="gemini-3.8-flash",
+            contents=[img, prompt]
+        )
+        raw_text = res.text.strip().lower()
+        matched = []
+        for cat in CATEGORIES:
+            if cat in raw_text:
+                matched.append(cat)
+        if matched:
+            print(f"  -> [AI Vision] '{os.path.basename(image_path)}' classified as: {matched}")
+            return matched
+    except Exception as e:
+        print(f"  -> [AI Vision Notice] Fallback for '{os.path.basename(image_path)}': {e}")
+    return []
+
+def classify_by_color_heuristic(image_path):
+    """Quick CV heuristic fallback: detects night/dark images for sleep_insomnia"""
+    try:
+        data = np.fromfile(image_path, dtype=np.uint8)
+        img = cv2.imdecode(data, cv2.IMREAD_COLOR)
+        if img is not None:
+            gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+            mean_b = np.mean(gray)
+            if mean_b < 65:
+                return ['sleep_insomnia']
+    except Exception:
+        pass
+    return []
+
+def get_matched_categories(fname, clean_path=None):
+    """
+    Multi-category matching:
+    1. First checks filename keywords.
+    2. If filename has no keywords (e.g. 01.jpg, 02.png), uses AI Vision (Gemini 3.8 Flash)
+       to look at the image directly and classify it accurately!
     """
     fl = fname.lower()
     cats = set()
@@ -38,13 +101,23 @@ def get_matched_categories(fname):
     if any(k in fl for k in ['choli', 'magenta', 'ruby', 'kundan', 'necklace', 'choker', 'gold_choker', 'fortress', 'royal', 'princess', 'bride', 'attire', 'classical', 'veena']):
         cats.add('raag_darbari')
         
-    # 4. Bansuri & Tabla / Spiritual Instruments (peacock feather, morpankh, flute, bansuri, tabla)
+    # 4. Bansuri & Tabla / Spiritual Instruments (peacock feather, morpankh, flute, bansuri, bamboo, tabla)
     if any(k in fl for k in ['peacock', 'feather', 'morpankh', 'flute', 'bansuri', 'bamboo', 'tabla', 'instrument', 'tanpura']):
         cats.add('bansuri_tabla')
         
     # 5. Morning Pooja (gold, smiling, courtyard, temple, sunrise, morning)
     if any(k in fl for k in ['smiling', 'gold', 'temple', 'courtyard', 'sunrise', 'morning', 'dawn', 'sun', 'prabhat', 'balcony', 'pooja']):
         cats.add('morning_pooja')
+
+    # If filename has no keywords (e.g. 01.jpg, 02.png, generic numbers) -> Use AI Vision!
+    if not cats and clean_path and os.path.exists(clean_path):
+        vision_cats = classify_image_with_ai_vision(clean_path)
+        for vc in vision_cats:
+            cats.add(vc)
+        if not cats:
+            heuristic_cats = classify_by_color_heuristic(clean_path)
+            for hc in heuristic_cats:
+                cats.add(hc)
         
     if not cats:
         cats = {'morning_pooja', 'raag_darbari'}
@@ -114,7 +187,7 @@ def process_single_image(fname):
         if not clean_watermark(raw_path, clean_path):
             return fname, [], None
 
-    matched_cats = get_matched_categories(fname)
+    matched_cats = get_matched_categories(fname, clean_path)
     url = upload_file_to_catbox(clean_path)
     return fname, matched_cats, url, clean_path
 
@@ -174,15 +247,6 @@ def main():
                         sqf.write(url + "\n")
                     with open(sb_path, "a", encoding="utf-8") as sbf:
                         sbf.write(url + "\n")
-
-                    # Also sync into music video slide queues if matching
-                    slide_q = os.path.join(BASE_DIR, f"music_slide_urls_{cat}.txt")
-                    slide_b = os.path.join(BASE_DIR, f"music_slide_urls_{cat}_backup.txt")
-                    if os.path.exists(slide_q):
-                        with open(slide_q, "a", encoding="utf-8") as sq:
-                            sq.write(url + "\n")
-                        with open(slide_b, "a", encoding="utf-8") as sb:
-                            sb.write(url + "\n")
 
                 tracker_f.write(fname + "\n")
                 tracker_f.flush()
