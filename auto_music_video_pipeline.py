@@ -2489,6 +2489,17 @@ def render_full_length_base_thumbnail(base_image_path, theme, output_path, expli
             if b1: line3 = b1
             if b2: line4 = b2
 
+        # Duration string for bottom badge (e.g. 15 MIN, 60 MIN)
+        dur_str = theme.get("dur_str")
+        if not dur_str:
+            badge_val = str(theme.get("badge", ""))
+            import re
+            m = re.search(r'(\d+\s*MIN)', badge_val, re.IGNORECASE)
+            if m:
+                dur_str = m.group(1).upper()
+            else:
+                dur_str = "15 MIN"
+
         html_content = f"""<!DOCTYPE html>
 <html>
 <head>
@@ -2625,7 +2636,7 @@ def render_full_length_base_thumbnail(base_image_path, theme, output_path, expli
     <div class="bottom-badge">
       <span class="badge-tag">{tag}</span>
       <span class="badge-title">{hindi}</span>
-      <span class="badge-dur">15 MIN</span>
+      <span class="badge-dur">{dur_str}</span>
     </div>
   </div>
 </body>
