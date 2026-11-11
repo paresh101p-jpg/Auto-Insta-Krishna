@@ -10,6 +10,7 @@ youtube_token.json
 youtube_token_*.json
 youtube_refresh_token.txt
 test_bg_*.jpg
+*.zip
 __pycache__/
 *.pyc
 gemini_key.txt
