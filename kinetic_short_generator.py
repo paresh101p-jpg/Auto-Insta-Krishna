@@ -787,12 +787,13 @@ def generate_kinetic_reel(output_mp4, custom_quote=None, custom_image=None):
         total_video_dur = summary_end_t + 0.8
         print(f"🎙️ Voice Duration: {voice_end_t:.2f}s | Full Thought Outro: {summary_dur:.2f}s | Total Reel: {total_video_dur:.2f}s")
 
-        # HTML template for Kinetic Chrome rendering
+        # HTML template for Kinetic Chrome rendering with strict safe-area margins
         html_template = """<!DOCTYPE html>
 <html>
 <head>
 <meta charset="utf-8">
 <style>
+  * {{ box-sizing: border-box; }}
   body {{
     margin: 0; padding: 0; width: 1080px; height: 420px;
     background: transparent;
@@ -800,15 +801,20 @@ def generate_kinetic_reel(output_mp4, custom_quote=None, custom_image=None):
     font-family: 'Nirmala UI', 'Noto Sans Devanagari', 'Segoe UI', sans-serif;
   }}
   .box {{
-    font-size: 110px; font-weight: 900; line-height: 1.25;
+    width: 100%;
+    max-width: 960px;
+    padding: 0 40px;
+    font-size: {fsize}px; font-weight: 900; line-height: 1.28;
     color: #FFFFFF;
-    -webkit-text-stroke: 13px #000000;
+    -webkit-text-stroke: 12px #000000;
     paint-order: stroke fill;
     text-shadow: 0 12px 28px rgba(0,0,0,0.95);
+    word-break: keep-all;
+    overflow-wrap: break-word;
   }}
   .active {{
     color: #FFE600;
-    -webkit-text-stroke: 15px #000000;
+    -webkit-text-stroke: 14px #000000;
     paint-order: stroke fill;
     text-shadow: 0 0 35px #FFD700, 0 12px 28px #000;
   }}
@@ -824,7 +830,22 @@ def generate_kinetic_reel(output_mp4, custom_quote=None, custom_image=None):
         overlay_idx = 0
 
         for p_idx, phrase in enumerate(word_timings):
-            split_twoline = len(phrase) >= 4
+            raw_phrase_text = " ".join(wt['word'] for wt in phrase)
+            char_count = len(raw_phrase_text)
+            
+            # Smart 2-line split: prevents long 3-word or long phrases from overflowing width
+            split_twoline = (len(phrase) >= 4) or (len(phrase) >= 3 and char_count >= 14) or (char_count >= 20)
+            
+            # Dynamic adaptive font size: scales down when phrase is long to prevent side clipping
+            if char_count > 26:
+                dynamic_fsize = 82
+            elif char_count > 18:
+                dynamic_fsize = 92
+            elif char_count > 12:
+                dynamic_fsize = 100
+            else:
+                dynamic_fsize = 108
+
             for active_wt in phrase:
                 words_html = []
                 for wt in phrase:
@@ -833,7 +854,7 @@ def generate_kinetic_reel(output_mp4, custom_quote=None, custom_image=None):
                     else:
                         words_html.append(f"<span>{wt['word']}</span>")
 
-                if split_twoline and len(words_html) >= 4:
+                if split_twoline and len(words_html) >= 3:
                     mid = len(words_html) // 2
                     content = " ".join(words_html[:mid]) + "<br>" + " ".join(words_html[mid:])
                 else:
@@ -842,7 +863,7 @@ def generate_kinetic_reel(output_mp4, custom_quote=None, custom_image=None):
                 html_file = os.path.join(temp_dir, f"slide_{overlay_idx:03d}.html")
                 png_file = os.path.join(temp_dir, f"slide_{overlay_idx:03d}.png")
                 with open(html_file, "w", encoding="utf-8") as f:
-                    f.write(html_template.format(content=content))
+                    f.write(html_template.format(content=content, fsize=dynamic_fsize))
 
                 tasks.append((chrome, html_file, png_file, "1080,420"))
                 overlay_events.append({
@@ -853,13 +874,15 @@ def generate_kinetic_reel(output_mp4, custom_quote=None, custom_image=None):
                 })
                 overlay_idx += 1
 
-        # Render Full Thought Showcase Card for the last 5+ seconds
-        font_size = 62 if len(full_thought_text) < 45 else (52 if len(full_thought_text) < 90 else (44 if len(full_thought_text) < 140 else 38))
+        # Render Full Thought Showcase Card for the last 5+ seconds with strict side safe margins
+        text_len = len(full_thought_text)
+        font_size = 52 if text_len < 40 else (45 if text_len < 80 else (38 if text_len < 130 else 32))
         full_card_html_code = f"""<!DOCTYPE html>
 <html>
 <head>
 <meta charset="utf-8">
 <style>
+  * {{ box-sizing: border-box; }}
   body {{
     margin: 0; padding: 0; width: 1080px; height: 1920px;
     background: transparent;
@@ -867,11 +890,12 @@ def generate_kinetic_reel(output_mp4, custom_quote=None, custom_image=None):
     font-family: 'Nirmala UI', 'Noto Sans Devanagari', 'Segoe UI', sans-serif;
   }}
   .card {{
-    width: 880px;
-    background: rgba(12, 18, 30, 0.78);
+    width: 920px;
+    max-width: 920px;
+    background: rgba(12, 18, 30, 0.82);
     border: 3px solid rgba(255, 215, 0, 0.88);
     border-radius: 36px;
-    padding: 45px 44px;
+    padding: 42px 48px;
     box-shadow: 0 20px 60px rgba(0,0,0,0.95), inset 0 0 35px rgba(255, 215, 0, 0.18);
     display: flex;
     flex-direction: column;
@@ -892,11 +916,15 @@ def generate_kinetic_reel(output_mp4, custom_quote=None, custom_image=None):
     margin: 22px 0;
   }}
   .thought-text {{
+    width: 100%;
+    max-width: 820px;
     font-size: {font_size}px;
     font-weight: 800;
-    line-height: 1.48;
+    line-height: 1.52;
     color: #FFFFFF;
     text-shadow: 0 8px 24px rgba(0,0,0,0.95);
+    word-break: keep-all;
+    overflow-wrap: break-word;
   }}
   .footer-sub {{
     color: #FFD700;
