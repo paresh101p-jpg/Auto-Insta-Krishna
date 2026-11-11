@@ -249,13 +249,15 @@ def syndicate_kinetic_reel(video_path, spoken_thought, title, youtube_video_id, 
     if fb_token:
         # A. Instagram Reel
         try:
-            ig_url = f"https://graph.facebook.com/v20.0/{fb_page_id}?fields=instagram_business_account&access_token={fb_token}"
-            ig_res = requests.get(ig_url, timeout=15).json()
-            ig_acc_id = ig_res.get("instagram_business_account", {}).get("id")
+            ig_acc_id = os.environ.get("INSTAGRAM_ACCOUNT_ID")
+            if not ig_acc_id:
+                ig_url = f"https://graph.facebook.com/v20.0/{fb_page_id}?fields=instagram_business_account&access_token={fb_token}"
+                ig_res = requests.get(ig_url, timeout=15).json()
+                ig_acc_id = ig_res.get("instagram_business_account", {}).get("id")
 
             if ig_acc_id:
                 ig_caption = (
-                    f"✨ श्री कृष्ण अमृत वचन ✨\n\n"
+                    f"✨ आज का सुविचार ✨\n\n"
                     f"\"{spoken_thought}\"\n\n"
                     f"🌸 4K दर्शन व संपूर्ण विचार पढ़ने के लिए Bio में दी गई लिंक पर क्लिक करें!\n"
                     f"🙏 जय श्री राधे कृष्ण! अधिक पावन विचारों के लिए पेज को फॉलो करें।\n\n"
@@ -270,7 +272,7 @@ def syndicate_kinetic_reel(video_path, spoken_thought, title, youtube_video_id, 
         # B. Facebook Video / Reel
         try:
             fb_caption = (
-                f"✨ श्री कृष्ण अमृत वचन ✨\n\n"
+                f"✨ आज का सुविचार ✨\n\n"
                 f"\"{spoken_thought}\"\n\n"
                 f"📖 4K HD दर्शन एवं वॉलपेपर फ्री डाउनलोड करें:\n👉 {post_url}\n\n"
                 f"🙏 जय श्री राधे कृष्ण! अधिक पावन विचारों के लिए पेज को फॉलो करें।\n\n"

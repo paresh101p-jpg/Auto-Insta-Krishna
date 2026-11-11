@@ -141,13 +141,12 @@ def get_next_media():
     import requests
     
     last_type_file = "last_post_type.txt"
-    last_type = "REEL"
-    if os.path.exists(last_type_file):
-        with open(last_type_file, "r") as f:
-            last_type = f.read().strip()
-            
-    next_type = "REEL" if last_type == "IMAGE" else "IMAGE"
-    print(f"Last post was {last_type}. Now attempting to post {next_type}...")
+    
+    # USER MANDATE: Old reels from reels_urls.txt (reading text printed on images) are STOPPED and DISCONTINUED.
+    # All Reels are now generated on-the-fly as fresh Kinetic Shorts via youtube_uploader.py
+    # and syndicated across YouTube, Instagram Reels, Facebook Reels, Website, and Telegram simultaneously.
+    next_type = "IMAGE"
+    print("Mode: Strictly Post Pure Image Quotes (Old OCR reels from reels_urls.txt are paused as per user mandate).")
     
 
     def get_from_file(filename, is_video):
@@ -301,27 +300,13 @@ def get_next_media():
                         }
                 raise Exception("Failed to download healthy media after trying 5 different URLs and no local fallback available.")
         return None
-    if next_type == "IMAGE":
-        res = get_from_file("images_urls.txt", False)
-        if res:
-            with open(last_type_file, "w") as f: f.write("IMAGE")
-            return res
-        print("No images left, falling back to reel...")
-        next_type = "REEL"
-
-    if next_type == "REEL":
-        res = get_from_file("reels_urls.txt", True)
-        if res:
-            with open(last_type_file, "w") as f: f.write("REEL")
-            return res
+    # Strictly post images from images_urls.txt; never pick from reels_urls.txt
+    res = get_from_file("images_urls.txt", False)
+    if res:
+        with open(last_type_file, "w") as f: f.write("IMAGE")
+        return res
         
-        print("No reels left, falling back to image...")
-        res = get_from_file("images_urls.txt", False)
-        if res:
-            with open(last_type_file, "w") as f: f.write("IMAGE")
-            return res
-            
-    raise Exception("No media available at all! Please upload new media.")
+    raise Exception("No images available in images_urls.txt. Old OCR reels from reels_urls.txt are paused as per user mandate.")
 
 def clean_caption(text):
     if not text:
