@@ -46,6 +46,12 @@
 
   <!-- Clean Canonical Devotional Articles & 4K Posts (Pre-Rendered SSG) -->
   <url>
+    <loc>https://krishnavibez.in/post/krishna-20261112-083519</loc>
+    <lastmod>2026-11-12</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.9</priority>
+  </url>
+  <url>
     <loc>https://krishnavibez.in/post/krishna-20261112-024807</loc>
     <lastmod>2026-11-12</lastmod>
     <changefreq>weekly</changefreq>
@@ -592,7 +598,7 @@
     <priority>0.9</priority>
   </url>
   <url>
-    <loc>https://krishnavibez.in/post/krishna-20261112-024807</loc>
+    <loc>https://krishnavibez.in/post/krishna-20261112-083519</loc>
     <lastmod>2026-11-12</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.9</priority>
