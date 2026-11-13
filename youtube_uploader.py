@@ -577,7 +577,56 @@ def mark_url_as_used(url):
         uf.write(url + "\n")
     git_commit_and_push("Used and removed URL from youtube_reels_urls.txt")
 
+def check_daily_reel_limit():
+    """
+    Guarantees STRICT 1 REEL / SHORT PER DAY.
+    Checks IST (Indian Standard Time) date. If a reel was already posted today, exits cleanly with code 0.
+    """
+    if "--force" in sys.argv:
+        print("⏩ [--force] Bypassing daily 1-reel limit check.", flush=True)
+        return True
+    
+    from datetime import datetime, timezone, timedelta
+    ist_now = datetime.now(timezone.utc) + timedelta(hours=5, minutes=30)
+    today_str = ist_now.strftime("%Y-%m-%d")
+    
+    tracker_file = os.path.join(BASE_DIR, "daily_post_tracker.json")
+    if os.path.exists(tracker_file):
+        try:
+            with open(tracker_file, "r", encoding="utf-8") as f:
+                data = json.load(f)
+            last_date = data.get("last_reel_date")
+            if last_date == today_str:
+                print(f"🛑 [DAILY LIMIT REACHED] A Reel/Short has ALREADY been posted for today ({today_str} IST).", flush=True)
+                print("   Strict rule: Exactly 1 reel per day. Exiting cleanly with code 0.", flush=True)
+                sys.exit(0)
+        except Exception as e:
+            print(f"   Notice reading daily tracker: {e}", flush=True)
+    return True
+
+def record_daily_reel_done():
+    from datetime import datetime, timezone, timedelta
+    ist_now = datetime.now(timezone.utc) + timedelta(hours=5, minutes=30)
+    today_str = ist_now.strftime("%Y-%m-%d")
+    tracker_file = os.path.join(BASE_DIR, "daily_post_tracker.json")
+    data = {}
+    if os.path.exists(tracker_file):
+        try:
+            with open(tracker_file, "r", encoding="utf-8") as f:
+                data = json.load(f)
+        except Exception:
+            data = {}
+    data["last_reel_date"] = today_str
+    data["last_reel_timestamp"] = int(time.time())
+    try:
+        with open(tracker_file, "w", encoding="utf-8") as f:
+            json.dump(data, f, indent=2)
+        print(f"✅ Recorded daily reel completion in tracker for {today_str} IST.", flush=True)
+    except Exception as e:
+        print(f"Notice saving tracker: {e}", flush=True)
+
 def main():
+    check_daily_reel_limit()
     print("=" * 60)
     print("  YouTube Shorts Auto Uploader (Krishna Vibez)")
     print("  Mode: Kinetic Word-by-Word Shorts Generator (HarfBuzz + Wave)")
@@ -606,6 +655,7 @@ def main():
 
     try:
         video_id = upload_short_to_youtube(upload_video_path, title, description, tags)
+        record_daily_reel_done()
         mark_url_as_used(chosen_url)
         print(f"YouTube Short workflow completed successfully! ID: {video_id}")
 

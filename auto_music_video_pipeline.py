@@ -3410,6 +3410,7 @@ def upload_to_youtube(theme, duration_sec=900, track_info=None):
     if up_res.status_code in [200, 201]:
         video_id = up_res.json().get("id")
         print(f"  -> SUCCESS! Video uploaded to YouTube: https://youtu.be/{video_id}")
+        record_daily_music_video_done()
         
         # 🛡️ 24-HOUR SAFETY QUARANTINE SHIELD:
         try:
@@ -3482,7 +3483,56 @@ def cleanup():
         except Exception: pass
     print("[Cleanup] All temporary media deleted. Workspace is clean and light.")
 
+def check_daily_music_video_limit():
+    """
+    Guarantees STRICT 1 MUSIC VIDEO PER DAY.
+    Checks IST (Indian Standard Time) date. If a video was already posted today, exits cleanly with code 0.
+    """
+    if "--force" in sys.argv:
+        print("⏩ [--force] Bypassing daily 1-video limit check.", flush=True)
+        return True
+    
+    from datetime import datetime, timezone, timedelta
+    ist_now = datetime.now(timezone.utc) + timedelta(hours=5, minutes=30)
+    today_str = ist_now.strftime("%Y-%m-%d")
+    
+    tracker_file = os.path.join(BASE_DIR, "daily_post_tracker.json")
+    if os.path.exists(tracker_file):
+        try:
+            with open(tracker_file, "r", encoding="utf-8") as f:
+                data = json.load(f)
+            last_date = data.get("last_music_video_date")
+            if last_date == today_str:
+                print(f"🛑 [DAILY LIMIT REACHED] A music video has ALREADY been posted for today ({today_str} IST).", flush=True)
+                print("   Strict rule: Exactly 1 music video per day. Exiting cleanly with code 0.", flush=True)
+                sys.exit(0)
+        except Exception as e:
+            print(f"   Notice reading daily tracker: {e}", flush=True)
+    return True
+
+def record_daily_music_video_done():
+    from datetime import datetime, timezone, timedelta
+    ist_now = datetime.now(timezone.utc) + timedelta(hours=5, minutes=30)
+    today_str = ist_now.strftime("%Y-%m-%d")
+    tracker_file = os.path.join(BASE_DIR, "daily_post_tracker.json")
+    data = {}
+    if os.path.exists(tracker_file):
+        try:
+            with open(tracker_file, "r", encoding="utf-8") as f:
+                data = json.load(f)
+        except Exception:
+            data = {}
+    data["last_music_video_date"] = today_str
+    data["last_music_video_timestamp"] = int(time.time())
+    try:
+        with open(tracker_file, "w", encoding="utf-8") as f:
+            json.dump(data, f, indent=2)
+        print(f"✅ Recorded daily music video completion in tracker for {today_str} IST.", flush=True)
+    except Exception as e:
+        print(f"Notice saving tracker: {e}", flush=True)
+
 def main():
+    check_daily_music_video_limit()
     # User rule: Dynamic duration between 12 and 50 minutes (e.g. 15 min = 5 images, 45 min = 15 images, 3-min shift)
     dur_min = random.randint(60, 135)
     dur_sec = dur_min * 60 + random.randint(5, 55)
