@@ -1,15 +1,78 @@
-name: Auto Post to Instagram, Facebook & Krishna Vibez Website (Discontinued)
+name: Daily Evening Thought Image Post (Instagram, FB, Telegram, Web)
 
 on:
-  workflow_dispatch: # Allows manual trigger from GitHub UI and cron-job.org
+  workflow_dispatch: # Allows manual trigger from GitHub UI anytime
+  repository_dispatch: # Allows external triggers from cron-job.org at 07:00 PM IST
+    types: [post_thought_image, evening_image_post, daily_image_post]
+  schedule:
+    # EXACTLY 1 TIME DAILY IN THE EVENING:
+    # 13:30 UTC = 07:00 PM IST (Evening Thought & Spiritual Reflection Peak)
+    - cron: '30 13 * * *'
+
+concurrency:
+  group: evening-thought-image-post
+  cancel-in-progress: false
 
 jobs:
-  post-and-publish:
+  post-thought-image:
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
     steps:
-      - name: Discontinued Notice
-        run: |
-          echo "⚠️ [NOTICE] Old AI-voice photo quote posting is permanently discontinued as per user instruction."
-          echo "🎬 All daily posts are now generated via YouTube Shorts (youtube_schedule.yml) and syndicated directly to Instagram, Facebook, Telegram & Website."
-          exit 0
+      - name: Checkout repository
+        uses: actions/checkout@v3
 
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.10'
+
+      - name: Set up Node.js for Firebase
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+
+      - name: Install System Dependencies (ffmpeg)
+        run: sudo apt-get update && sudo apt-get install -y ffmpeg
+
+      - name: Install Python dependencies
+        run: pip install -r requirements.txt
+
+      - name: Run Evening Thought Image Auto Post Script
+        env:
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          FB_PAGE_ID: ${{ secrets.FB_PAGE_ID }}
+          FB_ACCESS_TOKEN: ${{ secrets.FB_ACCESS_TOKEN }}
+          ONESIGNAL_REST_API_KEY: ${{ secrets.ONESIGNAL_REST_API_KEY }}
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+          PINTEREST_ACCESS_TOKEN: ${{ secrets.PINTEREST_ACCESS_TOKEN }}
+          PINTEREST_BOARD_ID: ${{ secrets.PINTEREST_BOARD_ID }}
+          THREADS_ACCESS_TOKEN: ${{ secrets.THREADS_ACCESS_TOKEN }}
+          THREADS_USER_ID: ${{ secrets.THREADS_USER_ID }}
+          REDDIT_CLIENT_ID: ${{ secrets.REDDIT_CLIENT_ID }}
+          REDDIT_CLIENT_SECRET: ${{ secrets.REDDIT_CLIENT_SECRET }}
+          REDDIT_USERNAME: ${{ secrets.REDDIT_USERNAME }}
+          REDDIT_PASSWORD: ${{ secrets.REDDIT_PASSWORD }}
+          REDDIT_SUBREDDIT: ${{ secrets.REDDIT_SUBREDDIT }}
+        run: python -u main.py
+
+      - name: Commit Updated Website Data & URLs to Git
+        run: |
+          git config user.name "Krishna Vibez Image Bot"
+          git config user.email "bot@krishnavibez.in"
+          git add website/ used_urls.txt images_urls.txt reels_urls.txt last_post_type.txt last_posted_timestamp.txt daily_post_tracker.json || true
+          git diff --staged --quiet || git commit -m "Auto-published evening thought image across Instagram, FB, Telegram & Website [skip ci]"
+          for i in 1 2 3 4 5; do
+            git pull --rebase origin master || true
+            git push origin master && break || sleep 3
+          done
+
+      - name: Deploy to Firebase Hosting
+        env:
+          FIREBASE_TOKEN: ${{ secrets.FIREBASE_TOKEN }}
+        if: env.FIREBASE_TOKEN != ''
+        run: |
+          npm install -g firebase-tools
+          firebase deploy --only hosting --token "$FIREBASE_TOKEN"
+        working-directory: website

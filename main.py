@@ -6,13 +6,6 @@ if sys.stdout and hasattr(sys.stdout, "reconfigure"):
 if sys.stderr and hasattr(sys.stderr, "reconfigure"):
     sys.stderr.reconfigure(encoding="utf-8", errors="replace")
 
-# USER INSTRUCTION: Old AI-voice photo reading posts are permanently discontinued.
-# The YouTube Shorts pipeline (youtube_uploader.py) is the sole authoritative engine
-# that generates the video and syndicates it directly to Instagram, Facebook, Telegram & Website.
-print("⚠️ [NOTICE] Old AI-voice photo quote posting is permanently disabled as per user instruction.")
-print("🎬 All posts are now generated via YouTube Shorts and syndicated directly to Instagram, Facebook, Telegram & Website.")
-sys.exit(0)
-
 import random
 import time
 import subprocess
@@ -22,6 +15,55 @@ from PIL import Image, ImageFilter
 import urllib.parse
 import json
 from datetime import datetime
+
+def check_daily_image_limit():
+    """
+    Guarantees STRICT 1 EVENING THOUGHT IMAGE POST PER DAY across Instagram, FB, Telegram, etc.
+    """
+    if "--force" in sys.argv:
+        print("⏩ [--force] Bypassing daily 1-image limit check.", flush=True)
+        return True
+    
+    from datetime import datetime, timezone, timedelta
+    ist_now = datetime.now(timezone.utc) + timedelta(hours=5, minutes=30)
+    today_str = ist_now.strftime("%Y-%m-%d")
+    
+    tracker_file = os.path.join(os.path.dirname(os.path.abspath(__file__)), "daily_post_tracker.json")
+    if os.path.exists(tracker_file):
+        try:
+            with open(tracker_file, "r", encoding="utf-8") as f:
+                data = json.load(f)
+            last_date = data.get("last_image_post_date")
+            if last_date == today_str:
+                print(f"🛑 [DAILY LIMIT REACHED] An evening thought image has ALREADY been posted for today ({today_str} IST).", flush=True)
+                print("   Strict rule: Exactly 1 evening image post per day at 7:00 PM IST. Exiting cleanly with code 0.", flush=True)
+                sys.exit(0)
+        except Exception as e:
+            print(f"   Notice reading daily tracker: {e}", flush=True)
+    return True
+
+def record_daily_image_done():
+    from datetime import datetime, timezone, timedelta
+    ist_now = datetime.now(timezone.utc) + timedelta(hours=5, minutes=30)
+    today_str = ist_now.strftime("%Y-%m-%d")
+    tracker_file = os.path.join(os.path.dirname(os.path.abspath(__file__)), "daily_post_tracker.json")
+    data = {}
+    if os.path.exists(tracker_file):
+        try:
+            with open(tracker_file, "r", encoding="utf-8") as f:
+                data = json.load(f)
+        except Exception:
+            data = {}
+    data["last_image_post_date"] = today_str
+    data["last_image_post_timestamp"] = int(time.time())
+    try:
+        with open(tracker_file, "w", encoding="utf-8") as f:
+            json.dump(data, f, indent=2)
+        print(f"✅ Recorded daily evening image completion in tracker for {today_str} IST.", flush=True)
+    except Exception as e:
+        print(f"Notice saving tracker: {e}", flush=True)
+
+check_daily_image_limit()
 
 # Secrets from GitHub Actions
 GEMINI_API_KEY = os.environ.get("GEMINI_API_KEY")
@@ -284,6 +326,26 @@ def get_next_media():
                     time.sleep(1)
                     continue
                     
+                # USER MANDATE: Only 3:4, 4:5, or 1:1 portrait thought images allowed!
+                # STRICT PROHIBITION: 16:9 landscape images have NO thoughts and MUST NEVER be posted!
+                if success_download and not is_video:
+                    try:
+                        from PIL import Image
+                        with Image.open(temp_file) as im:
+                            w, h = im.size
+                            ratio = w / h
+                            if ratio > 1.2:
+                                print(f"⚠️ [ASPECT RATIO REJECTED] {w}x{h} (ratio={ratio:.2f}) is 16:9/landscape (NO THOUGHT). User rule: Only 3:4 or 4:5 thought images! Skipping...")
+                                if os.path.exists(temp_file):
+                                    os.remove(temp_file)
+                                attempts += 1
+                                time.sleep(1)
+                                continue
+                            else:
+                                print(f"✅ [APPROVED PORTRAIT THOUGHT IMAGE] {w}x{h} (ratio={ratio:.2f}) perfect for Instagram/FB/Telegram!")
+                    except Exception as im_err:
+                        print(f"Notice inspecting image aspect ratio: {im_err}")
+
                 return {
                     "type": "catbox",
                     "local_path": temp_file,
@@ -1064,6 +1126,7 @@ if __name__ == "__main__":
 
         if success or web_success:
             print("Successfully published to channels!")
+            record_daily_image_done()
             try:
                 with open("last_posted_timestamp.txt", "w") as f:
                     f.write(str(time.time()))
