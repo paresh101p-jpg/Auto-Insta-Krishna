@@ -6,6 +6,13 @@ if sys.stdout and hasattr(sys.stdout, "reconfigure"):
 if sys.stderr and hasattr(sys.stderr, "reconfigure"):
     sys.stderr.reconfigure(encoding="utf-8", errors="replace")
 
+# USER INSTRUCTION: Old AI-voice photo reading posts are permanently discontinued.
+# The YouTube Shorts pipeline (youtube_uploader.py) is the sole authoritative engine
+# that generates the video and syndicates it directly to Instagram, Facebook, Telegram & Website.
+print("⚠️ [NOTICE] Old AI-voice photo quote posting is permanently disabled as per user instruction.")
+print("🎬 All posts are now generated via YouTube Shorts and syndicated directly to Instagram, Facebook, Telegram & Website.")
+sys.exit(0)
+
 import random
 import time
 import subprocess

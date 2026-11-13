@@ -234,8 +234,9 @@ def syndicate_kinetic_reel(video_path, spoken_thought, title, youtube_video_id, 
     except Exception as e:
         print(f"[Telegram] ⚠️ Notice: {e}")
 
-    # 4. Meta Credentials for Instagram & Facebook
-    fb_page_id = os.environ.get("FB_PAGE_ID") or "1808917602588221"
+    # 4. Meta Credentials for Instagram & Facebook (Krishna Vibez Official)
+    fb_page_id = "1808917602588221"  # Krishna Vibez Facebook Page ID
+    ig_acc_id = "17841414531048670"   # Krishna Vibez Instagram Business Account ID (@krishnavibez)
     fb_token = os.environ.get("FB_ACCESS_TOKEN")
     if not fb_token:
         token_file = os.path.join(BASE_DIR, "fb_permanent_token.txt")
@@ -247,30 +248,23 @@ def syndicate_kinetic_reel(video_path, spoken_thought, title, youtube_video_id, 
                 pass
 
     if fb_token:
-        # A. Instagram Reel
+        # A. Instagram Reel (Uploads the EXACT YouTube Short to @krishnavibez)
         try:
-            ig_acc_id = os.environ.get("INSTAGRAM_ACCOUNT_ID")
-            if not ig_acc_id:
-                ig_url = f"https://graph.facebook.com/v20.0/{fb_page_id}?fields=instagram_business_account&access_token={fb_token}"
-                ig_res = requests.get(ig_url, timeout=15).json()
-                ig_acc_id = ig_res.get("instagram_business_account", {}).get("id")
-
-            if ig_acc_id:
-                ig_caption = (
-                    f"✨ आज का सुविचार ✨\n\n"
-                    f"\"{spoken_thought}\"\n\n"
-                    f"🌸 4K दर्शन व संपूर्ण विचार पढ़ने के लिए Bio में दी गई लिंक पर क्लिक करें!\n"
-                    f"🙏 जय श्री राधे कृष्ण! अधिक पावन विचारों के लिए पेज को फॉलो करें।\n\n"
-                    f"#Krishna #RadheKrishna #KrishnaVibez #DailySuvichar #BhagavadGita #Reels #Devotional"
-                )
-                results["instagram"] = post_ig_reel(ig_acc_id, ig_caption, video_path, fb_token, public_video_url)
-            else:
-                print("[Instagram Reel] Notice: No instagram_business_account linked to page.")
+            print(f"[Instagram Reel] Preparing to syndicate Short to Instagram (@krishnavibez)...")
+            ig_caption = (
+                f"✨ आज का सुविचार ✨\n\n"
+                f"\"{spoken_thought}\"\n\n"
+                f"🌸 4K दर्शन व संपूर्ण विचार पढ़ने के लिए Bio में दी गई लिंक पर क्लिक करें!\n"
+                f"🙏 जय श्री राधे कृष्ण! अधिक पावन विचारों के लिए पेज को फॉलो करें।\n\n"
+                f"#Krishna #RadheKrishna #KrishnaVibez #DailySuvichar #BhagavadGita #Reels #Devotional"
+            )
+            results["instagram"] = post_ig_reel(ig_acc_id, ig_caption, video_path, fb_token, public_video_url)
         except Exception as e:
             print(f"[Instagram Reel] ⚠️ Notice: {e}")
 
-        # B. Facebook Video / Reel
+        # B. Facebook Video / Reel (Uploads the EXACT YouTube Short to Krishna Vibez Page)
         try:
+            print(f"[Facebook Reel] Preparing to syndicate Short to Facebook Page...")
             fb_caption = (
                 f"✨ आज का सुविचार ✨\n\n"
                 f"\"{spoken_thought}\"\n\n"

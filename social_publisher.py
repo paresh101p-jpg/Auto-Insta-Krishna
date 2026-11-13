@@ -156,66 +156,8 @@ def publish_to_telegram(media_url, caption, post_url, is_video=False, youtube_ur
             except Exception:
                 pass
 
-            # Also send personal reminder to Paresh bhai (ONLY if admin_chat_id is a private user ID, NEVER if channel)
-            admin_str = str(admin_chat_id).strip()
-            chat_str = str(chat_id).strip()
-            is_channel_target = admin_str.startswith("@") or admin_str.startswith("-100") or admin_str == chat_str
-            if admin_chat_id and not is_channel_target:
-                try:
-                    reflection = caption.strip()
-                    whatsapp_channel = "https://whatsapp.com/channel/0029VbDxJHk30LKNtj4Er62J"
-                    admin_caption = (
-                        f"🔔 <b>परेश भाई, आज का नया पोस्ट तैयार है!</b>\n"
-                        f"👉 <i>इस फ़ोटो/रील को अपने WhatsApp Channel और YouTube पर शेयर कर दीजिए:</i>\n\n"
-                        f"{formatted_caption}"
-                    )
-                    admin_reply_markup = {
-                        "inline_keyboard": [
-                            [
-                                {"text": "🟢 WhatsApp चैनल खोलें", "url": whatsapp_channel},
-                                {"text": "▶️ YouTube Community खोलें", "url": "https://youtube.com/@krishnavibezofficial/community"}
-                            ],
-                            [
-                                {"text": "🌸 4K दर्शन वेबसाइट पर देखें", "url": post_url}
-                            ]
-                        ]
-                    }
-                    admin_payload = {
-                        "chat_id": admin_chat_id,
-                        "caption": admin_caption[:1024],
-                        "parse_mode": "HTML",
-                        "reply_markup": json.dumps(admin_reply_markup)
-                    }
-                    if os.path.exists(str(media_url)):
-                        with open(media_url, "rb") as mf:
-                            requests.post(api_url, data=admin_payload, files={param_name: (filename, mf, mime)}, timeout=60)
-                    else:
-                        admin_payload[param_name] = media_url
-                        requests.post(api_url, data=admin_payload, timeout=20)
-
-                    # Send 1-tap instant copy message so Paresh bhai never has to manually select text
-                    clean_wa_caption = (
-                        f"✨ श्री कृष्ण पावन अमृत विचार ✨\n\n"
-                        f"\"{quote_text}\"\n\n"
-                        f"📖 पावन भावार्थ:\n"
-                        f"{reflection[:300]}\n\n"
-                        f"🌸 4K दर्शन व डाउनलोड:\n{post_url}\n\n"
-                        f"🕊️ Krishna Vibez Official:\n"
-                        f"🟢 WhatsApp: {whatsapp_channel}\n"
-                        f"▶️ YouTube: https://youtube.com/@krishnavibezofficial\n\n"
-                        f"जय श्री राधे कृष्ण! 🙏✨\n\n"
-                        f"#Krishna #RadheKrishna #BhagavadGita #KrishnaQuotes"
-                    )
-                    copy_text_payload = {
-                        "chat_id": admin_chat_id,
-                        "text": f"📋 <b>नीचे दिए गए बॉक्स पर सिर्फ 1 बार टैप (Click) करें — पूरा Caption तुरंत Copy हो जाएगा:</b>\n\n<code>{clean_wa_caption}</code>",
-                        "parse_mode": "HTML"
-                    }
-                    requests.post(f"https://api.telegram.org/bot{bot_token}/sendMessage", data=copy_text_payload, timeout=15)
-                    print(f"[Telegram] 🔔 Personal reminder & 1-tap copy box sent to Paresh bhai ({admin_chat_id})!")
-                except Exception as admin_err:
-                    print(f"[Telegram] Notice (Admin reminder): {admin_err}")
-
+            # User requested: Personal reminder & copy message to private chat is disabled.
+            # Channel publication continues 100% active.
             return True
         else:
             print(f"[Telegram] ⚠️ API response error: {res_data.get('description')}")
