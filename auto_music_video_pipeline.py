@@ -2392,13 +2392,13 @@ def render_full_length_base_thumbnail(base_image_path, theme, output_path, expli
         print(f"  -> 👁️ [Smart Vision Layout] Subject detected on {subject_side} side. Placing typography strictly on {text_side.upper()} side (60% screen: max-width 1120px, top={top_offset}px)!", flush=True)
 
         if text_side == "right":
-            text_container_css = f"position: absolute; top: {top_offset}px; right: 35px; width: 1120px; max-width: 1120px; z-index: 10; overflow: visible; padding-top: 5px; text-align: right;"
+            text_container_css = f"position: absolute; top: {top_offset}px; right: 40px; width: 780px; max-width: 780px; z-index: 10; padding-top: 5px; text-align: right;"
             pill_align_css = "display: inline-flex; margin-left: auto;"
-            vignette_css = "position: absolute; top: 0; left: 0; width: 1920px; height: 1080px; background: linear-gradient(270deg, rgba(0,0,0,0.96) 0%, rgba(0,0,0,0.85) 35%, rgba(0,0,0,0.45) 55%, rgba(0,0,0,0) 68%); pointer-events: none;"
+            vignette_css = "position: absolute; top: 0; left: 0; width: 1920px; height: 1080px; background: linear-gradient(270deg, rgba(0,0,0,0.96) 0%, rgba(0,0,0,0.85) 30%, rgba(0,0,0,0.40) 48%, rgba(0,0,0,0) 62%); pointer-events: none;"
         else:
-            text_container_css = f"position: absolute; top: {top_offset}px; left: 35px; width: 1120px; max-width: 1120px; z-index: 10; overflow: visible; padding-top: 5px; text-align: left;"
+            text_container_css = f"position: absolute; top: {top_offset}px; left: 40px; width: 780px; max-width: 780px; z-index: 10; padding-top: 5px; text-align: left;"
             pill_align_css = "display: inline-flex;"
-            vignette_css = "position: absolute; top: 0; left: 0; width: 1920px; height: 1080px; background: linear-gradient(90deg, rgba(0,0,0,0.96) 0%, rgba(0,0,0,0.85) 35%, rgba(0,0,0,0.45) 55%, rgba(0,0,0,0) 68%); pointer-events: none;"
+            vignette_css = "position: absolute; top: 0; left: 0; width: 1920px; height: 1080px; background: linear-gradient(90deg, rgba(0,0,0,0.96) 0%, rgba(0,0,0,0.85) 30%, rgba(0,0,0,0.40) 48%, rgba(0,0,0,0) 62%); pointer-events: none;"
 
         # Category and 4-Line Hook details
         cat = theme.get("category", "").lower()
@@ -2520,27 +2520,29 @@ def render_full_length_base_thumbnail(base_image_path, theme, output_path, expli
   }}
   .line-lead {{
     font-family: 'Tiro Devanagari Hindi', 'Nirmala UI', serif;
-    font-size: 114px;
+    font-size: 86px;
     font-weight: 800;
-    line-height: 1.12;
+    line-height: 1.14;
     padding-top: 4px;
     color: #FFE600;
     letter-spacing: 1px;
     text-shadow: 0 5px 0 #1A0D00, 0 10px 0 #000, 0 14px 28px rgba(0,0,0,0.98), 0 0 35px rgba(255, 230, 0, 0.85);
-    margin-bottom: 2px;
-    overflow: visible;
+    margin-bottom: 4px;
+    max-width: 780px;
+    word-wrap: break-word;
   }}
   .line-benefit {{
     font-family: 'Tiro Devanagari Hindi', 'Nirmala UI', serif;
-    font-size: 122px;
+    font-size: 92px;
     font-weight: 800;
-    line-height: 1.12;
+    line-height: 1.14;
     padding-top: 4px;
     letter-spacing: 1px;
     color: #FFF8E1;
     text-shadow: 0 5px 0 #FF8F00, 0 9px 0 #C43800, 0 13px 0 #200800, 0 16px 30px rgba(0,0,0,0.98), 0 0 45px rgba(255, 179, 0, 0.9);
-    margin-bottom: 2px;
-    overflow: visible;
+    margin-bottom: 4px;
+    max-width: 780px;
+    word-wrap: break-word;
   }}
 
   /* High-Contrast Luxury Full-Length Bottom Base Line */
@@ -2623,8 +2625,10 @@ def render_full_length_base_thumbnail(base_image_path, theme, output_path, expli
             f.write(html_content)
 
         file_uri = "file:///" + os.path.abspath(html_tmp).replace("\\", "/")
+        browser_user_data = os.path.join(TEMP_DIR, "chrome_render_profile")
         subprocess.run([
-            browser_exe, "--headless", "--disable-gpu", "--hide-scrollbars",
+            browser_exe, "--headless=new", "--disable-gpu", "--hide-scrollbars",
+            f"--user-data-dir={browser_user_data}",
             "--virtual-time-budget=5000", "--run-all-compositor-stages-before-draw",
             "--window-size=1920,1080", f"--screenshot={png_tmp}", file_uri
         ], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, check=True)
@@ -2658,6 +2662,33 @@ def recheck_face_side_yunet(image_path, expected_side):
         detector.setInputSize((w, h))
         _, faces = detector.detect(img)
         if faces is None or len(faces) == 0:
+            detector2 = cv2.FaceDetectorYN.create(model_path, "", (320, 320), 0.25, 0.15, 5000)
+            detector2.setInputSize((w, h))
+            _, faces = detector2.detect(img)
+
+        if faces is None or len(faces) == 0:
+            # Neural Gemini Vision Fallback to guarantee side correctness
+            gemini_key = os.getenv("GEMINI_API_KEY")
+            if not gemini_key:
+                kf_p = os.path.join(BASE_DIR, "gemini_key.txt")
+                if os.path.exists(kf_p):
+                    with open(kf_p, "r", encoding="utf-8") as kf:
+                        gemini_key = kf.read().strip()
+            if gemini_key:
+                try:
+                    from google import genai
+                    from PIL import Image
+                    gclient = genai.Client(api_key=gemini_key)
+                    gimg = Image.open(image_path)
+                    res = gclient.models.generate_content(
+                        model="gemini-3.1-flash-lite",
+                        contents=[gimg, "Is the woman on the LEFT, RIGHT, or CENTER of this image? Answer strictly with one word: LEFT, RIGHT, or CENTER."]
+                    )
+                    v_side = res.text.strip().upper()
+                    if "RIGHT" in v_side: return True, "RIGHT"
+                    if "LEFT" in v_side: return True, "LEFT"
+                except Exception:
+                    pass
             return True, expected_side
         largest = max(faces, key=lambda f: f[2] * f[3])
         face_cx = (largest[0] + largest[2] / 2.0) / float(w)
@@ -2699,10 +2730,10 @@ def verify_thumbnail_youtube_policy(thumb_path):
             "Strict YouTube Community Guidelines & Family-Safety Verification Task:\n"
             "1. Clothing & Modesty Check: Does the woman have an overly deep, plunging, or revealing neckline, excessive cleavage, or suggestive exposure? (Must be strictly modest, royal, and dignified Indian attire like a traditional saree/choli).\n"
             "2. Policy Compliance: Is this image 100% family-safe, non-vulgar, and adhering strictly to YouTube advertiser-friendly guidelines?\n"
-            "3. Typography & Face: Is the typography respectful and the woman's face clear?\n"
-            "If there is ANY excessive neckline, deep cleavage, or suggestive look, answer with 'policy_compliant': false, 'verdict': 'REJECTED_REVEALING_NECKLINE'.\n"
-            "Only answer 'APPROVED' if it is 100% safe, modest, and dignified.\n"
-            "Answer strictly in JSON: {\"policy_compliant\": true/false, \"revealing_neckline\": true/false, \"verdict\": \"APPROVED\" or \"REJECTED_REVEALING_NECKLINE\"}"
+            "3. ZERO Text on Face Check: Does ANY text, title, letter, or banner cover, overlap, or touch ANY part of the woman's face, eyes, nose, lips, forehead, or hair? (The woman's face must be 100% COMPLETELY UNTOUCHED and fully visible. Any text on face is a strict violation).\n"
+            "If there is ANY excessive neckline, deep cleavage, or if text touches/covers her face, answer with 'policy_compliant': false.\n"
+            "Only answer 'APPROVED' if it is 100% safe, modest, dignified, and text does NOT touch her face.\n"
+            "Answer strictly in JSON: {\"policy_compliant\": true/false, \"revealing_neckline\": true/false, \"text_on_face\": true/false, \"verdict\": \"APPROVED\" or \"REJECTED\"}"
         )
         res = client.models.generate_content(model="gemini-3.1-flash-lite", contents=[up_img, prompt])
         raw = res.text.strip()
@@ -2710,8 +2741,8 @@ def verify_thumbnail_youtube_policy(thumb_path):
         except Exception: pass
         
         # Strict policy check
-        if "REJECTED" in raw.upper() or '"policy_compliant": false' in raw.lower() or '"revealing_neckline": true' in raw.lower():
-            print(f"  -> 🚫 [YouTube Policy REJECTED]: Revealing neckline or policy concern detected: {raw}", flush=True)
+        if "REJECTED" in raw.upper() or '"policy_compliant": false' in raw.lower() or '"revealing_neckline": true' in raw.lower() or '"text_on_face": true' in raw.lower():
+            print(f"  -> 🚫 [YouTube Policy REJECTED]: Policy concern or text on face detected: {raw}", flush=True)
             return False
             
         if "APPROVED" in raw.upper() and ('"policy_compliant": true' in raw.lower() or 'true' in raw.lower()):

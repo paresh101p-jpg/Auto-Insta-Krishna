@@ -611,17 +611,18 @@ def check_daily_reel_limit():
         ch_resp = yt_service.channels().list(part="contentDetails", mine=True).execute()
         if ch_resp.get("items"):
             upl_id = ch_resp["items"][0]["contentDetails"]["relatedPlaylists"]["uploads"]
-            pl_items = yt_service.playlistItems().list(part="snippet", playlistId=upl_id, maxResults=5).execute().get("items", [])
+            pl_items = yt_service.playlistItems().list(part="snippet,status", playlistId=upl_id, maxResults=8).execute().get("items", [])
             for it in pl_items:
                 pub_at = it.get("snippet", {}).get("publishedAt", "")
-                if pub_at:
+                privacy = it.get("status", {}).get("privacyStatus", "")
+                title = it.get("snippet", {}).get("title", "")
+                # Only lock if a PUBLIC Short has already been published today
+                if privacy == "public" and pub_at:
                     pub_dt = datetime.fromisoformat(pub_at.replace("Z", "+00:00"))
                     pub_ist = pub_dt + timedelta(hours=5, minutes=30)
-                    # If any Short/Video was uploaded today in IST
-                    if pub_ist.strftime("%Y-%m-%d") == today_str:
-                        title = it.get("snippet", {}).get("title", "")
-                        print(f"🛑 [YOUTUBE LIVE LOCK] A video has ALREADY been posted today ({today_str} IST) on YouTube: {title}", flush=True)
-                        print("   Strict rule: Exactly 1 reel per day. Exiting cleanly with code 0.", flush=True)
+                    if pub_ist.strftime("%Y-%m-%d") == today_str and ("#Shorts" in title or "#shorts" in title or "Short" in title):
+                        print(f"🛑 [YOUTUBE LIVE LOCK] A Public Short has ALREADY been posted today ({today_str} IST) on YouTube: {title}", flush=True)
+                        print("   Strict rule: Exactly 1 public reel per day. Exiting cleanly with code 0.", flush=True)
                         sys.exit(0)
     except Exception as yt_check_err:
         print(f"   Notice checking YouTube live uploads: {yt_check_err}", flush=True)
