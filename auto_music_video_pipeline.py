@@ -2389,16 +2389,16 @@ def render_full_length_base_thumbnail(base_image_path, theme, output_path, expli
                 print(f"  -> [Info] Face collision shield check skipped: {face_shield_err}", flush=True)
                 top_offset = 25
 
-        print(f"  -> 👁️ [Smart Vision Layout] Subject detected on {subject_side} side. Placing typography strictly on {text_side.upper()} side (60% screen: max-width 1120px, top={top_offset}px)!", flush=True)
+        print(f"  -> 👁️ [Smart Vision Layout] Subject detected on {subject_side} side. Placing typography strictly on {text_side.upper()} side (60% screen: max-width 1150px, top={top_offset}px)!", flush=True)
 
         if text_side == "right":
-            text_container_css = f"position: absolute; top: {top_offset}px; right: 40px; width: 780px; max-width: 780px; z-index: 10; padding-top: 5px; text-align: right;"
+            text_container_css = f"position: absolute; top: {top_offset}px; right: 40px; width: 1150px; max-width: 1150px; z-index: 10; padding-top: 5px; text-align: right;"
             pill_align_css = "display: inline-flex; margin-left: auto;"
-            vignette_css = "position: absolute; top: 0; left: 0; width: 1920px; height: 1080px; background: linear-gradient(270deg, rgba(0,0,0,0.96) 0%, rgba(0,0,0,0.85) 30%, rgba(0,0,0,0.40) 48%, rgba(0,0,0,0) 62%); pointer-events: none;"
+            vignette_css = "position: absolute; top: 0; left: 0; width: 1920px; height: 1080px; background: linear-gradient(270deg, rgba(0,0,0,0.96) 0%, rgba(0,0,0,0.88) 40%, rgba(0,0,0,0.50) 58%, rgba(0,0,0,0) 66%); pointer-events: none;"
         else:
-            text_container_css = f"position: absolute; top: {top_offset}px; left: 40px; width: 780px; max-width: 780px; z-index: 10; padding-top: 5px; text-align: left;"
+            text_container_css = f"position: absolute; top: {top_offset}px; left: 40px; width: 1150px; max-width: 1150px; z-index: 10; padding-top: 5px; text-align: left;"
             pill_align_css = "display: inline-flex;"
-            vignette_css = "position: absolute; top: 0; left: 0; width: 1920px; height: 1080px; background: linear-gradient(90deg, rgba(0,0,0,0.96) 0%, rgba(0,0,0,0.85) 30%, rgba(0,0,0,0.40) 48%, rgba(0,0,0,0) 62%); pointer-events: none;"
+            vignette_css = "position: absolute; top: 0; left: 0; width: 1920px; height: 1080px; background: linear-gradient(90deg, rgba(0,0,0,0.96) 0%, rgba(0,0,0,0.88) 40%, rgba(0,0,0,0.50) 58%, rgba(0,0,0,0) 66%); pointer-events: none;"
 
         # Category and 4-Line Hook details
         cat = theme.get("category", "").lower()
@@ -2455,14 +2455,11 @@ def render_full_length_base_thumbnail(base_image_path, theme, output_path, expli
             line4 = "शांत होंगे"
             tag = "✨ MAJESTIC RAAG DARBARI"
 
-        # If custom lead/benefit passed in theme, auto-split to 4 lines
+        lead_text = f"{line1} {line2}".strip()
+        benefit_text = f"{line3} {line4}".strip()
         if "lead" in theme and "benefit" in theme:
-            l1, l2 = split_to_two(theme["lead"])
-            b1, b2 = split_to_two(theme["benefit"])
-            if l1: line1 = l1
-            if l2: line2 = l2
-            if b1: line3 = b1
-            if b2: line4 = b2
+            lead_text = theme["lead"].strip()
+            benefit_text = theme["benefit"].strip()
 
         # Duration string for bottom badge (e.g. 15 MIN, 60 MIN)
         dur_str = theme.get("dur_str")
@@ -2506,13 +2503,13 @@ def render_full_length_base_thumbnail(base_image_path, theme, output_path, expli
     {pill_align_css}
     align-items: center;
     background: linear-gradient(90deg, #D50000 0%, #FF1744 100%);
-    border: 3.5px solid #FFF;
-    border-radius: 14px;
-    padding: 8px 32px;
-    margin-bottom: 12px;
+    border: 4px solid #FFF;
+    border-radius: 16px;
+    padding: 12px 42px;
+    margin-bottom: 18px;
     color: #FFFFFF;
     font-family: 'Poppins', 'Tiro Devanagari Hindi', sans-serif;
-    font-size: 38px;
+    font-size: 42px;
     font-weight: 900;
     letter-spacing: 1px;
     box-shadow: 0 8px 25px rgba(0,0,0,0.9), 0 0 25px rgba(255, 23, 68, 0.7);
@@ -2520,28 +2517,28 @@ def render_full_length_base_thumbnail(base_image_path, theme, output_path, expli
   }}
   .line-lead {{
     font-family: 'Tiro Devanagari Hindi', 'Nirmala UI', serif;
-    font-size: 86px;
+    font-size: 104px;
     font-weight: 800;
     line-height: 1.14;
     padding-top: 4px;
     color: #FFE600;
-    letter-spacing: 1px;
-    text-shadow: 0 5px 0 #1A0D00, 0 10px 0 #000, 0 14px 28px rgba(0,0,0,0.98), 0 0 35px rgba(255, 230, 0, 0.85);
-    margin-bottom: 4px;
-    max-width: 780px;
+    letter-spacing: 1.5px;
+    text-shadow: 0 6px 0 #1A0D00, 0 12px 0 #000, 0 16px 30px rgba(0,0,0,0.98), 0 0 35px rgba(255, 230, 0, 0.85);
+    margin-bottom: 12px;
+    max-width: 1150px;
     word-wrap: break-word;
   }}
   .line-benefit {{
     font-family: 'Tiro Devanagari Hindi', 'Nirmala UI', serif;
-    font-size: 92px;
+    font-size: 118px;
     font-weight: 800;
     line-height: 1.14;
     padding-top: 4px;
-    letter-spacing: 1px;
+    letter-spacing: 1.5px;
     color: #FFF8E1;
-    text-shadow: 0 5px 0 #FF8F00, 0 9px 0 #C43800, 0 13px 0 #200800, 0 16px 30px rgba(0,0,0,0.98), 0 0 45px rgba(255, 179, 0, 0.9);
-    margin-bottom: 4px;
-    max-width: 780px;
+    text-shadow: 0 6px 0 #FF8F00, 0 11px 0 #C43800, 0 15px 0 #200800, 0 18px 32px rgba(0,0,0,0.98), 0 0 45px rgba(255, 179, 0, 0.9);
+    margin-bottom: 14px;
+    max-width: 1150px;
     word-wrap: break-word;
   }}
 
@@ -2603,10 +2600,8 @@ def render_full_length_base_thumbnail(base_image_path, theme, output_path, expli
   
   <div class="text-container">
     <div class="hook-pill">{pill}</div>
-    <div class="line-lead line-1">{line1}</div>
-    <div class="line-lead line-2">{line2}</div>
-    <div class="line-benefit line-3">{line3}</div>
-    <div class="line-benefit line-4">{line4}</div>
+    <div class="line-lead">{lead_text}</div>
+    <div class="line-benefit">{benefit_text}</div>
   </div>
 
   <div class="bottom-badge-container">
@@ -2691,9 +2686,26 @@ def recheck_face_side_yunet(image_path, expected_side):
                     pass
             return True, expected_side
         largest = max(faces, key=lambda f: f[2] * f[3])
-        face_cx = (largest[0] + largest[2] / 2.0) / float(w)
-        actual_side = "LEFT" if face_cx < 0.48 else ("RIGHT" if face_cx > 0.52 else "CENTER")
-        if expected_side and actual_side != "CENTER" and actual_side != expected_side:
+        x, y, fw, fh = largest[:4]
+        face_cx = (x + fw / 2.0) / float(w)
+        face_x1 = x / float(w)
+        face_x2 = (x + fw) / float(w)
+
+        # 60% coverage requires woman's face to be strictly positioned at the outer edge:
+        # RIGHT side woman: face_cx >= 0.62 (leaving x=0 to 1190 clear for 60% text)
+        # LEFT side woman: face_cx <= 0.38 (leaving x=730 to 1920 clear for 60% text)
+        if face_cx >= 0.62:
+            actual_side = "RIGHT"
+        elif face_cx <= 0.38:
+            actual_side = "LEFT"
+        else:
+            actual_side = "CENTER"
+
+        if actual_side == "CENTER":
+            print(f"  ⚠️ [Face Check] Woman face is centered (norm_cx={face_cx:.2f}, x1={face_x1:.2f}, x2={face_x2:.2f}). Cannot safely fit 60% text!", flush=True)
+            return False, "CENTER"
+
+        if expected_side and actual_side != expected_side:
             print(f"  ⚠️ [Face Re-Check Warning] Expected {expected_side} but face center is {actual_side} ({face_cx:.2f}). Adjusting side to {actual_side}!", flush=True)
             return True, actual_side
         return True, actual_side
@@ -2914,8 +2926,15 @@ def generate_thumbnail(slides, theme):
                             bf.write(r.content)
                         
                         # 1. Real-time Face Position Re-Verification (YuNet)
-                        _, verified_side = recheck_face_side_yunet(local_catbox_bg, chosen_side)
-                        print(f"  -> 🔍 [Face Check Pass 2] Verified Woman Face on {verified_side} -> Typography safely positioned opposite!", flush=True)
+                        is_valid, verified_side = recheck_face_side_yunet(local_catbox_bg, chosen_side)
+                        if not is_valid or verified_side == "CENTER":
+                            print(f"  -> ⚠️ [Candidate Skipped] Face centered or ambiguous ({verified_side}). Skipping to next candidate for 60% text clearance!", flush=True)
+                            try:
+                                os.remove(local_catbox_bg)
+                            except Exception:
+                                pass
+                            continue
+                        print(f"  -> 🔍 [Face Check Pass 2] Verified Woman Face on {verified_side} -> Typography safely positioned opposite with 60% coverage!", flush=True)
                         
                         final_thumb = render_full_length_base_thumbnail(local_catbox_bg, theme, TEMP_THUMBNAIL, explicit_side=verified_side)
                         if final_thumb and os.path.exists(final_thumb):
