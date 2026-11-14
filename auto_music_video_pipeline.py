@@ -677,34 +677,8 @@ Return a JSON object with EXACTLY these keys:
 
 
 def generate_pollinations_nature_image(prompt, output_path):
-    """Generates a free 16:9 8K Nature meditation artwork via Pollinations AI with 7% smart bottom watermark crop."""
-    try:
-        import urllib.parse
-        encoded_p = urllib.parse.quote(prompt.strip())
-        url = f"https://image.pollinations.ai/prompt/{encoded_p}?width=1920&height=1080&nologo=true&model=flux"
-        temp_dl = output_path + ".temp.jpg"
-        
-        curl_path = "curl"
-        if sys.platform == "win32" and os.path.exists(r"C:\Windows\System32\curl.exe"):
-            curl_path = r"C:\Windows\System32\curl.exe"
-            
-        subprocess.run([curl_path, "-s", "-L", "-f", "--retry", "3", url, "-o", temp_dl], timeout=60, check=True)
-        if os.path.exists(temp_dl) and os.path.getsize(temp_dl) > 10000:
-            raw_mat = cv2.imread(temp_dl)
-            if raw_mat is not None:
-                h_r, w_r = raw_mat.shape[:2]
-                crop_h = int(h_r * 0.93)
-                clean_crop = raw_mat[:crop_h, :]
-                final_img = cv2.resize(clean_crop, (1920, 1080), interpolation=cv2.INTER_LANCZOS4)
-                cv2.imwrite(output_path, final_img, [cv2.IMWRITE_JPEG_QUALITY, 96])
-                try: os.remove(temp_dl)
-                except Exception: pass
-                return True
-        if os.path.exists(temp_dl):
-            try: os.remove(temp_dl)
-            except Exception: pass
-    except Exception as e:
-        print(f"  Pollinations generation fallback notice: {e}")
+    """PERMANENTLY BANNED & BLOCKED: Pollinations web is strictly prohibited as per user mandate."""
+    print("  -> 🚫 [STRICT RULE ENFORCED] Pollinations AI is permanently banned and blocked. Aborting.")
     return False
 
 def ensure_images(num_needed=5, track_info=None, theme=None):
@@ -2206,6 +2180,7 @@ def render_video(slides, duration_sec=900, is_krishna=True):
         "-i", TEMP_AUDIO,
         "-c:v", "copy",
         "-c:a", "aac", "-b:a", "192k",
+        "-map_metadata", "-1",
         "-t", str(duration_sec),
         OUTPUT_VIDEO
     ]
@@ -2698,6 +2673,10 @@ def recheck_face_side_yunet(image_path, expected_side):
 def verify_thumbnail_youtube_policy(thumb_path):
     """
     Scans rendered thumbnail with Gemini Vision to guarantee 100% YouTube Community Guidelines & SafeSearch compliance.
+    Strictly checks:
+    1. Zero suggestive / revealing content (No deep cleavage, no overly revealing neckline, 100% modest & dignified).
+    2. Family safe (100% compliant with YouTube advertiser-friendly & community standards).
+    3. Clear face and non-obstructed typography.
     """
     gemini_key = None
     _kf = os.path.join(BASE_DIR, "gemini_key.txt")
@@ -2716,23 +2695,31 @@ def verify_thumbnail_youtube_policy(thumb_path):
         client = genai.Client(api_key=gemini_key)
         up_img = client.files.upload(file=thumb_path)
         prompt = (
-            "Analyze this 16:9 YouTube video thumbnail carefully.\n"
-            "Strict Compliance Task: Verify if this thumbnail adheres to YouTube Community Guidelines and Policies:\n"
-            "1. Is it family-safe with NO explicit nudity or vulgar content?\n"
-            "2. Is the Hindi/English typography clear, respectful, and not misleading?\n"
-            "3. Is the woman's face clear and NOT obstructed by typography?\n"
-            "Answer strictly in JSON: {\"policy_compliant\": true, \"face_clear\": true, \"verdict\": \"APPROVED\"}"
+            "Analyze this 16:9 YouTube video thumbnail with extreme scrutiny.\n"
+            "Strict YouTube Community Guidelines & Family-Safety Verification Task:\n"
+            "1. Clothing & Modesty Check: Does the woman have an overly deep, plunging, or revealing neckline, excessive cleavage, or suggestive exposure? (Must be strictly modest, royal, and dignified Indian attire like a traditional saree/choli).\n"
+            "2. Policy Compliance: Is this image 100% family-safe, non-vulgar, and adhering strictly to YouTube advertiser-friendly guidelines?\n"
+            "3. Typography & Face: Is the typography respectful and the woman's face clear?\n"
+            "If there is ANY excessive neckline, deep cleavage, or suggestive look, answer with 'policy_compliant': false, 'verdict': 'REJECTED_REVEALING_NECKLINE'.\n"
+            "Only answer 'APPROVED' if it is 100% safe, modest, and dignified.\n"
+            "Answer strictly in JSON: {\"policy_compliant\": true/false, \"revealing_neckline\": true/false, \"verdict\": \"APPROVED\" or \"REJECTED_REVEALING_NECKLINE\"}"
         )
         res = client.models.generate_content(model="gemini-3.1-flash-lite", contents=[up_img, prompt])
         raw = res.text.strip()
         try: client.files.delete(name=up_img.name)
         except Exception: pass
-        if "APPROVED" in raw.upper() or "TRUE" in raw.upper():
-            print("  -> 🛡️ [YouTube Policy Passed] Thumbnail 100% compliant with YouTube Guidelines!", flush=True)
+        
+        # Strict policy check
+        if "REJECTED" in raw.upper() or '"policy_compliant": false' in raw.lower() or '"revealing_neckline": true' in raw.lower():
+            print(f"  -> 🚫 [YouTube Policy REJECTED]: Revealing neckline or policy concern detected: {raw}", flush=True)
+            return False
+            
+        if "APPROVED" in raw.upper() and ('"policy_compliant": true' in raw.lower() or 'true' in raw.lower()):
+            print("  -> 🛡️ [YouTube Policy Passed] Thumbnail 100% modest, dignified, and compliant with YouTube Guidelines!", flush=True)
             return True
-        else:
-            print(f"  -> ⚠️ [YouTube Policy Review]: {raw}", flush=True)
-            return True
+            
+        print(f"  -> ⚠️ [YouTube Policy Caution]: {raw}", flush=True)
+        return True
     except Exception as ep:
         print(f"  -> [Info] Policy verify note: {ep}", flush=True)
         return True
@@ -2871,7 +2858,9 @@ def generate_thumbnail(slides, theme):
                         urls = [line.strip() for line in f if line.strip()]
                     chosen_side = None
 
-            if urls:
+            attempt_count = 0
+            while urls and attempt_count < 5:
+                attempt_count += 1
                 chosen_url = urls.pop(0)
                 if q_file:
                     with open(q_file, "w", encoding="utf-8") as qf:
@@ -2887,20 +2876,31 @@ def generate_thumbnail(slides, theme):
                 print(f"  -> [Catbox Pool] Picked image for [{cat_key}] ({chosen_side or 'Legacy'}): {chosen_url} ({len(urls)} remaining in pool)", flush=True)
                 local_catbox_bg = os.path.join(TEMP_DIR, f"catbox_bg_{int(time.time())}.jpg")
                 headers = {'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)'}
-                r = requests.get(chosen_url, headers=headers, timeout=25)
-                if r.status_code == 200:
-                    with open(local_catbox_bg, "wb") as bf:
-                        bf.write(r.content)
-                    
-                    # 1. Real-time Face Position Re-Verification (YuNet)
-                    _, verified_side = recheck_face_side_yunet(local_catbox_bg, chosen_side)
-                    print(f"  -> 🔍 [Face Check Pass 2] Verified Woman Face on {verified_side} -> Typography safely positioned opposite!", flush=True)
-                    
-                    final_thumb = render_full_length_base_thumbnail(local_catbox_bg, theme, TEMP_THUMBNAIL, explicit_side=verified_side)
-                    if final_thumb and os.path.exists(final_thumb):
-                        # 2. Post-Render YouTube Policy Verification (Gemini Vision)
-                        verify_thumbnail_youtube_policy(final_thumb)
-                        return final_thumb
+                try:
+                    r = requests.get(chosen_url, headers=headers, timeout=25)
+                    if r.status_code == 200:
+                        with open(local_catbox_bg, "wb") as bf:
+                            bf.write(r.content)
+                        
+                        # 1. Real-time Face Position Re-Verification (YuNet)
+                        _, verified_side = recheck_face_side_yunet(local_catbox_bg, chosen_side)
+                        print(f"  -> 🔍 [Face Check Pass 2] Verified Woman Face on {verified_side} -> Typography safely positioned opposite!", flush=True)
+                        
+                        final_thumb = render_full_length_base_thumbnail(local_catbox_bg, theme, TEMP_THUMBNAIL, explicit_side=verified_side)
+                        if final_thumb and os.path.exists(final_thumb):
+                            # 2. Post-Render YouTube Policy Verification (Gemini Vision)
+                            if verify_thumbnail_youtube_policy(final_thumb):
+                                return final_thumb
+                            else:
+                                print(f"  -> 🚫 REJECTED: Thumbnail violated modesty / neckline guidelines. Quarantining and picking next image!", flush=True)
+                                try:
+                                    os.remove(final_thumb)
+                                except Exception:
+                                    pass
+                                continue
+                except Exception as dl_err:
+                    print(f"  -> Download/render error on {chosen_url}: {dl_err}", flush=True)
+                    continue
         except Exception as catbox_pool_err:
             print(f"  -> [Info] Catbox pool fallback to local masters: {catbox_pool_err}", flush=True)
 
@@ -2975,10 +2975,14 @@ def generate_thumbnail(slides, theme):
                 pass
 
             final_thumb = render_full_length_base_thumbnail(chosen, theme, TEMP_THUMBNAIL)
-            sample_thumb = os.path.join(BASE_DIR, "MUSIC_VIDEO_HIGH_CTR_SAMPLE_THUMBNAIL.jpg")
-            shutil.copy2(final_thumb, sample_thumb)
-            print(f"  -> SUCCESS! Attached Full-Length Base Line Master Thumbnail: {chosen_name}", flush=True)
-            return final_thumb
+            if final_thumb and os.path.exists(final_thumb):
+                if verify_thumbnail_youtube_policy(final_thumb):
+                    sample_thumb = os.path.join(BASE_DIR, "MUSIC_VIDEO_HIGH_CTR_SAMPLE_THUMBNAIL.jpg")
+                    shutil.copy2(final_thumb, sample_thumb)
+                    print(f"  -> SUCCESS! Attached Full-Length Base Line Master Thumbnail: {chosen_name}", flush=True)
+                    return final_thumb
+                else:
+                    print(f"  -> 🚫 REJECTED local master thumbnail {chosen_name} due to neckline/policy guidelines. Falling back to clean slide...", flush=True)
 
         # Hard safety fallback: Pick from clean 16:9 cinematic slides
         if slides:

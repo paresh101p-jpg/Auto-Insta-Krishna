@@ -549,7 +549,7 @@ def git_commit_and_push(commit_msg):
     try:
         subprocess.run(["git", "config", "user.email", "actions@github.com"], check=False)
         subprocess.run(["git", "config", "user.name", "Auto Insta Bot"], check=False)
-        subprocess.run(["git", "add", "website", "quotes.txt", "used_quotes.txt", "used_kinetic_images.txt", "youtube_reels_urls.txt", "youtube_used_urls.txt", "youtube_cycle_tracker.txt", "youtube_quarantine_queue.json", "youtube_quarantine_audit.log"], check=False)
+        subprocess.run(["git", "add", "website", "quotes.txt", "used_quotes.txt", "used_kinetic_images.txt", "youtube_reels_urls.txt", "youtube_used_urls.txt", "youtube_cycle_tracker.txt", "youtube_quarantine_queue.json", "youtube_quarantine_audit.log", "daily_post_tracker.json"], check=False)
         subprocess.run(["git", "commit", "-m", commit_msg], check=False)
         for _ in range(3):
             subprocess.run(["git", "pull", "--rebase", "origin", "master"], check=False)
@@ -580,7 +580,8 @@ def mark_url_as_used(url):
 def check_daily_reel_limit():
     """
     Guarantees STRICT 1 REEL / SHORT PER DAY.
-    Checks IST (Indian Standard Time) date. If a reel was already posted today, exits cleanly with code 0.
+    Checks IST (Indian Standard Time) date via BOTH local tracker AND live YouTube Channel API.
+    If a reel was already posted today, exits cleanly with code 0.
     """
     if "--force" in sys.argv:
         print("⏩ [--force] Bypassing daily 1-reel limit check.", flush=True)
@@ -590,6 +591,7 @@ def check_daily_reel_limit():
     ist_now = datetime.now(timezone.utc) + timedelta(hours=5, minutes=30)
     today_str = ist_now.strftime("%Y-%m-%d")
     
+    # 1. Local Tracker Check
     tracker_file = os.path.join(BASE_DIR, "daily_post_tracker.json")
     if os.path.exists(tracker_file):
         try:
@@ -597,11 +599,33 @@ def check_daily_reel_limit():
                 data = json.load(f)
             last_date = data.get("last_reel_date")
             if last_date == today_str:
-                print(f"🛑 [DAILY LIMIT REACHED] A Reel/Short has ALREADY been posted for today ({today_str} IST).", flush=True)
+                print(f"🛑 [DAILY LIMIT REACHED] A Reel/Short has ALREADY been posted for today ({today_str} IST) in tracker.", flush=True)
                 print("   Strict rule: Exactly 1 reel per day. Exiting cleanly with code 0.", flush=True)
                 sys.exit(0)
         except Exception as e:
             print(f"   Notice reading daily tracker: {e}", flush=True)
+
+    # 2. Real-Time Live YouTube Channel API Verification (Fail-Safe Lock)
+    try:
+        yt_service = get_authenticated_service()
+        ch_resp = yt_service.channels().list(part="contentDetails", mine=True).execute()
+        if ch_resp.get("items"):
+            upl_id = ch_resp["items"][0]["contentDetails"]["relatedPlaylists"]["uploads"]
+            pl_items = yt_service.playlistItems().list(part="snippet", playlistId=upl_id, maxResults=5).execute().get("items", [])
+            for it in pl_items:
+                pub_at = it.get("snippet", {}).get("publishedAt", "")
+                if pub_at:
+                    pub_dt = datetime.fromisoformat(pub_at.replace("Z", "+00:00"))
+                    pub_ist = pub_dt + timedelta(hours=5, minutes=30)
+                    # If any Short/Video was uploaded today in IST
+                    if pub_ist.strftime("%Y-%m-%d") == today_str:
+                        title = it.get("snippet", {}).get("title", "")
+                        print(f"🛑 [YOUTUBE LIVE LOCK] A video has ALREADY been posted today ({today_str} IST) on YouTube: {title}", flush=True)
+                        print("   Strict rule: Exactly 1 reel per day. Exiting cleanly with code 0.", flush=True)
+                        sys.exit(0)
+    except Exception as yt_check_err:
+        print(f"   Notice checking YouTube live uploads: {yt_check_err}", flush=True)
+
     return True
 
 def record_daily_reel_done():
