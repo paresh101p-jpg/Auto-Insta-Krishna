@@ -23,6 +23,11 @@ POSTS_DATA_PATH = os.path.join(PUBLIC_DIR, "js", "posts-data.js")
 SITEMAP_PATH = os.path.join(PUBLIC_DIR, "sitemap.xml")
 RSS_PATH = os.path.join(PUBLIC_DIR, "rss.xml")
 
+# Local mirror path for direct PC synchronization
+MIRROR_PUBLIC_DIR = os.path.abspath(os.path.join(BASE_DIR, "..", "Krishna Vibez", "public"))
+MIRROR_POSTS_DATA_PATH = os.path.join(MIRROR_PUBLIC_DIR, "js", "posts-data.js")
+MIRROR_SITEMAP_PATH = os.path.join(MIRROR_PUBLIC_DIR, "sitemap.xml")
+
 MONTHS_HI = {
     1: "जनवरी", 2: "फरवरी", 3: "मार्च", 4: "अप्रैल",
     5: "मई", 6: "जून", 7: "जुलाई", 8: "अगस्त",
@@ -314,6 +319,14 @@ def publish_to_website(media_url, caption, is_video=False, custom_post_id=None):
         )
         with open(POSTS_DATA_PATH, "w", encoding="utf-8") as f:
             f.write(updated_js)
+
+        # Mirror to Krishna Vibez if present locally
+        if os.path.exists(MIRROR_PUBLIC_DIR):
+            try:
+                with open(MIRROR_POSTS_DATA_PATH, "w", encoding="utf-8") as mf:
+                    mf.write(updated_js)
+            except Exception as me:
+                pass
 
         print(f"[WebsitePublisher] ✅ Successfully added new post to website: {title}")
 
