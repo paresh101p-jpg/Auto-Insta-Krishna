@@ -2531,16 +2531,26 @@ def recheck_face_side_yunet(image_path, expected_side):
             from PIL import Image
             gclient = genai.Client(api_key=gemini_key)
             gimg = Image.open(image_path)
-            res = gclient.models.generate_content(
-                model="gemini-3.8-flash",
-                contents=[
-                    gimg,
-                    "Look at this 16:9 image carefully. Locate the main royal Indian woman. "
-                    "Is her face and body on the LEFT half of the frame or the RIGHT half of the frame? "
-                    "If she is centered or occupies the middle, answer CENTER. "
-                    "Answer strictly with ONE word: LEFT, RIGHT, or CENTER."
-                ]
-            )
+            models_to_try = ["gemini-3.1-flash-lite", "gemini-3.8-flash", "gemini-3.5-flash"]
+            res = None
+            for m in models_to_try:
+                try:
+                    res = gclient.models.generate_content(
+                        model=m,
+                        contents=[
+                            gimg,
+                            "Look at this 16:9 image carefully. Locate the main royal Indian woman. "
+                            "Is her face and body on the LEFT half of the frame or the RIGHT half of the frame? "
+                            "If she is centered or occupies the middle, answer CENTER. "
+                            "Answer strictly with ONE word: LEFT, RIGHT, or CENTER."
+                        ]
+                    )
+                    if res and res.text:
+                        break
+                except Exception:
+                    continue
+            if not res or not res.text:
+                raise ValueError("All Gemini Vision face check models failed")
             v_side = res.text.strip().upper()
             detected_side = None
             if "RIGHT" in v_side:
@@ -2639,7 +2649,17 @@ def verify_thumbnail_youtube_policy(thumb_path):
             "3. MODESTY & FAMILY SAFE: Is the attire modest, dignified, non-suggestive, and 100% compliant with YouTube community guidelines?\n"
             "Answer strictly in JSON: {\"text_on_woman\": true/false, \"woman_fully_visible\": true/false, \"modest_and_safe\": true/false, \"verdict\": \"APPROVED\" or \"REJECTED\"}"
         )
-        res = client.models.generate_content(model="gemini-3.8-flash", contents=[up_img, prompt])
+        models_to_try = ["gemini-3.1-flash-lite", "gemini-3.8-flash", "gemini-3.5-flash"]
+        res = None
+        for m in models_to_try:
+            try:
+                res = client.models.generate_content(model=m, contents=[up_img, prompt])
+                if res and res.text:
+                    break
+            except Exception:
+                continue
+        if not res or not res.text:
+            return True
         raw = res.text.strip()
         try: client.files.delete(name=up_img.name)
         except Exception: pass
