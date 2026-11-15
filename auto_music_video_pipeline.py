@@ -2268,137 +2268,39 @@ def render_full_length_base_thumbnail(base_image_path, theme, output_path, expli
         with open(clean_tmp, "rb") as f:
             bg_b64 = base64.b64encode(f.read()).decode("utf-8")
 
-        # 2. Ultra-Intelligent Subject Side Detection (Skin & Face First, Never Edge/Leaves)
-        # Prevents ever placing text on top of the woman's face, neckline, and royal attire!
-        def detect_subject_side(image_mat):
-            h, w = image_mat.shape[:2]
-            upper_img = image_mat[:int(h * 0.80), :]
-            
-            # Primary: HSV Skin Tone Segmentation
-            hsv = cv2.cvtColor(upper_img, cv2.COLOR_BGR2HSV)
+        # 2. Ultra-Intelligent Subject Side Detection
+        # USER ABSOLUTE RULE:
+        # Woman on RIGHT -> Text MUST be strictly on LEFT!
+        # Woman on LEFT -> Text MUST be strictly on RIGHT!
+        if explicit_side in ["RIGHT", "LEFT"]:
+            subject_side = explicit_side
+        else:
+            # Detect skin mass to determine side
+            h_mat, w_mat = target_img.shape[:2]
+            upper_mat = target_img[:int(h_mat * 0.85), :]
+            hsv_mat = cv2.cvtColor(upper_mat, cv2.COLOR_BGR2HSV)
             lower1 = np.array([0, 20, 50], dtype=np.uint8)
             upper1 = np.array([28, 255, 255], dtype=np.uint8)
             lower2 = np.array([170, 20, 50], dtype=np.uint8)
             upper2 = np.array([180, 255, 255], dtype=np.uint8)
-            mask = cv2.bitwise_or(cv2.inRange(hsv, lower1, upper1),
-                                  cv2.inRange(hsv, lower2, upper2))
-            
-            kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (15, 15))
-            clean_mask = cv2.morphologyEx(mask, cv2.MORPH_OPEN, kernel)
-            contours, _ = cv2.findContours(clean_mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
-            sig_contours = [c for c in contours if cv2.contourArea(c) > 3000]
-            
-            mid_x = w / 2.0
-            
-            if sig_contours:
-                total_skin_area = 0
-                sum_cx = 0
-                left_skin_area = 0
-                right_skin_area = 0
-                
-                for c in sig_contours:
-                    area = cv2.contourArea(c)
-                    M = cv2.moments(c)
-                    if M['m00'] > 0:
-                        cx = M['m10'] / M['m00']
-                        sum_cx += cx * area
-                        total_skin_area += area
-                        if cx < mid_x:
-                            left_skin_area += area
-                        else:
-                            right_skin_area += area
-                            
-                com_skin_x = sum_cx / (total_skin_area + 1e-5)
-                
-                if right_skin_area > left_skin_area * 1.25 or com_skin_x > w * 0.52:
-                    return "RIGHT"
-                elif left_skin_area > right_skin_area * 1.25 or com_skin_x < w * 0.48:
-                    return "LEFT"
-                return "RIGHT" if right_skin_area >= left_skin_area else "LEFT"
+            mask_s = cv2.bitwise_or(cv2.inRange(hsv_mat, lower1, upper1),
+                                    cv2.inRange(hsv_mat, lower2, upper2))
+            mid_x = w_mat // 2
+            left_skin = np.sum(mask_s[:, :mid_x] > 0)
+            right_skin = np.sum(mask_s[:, mid_x:] > 0)
+            subject_side = "RIGHT" if right_skin >= left_skin else "LEFT"
 
-            # Secondary Fallback: Visual Saliency / Contrast
-            gray = cv2.cvtColor(upper_img, cv2.COLOR_BGR2GRAY)
-            blurred = cv2.GaussianBlur(gray, (21, 21), 0)
-            diff = cv2.absdiff(gray, blurred)
-            left_diff = np.sum(diff[:, :int(mid_x)])
-            right_diff = np.sum(diff[:, int(mid_x):])
-            return "RIGHT" if right_diff >= left_diff else "LEFT"
-
-        target_img = cleaned if cleaned is not None else img
-        top_offset = 25
-        if explicit_side in ["RIGHT", "LEFT"]:
-            subject_side = explicit_side
-            text_side = "left" if subject_side == "RIGHT" else "right"
-            print(f"  -> 🎯 [Deterministic 0% Error Mode] Woman is on {subject_side} side -> Text strictly locked to {text_side.upper()} (top: 25px)!", flush=True)
-        else:
-            subject_side = detect_subject_side(target_img)
-            text_side = "right" if subject_side == "LEFT" else "left"
-
-            # 3. Intelligent Face / Subject Collision Shield & Fail-Safe Flip
-            try:
-                h_im, w_im = target_img.shape[:2]
-                hsv_im = cv2.cvtColor(target_img, cv2.COLOR_BGR2HSV)
-                lower_s1 = np.array([0, 20, 50], dtype=np.uint8)
-                upper_s1 = np.array([28, 255, 255], dtype=np.uint8)
-                lower_s2 = np.array([170, 20, 50], dtype=np.uint8)
-                upper_s2 = np.array([180, 255, 255], dtype=np.uint8)
-                s_mask = cv2.bitwise_or(cv2.inRange(hsv_im, lower_s1, upper_s1),
-                                        cv2.inRange(hsv_im, lower_s2, upper_s2))
-                k_elem = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (15, 15))
-                s_mask_clean = cv2.morphologyEx(s_mask, cv2.MORPH_OPEN, k_elem)
-
-                # Check if chosen text side has the majority of the subject (Fail-Safe Flip)
-                mid_im_x = w_im // 2
-                left_skin_tot = np.sum(s_mask_clean[:, :mid_im_x] > 0)
-                right_skin_tot = np.sum(s_mask_clean[:, mid_im_x:] > 0)
-
-                if text_side == "right" and right_skin_tot > left_skin_tot * 1.3:
-                    print(f"  -> ⚠️ [Fail-Safe Flip] Flipped text from RIGHT to LEFT because RIGHT side has {right_skin_tot} skin pixels vs {left_skin_tot} on LEFT!", flush=True)
-                    text_side = "left"
-                    subject_side = "RIGHT"
-                elif text_side == "left" and left_skin_tot > right_skin_tot * 1.3:
-                    print(f"  -> ⚠️ [Fail-Safe Flip] Flipped text from LEFT to RIGHT because LEFT side has {left_skin_tot} skin pixels vs {right_skin_tot} on RIGHT!", flush=True)
-                    text_side = "right"
-                    subject_side = "LEFT"
-
-                # Analyze chosen text zone for any vertical overlap in actual text occupancy zone:
-                # For LEFT text: words occupy x: 0 to 38%
-                # For RIGHT text: words occupy x: 62% to 100%
-                text_x1 = int(w_im * 0.62) if text_side == "right" else 0
-                text_x2 = w_im if text_side == "right" else int(w_im * 0.38)
-                top_zone_mask = s_mask_clean[20:int(h_im * 0.35), text_x1:text_x2]
-                contours_top, _ = cv2.findContours(top_zone_mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
-
-                max_y2 = 0
-                face_detected_in_top = False
-                for cnt in contours_top:
-                    if cv2.contourArea(cnt) > 6000:
-                        _, y, _, ch = cv2.boundingRect(cnt)
-                        abs_y = 20 + y + ch
-                        if abs_y > max_y2:
-                            max_y2 = abs_y
-                        face_detected_in_top = True
-
-                if face_detected_in_top and max_y2 > 40:
-                    top_offset = min(120, max(50, max_y2 + 10))
-                    print(f"  -> 🛡️ [Face Collision Shield] Subject edge detected in actual text zone (down to y={max_y2}). Moving text DOWN to top={top_offset}px (Zero font downsizing)!", flush=True)
-                else:
-                    top_offset = 25
-                    print(f"  -> 👁️ [Smart Vision Layout] Upper text zone completely clear. Locked at high top={top_offset}px.", flush=True)
-            except Exception as face_shield_err:
-                print(f"  -> [Info] Face collision shield check skipped: {face_shield_err}", flush=True)
-                top_offset = 25
-
-        print(f"  -> 👁️ [Smart Vision Layout] Subject detected on {subject_side} side. Placing typography strictly on {text_side.upper()} side (60% screen: max-width 1150px, top={top_offset}px)!", flush=True)
+        text_side = "left" if subject_side == "RIGHT" else "right"
+        print(f"  -> 🎯 [Deterministic 0% Error Mode] Woman is on {subject_side} side -> Text strictly locked to {text_side.upper()}!", flush=True)
 
         if text_side == "right":
-            text_container_css = f"position: absolute; top: {top_offset}px; right: 40px; width: 1150px; max-width: 1150px; z-index: 10; padding-top: 5px; text-align: right;"
+            text_container_css = "position: absolute; top: 60px; right: 60px; width: 820px; max-width: 820px; z-index: 10; text-align: right;"
             pill_align_css = "display: inline-flex; margin-left: auto;"
-            vignette_css = "position: absolute; top: 0; left: 0; width: 1920px; height: 1080px; background: linear-gradient(270deg, rgba(0,0,0,0.96) 0%, rgba(0,0,0,0.88) 40%, rgba(0,0,0,0.50) 58%, rgba(0,0,0,0) 66%); pointer-events: none;"
+            vignette_css = "position: absolute; top: 0; left: 0; width: 1920px; height: 1080px; background: linear-gradient(270deg, rgba(0,0,0,0.92) 0%, rgba(0,0,0,0.80) 30%, rgba(0,0,0,0.30) 42%, rgba(0,0,0,0) 48%); pointer-events: none;"
         else:
-            text_container_css = f"position: absolute; top: {top_offset}px; left: 40px; width: 1150px; max-width: 1150px; z-index: 10; padding-top: 5px; text-align: left;"
+            text_container_css = "position: absolute; top: 60px; left: 60px; width: 820px; max-width: 820px; z-index: 10; text-align: left;"
             pill_align_css = "display: inline-flex;"
-            vignette_css = "position: absolute; top: 0; left: 0; width: 1920px; height: 1080px; background: linear-gradient(90deg, rgba(0,0,0,0.96) 0%, rgba(0,0,0,0.88) 40%, rgba(0,0,0,0.50) 58%, rgba(0,0,0,0) 66%); pointer-events: none;"
+            vignette_css = "position: absolute; top: 0; left: 0; width: 1920px; height: 1080px; background: linear-gradient(90deg, rgba(0,0,0,0.92) 0%, rgba(0,0,0,0.80) 30%, rgba(0,0,0,0.30) 42%, rgba(0,0,0,0) 48%); pointer-events: none;"
 
         # Category and 4-Line Hook details
         cat = theme.get("category", "").lower()
@@ -2477,7 +2379,7 @@ def render_full_length_base_thumbnail(base_image_path, theme, output_path, expli
 <head>
 <meta charset="utf-8">
 <style>
-  @import url('https://fonts.googleapis.com/css2?family=Tiro+Devanagari+Hindi:ital,wght@0,400;0,700;1,400&family=Montserrat:wght@800;900&family=Poppins:wght@700;800;900&display=swap');
+  @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+Devanagari:wght@700;800;900&family=Montserrat:wght@800;900&family=Poppins:wght@700;800;900&display=swap');
   * {{ box-sizing: border-box; margin: 0; padding: 0; }}
   body {{
     width: 1920px;
@@ -2502,95 +2404,68 @@ def render_full_length_base_thumbnail(base_image_path, theme, output_path, expli
   .hook-pill {{
     {pill_align_css}
     align-items: center;
-    background: linear-gradient(90deg, #D50000 0%, #FF1744 100%);
-    border: 4px solid #FFF;
-    border-radius: 16px;
-    padding: 12px 42px;
-    margin-bottom: 18px;
+    background: linear-gradient(135deg, #FF1744 0%, #D50000 100%);
     color: #FFFFFF;
-    font-family: 'Poppins', 'Tiro Devanagari Hindi', sans-serif;
-    font-size: 42px;
-    font-weight: 900;
+    font-family: 'Poppins', sans-serif;
+    font-size: 26px;
+    font-weight: 800;
     letter-spacing: 1px;
-    box-shadow: 0 8px 25px rgba(0,0,0,0.9), 0 0 25px rgba(255, 23, 68, 0.7);
-    text-shadow: 0 2px 4px rgba(0,0,0,0.8);
+    padding: 10px 24px;
+    border-radius: 50px;
+    box-shadow: 0 8px 24px rgba(213,0,0,0.5), inset 0 2px 4px rgba(255,255,255,0.4);
+    border: 2px solid rgba(255,255,255,0.7);
+    margin-bottom: 24px;
+    text-transform: uppercase;
   }}
   .line-lead {{
-    font-family: 'Tiro Devanagari Hindi', 'Nirmala UI', serif;
-    font-size: 104px;
-    font-weight: 800;
-    line-height: 1.14;
-    padding-top: 4px;
-    color: #FFE600;
-    letter-spacing: 1.5px;
-    text-shadow: 0 6px 0 #1A0D00, 0 12px 0 #000, 0 16px 30px rgba(0,0,0,0.98), 0 0 35px rgba(255, 230, 0, 0.85);
-    margin-bottom: 12px;
-    max-width: 1150px;
-    word-wrap: break-word;
+    font-family: 'Noto Sans Devanagari', sans-serif;
+    font-size: 76px;
+    font-weight: 900;
+    line-height: 1.18;
+    color: #FFFFFF;
+    text-shadow: 0 4px 12px rgba(0,0,0,0.9), 0 8px 30px rgba(0,0,0,0.95), 2px 2px 4px rgba(0,0,0,1);
+    margin-bottom: 16px;
+    max-width: 820px;
   }}
   .line-benefit {{
-    font-family: 'Tiro Devanagari Hindi', 'Nirmala UI', serif;
-    font-size: 118px;
-    font-weight: 800;
-    line-height: 1.14;
-    padding-top: 4px;
-    letter-spacing: 1.5px;
-    color: #FFF8E1;
-    text-shadow: 0 6px 0 #FF8F00, 0 11px 0 #C43800, 0 15px 0 #200800, 0 18px 32px rgba(0,0,0,0.98), 0 0 45px rgba(255, 179, 0, 0.9);
-    margin-bottom: 14px;
-    max-width: 1150px;
-    word-wrap: break-word;
+    font-family: 'Noto Sans Devanagari', sans-serif;
+    font-size: 74px;
+    font-weight: 900;
+    line-height: 1.18;
+    background: linear-gradient(180deg, #FFF9C4 0%, #FFD700 40%, #FFA000 80%, #FF6F00 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    filter: drop-shadow(0 6px 16px rgba(0,0,0,0.95)) drop-shadow(0 12px 36px rgba(255,160,0,0.6));
+    margin-bottom: 28px;
+    max-width: 820px;
   }}
-
-  /* High-Contrast Luxury Full-Length Bottom Base Line */
-  .bottom-badge-container {{
-    position: absolute;
-    bottom: 30px;
-    left: 50px;
-    right: 50px;
-    z-index: 20;
-    display: flex;
-    justify-content: center;
-  }}
-  .bottom-badge {{
-    width: 100%;
-    background: linear-gradient(90deg, rgba(8, 4, 1, 0.98) 0%, rgba(28, 14, 2, 0.96) 20%, rgba(45, 20, 0, 0.96) 50%, rgba(28, 14, 2, 0.96) 80%, rgba(8, 4, 1, 0.98) 100%);
-    border: 3.5px solid #FFD54F;
-    border-radius: 60px;
-    padding: 16px 45px;
-    display: flex;
+  .bottom-info-pill {{
+    {pill_align_css}
     align-items: center;
-    justify-content: space-between;
-    box-shadow: 0 15px 40px rgba(0,0,0,0.98), 0 0 35px rgba(255, 213, 79, 0.5);
+    gap: 16px;
+    background: rgba(10, 10, 15, 0.88);
+    border: 2px solid rgba(255, 215, 0, 0.7);
+    border-radius: 50px;
+    padding: 8px 24px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.8);
+    backdrop-filter: blur(8px);
   }}
-  .badge-tag {{
-    font-family: 'Poppins', 'Montserrat', sans-serif;
-    font-size: 38px;
+  .tag-label {{
+    font-family: 'Montserrat', sans-serif;
+    font-size: 20px;
     font-weight: 900;
-    color: #FFD54F;
-    text-shadow: 0 3px 6px #000, 0 0 20px rgba(255, 213, 79, 0.7);
+    color: #FFD700;
     letter-spacing: 2px;
   }}
-  .badge-title {{
-    font-family: 'Tiro Devanagari Hindi', 'Nirmala UI', serif;
-    font-size: 52px;
-    font-weight: 700;
-    color: #FFFFFF;
-    text-shadow: 0 3px 8px #000, 0 0 25px rgba(255, 255, 255, 0.8);
-    letter-spacing: 1px;
-    padding-top: 6px;
-  }}
-  .badge-dur {{
-    background: linear-gradient(135deg, #FFD54F 0%, #FF8F00 100%);
+  .dur-badge {{
+    background: linear-gradient(135deg, #FFD700 0%, #FFA000 100%);
     color: #1A0D00;
-    border: 3px solid #FFFDE7;
-    border-radius: 35px;
-    padding: 10px 30px;
-    font-family: 'Poppins', sans-serif;
-    font-size: 34px;
+    font-family: 'Montserrat', sans-serif;
+    font-size: 20px;
     font-weight: 900;
-    letter-spacing: 2px;
-    box-shadow: 0 6px 20px rgba(0,0,0,0.9), 0 0 25px rgba(255, 213, 79, 0.6);
+    padding: 4px 14px;
+    border-radius: 20px;
+    border: 1.5px solid #FFF;
   }}
 </style>
 </head>
@@ -2602,13 +2477,9 @@ def render_full_length_base_thumbnail(base_image_path, theme, output_path, expli
     <div class="hook-pill">{pill}</div>
     <div class="line-lead">{lead_text}</div>
     <div class="line-benefit">{benefit_text}</div>
-  </div>
-
-  <div class="bottom-badge-container">
-    <div class="bottom-badge">
-      <span class="badge-tag">{tag}</span>
-      <span class="badge-title">{hindi}</span>
-      <span class="badge-dur">{dur_str}</span>
+    <div class="bottom-info-pill">
+      <span class="tag-label">{tag}</span>
+      <span class="dur-badge">{dur_str}</span>
     </div>
   </div>
 </body>
@@ -2640,10 +2511,58 @@ def render_full_length_base_thumbnail(base_image_path, theme, output_path, expli
 
 def recheck_face_side_yunet(image_path, expected_side):
     """
-    Second-pass neural face verification:
-    Confirms that the woman's face position truly matches expected_side ('LEFT' or 'RIGHT').
-    Ensures 0% risk of typography covering the face.
+    Neural face & subject verification:
+    Confirms that the woman's position strictly matches expected_side ('LEFT' or 'RIGHT').
+    CRITICAL MANDATE:
+    If detected side DOES NOT match expected_side, or if face is centered,
+    the candidate is strictly REJECTED (return False, 'MISMATCH').
+    NEVER silently flip sides, as that causes text to be rendered over the woman!
     """
+    # 1. Primary: Gemini Vision Neural Classification (Most Accurate & Holistic)
+    try:
+        gemini_key = os.getenv("GEMINI_API_KEY")
+        if not gemini_key:
+            kf_p = os.path.join(BASE_DIR, "gemini_key.txt")
+            if os.path.exists(kf_p):
+                with open(kf_p, "r", encoding="utf-8") as kf:
+                    gemini_key = kf.read().strip()
+        if gemini_key:
+            from google import genai
+            from PIL import Image
+            gclient = genai.Client(api_key=gemini_key)
+            gimg = Image.open(image_path)
+            res = gclient.models.generate_content(
+                model="gemini-3.8-flash",
+                contents=[
+                    gimg,
+                    "Look at this 16:9 image carefully. Locate the main royal Indian woman. "
+                    "Is her face and body on the LEFT half of the frame or the RIGHT half of the frame? "
+                    "If she is centered or occupies the middle, answer CENTER. "
+                    "Answer strictly with ONE word: LEFT, RIGHT, or CENTER."
+                ]
+            )
+            v_side = res.text.strip().upper()
+            detected_side = None
+            if "RIGHT" in v_side:
+                detected_side = "RIGHT"
+            elif "LEFT" in v_side:
+                detected_side = "LEFT"
+            elif "CENTER" in v_side:
+                detected_side = "CENTER"
+
+            if detected_side:
+                if detected_side == "CENTER":
+                    print(f"  ⚠️ [Face Check] Woman is centered. Cannot safely fit text without covering her!", flush=True)
+                    return False, "CENTER"
+                if expected_side and detected_side != expected_side:
+                    print(f"  ⚠️ [Face Mismatch] Expected {expected_side} but Vision detected {detected_side}. Quarantining candidate to guarantee 0% text on woman!", flush=True)
+                    return False, "MISMATCH"
+                print(f"  -> 👁️ [Gemini Vision Confirmed] Woman is strictly on {detected_side} side!", flush=True)
+                return True, detected_side
+    except Exception as g_err:
+        print(f"  -> [Info] Gemini vision face check note: {g_err}", flush=True)
+
+    # 2. Secondary Fallback: OpenCV YuNet
     try:
         import cv2
         model_path = os.path.join(BASE_DIR, "face_detection_yunet.onnx")
@@ -2662,52 +2581,27 @@ def recheck_face_side_yunet(image_path, expected_side):
             _, faces = detector2.detect(img)
 
         if faces is None or len(faces) == 0:
-            # Neural Gemini Vision Fallback to guarantee side correctness
-            gemini_key = os.getenv("GEMINI_API_KEY")
-            if not gemini_key:
-                kf_p = os.path.join(BASE_DIR, "gemini_key.txt")
-                if os.path.exists(kf_p):
-                    with open(kf_p, "r", encoding="utf-8") as kf:
-                        gemini_key = kf.read().strip()
-            if gemini_key:
-                try:
-                    from google import genai
-                    from PIL import Image
-                    gclient = genai.Client(api_key=gemini_key)
-                    gimg = Image.open(image_path)
-                    res = gclient.models.generate_content(
-                        model="gemini-3.1-flash-lite",
-                        contents=[gimg, "Is the woman on the LEFT, RIGHT, or CENTER of this image? Answer strictly with one word: LEFT, RIGHT, or CENTER."]
-                    )
-                    v_side = res.text.strip().upper()
-                    if "RIGHT" in v_side: return True, "RIGHT"
-                    if "LEFT" in v_side: return True, "LEFT"
-                except Exception:
-                    pass
             return True, expected_side
+
         largest = max(faces, key=lambda f: f[2] * f[3])
         x, y, fw, fh = largest[:4]
         face_cx = (x + fw / 2.0) / float(w)
-        face_x1 = x / float(w)
-        face_x2 = (x + fw) / float(w)
 
-        # 60% coverage requires woman's face to be strictly positioned at the outer edge:
-        # RIGHT side woman: face_cx >= 0.62 (leaving x=0 to 1190 clear for 60% text)
-        # LEFT side woman: face_cx <= 0.38 (leaving x=730 to 1920 clear for 60% text)
-        if face_cx >= 0.62:
+        if face_cx >= 0.58:
             actual_side = "RIGHT"
-        elif face_cx <= 0.38:
+        elif face_cx <= 0.42:
             actual_side = "LEFT"
         else:
             actual_side = "CENTER"
 
         if actual_side == "CENTER":
-            print(f"  ⚠️ [Face Check] Woman face is centered (norm_cx={face_cx:.2f}, x1={face_x1:.2f}, x2={face_x2:.2f}). Cannot safely fit 60% text!", flush=True)
+            print(f"  ⚠️ [Face Check] Woman face is centered ({face_cx:.2f}). Cannot safely fit text!", flush=True)
             return False, "CENTER"
 
         if expected_side and actual_side != expected_side:
-            print(f"  ⚠️ [Face Re-Check Warning] Expected {expected_side} but face center is {actual_side} ({face_cx:.2f}). Adjusting side to {actual_side}!", flush=True)
-            return True, actual_side
+            print(f"  ⚠️ [Face Mismatch] Expected {expected_side} but YuNet detected {actual_side} ({face_cx:.2f}). Quarantining!", flush=True)
+            return False, "MISMATCH"
+
         return True, actual_side
     except Exception as e:
         return True, expected_side
@@ -2715,11 +2609,11 @@ def recheck_face_side_yunet(image_path, expected_side):
 
 def verify_thumbnail_youtube_policy(thumb_path):
     """
-    Scans rendered thumbnail with Gemini Vision to guarantee 100% YouTube Community Guidelines & SafeSearch compliance.
+    Scans rendered thumbnail with Gemini Vision (3.8-flash) to guarantee 100% compliance.
     Strictly checks:
-    1. Zero suggestive / revealing content (No deep cleavage, no overly revealing neckline, 100% modest & dignified).
-    2. Family safe (100% compliant with YouTube advertiser-friendly & community standards).
-    3. Clear face and non-obstructed typography.
+    1. Zero text on face, hair, jewelry, or body of the woman.
+    2. Woman is 100% fully visible, bright, and beautiful.
+    3. Attire is modest, royal, and dignified (no excessive neckline).
     """
     gemini_key = None
     _kf = os.path.join(BASE_DIR, "gemini_key.txt")
@@ -2739,26 +2633,24 @@ def verify_thumbnail_youtube_policy(thumb_path):
         up_img = client.files.upload(file=thumb_path)
         prompt = (
             "Analyze this 16:9 YouTube video thumbnail with extreme scrutiny.\n"
-            "Strict YouTube Community Guidelines & Family-Safety Verification Task:\n"
-            "1. Clothing & Modesty Check: Does the woman have an overly deep, plunging, or revealing neckline, excessive cleavage, or suggestive exposure? (Must be strictly modest, royal, and dignified Indian attire like a traditional saree/choli).\n"
-            "2. Policy Compliance: Is this image 100% family-safe, non-vulgar, and adhering strictly to YouTube advertiser-friendly guidelines?\n"
-            "3. ZERO Text on Face Check: Does ANY text, title, letter, or banner cover, overlap, or touch ANY part of the woman's face, eyes, nose, lips, forehead, or hair? (The woman's face must be 100% COMPLETELY UNTOUCHED and fully visible. Any text on face is a strict violation).\n"
-            "If there is ANY excessive neckline, deep cleavage, or if text touches/covers her face, answer with 'policy_compliant': false.\n"
-            "Only answer 'APPROVED' if it is 100% safe, modest, dignified, and text does NOT touch her face.\n"
-            "Answer strictly in JSON: {\"policy_compliant\": true/false, \"revealing_neckline\": true/false, \"text_on_face\": true/false, \"verdict\": \"APPROVED\" or \"REJECTED\"}"
+            "Strict Verification Tasks:\n"
+            "1. ZERO TEXT ON WOMAN: Does ANY text, title, letter, badge, or banner overlap, touch, or cut across ANY part of the woman's face, eyes, nose, lips, hair, jewelry, dress, or body? (The woman must be 100% completely clear of any text).\n"
+            "2. WOMAN VISIBILITY: Is the woman fully visible, bright, and not obscured by dark gradients or text?\n"
+            "3. MODESTY & FAMILY SAFE: Is the attire modest, dignified, non-suggestive, and 100% compliant with YouTube community guidelines?\n"
+            "Answer strictly in JSON: {\"text_on_woman\": true/false, \"woman_fully_visible\": true/false, \"modest_and_safe\": true/false, \"verdict\": \"APPROVED\" or \"REJECTED\"}"
         )
-        res = client.models.generate_content(model="gemini-3.1-flash-lite", contents=[up_img, prompt])
+        res = client.models.generate_content(model="gemini-3.8-flash", contents=[up_img, prompt])
         raw = res.text.strip()
         try: client.files.delete(name=up_img.name)
         except Exception: pass
         
         # Strict policy check
-        if "REJECTED" in raw.upper() or '"policy_compliant": false' in raw.lower() or '"revealing_neckline": true' in raw.lower() or '"text_on_face": true' in raw.lower():
-            print(f"  -> 🚫 [YouTube Policy REJECTED]: Policy concern or text on face detected: {raw}", flush=True)
+        if "REJECTED" in raw.upper() or '"text_on_woman": true' in raw.lower() or '"woman_fully_visible": false' in raw.lower() or '"modest_and_safe": false' in raw.lower():
+            print(f"  -> 🚫 [YouTube Policy REJECTED]: {raw}", flush=True)
             return False
             
-        if "APPROVED" in raw.upper() and ('"policy_compliant": true' in raw.lower() or 'true' in raw.lower()):
-            print("  -> 🛡️ [YouTube Policy Passed] Thumbnail 100% modest, dignified, and compliant with YouTube Guidelines!", flush=True)
+        if "APPROVED" in raw.upper():
+            print("  -> 🛡️ [YouTube Policy Passed] Thumbnail 100% modest, dignified, and woman is 100% untouched and visible!", flush=True)
             return True
             
         print(f"  -> ⚠️ [YouTube Policy Caution]: {raw}", flush=True)
