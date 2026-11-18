@@ -616,6 +616,22 @@ Return a JSON object with EXACTLY these keys:
 
     # 3. Master 36-Theme Non-Repeating Rotation System (Rock-Solid Fallback)
     print("  -> 🔄 Using Master 36-Theme Non-Repeating Rotation System...")
+
+    # ── PERMANENT FIX: used_music_titles.txt is THE single source of truth ──
+    # Build used_titles from the committed file (survives GitHub Actions fresh checkout)
+    used_titles_from_file = set()
+    if os.path.exists(USED_TITLES_FILE):
+        try:
+            with open(USED_TITLES_FILE, "r", encoding="utf-8") as uf:
+                for line in uf:
+                    t = line.strip().lower()
+                    if t:
+                        used_titles_from_file.add(t)
+        except Exception:
+            pass
+    print(f"  -> 📋 Known used titles from file: {len(used_titles_from_file)} entries")
+
+    # Also read used_indices from tracker JSON (secondary guard, may be stale)
     current_idx = 0
     used_indices = []
     if os.path.exists(THEME_TRACKER_FILE):
@@ -627,6 +643,13 @@ Return a JSON object with EXACTLY these keys:
         except Exception:
             current_idx = 0
             used_indices = []
+
+    # Rebuild used_indices from used_titles_from_file (PRIMARY) so tracker is always accurate
+    for idx, th in enumerate(MEDITATION_THEMES_36):
+        th_title = th.get("title", "").strip().lower()
+        if th_title in used_titles_from_file and idx not in used_indices:
+            used_indices.append(idx)
+    print(f"  -> 🔒 Merged used_indices (from file + tracker): {len(used_indices)} themes used so far")
 
     # Filter available themes strictly by track type (Krishna vs Non-Krishna)
     eligible_indices = []
@@ -642,9 +665,12 @@ Return a JSON object with EXACTLY these keys:
     if not eligible_indices:
         eligible_indices = list(range(len(MEDITATION_THEMES_36)))
 
+    # PRIMARY GUARD: Filter by used_indices (which now reflects used_music_titles.txt)
     available = [i for i in eligible_indices if i not in used_indices]
     if not available:
+        print("  -> ♻️ All themes used! Resetting rotation for next cycle.")
         available = eligible_indices
+        used_indices = []  # Full cycle complete — reset
 
     chosen_idx = random.choice(available)
     used_indices.append(chosen_idx)
@@ -2813,16 +2839,37 @@ def generate_thumbnail(slides, theme):
                         urls = [line.strip() for line in f if line.strip()]
                     chosen_side = None
 
+            # ── PERMANENT FIX: Load already-used thumbnail URLs to prevent repetition ──
+            used_thumb_urls = set()
+            used_f = os.path.join(BASE_DIR, "used_thumbnail_urls.txt")
+            if os.path.exists(used_f):
+                try:
+                    with open(used_f, "r", encoding="utf-8") as uf:
+                        for line in uf:
+                            t = line.strip()
+                            if t:
+                                used_thumb_urls.add(t)
+                except Exception:
+                    pass
+            print(f"  -> 🔒 Known used thumbnail URLs: {len(used_thumb_urls)} entries", flush=True)
+
             attempt_count = 0
-            while urls and attempt_count < 5:
+            while urls and attempt_count < 10:
                 attempt_count += 1
                 chosen_url = urls.pop(0)
+                # SKIP if this URL was already used in a previous run
+                if chosen_url in used_thumb_urls:
+                    print(f"  -> ⚠️ [Dedup] Skipping already-used thumbnail URL: {chosen_url}", flush=True)
+                    if q_file:
+                        with open(q_file, "w", encoding="utf-8") as qf:
+                            qf.write("\n".join(urls) + "\n" if urls else "")
+                    continue
                 if q_file:
                     with open(q_file, "w", encoding="utf-8") as qf:
                         qf.write("\n".join(urls) + "\n" if urls else "")
-                used_f = os.path.join(BASE_DIR, "used_thumbnail_urls.txt")
                 with open(used_f, "a", encoding="utf-8") as uf:
                     uf.write(chosen_url + "\n")
+                used_thumb_urls.add(chosen_url)  # Update in-memory set too
 
                 if chosen_side:
                     with open(side_tracker_f, "w", encoding="utf-8") as sf:
