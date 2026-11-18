@@ -2465,33 +2465,58 @@ def render_full_length_base_thumbnail(base_image_path, theme, output_path, expli
     margin-bottom: 28px;
     max-width: 820px;
   }}
-  .bottom-info-pill {{
-    {pill_align_css}
-    align-items: center;
-    gap: 16px;
-    background: rgba(10, 10, 15, 0.88);
-    border: 2px solid rgba(255, 215, 0, 0.7);
-    border-radius: 50px;
-    padding: 8px 24px;
-    box-shadow: 0 10px 30px rgba(0,0,0,0.8);
-    backdrop-filter: blur(8px);
+  /* High-Contrast Luxury Full-Length Bottom Base Line */
+  .bottom-badge-container {{
+    position: absolute;
+    bottom: 30px;
+    left: 50px;
+    right: 50px;
+    z-index: 20;
+    display: flex;
+    justify-content: center;
   }}
-  .tag-label {{
-    font-family: 'Montserrat', sans-serif;
-    font-size: 20px;
+  .bottom-badge {{
+    width: 100%;
+    background: linear-gradient(90deg, rgba(8, 4, 1, 0.98) 0%, rgba(28, 14, 2, 0.96) 20%, rgba(45, 20, 0, 0.96) 50%, rgba(28, 14, 2, 0.96) 80%, rgba(8, 4, 1, 0.98) 100%);
+    border: 3.5px solid #FFD54F;
+    border-radius: 60px;
+    padding: 14px 45px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    box-shadow: 0 15px 40px rgba(0,0,0,0.98), 0 0 35px rgba(255, 213, 79, 0.5);
+  }}
+  .badge-tag {{
+    font-family: 'Poppins', 'Montserrat', sans-serif;
+    font-size: 32px;
     font-weight: 900;
-    color: #FFD700;
+    color: #FFD54F;
     letter-spacing: 2px;
   }}
-  .dur-badge {{
-    background: linear-gradient(135deg, #FFD700 0%, #FFA000 100%);
+  .badge-title {{
+    font-family: 'Noto Sans Devanagari', sans-serif;
+    font-size: 44px;
+    font-weight: 800;
+    color: #FFFFFF;
+    letter-spacing: 1px;
+    text-shadow: 0 3px 8px #000, 0 0 25px rgba(255, 255, 255, 0.8);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 950px;
+    text-align: center;
+  }}
+  .badge-dur {{
+    background: linear-gradient(135deg, #FFD54F 0%, #FF8F00 100%);
     color: #1A0D00;
-    font-family: 'Montserrat', sans-serif;
-    font-size: 20px;
+    border: 2.5px solid #FFFDE7;
+    border-radius: 35px;
+    padding: 8px 26px;
+    font-family: 'Poppins', sans-serif;
+    font-size: 28px;
     font-weight: 900;
-    padding: 4px 14px;
-    border-radius: 20px;
-    border: 1.5px solid #FFF;
+    letter-spacing: 2px;
+    box-shadow: 0 6px 20px rgba(0,0,0,0.9), 0 0 25px rgba(255, 213, 79, 0.6);
   }}
 </style>
 </head>
@@ -2503,9 +2528,13 @@ def render_full_length_base_thumbnail(base_image_path, theme, output_path, expli
     <div class="hook-pill">{pill}</div>
     <div class="line-lead">{lead_text}</div>
     <div class="line-benefit">{benefit_text}</div>
-    <div class="bottom-info-pill">
-      <span class="tag-label">{tag}</span>
-      <span class="dur-badge">{dur_str}</span>
+  </div>
+
+  <div class="bottom-badge-container">
+    <div class="bottom-badge">
+      <span class="badge-tag">{tag}</span>
+      <span class="badge-title">{hindi}</span>
+      <span class="badge-dur">{dur_str}</span>
     </div>
   </div>
 </body>
@@ -2670,10 +2699,10 @@ def verify_thumbnail_youtube_policy(thumb_path):
         prompt = (
             "Analyze this 16:9 YouTube video thumbnail with extreme scrutiny.\n"
             "Strict Verification Tasks:\n"
-            "1. ZERO TEXT ON WOMAN: Does ANY text, title, letter, badge, or banner overlap, touch, or cut across ANY part of the woman's face, eyes, nose, lips, hair, jewelry, dress, or body? (The woman must be 100% completely clear of any text).\n"
-            "2. WOMAN VISIBILITY: Is the woman fully visible, bright, and not obscured by dark gradients or text?\n"
-            "3. MODESTY & FAMILY SAFE: Is the attire modest, dignified, non-suggestive, and 100% compliant with YouTube community guidelines?\n"
-            "Answer strictly in JSON: {\"text_on_woman\": true/false, \"woman_fully_visible\": true/false, \"modest_and_safe\": true/false, \"verdict\": \"APPROVED\" or \"REJECTED\"}"
+            "1. ZERO TEXT ON FACE / HEAD: Does any main text, hook pill, or title cover, touch, or overlap the woman's face, eyes, nose, mouth, forehead, hair, or neck? (Her face and upper portrait must be 100% untouched, clear, and visible. A standard bottom border/badge bar at the bottom edge is completely permitted).\n"
+            "2. WOMAN VISIBILITY: Is the woman fully visible, clear, bright, and beautiful?\n"
+            "3. MODESTY & FAMILY SAFE: Is the attire modest, royal, and dignified (no excessive neckline or suggestive cleavage)?\n"
+            "Answer strictly in JSON: {\"text_on_face\": false, \"woman_visible\": true, \"modest_and_safe\": true, \"verdict\": \"APPROVED\" or \"REJECTED\"}"
         )
         models_to_try = ["gemini-3.1-flash-lite", "gemini-3.8-flash", "gemini-3.5-flash"]
         res = None
@@ -2691,12 +2720,12 @@ def verify_thumbnail_youtube_policy(thumb_path):
         except Exception: pass
         
         # Strict policy check
-        if "REJECTED" in raw.upper() or '"text_on_woman": true' in raw.lower() or '"woman_fully_visible": false' in raw.lower() or '"modest_and_safe": false' in raw.lower():
+        if "REJECTED" in raw.upper() or '"text_on_face": true' in raw.lower() or '"woman_visible": false' in raw.lower() or '"modest_and_safe": false' in raw.lower():
             print(f"  -> 🚫 [YouTube Policy REJECTED]: {raw}", flush=True)
             return False
             
         if "APPROVED" in raw.upper():
-            print("  -> 🛡️ [YouTube Policy Passed] Thumbnail 100% modest, dignified, and woman is 100% untouched and visible!", flush=True)
+            print("  -> 🛡️ [YouTube Policy Passed] Thumbnail 100% modest, dignified, and woman face is 100% clear!", flush=True)
             return True
             
         print(f"  -> ⚠️ [YouTube Policy Caution]: {raw}", flush=True)
