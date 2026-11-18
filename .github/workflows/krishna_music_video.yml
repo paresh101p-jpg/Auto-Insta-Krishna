@@ -63,8 +63,8 @@ jobs:
 
       - name: Commit Updated Music Queues
         run: |
-          git config user.name "Krishna Vibez Music Bot"
-          git config user.email "bot@krishnavibez.in"
+          git config user.name "paresh101p-jpg"
+          git config user.email "paresh101p@gmail.com"
           git add treblo_music_video_only_urls.txt treblo_music_urls.txt treblo_music_used_urls.txt treblo_music_cycle_tracker.txt used_music_titles.txt music_theme_tracker.json used_music_images_tracker.txt used_ai_thumbnails.txt music_video_images youtube_quarantine_queue.json youtube_quarantine_audit.log daily_post_tracker.json thumbnail_urls_*.txt used_thumbnail_urls.txt || true
           echo "=== VERIFICATION: used_music_titles.txt ==="
           cat used_music_titles.txt || echo "(empty)"
