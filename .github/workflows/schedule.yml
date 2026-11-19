@@ -33,7 +33,9 @@ jobs:
           node-version: '18'
 
       - name: Install System Dependencies (ffmpeg)
-        run: sudo apt-get update && sudo apt-get install -y ffmpeg
+        run: |
+          sudo apt-get update -o Acquire::Retries=3 -qq || true
+          sudo apt-get install -y --no-install-recommends ffmpeg || true
 
       - name: Install Python dependencies
         run: pip install -r requirements.txt

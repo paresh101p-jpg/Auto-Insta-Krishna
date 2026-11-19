@@ -36,7 +36,9 @@ jobs:
           node-version: '18'
 
       - name: Install System Dependencies (ffmpeg & Hindi Fonts)
-        run: sudo apt-get update && sudo apt-get install -y ffmpeg fonts-noto-extra fonts-noto-core fonts-deva
+        run: |
+          sudo apt-get update -o Acquire::Retries=3 -qq || true
+          sudo apt-get install -y --no-install-recommends ffmpeg fonts-deva fonts-noto-core fonts-lohit-deva || true
 
       - name: Install Python dependencies
         run: pip install -r requirements.txt edge-tts
