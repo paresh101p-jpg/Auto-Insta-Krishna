@@ -231,7 +231,7 @@ def send_push_notification(title, quote, media_url, post_id):
         print(f"[OneSignalPush] Push notification notice: {e}")
         return False
 
-def publish_to_website(media_url, caption, is_video=False, custom_post_id=None):
+def publish_to_website(media_url, caption, is_video=False, custom_post_id=None, custom_thumbnail_url=None):
     """
     Core function called after successful Instagram/Facebook post.
     Updates posts-data.js, sitemap.xml, rss.xml, and pings Google/Bing for Discover.
@@ -250,10 +250,16 @@ def publish_to_website(media_url, caption, is_video=False, custom_post_id=None):
         iso_date = now.strftime("%Y-%m-%d")
         post_id = custom_post_id if custom_post_id else generate_unique_post_id()
 
-        if is_video:
+        if custom_thumbnail_url:
+            thumbnail_url = custom_thumbnail_url
+        elif is_video:
             alt_text = f"श्री कृष्ण 4K दिव्य रील वीडियो — {quote[:75]} — Krishna Vibez Reels WhatsApp Status"
             read_time = "देखने का समय: 2 मिनट (Reel)"
-            thumbnail_url = media_url
+            yt_match = re.search(r"(?:shorts\/|v=|youtu\.be\/|\/v\/|\/embed\/)([a-zA-Z0-9_-]{11})", str(media_url))
+            if yt_match:
+                thumbnail_url = f"https://i.ytimg.com/vi/{yt_match.group(1)}/hqdefault.jpg"
+            else:
+                thumbnail_url = media_url
         else:
             alt_text = f"श्री कृष्ण 4K HD वॉलपेपर — {quote[:75]} — Krishna Vibez Wallpaper"
             read_time = "पढ़ने का समय: 3 मिनट"

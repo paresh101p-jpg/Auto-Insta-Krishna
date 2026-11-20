@@ -211,7 +211,8 @@ def syndicate_kinetic_reel(video_path, spoken_thought, title, youtube_video_id, 
         web_ok, post_id = website_publisher.publish_to_website(
             media_url=public_video_url,
             caption=caption_for_web,
-            is_video=True
+            is_video=True,
+            custom_thumbnail_url=f"https://i.ytimg.com/vi/{youtube_video_id}/hqdefault.jpg"
         )
         if post_id:
             post_url = f"https://krishnavibez.in/post.html?id={post_id}"
