@@ -2320,13 +2320,13 @@ def render_full_length_base_thumbnail(base_image_path, theme, output_path, expli
         print(f"  -> 🎯 [Deterministic 0% Error Mode] Woman is on {subject_side} side -> Text strictly locked to {text_side.upper()}!", flush=True)
 
         if text_side == "right":
-            text_container_css = "position: absolute; top: 85px; right: 65px; width: 980px; max-width: 980px; z-index: 10; text-align: right;"
+            text_container_css = "position: absolute; top: 40px; bottom: 130px; right: 65px; width: 980px; max-width: 980px; z-index: 10; display: flex; flex-direction: column; justify-content: center; align-items: flex-end; text-align: right;"
             pill_align_css = "display: inline-flex; margin-left: auto;"
-            vignette_css = "position: absolute; top: 0; left: 0; width: 1920px; height: 1080px; background: radial-gradient(ellipse at 75% 42%, rgba(255, 191, 0, 0.52) 0%, rgba(255, 140, 0, 0.32) 32%, rgba(180, 80, 0, 0.15) 50%, rgba(0, 0, 0, 0.65) 75%), linear-gradient(270deg, rgba(8, 4, 1, 0.95) 0%, rgba(20, 10, 2, 0.88) 32%, rgba(35, 16, 3, 0.50) 48%, rgba(0, 0, 0, 0.05) 55%, rgba(0, 0, 0, 0) 62%); pointer-events: none;"
+            vignette_css = "position: absolute; top: 0; left: 0; width: 1920px; height: 1080px; background: radial-gradient(ellipse at 75% 48%, rgba(255, 191, 0, 0.55) 0%, rgba(255, 140, 0, 0.35) 35%, rgba(180, 80, 0, 0.16) 52%, rgba(0, 0, 0, 0.65) 75%), linear-gradient(270deg, rgba(8, 4, 1, 0.95) 0%, rgba(20, 10, 2, 0.88) 32%, rgba(35, 16, 3, 0.50) 48%, rgba(0, 0, 0, 0.05) 55%, rgba(0, 0, 0, 0) 62%); pointer-events: none;"
         else:
-            text_container_css = "position: absolute; top: 85px; left: 65px; width: 980px; max-width: 980px; z-index: 10; text-align: left;"
+            text_container_css = "position: absolute; top: 40px; bottom: 130px; left: 65px; width: 980px; max-width: 980px; z-index: 10; display: flex; flex-direction: column; justify-content: center; align-items: flex-start; text-align: left;"
             pill_align_css = "display: inline-flex;"
-            vignette_css = "position: absolute; top: 0; left: 0; width: 1920px; height: 1080px; background: radial-gradient(ellipse at 25% 42%, rgba(255, 191, 0, 0.52) 0%, rgba(255, 140, 0, 0.32) 32%, rgba(180, 80, 0, 0.15) 50%, rgba(0, 0, 0, 0.65) 75%), linear-gradient(90deg, rgba(8, 4, 1, 0.95) 0%, rgba(20, 10, 2, 0.88) 32%, rgba(35, 16, 3, 0.50) 48%, rgba(0, 0, 0, 0.05) 55%, rgba(0, 0, 0, 0) 62%); pointer-events: none;"
+            vignette_css = "position: absolute; top: 0; left: 0; width: 1920px; height: 1080px; background: radial-gradient(ellipse at 25% 48%, rgba(255, 191, 0, 0.55) 0%, rgba(255, 140, 0, 0.35) 35%, rgba(180, 80, 0, 0.16) 52%, rgba(0, 0, 0, 0.65) 75%), linear-gradient(90deg, rgba(8, 4, 1, 0.95) 0%, rgba(20, 10, 2, 0.88) 32%, rgba(35, 16, 3, 0.50) 48%, rgba(0, 0, 0, 0.05) 55%, rgba(0, 0, 0, 0) 62%); pointer-events: none;"
 
         # Category and Dynamic 2x Huge Bold Hook details (Zero repetition, Track-based)
         cat = theme.get("category", "").lower()
