@@ -3527,11 +3527,11 @@ def cleanup():
 
 def check_daily_music_video_limit():
     """
-    Guarantees STRICT 1 MUSIC VIDEO PER DAY.
-    Checks IST (Indian Standard Time) date. If a video was already posted today, exits cleanly with code 0.
+    Guarantees STRICT 1 MUSIC VIDEO EVERY 2 DAYS (Alternate Days).
+    Checks IST (Indian Standard Time) date. If a video was posted less than 2 days ago, exits cleanly with code 0.
     """
     if "--force" in sys.argv:
-        print("⏩ [--force] Bypassing daily 1-video limit check.", flush=True)
+        print("⏩ [--force] Bypassing 2-day music video limit check.", flush=True)
         return True
     
     from datetime import datetime, timezone, timedelta
@@ -3543,11 +3543,17 @@ def check_daily_music_video_limit():
         try:
             with open(tracker_file, "r", encoding="utf-8") as f:
                 data = json.load(f)
-            last_date = data.get("last_music_video_date")
-            if last_date == today_str:
-                print(f"🛑 [DAILY LIMIT REACHED] A music video has ALREADY been posted for today ({today_str} IST).", flush=True)
-                print("   Strict rule: Exactly 1 music video per day. Exiting cleanly with code 0.", flush=True)
-                sys.exit(0)
+            last_date_str = data.get("last_music_video_date")
+            if last_date_str:
+                last_dt = datetime.strptime(last_date_str, "%Y-%m-%d").date()
+                curr_dt = ist_now.date()
+                days_diff = (curr_dt - last_dt).days
+                if days_diff < 2:
+                    next_allowed = (last_dt + timedelta(days=2)).strftime("%Y-%m-%d")
+                    print(f"🛑 [2-DAY CYCLE ACTIVE] Last music video was posted on {last_date_str} ({days_diff} day(s) ago).", flush=True)
+                    print(f"   Strict User Rule: Exactly 1 music video every 2 days (Alternate Days). Next upload allowed on/after: {next_allowed} IST.", flush=True)
+                    print("   Today is a rest day. Exiting cleanly with code 0.", flush=True)
+                    sys.exit(0)
         except Exception as e:
             print(f"   Notice reading daily tracker: {e}", flush=True)
     return True

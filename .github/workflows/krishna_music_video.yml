@@ -1,4 +1,4 @@
-name: Daily Krishna AI Music Video (15-Min Meditation)
+name: Krishna AI Music Video (15-Min Meditation - Every 2 Days)
 
 on:
   workflow_dispatch: # Allows manual trigger from GitHub UI
@@ -8,9 +8,9 @@ on:
     paths:
       - 'TRIGGER_MUSIC_VIDEO.txt'
   schedule:
-    # EXACTLY 1 TIME DAILY IN THE EVENING:
+    # EXACTLY 1 TIME EVERY 2 DAYS IN THE EVENING (ALTERNATE DAYS):
     # 12:30 UTC = 06:00 PM IST (Takes ~50 mins to render, uploads right at ~06:55 - 07:00 PM IST Peak)
-    - cron: '30 12 * * *'
+    - cron: '30 12 */2 * *'
 
 concurrency:
   group: krishna-music-video-upload
