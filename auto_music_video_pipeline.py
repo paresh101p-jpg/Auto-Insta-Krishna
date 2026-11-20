@@ -2320,74 +2320,76 @@ def render_full_length_base_thumbnail(base_image_path, theme, output_path, expli
         print(f"  -> 🎯 [Deterministic 0% Error Mode] Woman is on {subject_side} side -> Text strictly locked to {text_side.upper()}!", flush=True)
 
         if text_side == "right":
-            text_container_css = "position: absolute; top: 60px; right: 60px; width: 820px; max-width: 820px; z-index: 10; text-align: right;"
+            text_container_css = "position: absolute; top: 85px; right: 65px; width: 980px; max-width: 980px; z-index: 10; text-align: right;"
             pill_align_css = "display: inline-flex; margin-left: auto;"
-            vignette_css = "position: absolute; top: 0; left: 0; width: 1920px; height: 1080px; background: linear-gradient(270deg, rgba(0,0,0,0.92) 0%, rgba(0,0,0,0.80) 30%, rgba(0,0,0,0.30) 42%, rgba(0,0,0,0) 48%); pointer-events: none;"
+            vignette_css = "position: absolute; top: 0; left: 0; width: 1920px; height: 1080px; background: radial-gradient(ellipse at 75% 42%, rgba(255, 191, 0, 0.52) 0%, rgba(255, 140, 0, 0.32) 32%, rgba(180, 80, 0, 0.15) 50%, rgba(0, 0, 0, 0.65) 75%), linear-gradient(270deg, rgba(8, 4, 1, 0.95) 0%, rgba(20, 10, 2, 0.88) 32%, rgba(35, 16, 3, 0.50) 48%, rgba(0, 0, 0, 0.05) 55%, rgba(0, 0, 0, 0) 62%); pointer-events: none;"
         else:
-            text_container_css = "position: absolute; top: 60px; left: 60px; width: 820px; max-width: 820px; z-index: 10; text-align: left;"
+            text_container_css = "position: absolute; top: 85px; left: 65px; width: 980px; max-width: 980px; z-index: 10; text-align: left;"
             pill_align_css = "display: inline-flex;"
-            vignette_css = "position: absolute; top: 0; left: 0; width: 1920px; height: 1080px; background: linear-gradient(90deg, rgba(0,0,0,0.92) 0%, rgba(0,0,0,0.80) 30%, rgba(0,0,0,0.30) 42%, rgba(0,0,0,0) 48%); pointer-events: none;"
+            vignette_css = "position: absolute; top: 0; left: 0; width: 1920px; height: 1080px; background: radial-gradient(ellipse at 25% 42%, rgba(255, 191, 0, 0.52) 0%, rgba(255, 140, 0, 0.32) 32%, rgba(180, 80, 0, 0.15) 50%, rgba(0, 0, 0, 0.65) 75%), linear-gradient(90deg, rgba(8, 4, 1, 0.95) 0%, rgba(20, 10, 2, 0.88) 32%, rgba(35, 16, 3, 0.50) 48%, rgba(0, 0, 0, 0.05) 55%, rgba(0, 0, 0, 0) 62%); pointer-events: none;"
 
-        # Category and 4-Line Hook details
+        # Category and Dynamic 2x Huge Bold Hook details (Zero repetition, Track-based)
         cat = theme.get("category", "").lower()
         title = theme.get("title", "")
         hindi = theme.get("hindi_main", "") or title
 
-        def split_to_two(txt):
-            words = txt.strip().split()
-            if len(words) <= 1:
-                return txt, ""
-            mid = (len(words) + 1) // 2
-            return " ".join(words[:mid]), " ".join(words[mid:])
+        THEME_HOOKS = {
+            "tabla": [
+                ("10 मिनट सुनो", "सारे कष्ट दूर होंगे", "🥁 दिन की शुरुआत इस धुन से", "✨ BANSURI & LIVE TABLA"),
+                ("दिन की शुरुआत", "सकारात्मक ऊर्जा से", "🥁 अलौकिक सुबह की धुन", "✨ SACRED TABLA BANSURI"),
+                ("सारी नकारात्मकता", "तुरंत नष्ट होगी", "🥁 चमत्कारी पावन धुन", "✨ BANSURI & LIVE TABLA"),
+                ("चमत्कारी प्रभाव", "मन प्रफुल्लित होगा", "🥁 दिव्य तबला जुगलबंदी", "✨ SACRED BANSURI TABLA"),
+                ("मन के सारे डर", "पल में गायब होंगे", "🥁 प्रातःकालीन पावन धुन", "✨ BANSURI & LIVE TABLA"),
+            ],
+            "sleep": [
+                ("गहरी मीठी नींद", "5 मिनट में आएगी", "🌙 सोने से पहले 5 मिनट सुनो", "✨ DEEP SLEEP BANSURI"),
+                ("रात को 1 बार सुनो", "तनाव गायब होगा", "🌙 अनिद्रा और बेचैनी दूर", "✨ CALM SLEEP MEDITATION"),
+                ("आँखें बंद करो", "अलौकिक सुख पाओ", "🌙 गहरी शांतिदायक धुन", "✨ DEEP SLEEP HEALING"),
+                ("सोने से पहले सुनो", "तुरंत नींद आएगी", "🌙 सुखद निद्रा की धुन", "✨ PEACEFUL NIGHT BANSURI"),
+            ],
+            "lofi": [
+                ("मानसिक तनाव", "तुरंत शांत होगा", "🎧 मन को शांत करने की धुन", "✨ PEACEFUL LOFI BEATS"),
+                ("मन अशांत है तो", "इसे एक बार सुनो", "🎧 दिल को छूने वाला सुकून", "✨ SERENE LOFI CHILL"),
+                ("हृदय को सुकून", "असीम शांति मिलेगी", "🎧 गहरी आत्मिक शांति", "✨ RELAXING LOFI VIBES"),
+                ("सारी चिंताएं", "पल में भूल जाओगे", "🎧 तनावमुक्ति की दिव्य धुन", "✨ PEACEFUL LOFI BANSURI"),
+            ],
+            "lake": [
+                ("अलौकिक सुख", "मन शांत होगा", "🪷 आँखें बंद करके इसे सुनो", "✨ SERENE LOTUS LAKE"),
+                ("शांत सरोवर धुन", "मन प्रफुल्लित होगा", "🪷 दिव्य कमल सरोवर धुन", "✨ PEACEFUL LOTUS BANSURI"),
+                ("आत्मा को सुकून", "सारे कष्ट मिटेंगे", "🪷 पवित्र सरोवर का ध्यान", "✨ SERENE LAKE HEALING"),
+            ],
+            "darbari": [
+                ("दिव्य आत्मिक शांति", "अद्भुत चमत्कार", "👑 शुद्ध शास्त्रीय संगीत का आनंद", "✨ MAJESTIC RAAG DARBARI"),
+                ("शुद्ध शास्त्रीय संगीत", "चमत्कारी अनुभूति", "👑 राजसी दरबारी राग", "✨ ROYAL RAAG DARBARI"),
+                ("मन के सारे द्वंद्व", "तुरंत शांत होंगे", "👑 गंभीर दिव्य शांति", "✨ MAJESTIC RAAG DARBARI"),
+            ],
+            "pooja": [
+                ("सुबह 10 मिनट सुनो", "सारे संकट टलेंगे", "🔔 प्रातःकाल की पावन धुन", "✨ DAILY MORNING POOJA"),
+                ("प्रातःकालीन पूजा", "शुभ दिन की शुरुआत", "🔔 घर में बरकत और सुख", "✨ DIVINE MORNING BANSURI"),
+                ("दिन की शुरुआत", "दिव्य शांति के साथ", "🔔 पावन प्रभात की धुन", "✨ SACRED MORNING DHYAN"),
+            ]
+        }
 
-        pill = "🔔 सिर्फ 10 मिनट रोज सुनो"
-        line1 = "सारे कष्ट व तनाव"
-        line2 = "पल में दूर होंगे"
-        line3 = "मन को असीम"
-        line4 = "शांति मिलेगी"
-        tag = "✨ DAILY POOJA BANSURI"
-
+        matched_key = "pooja"
         if any(w in cat for w in ["sleep", "neend", "insomnia", "निद्रा"]):
-            pill = "🌙 सोने से पहले 5 मिनट सुनो"
-            line1 = "तनाव और बेचैनी"
-            line2 = "तुरंत दूर होगी"
-            line3 = "गहरी और मीठी"
-            line4 = "नींद आएगी"
-            tag = "✨ DEEP SLEEP BANSURI"
+            matched_key = "sleep"
         elif any(w in cat for w in ["lofi", "stress", "relief", "सुकून", "तनाव"]):
-            pill = "🎧 मन को शांत करने की धुन"
-            line1 = "मानसिक तनाव और"
-            line2 = "चिंता मिट जाएगी"
-            line3 = "हर पल असीम"
-            line4 = "शांति मिलेगी"
-            tag = "✨ PEACEFUL LOFI BEATS"
+            matched_key = "lofi"
         elif any(w in cat for w in ["tabla", "तबला", "jugalbandi"]):
-            pill = "🥁 दिन की शुरुआत इस धुन से करो"
-            line1 = "सारे नकारात्मक विचार"
-            line2 = "पल में दूर होंगे"
-            line3 = "सकारात्मक ऊर्जा का"
-            line4 = "प्रवाह होगा"
-            tag = "✨ BANSURI & LIVE TABLA"
+            matched_key = "tabla"
         elif any(w in cat for w in ["lake", "सरोवर", "lotus"]):
-            pill = "🪷 आँखें बंद करके इसे सुनो"
-            line1 = "मन की सारी अशांति"
-            line2 = "तुरंत शांत होगी"
-            line3 = "अलौकिक सुख और"
-            line4 = "आनंद मिलेगा"
-            tag = "✨ SERENE LOTUS LAKE"
+            matched_key = "lake"
         elif any(w in cat for w in ["darbari", "दरबारी"]):
-            pill = "👑 शुद्ध शास्त्रीय संगीत का आनंद"
-            line1 = "गंभीर आत्मिक शांति"
-            line2 = "का अनुभव होगा"
-            line3 = "मन के सारे द्वंद्व"
-            line4 = "शांत होंगे"
-            tag = "✨ MAJESTIC RAAG DARBARI"
+            matched_key = "darbari"
 
-        lead_text = f"{line1} {line2}".strip()
-        benefit_text = f"{line3} {line4}".strip()
-        if "lead" in theme and "benefit" in theme:
-            lead_text = theme["lead"].strip()
-            benefit_text = theme["benefit"].strip()
+        import hashlib
+        h_idx = int(hashlib.md5(f"{title}_{hindi}_{cat}".encode()).hexdigest(), 16)
+        candidates = THEME_HOOKS.get(matched_key, THEME_HOOKS["pooja"])
+        picked_hook = candidates[h_idx % len(candidates)]
+
+        line1, line2, pill, tag = picked_hook
+        lead_text = line1
+        benefit_text = line2
 
         # Duration string for bottom badge (e.g. 15 MIN, 60 MIN)
         dur_str = theme.get("dur_str")
@@ -2433,37 +2435,55 @@ def render_full_length_base_thumbnail(base_image_path, theme, output_path, expli
     background: linear-gradient(135deg, #FF1744 0%, #D50000 100%);
     color: #FFFFFF;
     font-family: 'Poppins', sans-serif;
-    font-size: 26px;
-    font-weight: 800;
-    letter-spacing: 1px;
-    padding: 10px 24px;
-    border-radius: 50px;
-    box-shadow: 0 8px 24px rgba(213,0,0,0.5), inset 0 2px 4px rgba(255,255,255,0.4);
-    border: 2px solid rgba(255,255,255,0.7);
-    margin-bottom: 24px;
+    font-size: 32px;
+    font-weight: 900;
+    letter-spacing: 1.5px;
+    padding: 12px 32px;
+    border-radius: 60px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.95), 0 0 35px rgba(255, 23, 68, 0.8);
+    border: 3px solid #FFF8E1;
+    margin-bottom: 28px;
     text-transform: uppercase;
   }}
   .line-lead {{
     font-family: 'Noto Sans Devanagari', sans-serif;
-    font-size: 76px;
+    font-size: 124px;
     font-weight: 900;
-    line-height: 1.18;
+    line-height: 1.12;
     color: #FFFFFF;
-    text-shadow: 0 4px 12px rgba(0,0,0,0.9), 0 8px 30px rgba(0,0,0,0.95), 2px 2px 4px rgba(0,0,0,1);
+    text-shadow: 
+      4px 4px 0 #000000,
+      -4px -4px 0 #000000,
+      4px -4px 0 #000000,
+      -4px 4px 0 #000000,
+      0 6px 0 #000000,
+      0 -6px 0 #000000,
+      6px 0 0 #000000,
+      -6px 0 0 #000000,
+      0 12px 30px rgba(0,0,0,1),
+      0 0 50px rgba(255, 215, 0, 0.9);
     margin-bottom: 16px;
-    max-width: 820px;
+    max-width: 980px;
+    letter-spacing: -0.5px;
   }}
   .line-benefit {{
     font-family: 'Noto Sans Devanagari', sans-serif;
-    font-size: 74px;
+    font-size: 118px;
     font-weight: 900;
-    line-height: 1.18;
-    background: linear-gradient(180deg, #FFF9C4 0%, #FFD700 40%, #FFA000 80%, #FF6F00 100%);
+    line-height: 1.12;
+    background: linear-gradient(180deg, #FFFFFF 0%, #FFF59D 25%, #FFD700 65%, #FF8F00 100%);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
-    filter: drop-shadow(0 6px 16px rgba(0,0,0,0.95)) drop-shadow(0 12px 36px rgba(255,160,0,0.6));
-    margin-bottom: 28px;
-    max-width: 820px;
+    filter: 
+      drop-shadow(4px 4px 0 #000000)
+      drop-shadow(-4px -4px 0 #000000)
+      drop-shadow(4px -4px 0 #000000)
+      drop-shadow(-4px 4px 0 #000000)
+      drop-shadow(0 14px 30px rgba(0,0,0,1))
+      drop-shadow(0 0 55px rgba(255, 179, 0, 0.95));
+    margin-bottom: 30px;
+    max-width: 980px;
+    letter-spacing: -0.5px;
   }}
   /* High-Contrast Luxury Full-Length Bottom Base Line */
   .bottom-badge-container {{
