@@ -36,3 +36,4 @@ path2 = r"E:\Paresh\Auto Post\Krishna Vibez\public\articles-sitemap.xml"
 with open(path2, "w", encoding="utf-8") as f:
     f.write(sitemap_xml)
 print(f"Written: {path2}")
+
