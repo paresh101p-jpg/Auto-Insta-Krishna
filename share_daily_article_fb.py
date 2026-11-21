@@ -13,8 +13,17 @@ from datetime import datetime, timezone, timedelta
 
 _IST = timezone(timedelta(hours=5, minutes=30))
 
-FB_PAGE_ID = os.environ.get("FB_PAGE_ID", "1435597999640612")
-FB_ACCESS_TOKEN = os.environ.get("FB_ACCESS_TOKEN", "EAAVu2ZAFWtLMBTN3SN3xlpmENI5gbjLMrESItX8HhapTK1sILEWNXbJxw5YafaRtXEKHbkcJYjcGqaPRrMV0osfciB1bZCkVZC5NVZBWViHuzQ8mfhU1IGQwXzRyybo5626CXPiwZBUVP1vsrTL9nZC1AZCZBhD6FKMOYgOjbKmh6ml7a0ZA86IKTi4e9pI25F5SuQddH")
+FB_PAGE_ID = os.environ.get("FB_PAGE_ID", "1808917602588221")
+
+token_file = os.path.join(os.path.dirname(__file__), "fb_permanent_token.txt")
+if os.path.exists(token_file):
+    try:
+        with open(token_file, "r", encoding="utf-8") as tf:
+            FB_ACCESS_TOKEN = tf.read().strip()
+    except Exception:
+        FB_ACCESS_TOKEN = os.environ.get("FB_ACCESS_TOKEN", "")
+else:
+    FB_ACCESS_TOKEN = os.environ.get("FB_ACCESS_TOKEN", "")
 
 # Curated library of 33+ high-impact articles with festival calendar logic
 ARTICLES_POOL = [

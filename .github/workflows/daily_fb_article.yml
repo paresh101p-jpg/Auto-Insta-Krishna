@@ -29,7 +29,7 @@ jobs:
 
       - name: Run Daily Article Poster
         env:
-          FB_PAGE_ID: ${{ secrets.FB_PAGE_ID }}
+          FB_PAGE_ID: ${{ secrets.FB_PAGE_ID || '1808917602588221' }}
           FB_ACCESS_TOKEN: ${{ secrets.FB_ACCESS_TOKEN }}
         run: python -u share_daily_article_fb.py
 
@@ -41,3 +41,4 @@ jobs:
           git commit -m "chore: record daily Facebook article post [skip ci]" || true
           git pull --rebase origin master || true
           git push origin master || true
+
