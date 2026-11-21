@@ -679,6 +679,52 @@ def update_rss(topic_meta, hero_img):
             f.write(xml)
         print("✅ Updated rss.xml for Google Discover.")
 
+def ping_search_engines(article_url):
+    """
+    Submits new article to IndexNow (Bing, Yandex, Seznam, Naver) and WebSub
+    for instant search engine indexing.
+    """
+    print("\n🌐 Step 4.5: Submitting article to IndexNow & Search Engine Instant Indexing...")
+    # 1. IndexNow Submission
+    try:
+        indexnow_payload = {
+            "host": "krishnavibez.in",
+            "key": "c8d1979b9a674e2d83b0f51276a71e3d",
+            "keyLocation": "https://krishnavibez.in/c8d1979b9a674e2d83b0f51276a71e3d.txt",
+            "urlList": [
+                "https://krishnavibez.in/",
+                "https://krishnavibez.in/articles",
+                article_url
+            ]
+        }
+        res = requests.post(
+            "https://api.indexnow.org/indexnow",
+            json=indexnow_payload,
+            headers={
+                "Content-Type": "application/json; charset=utf-8",
+                "User-Agent": "Mozilla/5.0 (compatible; IndexNowClient/1.0; +https://www.indexnow.org)"
+            },
+            timeout=10
+        )
+        print(f"   ✅ IndexNow instant indexing ping: HTTP {res.status_code}")
+    except Exception as e:
+        print(f"   [Notice] IndexNow ping: {e}")
+
+    # 2. WebSub (PubSubHubbub) Submission
+    try:
+        websub_res = requests.post(
+            "https://pubsubhubbub.appspot.com/publish",
+            data={
+                "hub.mode": "publish",
+                "hub.url": "https://krishnavibez.in/rss.xml"
+            },
+            headers={"User-Agent": "KrishnaVibez-Publisher/1.0"},
+            timeout=10
+        )
+        print(f"   ✅ WebSub (PubSubHubbub) ping: HTTP {websub_res.status_code}")
+    except Exception as e:
+        print(f"   [Notice] WebSub ping: {e}")
+
 def post_to_facebook(topic_meta, hero_img):
     slug = topic_meta["slug"]
     title = topic_meta["title"]
@@ -780,6 +826,7 @@ def run_pipeline():
     update_articles_index(topic_meta, hero_img)
     update_sitemap(topic_meta["slug"])
     update_rss(topic_meta, hero_img)
+    ping_search_engines(f"https://krishnavibez.in/articles/{topic_meta['slug']}.html")
 
     # 5. Post to Facebook
     print("\n📱 Step 5: Publishing rich clickable link to Krishna Vibez Facebook Page...")
