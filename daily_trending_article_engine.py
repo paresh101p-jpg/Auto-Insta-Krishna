@@ -330,6 +330,10 @@ def build_complete_article_page(topic_meta, content_html):
 
   <link rel="stylesheet" href="../css/style.css?v=4.6">
   <style>
+    /* Hallmark · genre: spiritual · theme: luxury-dark · redesign: full */
+    html, body {{
+      overflow-x: clip;
+    }}
     :root {{
       --gold-primary: #f5c542;
       --gold-dark: #b8860b;
@@ -337,7 +341,13 @@ def build_complete_article_page(topic_meta, content_html):
       --bg-card: #0d1117;
       --text-main: #f0f6fc;
       --text-muted: #8b949e;
+      --text-silver: #c9d1d9;
+      --text-light: #e6edf3;
+      --text-pure: #f6f9fc;
       --border-subtle: #21262d;
+      --color-wa: #25d366;
+      --color-fb: #1877f2;
+      --color-tg: #229ed9;
     }}
     body {{
       background: var(--bg-dark);
@@ -362,14 +372,14 @@ def build_complete_article_page(topic_meta, content_html):
       font-size: 0.85rem;
       font-weight: 700;
       margin-bottom: 16px;
-      letter-spacing: 0.5px;
+      letter-spacing: normal;
     }}
     h1.article-title {{
       font-size: clamp(1.9rem, 3.5vw, 2.7rem);
       line-height: 1.35;
       margin: 0 0 16px 0;
       font-weight: 800;
-      background: linear-gradient(135deg, #fff 40%, var(--gold-primary) 100%);
+      background: linear-gradient(135deg, var(--text-pure) 40%, var(--gold-primary) 100%);
       -webkit-background-clip: text;
       -webkit-text-fill-color: transparent;
     }}
@@ -430,12 +440,12 @@ def build_complete_article_page(topic_meta, content_html):
       border-bottom: 1px solid rgba(245, 197, 66, 0.2);
     }}
     .article-content h3 {{
-      color: #e6edf3;
+      color: var(--text-light);
       font-size: 1.3rem;
       margin: 28px 0 12px 0;
     }}
     .article-content p {{
-      color: #c9d1d9;
+      color: var(--text-silver);
       font-size: 1.12rem;
       margin-bottom: 20px;
       text-align: justify;
@@ -451,7 +461,7 @@ def build_complete_article_page(topic_meta, content_html):
       font-size: 1.15rem;
     }}
     .article-content ol, .article-content ul {{
-      color: #c9d1d9;
+      color: var(--text-silver);
       font-size: 1.1rem;
       padding-left: 24px;
       margin-bottom: 28px;
@@ -492,9 +502,9 @@ def build_complete_article_page(topic_meta, content_html):
       align-items: center;
       gap: 8px;
     }}
-    .share-wa {{ background: #25d366; color: #000; }}
-    .share-fb {{ background: #1877f2; color: #fff; }}
-    .share-tg {{ background: #229ed9; color: #fff; }}
+    .share-wa {{ background: var(--color-wa); color: var(--bg-dark); }}
+    .share-fb {{ background: var(--color-fb); color: var(--text-pure); }}
+    .share-tg {{ background: var(--color-tg); color: var(--text-pure); }}
     .back-home {{
       text-align: center;
       margin-top: 40px;
@@ -507,11 +517,24 @@ def build_complete_article_page(topic_meta, content_html):
       padding: 10px 24px;
       border-radius: 25px;
       display: inline-block;
-      transition: all 0.2s ease;
+      transition: transform 0.2s ease, background-color 0.2s ease, color 0.2s ease;
     }}
     .back-home a:hover {{
       background: var(--gold-primary);
-      color: #000;
+      color: var(--bg-dark);
+    }}
+    a:focus-visible, button:focus-visible {{
+      outline: 2px solid var(--gold-primary);
+      outline-offset: 2px;
+    }}
+    a:active, button:active {{
+      transform: translateY(1px);
+    }}
+    @media (prefers-reduced-motion: reduce) {{
+      *, *::before, *::after {{
+        animation-duration: 0.01ms !important;
+        transition-duration: 0.01ms !important;
+      }}
     }}
   </style>
 </head>

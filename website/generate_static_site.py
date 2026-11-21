@@ -488,7 +488,7 @@ def generate_homepage_cards(posts, limit=20):
               {'⬇️ 4K Reel (MP4)' if is_video else '⬇️ HD Wallpaper'}
             </button>
             <a href="{post_link}" class="btn-read-full">
-              पूरा दर्शन एवं भावार्थ पढ़ें →
+              पूरा दर्शन एवं भावार्थ पढ़ें
             </a>
           </div>
         </div>
