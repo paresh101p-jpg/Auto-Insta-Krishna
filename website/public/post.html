@@ -500,7 +500,7 @@
           document.getElementById('btnDownloadDetail').innerHTML = '⬇️ 4K Reel डाउनलोड (MP4)';
         } else {
           imgWrap.innerHTML = `
-            <img id="dImage" src="${mediaUrl}" alt="${escapeHtml(seoAlt)}" title="${escapeHtml(seoAlt)}" class="post-detail-img">
+            <img id="dImage" src="${mediaUrl}" alt="${escapeHtml(seoAlt)}" title="${escapeHtml(seoAlt)}" class="post-detail-img" referrerpolicy="no-referrer" onerror="this.onerror=null;this.src='https://files.catbox.moe/yt84ra.jpg';">
             ${overlayHtml}
           `;
           document.getElementById('btnDownloadDetail').innerHTML = '⬇️ 4K Wallpaper डाउनलोड';

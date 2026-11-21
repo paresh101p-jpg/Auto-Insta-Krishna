@@ -356,13 +356,13 @@ function renderSinglePostCard(post) {
 
   const mediaHtml = isVideo ? `
     <div class="video-card-thumb-wrap" onmouseenter="previewCardVideo(this)" onmouseleave="stopCardVideo(this)">
-      <img class="card-img video-poster-img" src="${posterImg}" alt="${escapeHtml(seoAlt)}" title="${escapeHtml(seoAlt)}" loading="lazy" decoding="async">
+      <img class="card-img video-poster-img" src="${posterImg}" alt="${escapeHtml(seoAlt)}" title="${escapeHtml(seoAlt)}" loading="lazy" decoding="async" referrerpolicy="no-referrer" onerror="this.onerror=null;this.src='https://files.catbox.moe/yt84ra.jpg';">
       <video class="card-img video-hover-element" data-src="${isDirectMp4 ? videoUrl : ''}" preload="none" muted playsinline loop style="display:none;position:absolute;top:0;left:0;width:100%;height:100%;object-fit:cover;z-index:1;"></video>
       <div class="video-play-overlay">▶</div>
       <span class="video-reel-pill">4K REEL</span>
     </div>
   ` : `
-    <img class="card-img" src="${post.imageUrl}" alt="${escapeHtml(seoAlt)}" title="${escapeHtml(seoAlt)}" loading="lazy" decoding="async">
+    <img class="card-img" src="${post.imageUrl}" alt="${escapeHtml(seoAlt)}" title="${escapeHtml(seoAlt)}" loading="lazy" decoding="async" referrerpolicy="no-referrer" onerror="this.onerror=null;this.src='https://files.catbox.moe/yt84ra.jpg';">
   `;
 
   return `
