@@ -18,3 +18,5 @@ Allow: /
 
 # Canonical XML Sitemap & RSS Feed for Google Discover & Fast Indexing
 Sitemap: https://krishnavibez.in/sitemap.xml
+Sitemap: https://krishnavibez.in/articles-sitemap.xml
+Sitemap: https://krishnavibez.in/rss.xml
