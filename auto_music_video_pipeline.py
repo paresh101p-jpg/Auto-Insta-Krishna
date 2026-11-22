@@ -2302,6 +2302,7 @@ def render_full_length_base_thumbnail(base_image_path, theme, output_path, expli
             subject_side = explicit_side
         else:
             # Detect skin mass to determine side
+            target_img = cleaned if cleaned is not None else img
             h_mat, w_mat = target_img.shape[:2]
             upper_mat = target_img[:int(h_mat * 0.85), :]
             hsv_mat = cv2.cvtColor(upper_mat, cv2.COLOR_BGR2HSV)
