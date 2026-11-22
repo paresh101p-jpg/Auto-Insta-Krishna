@@ -828,9 +828,17 @@ def run_pipeline():
     update_rss(topic_meta, hero_img)
     ping_search_engines(f"https://krishnavibez.in/articles/{topic_meta['slug']}.html")
 
-    # 5. Post to Facebook
-    print("\n📱 Step 5: Publishing rich clickable link to Krishna Vibez Facebook Page...")
-    fb_success, fb_res = post_to_facebook(topic_meta, hero_img)
+    # 5. Post to Facebook (may be deferred until after Firebase deploy to avoid 404 link previews)
+    skip_fb = os.environ.get("SKIP_FB_POST", "").strip().lower() in ("1", "true", "yes")
+    if skip_fb:
+        print("\n📝 Step 5: Deferring Facebook post until after Firebase deploy (SKIP_FB_POST set)...")
+        pending_path = os.path.join(REPO_ROOT, "pending_fb_post.json")
+        with open(pending_path, "w", encoding="utf-8") as pf:
+            json.dump({"topic_meta": topic_meta, "hero_img": hero_img}, pf, ensure_ascii=False, indent=2)
+        print(f"   Saved pending post metadata to: {pending_path}")
+    else:
+        print("\n📱 Step 5: Publishing rich clickable link to Krishna Vibez Facebook Page...")
+        fb_success, fb_res = post_to_facebook(topic_meta, hero_img)
 
     print("\n" + "=" * 70)
     print("🎉 DAILY ARTICLE ENGINE RUN COMPLETED SUCCESSFULLY!")

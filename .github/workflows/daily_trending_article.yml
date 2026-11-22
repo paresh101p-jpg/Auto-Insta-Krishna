@@ -35,6 +35,7 @@ jobs:
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
           FB_PAGE_ID: ${{ secrets.FB_PAGE_ID || '1808917602588221' }}
           FB_ACCESS_TOKEN: ${{ secrets.FB_ACCESS_TOKEN }}
+          SKIP_FB_POST: "true"
         run: python -u daily_trending_article_engine.py
 
       - name: Commit & Push New Article, Sitemap & Feeds
@@ -59,3 +60,18 @@ jobs:
           npm install -g firebase-tools
           firebase deploy --only hosting --token "$FIREBASE_TOKEN"
         working-directory: website
+
+      - name: Post Article Link to Facebook (after deploy, avoids 404 preview)
+        env:
+          FB_PAGE_ID: ${{ secrets.FB_PAGE_ID || '1808917602588221' }}
+          FB_ACCESS_TOKEN: ${{ secrets.FB_ACCESS_TOKEN }}
+        run: python -u post_pending_article_fb.py
+
+      - name: Commit Facebook Post History
+        run: |
+          git config --local user.email "action@github.com"
+          git config --local user.name "Krishna Vibez Article Publisher"
+          git add shared_articles_history.json pending_fb_post.json || true
+          git commit -m "feat(article): record facebook post for daily article [skip ci]" || true
+          git pull --rebase origin master || true
+          git push origin master || true
