@@ -281,15 +281,21 @@ def generate_metadata(song_name, song_info, audio_file=None):
     if gemini_key:
         try:
             from google import genai
-            client = genai.Client(api_key=gemini_key)
+            from google.genai import types
+            from google.genai.types import HttpOptions
 
-            uploaded_audio_ref = None
-            if audio_file and os.path.exists(audio_file) and os.path.getsize(audio_file) > 1000:
+            client = genai.Client(api_key=gemini_key, http_options=HttpOptions(timeout=45000))
+
+            audio_part = None
+            if audio_file and os.path.exists(audio_file) and 1000 < os.path.getsize(audio_file) < 18 * 1024 * 1024:
                 try:
-                    print(f"  🎧 Gemini AI ऑडियो सुन रहा है: {audio_file}...")
-                    uploaded_audio_ref = client.files.upload(file=audio_file)
+                    print(f"  🎧 Gemini AI ऑडियो को सीधे सुन रहा है ({os.path.getsize(audio_file) // 1024} KB)...")
+                    with open(audio_file, "rb") as af:
+                        audio_data = af.read()
+                    mime = "audio/mp3" if audio_file.endswith(".mp3") else "audio/wav"
+                    audio_part = types.Part.from_bytes(data=audio_data, mime_type=mime)
                 except Exception as up_err:
-                    print(f"  ⚠️ ऑडियो अपलोड सूचना (टेक्स्ट मोड में जारी): {up_err}")
+                    print(f"  ⚠️ ऑडियो लोड सूचना: {up_err}")
 
             prompt = (
                 "You are an elite music director, lyricist, and viral YouTube strategist for 'Krishna Vibez'.\n"
@@ -323,8 +329,8 @@ def generate_metadata(song_name, song_info, audio_file=None):
             )
 
             contents = [prompt]
-            if uploaded_audio_ref:
-                contents = [uploaded_audio_ref, prompt]
+            if audio_part:
+                contents = [audio_part, prompt]
 
             models_to_try = ["gemini-3.8-flash", "gemini-3.7-flash", "gemini-2.0-flash"]
             response = None
