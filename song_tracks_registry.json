@@ -1,12 +1,6 @@
 {
   "https://files.catbox.moe/752c43.mp3": {
     "name": "Vrindavan Maha Kirtan - Bansuri Se Bula Le - Treblo",
-    "mood": "Balanced Bhakti",
-    "mood_hi": "संतुलित भक्ति संगीत",
-    "target_audience": "God",
-    "target_audience_hi": "भगवान के लिए",
-    "duration_min": 2.7,
-    "added_at": "2026-11-23 16:41:34",
     "thumb_url": "https://files.catbox.moe/y5ho84.jpg",
     "image_urls": [
       "https://files.catbox.moe/g9c2e6.jpg"
@@ -17,38 +11,23 @@
     "uploaded_at": "2026-11-23 13:22:37"
   },
   "https://files.catbox.moe/lar4jm.wav": {
-    "name": "Vrindavan Maha Kirtan - Murali Wale - Treblo",
-    "thumb_url": "https://files.catbox.moe/uu7vmb.jpg",
+    "name": "Murali Wale Aa Jaare - Vrindavan Kirtan",
+    "thumb_url": "https://files.catbox.moe/3jk3fy.png",
     "image_urls": [
-      "https://files.catbox.moe/ngd92q.jpg",
-      "https://files.catbox.moe/nglm1x.jpg"
+      "https://files.catbox.moe/6o1c2v.png"
     ],
-    "lyrics": "",
-    "added_at": "2026-11-23 21:50:00",
-    "status": "pending"
+    "lyrics": "Mann mera tujhko pukaare\nMurali वाले aa jaare\nAankhein teri raah nihaare\nMurli ki awaaz mein\nKho jaana hai mujhe\nMurali वाले aa jaare",
+    "status": "pending",
+    "added_at": "2026-11-23 21:50:00"
   },
   "https://files.catbox.moe/9bmaeo.wav": {
-    "name": "Vrindavan Maha Kirtan - Ram Naam Ki Mahima - Treblo",
-    "thumb_url": "https://files.catbox.moe/fmvhzq.jpg",
+    "name": "Ram Ram Ram Japu - Man Mandir Mein Deep Jalaun",
+    "thumb_url": "https://files.catbox.moe/uu7vmb.jpg",
     "image_urls": [
-      "https://files.catbox.moe/cxiort.jpg",
-      "https://files.catbox.moe/uu7vmb.jpg",
       "https://files.catbox.moe/ngd92q.jpg"
     ],
-    "lyrics": "",
-    "added_at": "2026-11-23 21:50:00",
-    "status": "pending"
-  },
-  "https://files.catbox.moe/qsuvy5.wav": {
-    "name": "Vrindavan Maha Kirtan - Ram Naam Ki Bhakti - Treblo (1)",
-    "thumb_url": "https://files.catbox.moe/fmvhzq.jpg",
-    "image_urls": [
-      "https://files.catbox.moe/cxiort.jpg",
-      "https://files.catbox.moe/uu7vmb.jpg",
-      "https://files.catbox.moe/ngd92q.jpg"
-    ],
-    "lyrics": "",
-    "added_at": "2026-11-23 21:50:00",
-    "status": "pending"
+    "lyrics": "Man mandir mein deep jalaun\nTera naam japu main raat din\nParbhu teri mahima gaun\nCharan tere mein aashray mile\nTu hai sahara\nTu hai kinara\nTere bina kuch bhi nahi\nRam Ram Ram japu\nRam Ram Ram japu\nSukh dukh sab tere hawaale\nRam Ram Ram japu",
+    "status": "pending",
+    "added_at": "2026-11-23 22:20:00"
   }
 }
