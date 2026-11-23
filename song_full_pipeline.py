@@ -164,7 +164,28 @@ def save_urls(filepath, urls):
             f.write(u + "\n")
 
 
-def find_thumbnail(song_name):
+def download_thumb_from_catbox(url, song_name):
+    """Catbox URL से थंबनल डाउनलोड करें"""
+    thumb_path = os.path.join(SONG_THUMB_DIR, f"{song_name}.jpg")
+    try:
+        import urllib.request
+        req = urllib.request.Request(url, headers={"User-Agent": "Mozilla/5.0"})
+        with urllib.request.urlopen(req, timeout=60) as resp:
+            with open(thumb_path, "wb") as f:
+                while True:
+                    chunk = resp.read(65536)
+                    if not chunk:
+                        break
+                    f.write(chunk)
+        if os.path.exists(thumb_path) and os.path.getsize(thumb_path) > 5000:
+            print(f"  🖼️ थंबनल Catbox से डाउनलोड किया: {thumb_path}")
+            return thumb_path
+    except Exception as e:
+        print(f"  ⚠️ थंबनल डाउनलोड विफल: {e}")
+    return None
+
+
+def find_thumbnail(song_name, song_info=None):
     """गाने के नाम से मैचिंग थंबनेल खोजना"""
     safe = re.sub(r'[<>:"/\\|?*]', '_', song_name)
     safe = re.sub(r'\s+', '_', safe).strip('_')
@@ -188,6 +209,12 @@ def find_thumbnail(song_name):
         for f in sorted(os.listdir(SONG_THUMB_DIR)):
             if f.lower().endswith(IMAGE_EXTS):
                 return os.path.join(SONG_THUMB_DIR, f)
+    
+    # रजिस्ट्री से thumb_url चेक करें (Catbox से डाउनलोड करें)
+    if song_info and song_info.get("thumb_url"):
+        thumb_path = download_thumb_from_catbox(song_info["thumb_url"], song_name)
+        if thumb_path:
+            return thumb_path
     
     return None
 
@@ -545,8 +572,8 @@ def upload_next_to_youtube():
         print(f"❌ डाउनलोड विफल: {e}")
         return
 
-    # थंबनेल खोजना
-    thumb_path = find_thumbnail(song_name)
+    # थंबनेल खोजना (Catbox URL से भी डाउनलोड करेगा)
+    thumb_path = find_thumbnail(song_name, song_info)
     if not thumb_path:
         # सॉलिड बैकग्राउंड बनाएं
         thumb_path = os.path.join(BASE_DIR, "temp_thumb_fallback.jpg")
