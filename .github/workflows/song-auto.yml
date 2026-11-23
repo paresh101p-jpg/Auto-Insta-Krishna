@@ -1,18 +1,18 @@
-name: Sunday Song Video (6 AM Render & Upload -> 9 AM Policy Check & Public)
+name: Sunday Song Video (4 AM Render & Upload -> 9 AM Policy Check & Public)
 
 on:
   workflow_dispatch:
     inputs:
       action:
-        description: 'Action: upload (6 AM) or publish_check (9 AM)'
+        description: 'Action: upload (4 AM) or publish_check (9 AM)'
         required: false
         default: 'all'
   repository_dispatch:
-    types: [upload_song_6am, check_song_9am, run_sunday_song]
+    types: [upload_song_4am, check_song_9am, run_sunday_song]
   schedule:
-    # 1. रविवार सुबह 6:00 AM IST = 12:30 AM UTC (Upload as Unlisted)
-    - cron: '30 0 * * 0'
-    # 2. रविवार सुबह 9:00 AM IST = 3:30 AM UTC (Audit Policy/Strike & Publish Public)
+    # 1. रविवार सुबह 4:00 AM IST = 22:30 UTC Previous Day (Saturday) (Upload as Unlisted)
+    - cron: '30 22 * * 6'
+    # 2. रविवार सुबह 9:00 AM IST = 03:30 UTC Sunday (Audit Policy/Strike & Publish Public)
     - cron: '30 3 * * 0'
 
 concurrency:
@@ -41,17 +41,17 @@ jobs:
       - name: Install Python dependencies
         run: pip install -r requirements.txt google-api-python-client google-auth-oauthlib google-auth pillow requests
 
-      - name: Check Current IST Time / Hour
+      - name: Check Current UTC Hour
         id: time_check
         run: |
-          # UTC hour: 0 = 5:30/6:00 AM IST, 3 = 8:30/9:00 AM IST
+          # UTC hour: 22 = 3:30/4:00 AM IST, 03 = 8:30/9:00 AM IST
           UTC_HOUR=$(date -u +%H)
           echo "utc_hour=$UTC_HOUR" >> $GITHUB_OUTPUT
           echo "Current UTC Hour: $UTC_HOUR"
 
-      # --- 6:00 AM IST STEP: RENDER & UPLOAD AS UNLISTED ---
-      - name: 6:00 AM IST - Render 1080p Video & Upload as Unlisted
-        if: github.event.inputs.action == 'upload' || github.event.inputs.action == 'all' || steps.time_check.outputs.utc_hour == '00'
+      # --- 4:00 AM IST STEP: RENDER & UPLOAD AS UNLISTED ---
+      - name: 4:00 AM IST - Render 1080p Video & Upload as Unlisted
+        if: github.event.inputs.action == 'upload' || github.event.inputs.action == 'all' || steps.time_check.outputs.utc_hour == '22'
         env:
           YOUTUBE_CLIENT_ID: ${{ secrets.YOUTUBE_CLIENT_ID }}
           YOUTUBE_CLIENT_SECRET: ${{ secrets.YOUTUBE_CLIENT_SECRET }}
@@ -76,7 +76,7 @@ jobs:
           git config user.name "Krishna Vibez Song Bot"
           git config user.email "bot@krishnavibez.in"
           git add song_urls.txt song_urls_backup.txt song_used_urls.txt song_uploaded_tracker.txt song_tracks_registry.json song_daily_tracker.json || true
-          git diff --staged --quiet || git commit -m "Sunday song pipeline update [skip ci]"
+          git diff --staged --quiet || git commit -m "Sunday song pipeline update: 4 AM run -> 9 AM public [skip ci]"
           for i in 1 2 3 4 5; do
             git pull --rebase origin master || true
             git push origin master && break || sleep 3
