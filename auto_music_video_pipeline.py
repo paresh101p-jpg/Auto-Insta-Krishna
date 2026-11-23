@@ -2260,9 +2260,12 @@ def render_full_length_base_thumbnail(base_image_path, theme, output_path, expli
     """
     browser_exe = get_browser_executable()
     ffmpeg_path = FFMPEG_EXE
-    if not browser_exe or not os.path.exists(base_image_path):
-        print(f"⚠️ [THUMBNAIL GEN] Missing browser ({browser_exe}) or base image: {base_image_path}", flush=True)
+    if not os.path.exists(base_image_path):
+        print(f"⚠️ [THUMBNAIL GEN] Base image missing: {base_image_path}", flush=True)
         return base_image_path
+    if not browser_exe:
+        print(f"⚠️ [THUMBNAIL GEN] No browser found — using FFmpeg text overlay fallback", flush=True)
+        return render_ffmpeg_text_fallback(base_image_path, theme, output_path)
 
     try:
         import cv2
@@ -2583,6 +2586,85 @@ def render_full_length_base_thumbnail(base_image_path, theme, output_path, expli
     except Exception as render_err:
         print(f"  -> [Info] Master text overlay fallback to raw: {render_err}", flush=True)
         return base_image_path
+
+
+def render_ffmpeg_text_fallback(base_image_path, theme, output_path):
+    """
+    FFmpeg-based thumbnail text overlay fallback when no browser is available.
+    Renders Hindi Devanagari text using NotoSansDevanagari-Bold.ttf.
+    """
+    import subprocess
+
+    hindi_font = os.path.join(BASE_DIR, "NotoSansDevanagari-Bold.ttf")
+    english_font = os.path.join(BASE_DIR, "arialbd.ttf")
+    if not os.path.exists(hindi_font):
+        hindi_font = "arial.ttf"
+    if not os.path.exists(english_font):
+        english_font = "arial.ttf"
+
+    badge = theme.get("badge", "KRISHNA MUSIC")
+    hindi_main = theme.get("hindi_main", "श्री कृष्ण अमृत बाँसुरी")
+    hindi_sub = theme.get("hindi_sub", "मन की शांति और गहरी नींद के लिए")
+    hook_pill = theme.get("hook_pill", "मन की शांति | गहरी नींद | चिंता मुक्ति")
+
+    # Write texts to UTF-8 text files for FFmpeg HarfBuzz text shaping
+    badge_f = os.path.join(TEMP_DIR, "ff_fb_badge.txt")
+    main_f = os.path.join(TEMP_DIR, "ff_fb_main.txt")
+    sub_f = os.path.join(TEMP_DIR, "ff_fb_sub.txt")
+    pill_f = os.path.join(TEMP_DIR, "ff_fb_pill.txt")
+
+    with open(badge_f, "w", encoding="utf-8") as f:
+        f.write(badge)
+    with open(main_f, "w", encoding="utf-8") as f:
+        f.write(hindi_main)
+    with open(sub_f, "w", encoding="utf-8") as f:
+        f.write(hindi_sub)
+    with open(pill_f, "w", encoding="utf-8") as f:
+        f.write(hook_pill)
+
+    # Escape backslashes for FFmpeg filtergraph
+    h_arg = os.path.abspath(hindi_font).replace("\\", "/").replace(":", "\\:")
+    e_arg = os.path.abspath(english_font).replace("\\", "/").replace(":", "\\:")
+    badge_arg = os.path.abspath(badge_f).replace("\\", "/").replace(":", "\\:")
+    main_arg = os.path.abspath(main_f).replace("\\", "/").replace(":", "\\:")
+    sub_arg = os.path.abspath(sub_f).replace("\\", "/").replace(":", "\\:")
+    pill_arg = os.path.abspath(pill_f).replace("\\", "/").replace(":", "\\:")
+
+    vf = (
+        f"scale=1920:1080,"
+        f"drawbox=y=0:h=180:color=black@0.45:t=fill,"
+        f"drawbox=y=500:h=580:color=black@0.84:t=fill,"
+        f"drawbox=x=60:y=496:w=1800:h=5:color=goldenrod@0.90:t=fill,"
+        f"drawbox=x=70:y=45:w=740:h=90:color=0xFFB300@0.98:t=fill,"
+        f"drawbox=x=66:y=41:w=748:h=98:color=white@0.85:t=4,"
+        f"drawtext=fontfile='{h_arg}':textfile='{badge_arg}':fontcolor=black:fontsize=46:x=105:y=68:text_shaping=1,"
+        f"drawtext=fontfile='{h_arg}':textfile='{main_arg}':fontcolor=0xFFE600:fontsize=128:x=75:y=550:borderw=10:bordercolor=black:text_shaping=1,"
+        f"drawtext=fontfile='{h_arg}':textfile='{sub_arg}':fontcolor=white:fontsize=82:x=75:y=725:borderw=8:bordercolor=black:text_shaping=1,"
+        f"drawbox=x=75:y=850:w=1040:h=82:color=0x8B0000@0.95:t=fill,"
+        f"drawbox=x=71:y=846:w=1048:h=90:color=goldenrod@0.85:t=3,"
+        f"drawtext=fontfile='{h_arg}':textfile='{pill_arg}':fontcolor=0xFFF8DC:fontsize=48:x=110:y=868:borderw=3:bordercolor=black:text_shaping=1,"
+        f"drawtext=fontfile='{e_arg}':text='KRISHNA VIBEZ':fontcolor=0xFFD700:fontsize=46:x=1500:y=995:borderw=5:bordercolor=black"
+    )
+
+    cmd = [
+        ffmpeg_path, "-y",
+        "-i", base_image_path,
+        "-vf", vf,
+        "-frames:v", "1",
+        "-update", "1",
+        "-q:v", "2",
+        output_path
+    ]
+    subprocess.run(cmd, check=True)
+
+    # Cleanup temp text files
+    for tf in [badge_f, main_f, sub_f, pill_f]:
+        if os.path.exists(tf):
+            try: os.remove(tf)
+            except Exception: pass
+
+    print(f"  -> ✅ FFmpeg text fallback thumbnail rendered: {output_path}", flush=True)
+    return output_path
 
 
 def recheck_face_side_yunet(image_path, expected_side):
