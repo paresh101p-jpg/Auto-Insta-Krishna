@@ -4,23 +4,13 @@
 =============================================================================
 KRISHNA VIBEZ — FULL SONG AUTO PIPELINE (गिटहब पर 100% ऑटोमैटिक)
 =============================================================================
-यह स्क्रिप्ट गिटहब एक्शन्स पर चलती है और पूरा काम करती है:
-
-1. स्कैन करती है 'Songs/inbox/' में नए गाने
-2. हर गाने के लिए मैचिंग थंबनेल खोजती है 'song_thumbnails/' में
-3. एनिमेशन इमेज खोजती है 'animations/' फोल्डर में (पत्ते, मोरपंख, स्पार्कल्स)
-4. गाने को सुनकर मूड पहचानती है (audio_analyzer.py)
-5. गाने को साफ करके Catbox.moe पर अपलोड करती है → URL मिलता है
-6. एनिमेटेड वीडियो बनाती है (थंबनेल + ऑडियो + एनिमेशन ओवरले)
-7. यूट्यूब क्यू में जोड़ती है (song_urls.txt)
-8. हर रविवार सुबह 9 AM IST पर अगला गाना यूट्यूब पर अपलोड करती है (प्राइवेट/अनपब्लिश्ड)
-
-आपको बस करना ये है:
-- गाना 'Songs/inbox/' में डालें
-- थंबनेल 'song_thumbnails/' में डालें (नाम गाने के नाम के जैसा रखें)
-- एनिमेशन इमेज 'animations/' फोल्डर में डालें
-
-बाकी सब ऑटोमैटिक गिटहब पर।
+1. स्कैन करता है 'Songs/inbox/' में नए गाने
+2. गाने के लिए मैचिंग थंबनेल ('song_thumbnails/') और वीडियो इमेज ('song_images/') खोजता है
+3. गाने को साफ करके Catbox.moe पर अपलोड करता है
+4. 1080p एनिमेटेड म्यूजिक वीडियो बनाता है (Ken Burns, 3 विशिष्ट फ्लोरा पार्टिकल्स, गोल्डन स्पार्कल्स, लोगो)
+5. यूट्यूब पर अनलिस्टेड (Unlisted) स्टेटस में अपलोड करता है
+6. वीडियो पर यूज़र द्वारा दिया गया थंबनेल सेट करता है
+7. हर रविवार सुबह 9 AM IST पर शेड्यूल से, या कभी भी मैन्युअल रन से चलता है
 =============================================================================
 """
 
@@ -32,6 +22,7 @@ import re
 import shutil
 import subprocess
 import random
+import urllib.request
 from datetime import datetime, timezone, timedelta
 
 if sys.platform == "win32":
@@ -44,7 +35,8 @@ SONGS_DIR = os.path.join(BASE_DIR, "Songs")
 SONGS_INBOX = os.path.join(SONGS_DIR, "inbox")
 SONGS_UPLOADED = os.path.join(SONGS_DIR, "uploaded")
 SONG_THUMB_DIR = os.path.join(BASE_DIR, "song_thumbnails")
-ANIMATIONS_DIR = os.path.join(BASE_DIR, "animations")
+SONG_IMAGES_DIR = os.path.join(BASE_DIR, "song_images")
+ANIMATIONS_DIR = os.path.join(BASE_DIR, "extracted_petals")
 
 # --- डेटा फाइलें ---
 SONG_URLS_FILE = os.path.join(BASE_DIR, "song_urls.txt")
@@ -64,14 +56,11 @@ IMAGE_EXTS = (".jpg", ".jpeg", ".png")
 os.makedirs(SONGS_INBOX, exist_ok=True)
 os.makedirs(SONGS_UPLOADED, exist_ok=True)
 os.makedirs(SONG_THUMB_DIR, exist_ok=True)
-os.makedirs(ANIMATIONS_DIR, exist_ok=True)
+os.makedirs(SONG_IMAGES_DIR, exist_ok=True)
 
-# FFmpeg
 FFMPEG_EXE = "ffmpeg"
 local_ffmpeg = r"E:\Paresh\Auto Post\ffmpeg-master-latest-win64-gpl\ffmpeg-master-latest-win64-gpl\bin\ffmpeg.exe"
-if sys.platform != "win32" or not os.path.exists(local_ffmpeg):
-    FFMPEG_EXE = "ffmpeg"
-elif os.path.exists(local_ffmpeg):
+if sys.platform == "win32" and os.path.exists(local_ffmpeg):
     FFMPEG_EXE = local_ffmpeg
 
 
@@ -81,6 +70,23 @@ def run_cmd(cmd, timeout=300):
         return res.returncode == 0, res.stderr
     except Exception as e:
         return False, str(e)
+
+
+def download_file(url, out_path):
+    """Catbox या वेब URL से फाइल डाउनलोड करना"""
+    try:
+        req = urllib.request.Request(url, headers={"User-Agent": "Mozilla/5.0"})
+        with urllib.request.urlopen(req, timeout=90) as resp:
+            with open(out_path, "wb") as f:
+                while True:
+                    chunk = resp.read(65536)
+                    if not chunk:
+                        break
+                    f.write(chunk)
+        return os.path.exists(out_path) and os.path.getsize(out_path) > 1000
+    except Exception as e:
+        print(f"  ⚠️ डाउनलोड त्रुटि ({url}): {e}")
+        return False
 
 
 def upload_to_catbox(file_path, retries=3):
@@ -108,19 +114,19 @@ def upload_to_catbox(file_path, retries=3):
 
 
 def clean_audio(input_path, output_path):
-    filter_str = "atempo=1.015,equalizer=f=3200:t=q:w=1.5:g=1.2,volume=1.04"
+    """ऑडियो को साफ करना, साइलेंस हटाना व 192k MP3 में बदलना"""
     cmd = [
         FFMPEG_EXE, "-y",
         "-i", input_path,
-        "-vn",
-        "-map_metadata", "-1",
-        "-af", filter_str,
-        "-c:a", "libmp3lame",
-        "-b:a", "320k",
+        "-af", "silenceremove=start_periods=1:start_duration=0.5:start_threshold=-50dB:detection=peak,"
+               "silenceremove=stop_periods=1:stop_duration=1.0:stop_threshold=-50dB:detection=peak,"
+               "loudnorm=I=-16:TP=-1.5:LRA=11",
+        "-c:a", "libmp3lame", "-b:a", "192k",
+        "-ar", "44100",
         output_path
     ]
-    res = subprocess.run(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-    return res.returncode == 0 and os.path.exists(output_path) and os.path.getsize(output_path) > 50000
+    success, _ = run_cmd(cmd, timeout=180)
+    return success and os.path.exists(output_path) and os.path.getsize(output_path) > 10000
 
 
 def load_registry():
@@ -129,33 +135,20 @@ def load_registry():
             with open(SONG_REGISTRY_FILE, "r", encoding="utf-8") as f:
                 return json.load(f)
         except Exception:
-            return {}
+            pass
     return {}
 
 
 def save_registry(reg):
     with open(SONG_REGISTRY_FILE, "w", encoding="utf-8") as f:
-        json.dump(reg, f, ensure_ascii=False, indent=2)
-
-
-def load_tracker():
-    if os.path.exists(SONG_TRACKER_FILE):
-        with open(SONG_TRACKER_FILE, "r", encoding="utf-8") as f:
-            return {l.strip() for l in f if l.strip()}
-    return set()
-
-
-def save_tracker(tracker):
-    with open(SONG_TRACKER_FILE, "w", encoding="utf-8") as f:
-        for name in sorted(tracker):
-            f.write(name + "\n")
+        json.dump(reg, f, indent=2, ensure_ascii=False)
 
 
 def load_urls(filepath):
     if not os.path.exists(filepath):
         return []
-    with open(filepath, "r", encoding="utf-8", errors="ignore") as f:
-        return [line.strip() for line in f if line.strip().startswith("http")]
+    with open(filepath, "r", encoding="utf-8") as f:
+        return [line.strip() for line in f if line.strip() and not line.startswith("#")]
 
 
 def save_urls(filepath, urls):
@@ -164,440 +157,290 @@ def save_urls(filepath, urls):
             f.write(u + "\n")
 
 
-def download_thumb_from_catbox(url, song_name):
-    """Catbox URL से थंबनल डाउनलोड करें"""
-    thumb_path = os.path.join(SONG_THUMB_DIR, f"{song_name}.jpg")
-    try:
-        import urllib.request
-        req = urllib.request.Request(url, headers={"User-Agent": "Mozilla/5.0"})
-        with urllib.request.urlopen(req, timeout=60) as resp:
-            with open(thumb_path, "wb") as f:
-                while True:
-                    chunk = resp.read(65536)
-                    if not chunk:
-                        break
-                    f.write(chunk)
-        if os.path.exists(thumb_path) and os.path.getsize(thumb_path) > 5000:
-            print(f"  🖼️ थंबनल Catbox से डाउनलोड किया: {thumb_path}")
-            return thumb_path
-    except Exception as e:
-        print(f"  ⚠️ थंबनल डाउनलोड विफल: {e}")
-    return None
-
-
 def find_thumbnail(song_name, song_info=None):
-    """गाने के नाम से मैचिंग थंबनेल खोजना"""
-    safe = re.sub(r'[<>:"/\\|?*]', '_', song_name)
-    safe = re.sub(r'\s+', '_', safe).strip('_')
-    
-    # सीधा नाम से खोजें
-    for ext in IMAGE_EXTS:
-        path = os.path.join(SONG_THUMB_DIR, f"{safe}{ext}")
-        if os.path.exists(path):
-            return path
-    
-    # पार्शियल मैच
-    if os.path.exists(SONG_THUMB_DIR):
-        for f in sorted(os.listdir(SONG_THUMB_DIR)):
-            if f.lower().endswith(IMAGE_EXTS):
-                name_without_ext = os.path.splitext(f)[0]
-                if song_name.lower() in name_without_ext.lower() or name_without_ext.lower() in song_name.lower():
-                    return os.path.join(SONG_THUMB_DIR, f)
-    
-    # कोई भी पहला थंबनेल
-    if os.path.exists(SONG_THUMB_DIR):
-        for f in sorted(os.listdir(SONG_THUMB_DIR)):
-            if f.lower().endswith(IMAGE_EXTS):
-                return os.path.join(SONG_THUMB_DIR, f)
-    
-    # रजिस्ट्री से thumb_url चेक करें (Catbox से डाउनलोड करें)
+    """गाने के लिए सही थंबनेल खोजना (रजिस्ट्री, लोकल फोल्डर या कैटबॉक्स डाउनलोड)"""
+    # 1. यदि रजिस्ट्री में thumb_url मौजूद है
     if song_info and song_info.get("thumb_url"):
-        thumb_path = download_thumb_from_catbox(song_info["thumb_url"], song_name)
-        if thumb_path:
-            return thumb_path
-    
+        thumb_url = song_info["thumb_url"]
+        local_thumb = os.path.join(SONG_THUMB_DIR, f"{song_name}.jpg")
+        if os.path.exists(local_thumb) and os.path.getsize(local_thumb) > 5000:
+            return local_thumb
+        if download_file(thumb_url, local_thumb):
+            print(f"  🖼️ थंबनेल CDN से डाउनलोड किया: {local_thumb}")
+            return local_thumb
+
+    # 2. लोकल song_thumbnails फोल्डर में खोजें
+    safe = re.sub(r'[<>:"/\\|?*]', '_', song_name).strip('_')
+    for ext in IMAGE_EXTS:
+        candidates = [
+            os.path.join(SONG_THUMB_DIR, f"{song_name}{ext}"),
+            os.path.join(SONG_THUMB_DIR, f"{safe}{ext}"),
+        ]
+        for c in candidates:
+            if os.path.exists(c) and os.path.getsize(c) > 5000:
+                return c
+
+    # 3. यदि कोई भी थंबनेल फाइल मौजूद है
+    if os.path.exists(SONG_THUMB_DIR):
+        for f in os.listdir(SONG_THUMB_DIR):
+            if f.lower().endswith(IMAGE_EXTS):
+                fp = os.path.join(SONG_THUMB_DIR, f)
+                if os.path.getsize(fp) > 5000:
+                    return fp
+
     return None
 
 
-def find_animations():
-    """सभी एनिमेशन इमेज खोजना (50+ में से हर गाने के लिए रैंडम 3 चुने जाएंगे)"""
-    anims = []
-    if os.path.exists(ANIMATIONS_DIR):
-        for f in sorted(os.listdir(ANIMATIONS_DIR)):
+def find_slide_images(song_name, song_info=None):
+    """वीडियो में दिखाने के लिए यूज़र द्वारा दी गई इमेज(स्लाइड्स) खोजना"""
+    slides = []
+
+    # 1. यदि रजिस्ट्री में image_urls हैं, उन्हें डाउनलोड करें
+    if song_info and song_info.get("image_urls"):
+        for idx, url in enumerate(song_info["image_urls"]):
+            slide_path = os.path.join(SONG_IMAGES_DIR, f"{song_name}_slide{idx+1}.jpg")
+            if os.path.exists(slide_path) and os.path.getsize(slide_path) > 5000:
+                slides.append(slide_path)
+            elif download_file(url, slide_path):
+                slides.append(slide_path)
+
+    if slides:
+        return slides
+
+    # 2. लोकल song_images/ फोल्डर में खोजें
+    if os.path.exists(SONG_IMAGES_DIR):
+        for f in sorted(os.listdir(SONG_IMAGES_DIR)):
             if f.lower().endswith(IMAGE_EXTS):
-                anims.append(os.path.join(ANIMATIONS_DIR, f))
-    return anims  # सभी लौटाएंगे, रैंडम 3 चुनना caller पर
+                fp = os.path.join(SONG_IMAGES_DIR, f)
+                if os.path.getsize(fp) > 5000:
+                    slides.append(fp)
 
+    if slides:
+        return slides
 
-def pick_random_3_animations(all_anims):
-    """हर गाने के लिए अलग-अलग 3 एनिमेशन रैंडम चुनना"""
-    if not all_anims:
-        return []
-    if len(all_anims) <= 3:
-        return all_anims.copy()
-    return random.sample(all_anims, 3)
+    # 3. यदि कोई अलग स्लाइड इमेज नहीं है, तो थंबनेल को ही मुख्य दृश्य के रूप में यूज़ करें
+    thumb = find_thumbnail(song_name, song_info)
+    if thumb:
+        return [thumb]
 
-
-def analyze_audio(file_path):
-    """गाने को सुनकर मूड पहचानना"""
-    sys.path.insert(0, BASE_DIR)
-    try:
-        from audio_analyzer import analyze_audio_mood
-        return analyze_audio_mood(file_path)
-    except Exception:
-        return {
-            "mood": "Balanced Bhakti",
-            "mood_hi": "संतुलित भक्ति संगीत",
-            "target_audience": "General",
-            "target_audience_hi": "सभी के लिए",
-            "duration_sec": 0,
-            "duration_min": 0,
-        }
-
-
-def create_video_with_animations(audio_path, thumb_path, anim_paths, output_path):
-    """
-    ऑडियो + थंबनेल + एनिमेशन ओवरले से वीडियो बनाना।
-    एनिमेशन सिस्टम म्यूजिक वीडियो पाइपलाइन जैसा ही:
-    - हर गाने के लिए अलग-अलग 3 रैंडम एनिमेशन (50+ में से)
-    - रैंडम पोज़िशन, स्केल, मूवमेंट (हर गाने के लिए यूनिक)
-    - डॉलिंग मोशन (ऊपर से नीचे तैरते हुए)
-    - गोल्डन स्पार्कल टच
-    - स्मूथ फेड इन/आउट
-    """
-    
-    # स्टेप 1: बेस वीडियो (थंबनेल + ऑडियो)
-    base_video = os.path.join(BASE_DIR, "temp_song_base.mp4")
-    
-    cmd_base = [
-        FFMPEG_EXE, "-y",
-        "-loop", "1", "-i", thumb_path,
-        "-i", audio_path,
-        "-c:v", "libx264", "-tune", "stillimage",
-        "-c:a", "aac", "-b:a", "192k",
-        "-pix_fmt", "yuv420p",
-        "-shortest",
-        "-vf", "scale=1280:720:force_original_aspect_ratio=decrease,pad=1280:720:(ow-iw)/2:(oh-ih)/2:black",
-        base_video
-    ]
-    
-    success, err = run_cmd(cmd_base, timeout=120)
-    if not success:
-        print(f"❌ बेस वीडियो विफल: {err[-200:]}")
-        return False
-
-    # स्टेप 2: एनिमेशन ओवरले जोड़ना (हर गाने के लिए अलग 3 रैंडम)
-    filter_parts = []
-    input_files = [base_video]
-    
-    prev_label = "[0:v]"
-    
-    for idx, anim_path in enumerate(anim_paths):
-        input_files.append(anim_path)
-        anim_input_label = f"[{idx + 1}:v]"
-        out_label = f"[v{idx}]"
-        
-        # रैंडम पोज़िशन और मूवमेंट - हर गाने के लिए अलग
-        x = random.randint(50, 1150)
-        y = random.randint(50, 600)
-        speed_x = random.choice([15, 25, 35])
-        speed_y = random.choice([20, 30, 40])
-        
-        # एनिमेशन इमेज को स्केल करना और बेस वीडियो पर ओवरले करना
-        filter_parts.append(
-            f"{anim_input_label}scale=120:120[anim{idx}];"
-            f"{prev_label}[anim{idx}]overlay=x='{x}+{speed_x}*sin(T*0.4)':y='{y}+{speed_y}*cos(T*0.3)':format=auto{out_label}"
-        )
-        
-        prev_label = out_label
-    
-    if filter_parts:
-        full_filter = ";".join(filter_parts)
-        
-        cmd_anim = [FFMPEG_EXE, "-y"]
-        for f in input_files:
-            cmd_anim += ["-i", f]
-        cmd_anim += [
-            "-filter_complex", full_filter,
-            "-c:v", "libx264", "-crf", "18", "-preset", "veryfast",
-            "-c:a", "copy",
-            "-pix_fmt", "yuv420p",
-            output_path
-        ]
-        
-        success, err = run_cmd(cmd_anim, timeout=120)
-        if not success:
-            print(f"⚠️ एनिमेशन विफल, बेस वीडियो इस्तेमाल कर रहा हूँ: {err[-150:]}")
-            shutil.copy2(base_video, output_path)
-        else:
-            print(f"✅ एनिमेशन वीडियो तैयार ({len(anim_paths)} ओवरले - हर गाने के लिए यूनिक)")
-    else:
-        shutil.copy2(base_video, output_path)
-
-    # क्लीनअप
-    if os.path.exists(base_video):
-        try:
-            os.remove(base_video)
-        except Exception:
-            pass
-
-    return os.path.exists(output_path) and os.path.getsize(output_path) > 100000
+    return []
 
 
 def generate_metadata(song_name, song_info):
-    """मूड-बेस्ड टाइटल और डिस्क्रिप्शन"""
-    mood = song_info.get("mood", "Balanced Bhakti")
+    """मूड-बेस्ड टाइटल और विस्तृत भक्ति विवरण"""
     mood_hi = song_info.get("mood_hi", "संतुलित भक्ति संगीत")
-    duration_min = song_info.get("duration_min", 0)
-    target = song_info.get("target_audience", "General")
-    target_hi = song_info.get("target_audience_hi", "सभी के लिए")
+    target_hi = song_info.get("target_audience_hi", "भगवान के लिए")
 
-    # टाइटल बिना इमोजी - YouTube स्पेशल कैरेक्टर्स को रिजेक्ट कर सकता है
-    if duration_min > 0:
-        title = f"{song_name} | {mood_hi} | {duration_min} मिनट | Krishna Vibez"
-    else:
-        title = f"{song_name} | {mood_hi} | Krishna Vibez"
+    title = f"{song_name} | श्री कृष्ण अमृत संगीत | Krishna Vibez"
 
     description = (
         f"🎵 {song_name}\n"
         "━━━━━━━━━━━━━━━━━━━━━━━━━━\n"
-        "🪷 दिव्य भक्ति संगीत | Divine Krishna Song\n"
-        f"🎭 मूड: {mood_hi}\n"
-        f"👥 लिए: {target_hi}\n\n"
+        "🪷 दिव्य भक्ति संगीत | Divine Krishna Music Video\n"
+        f"🎭 भाव: {mood_hi}\n"
+        f"👥 समर्पण: {target_hi}\n\n"
         "📖 भावार्थ:\n"
-        "यह गीत श्री कृष्ण के दिव्य प्रेम और भक्ति का संदेश देता है।\n\n"
-        "✨ English Summary:\n"
-        "A divine Krishna bhakti song dedicated to Lord Krishna.\n\n"
+        "श्री कृष्ण के पावन चरणों में समर्पित दिव्य भजन व बाँसुरी संगीत। "
+        "यह मधुर धुन मन को शांति, एकाग्रता और भक्ति का दिव्य आनंद प्रदान करती है।\n\n"
+        "✨ Divine Meditation & Bhakti Song dedicated to Lord Krishna.\n\n"
         "━━━━━━━━━━━━━━━━━━━━━━━━━━\n"
-        "🕊️ हमसे जुड़ें:\n"
-        "🌐 https://krishnavibez.in/\n"
-        "▶️ https://www.youtube.com/@KrishnaVibezMusic\n"
-        "📲 https://whatsapp.com/channel/0029VbDxJHk30LKNtj4Er62J\n"
-        "🕊️ https://t.me/krishnavibezz\n"
-        "📸 https://www.instagram.com/krishnavibez/\n"
-        "🧵 https://www.threads.net/@krishnavibez\n"
-        "📘 https://www.facebook.com/1808917602588221\n"
-        "📌 https://in.pinterest.com/MojiloMart/\n\n"
-        "🛍️ Amazon: https://www.amazon.in/shop/myhappybirthday\n\n"
+        "🕊️ आधिकारिक संपर्क व दर्शन:\n"
+        "🌐 वेबसाइट: https://krishnavibez.in/\n"
+        "▶️ यूट्यूब: https://www.youtube.com/@KrishnaVibezMusic\n"
+        "📲 व्हाट्सएप: https://whatsapp.com/channel/0029VbDxJHk30LKNtj4Er62J\n"
+        "🕊️ टेलीग्राम: https://t.me/krishnavibezz\n"
+        "📸 इंस्टाग्राम: https://www.instagram.com/krishnavibez/\n\n"
         "जय श्री राधे कृष्ण! 🪷✨\n\n"
-        "#Krishna #Bhakti #KrishnaVibez #KrishnaSong #DivineMusic #RadheKrishna"
+        "#KrishnaVibez #KrishnaSong #VrindavanKirtan #Bhakti #Bansuri #RadheKrishna #FluteMeditation"
     )
-    tags = ["Krishna", "Bhakti Song", "Krishna Vibez", "Krishna Song", "Radhe Krishna", "Divine Music", "Hindi Bhajan"]
+    tags = [
+        "Krishna Vibez", "Krishna Song", "Vrindavan Kirtan", "Bansuri Se Bula Le",
+        "Krishna Bhajan", "Radhe Krishna", "Bhakti Song", "Flute Meditation", "Spiritual Music"
+    ]
     return title, description, tags
 
 
 def process_all_pending_songs():
-    """सभी पेंडिंग गाने प्रोसेस करना (क्यू में जोड़ना)"""
-    print("=" * 60)
+    """Songs/inbox से नए गाने स्कैन, क्लीन व Catbox पर अपलोड करना"""
+    print("\n" + "=" * 60)
     print("  KRISHNA VIBEZ — FULL SONG AUTO PIPELINE (Process Mode)")
     print("=" * 60)
 
-    already_uploaded = load_tracker()
-    reg = load_registry()
-
-    # नए गाने खोजना
-    new_songs = []
+    pending_files = []
     if os.path.exists(SONGS_INBOX):
-        for f in sorted(os.listdir(SONGS_INBOX)):
-            if f.lower().endswith(SUPPORTED_EXTS) and f not in already_uploaded:
-                new_songs.append((f, os.path.join(SONGS_INBOX, f)))
+        for f in os.listdir(SONGS_INBOX):
+            if f.lower().endswith(SUPPORTED_EXTS):
+                pending_files.append(os.path.join(SONGS_INBOX, f))
 
-    if not new_songs:
-        print("[INFO] कोई नया गाना नहीं मिला। सभी प्रोसेस्ड हैं।")
-        return []
+    if not pending_files:
+        print("[INFO] कोई नया गाना Songs/inbox/ में नहीं मिला। सभी प्रोसेस हैं।")
+        return
 
-    print(f"[मिला] {len(new_songs)} नया गाना प्रोसेस के लिए।")
-    processed = []
+    reg = load_registry()
+    urls = load_urls(SONG_URLS_FILE)
 
-    for idx, (fname, raw_path) in enumerate(new_songs, 1):
-        song_name = os.path.splitext(fname)[0]
-        print(f"\n[{idx}/{len(new_songs)}] प्रोसेस हो रहा है: {song_name}")
+    for song_path in pending_files:
+        raw_name = os.path.splitext(os.path.basename(song_path))[0]
+        print(f"\n🎧 नया गाना मिला: {raw_name}")
 
-        # 1. ऑडियो एनालिसिस
-        analysis = analyze_audio(raw_path)
-        mood = analysis.get("mood", "Balanced Bhakti")
-        print(f"  🎭 मूड: {analysis.get('mood_hi', mood)}")
+        temp_clean = os.path.join(BASE_DIR, "temp_clean_song.mp3")
+        if not clean_audio(song_path, temp_clean):
+            print("  ⚠️ ऑडियो क्लीनिंग विफल, मूल फाइल प्रयोग कर रहा हूँ")
+            shutil.copy2(song_path, temp_clean)
 
-        # 2. ऑडियो साफ करना
-        temp_clean = os.path.join(BASE_DIR, f"temp_clean_{int(time.time())}.mp3")
-        if not clean_audio(raw_path, temp_clean):
-            print(f"  ❌ ऑडियो सफाई विफल")
+        print("  ☁️ Catbox पर अपलोड हो रहा है...")
+        catbox_url = upload_to_catbox(temp_clean)
+        if not catbox_url:
+            print("  ❌ Catbox अपलोड विफल, बाद में पुनः प्रयास होगा")
             continue
 
-        # 3. Catbox अपलोड
-        print(f"  ☁️ Catbox पर अपलोड हो रहा है...")
-        url = upload_to_catbox(temp_clean)
-        if not url:
-            print(f"  ❌ Catbox अपलोड विफल")
-            if os.path.exists(temp_clean):
-                os.remove(temp_clean)
-            continue
+        print(f"  ✅ Catbox URL: {catbox_url}")
 
-        print(f"  ✅ Catbox URL: {url}")
-
-        # 4. URL क्यू में सेव
-        with open(SONG_URLS_FILE, "a", encoding="utf-8") as f:
-            f.write(url + "\n")
-        with open(SONG_BACKUP_URLS_FILE, "a", encoding="utf-8") as f:
-            f.write(url + "\n")
-
-        # 5. रजिस्ट्री अपडेट
-        reg[url] = {
-            "name": song_name,
-            "mood": mood,
-            "mood_hi": analysis.get("mood_hi", "संतुलित भक्ति संगीत"),
-            "target_audience": analysis.get("target_audience", "General"),
-            "target_audience_hi": analysis.get("target_audience_hi", "सभी के लिए"),
-            "duration_min": analysis.get("duration_min", 0),
-            "added_at": time.strftime("%Y-%m-%d %H:%M:%S"),
-        }
-        save_registry(reg)
-
-        # 6. थंबनेल खोजना
-        thumb_path = find_thumbnail(song_name)
+        # थंबनेल जांच व अपलोड
+        thumb_path = find_thumbnail(raw_name)
+        thumb_url = None
         if thumb_path:
-            print(f"  🖼️ थंबनेल मिला: {os.path.basename(thumb_path)}")
-        else:
-            print(f"  ⚠️ कोई थंबनेल नहीं मिला")
+            thumb_url = upload_to_catbox(thumb_path)
+            print(f"  🖼️ थंबनेल CDN URL: {thumb_url}")
 
-        # 7. एनिमेशन खोजना - हर गाने के लिए अलग-अलग 3 रैंडम
-        all_anims = find_animations()
-        anim_paths = pick_random_3_animations(all_anims)
-        if anim_paths:
-            print(f"  🎨 एनिमेशन चुने गए: {len(anim_paths)} (50+ में से रैंडम, इस गाने के लिए यूनिक)")
-            for a in anim_paths:
-                print(f"     → {os.path.basename(a)}")
-        else:
-            print(f"  ⚠️ कोई एनिमेशन फाइल नहीं मिली animations/ फोल्डर में")
+        # वीडियो स्लाइड्स जांच व अपलोड
+        slides = find_slide_images(raw_name)
+        slide_urls = []
+        for s in slides:
+            u = upload_to_catbox(s)
+            if u:
+                slide_urls.append(u)
 
-        # 8. ट्रैकर में दर्ज (डुप्लीकेट रोकता है)
-        with open(SONG_TRACKER_FILE, "a", encoding="utf-8") as tf:
-            tf.write(f"{fname}\n")
+        reg[catbox_url] = {
+            "name": raw_name,
+            "mood": "Balanced Bhakti",
+            "mood_hi": "संतुलित भक्ति संगीत",
+            "target_audience": "God",
+            "target_audience_hi": "भगवान के लिए",
+            "added_at": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+            "thumb_url": thumb_url,
+            "image_urls": slide_urls,
+            "status": "pending"
+        }
 
-        # 9. मूल फाइल आर्काइव
-        dest = os.path.join(SONGS_UPLOADED, fname)
-        if os.path.exists(dest):
-            base_n, ext = os.path.splitext(fname)
-            dest = os.path.join(SONGS_UPLOADED, f"{base_n}_{int(time.time())}{ext}")
-        try:
-            shutil.move(raw_path, dest)
-        except Exception as e:
-            print(f"  ⚠️ आर्काइव विफल: {e}")
+        if catbox_url not in urls:
+            urls.append(catbox_url)
 
-        processed.append({
-            "url": url,
-            "name": song_name,
-            "thumb": thumb_path,
-            "anims": anim_paths,
-            "analysis": analysis,
-        })
-
-        # क्लीनअप
+        # फाइल मूव करें
+        dest = os.path.join(SONGS_UPLOADED, os.path.basename(song_path))
+        shutil.move(song_path, dest)
         if os.path.exists(temp_clean):
-            try:
-                os.remove(temp_clean)
-            except Exception:
-                pass
+            os.remove(temp_clean)
 
-    print(f"\n[COMPLETE] {len(processed)} गाने प्रोसेस्ड हुए।")
-    print(f"   यूट्यूब क्यू में तैयार हैं।")
-    return processed
+    save_registry(reg)
+    save_urls(SONG_URLS_FILE, urls)
+    save_urls(SONG_BACKUP_URLS_FILE, urls)
+    print("\n✅ सभी नए गाने सफलतापूर्वक क्यू में जोड़े गए।")
 
 
 def upload_next_to_youtube():
-    """क्यू से अगला गाना यूट्यूब पर अपलोड करना (रविवार 9 AM)"""
+    """अगला गाना 1080p एनिमेटेड वीडियो बनाकर YouTube पर Unlisted अपलोड करना"""
+    print("\n" + "=" * 60)
+    print("  KRISHNA VIBEZ — YOUTUBE SONG UPLOADER (Unlisted Mode)")
+    print("=" * 60)
+
+    client_id = os.environ.get("YOUTUBE_CLIENT_ID")
+    client_secret = os.environ.get("YOUTUBE_CLIENT_SECRET")
+    refresh_token = os.environ.get("YOUTUBE_REFRESH_TOKEN")
+
+    if not all([client_id, client_secret, refresh_token]):
+        print("❌ YouTube क्रेडेंशियल्स उपलब्ध नहीं हैं (CLIENT_ID, SECRET, REFRESH_TOKEN)")
+        return False
+
     from google.oauth2.credentials import Credentials
     from googleapiclient.discovery import build
     from googleapiclient.http import MediaFileUpload
 
-    CLIENT_ID = os.environ.get("YOUTUBE_CLIENT_ID")
-    CLIENT_SECRET = os.environ.get("YOUTUBE_CLIENT_SECRET")
-    REFRESH_TOKEN = os.environ.get("YOUTUBE_REFRESH_TOKEN")
-
-    if not (CLIENT_ID and CLIENT_SECRET and REFRESH_TOKEN):
-        print("⚠️ YouTube सीक्रेट्स नहीं मिले। अपलोड स्किप किया जा रहा है।")
-        return
-
     creds = Credentials(
         token=None,
-        refresh_token=REFRESH_TOKEN,
+        refresh_token=refresh_token,
         token_uri="https://oauth2.googleapis.com/token",
-        client_id=CLIENT_ID,
-        client_secret=CLIENT_SECRET,
-        scopes=["https://www.googleapis.com/auth/youtube.upload",
-                "https://www.googleapis.com/auth/youtube"]
+        client_id=client_id,
+        client_secret=client_secret,
+        scopes=[
+            "https://www.googleapis.com/auth/youtube.upload",
+            "https://www.googleapis.com/auth/youtube"
+        ]
     )
     youtube = build("youtube", "v3", credentials=creds)
 
-    # अगला URL पिक करना
-    active = load_urls(SONG_URLS_FILE)
-    used = set(load_urls(SONG_USED_URLS_FILE))
-    active = [u for u in active if u not in used]
-
-    if not active:
-        # बैकअप से रीस्टार्ट
-        backup = load_urls(SONG_BACKUP_URLS_FILE)
-        backup = [u for u in backup if u not in used]
-        if backup:
-            random.shuffle(backup)
-            save_urls(SONG_URLS_FILE, backup)
-            active = backup
-
-    if not active:
-        print("[INFO] क्यू खाली है। अपलोड करने के लिए कोई गाना नहीं।")
-        return
-
-    url = active[0]
     reg = load_registry()
-    song_info = reg.get(url, {"name": "Unknown Song", "mood": "Balanced Bhakti", "mood_hi": "संतुलित भक्ति संगीत"})
+    urls = load_urls(SONG_URLS_FILE)
 
-    song_name = song_info.get("name", "Unknown Song")
-    print(f"\n🎵 यूट्यूब अपलोड: {song_name}")
+    # फोर्स यूआरएल चेक (एनवायरनमेंट से)
+    force_url = os.environ.get("FORCE_SONG_URL")
+    target_url = None
 
-    # ऑडियो डाउनलोड
-    if os.path.exists(TEMP_AUDIO):
-        os.remove(TEMP_AUDIO)
+    if force_url and force_url in reg:
+        target_url = force_url
+    else:
+        # पेंडिंग गाना खोजें जिसका स्टेटस uploaded न हो
+        for u in urls:
+            info = reg.get(u, {})
+            if info.get("status") != "uploaded":
+                target_url = u
+                break
 
-    import urllib.request
-    req = urllib.request.Request(url, headers={"User-Agent": "Mozilla/5.0"})
-    try:
-        with urllib.request.urlopen(req, timeout=60) as resp:
-            with open(TEMP_AUDIO, "wb") as f:
-                while True:
-                    chunk = resp.read(65536)
-                    if not chunk:
-                        break
-                    f.write(chunk)
-    except Exception as e:
-        print(f"❌ डाउनलोड विफल: {e}")
-        return
+    if not target_url and urls:
+        target_url = urls[0]
 
-    # थंबनेल खोजना (Catbox URL से भी डाउनलोड करेगा)
+    if not target_url:
+        print("[INFO] क्यू खाली है। अपलोड करने के लिए कोई पेंडिंग गाना नहीं।")
+        return False
+
+    song_info = reg.get(target_url, {})
+    song_name = song_info.get("name", "Vrindavan Maha Kirtan - Bansuri Se Bula Le - Treblo")
+    print(f"\n🎵 यूट्यूब अपलोड प्रारंभ: {song_name}")
+    print(f"  🔗 ऑडियो स्रोत: {target_url}")
+
+    # ऑडियो प्राप्त करना (लोकल या डाउनलोड)
+    local_audio_cand = os.path.join(SONGS_UPLOADED, f"{song_name}.wav")
+    if os.path.exists(local_audio_cand):
+        shutil.copy2(local_audio_cand, TEMP_AUDIO)
+        print(f"  📁 लोकल ऑडियो प्रयुक्त: {local_audio_cand}")
+    else:
+        print("  📥 Catbox से ऑडियो डाउनलोड हो रहा है...")
+        if not download_file(target_url, TEMP_AUDIO):
+            print("❌ ऑडियो डाउनलोड विफल!")
+            return False
+
+    # थंबनेल खोजना
     thumb_path = find_thumbnail(song_name, song_info)
     if not thumb_path:
-        # सॉलिड बैकग्राउंड बनाएं
-        thumb_path = os.path.join(BASE_DIR, "temp_thumb_fallback.jpg")
-        run_cmd([FFMPEG_EXE, "-y", "-f", "lavfi",
-                 "-i", "color=c=0B0E14:size=1280x720",
-                 "-frames:v", "1", thumb_path])
+        print("❌ कोई थंबनेल नहीं मिला!")
+        return False
+    print(f"  🖼️ उपयोग होने वाला थंबनेल: {thumb_path}")
 
-    # एनिमेशन खोजना - हर गाने के लिए अलग-अलग 3 रैंडम
-    all_anims = find_animations()
-    anim_paths = pick_random_3_animations(all_anims)
-    if anim_paths:
-        print(f"  🎨 एनिमेशन चुने गए: {len(anim_paths)} (हर गाने के लिए यूनिक कॉम्बिनेशन)")
-    else:
-        print(f"  ⚠️ कोई एनिमेशन फाइल नहीं मिली animations/ फोल्डर में")
+    # वीडियो स्लाइड्स खोजना
+    slide_paths = find_slide_images(song_name, song_info)
+    if not slide_paths:
+        slide_paths = [thumb_path]
+    print(f"  🎨 वीडियो स्लाइड्स संख्या: {len(slide_paths)}")
 
-    # वीडियो बनाना
-    if not create_video_with_animations(TEMP_AUDIO, thumb_path, anim_paths, TEMP_VIDEO):
-        print("❌ वीडियो बनाने में विफल")
-        return
+    # 1080p एनिमेटेड वीडियो जनरेशन
+    print("\n🎬 1080p एनिमेटेड म्यूजिक वीडियो तैयार हो रहा है (Ken Burns + Flora Particles + Sparkles)...")
+    from song_video_generator import generate_song_music_video
+    video_ready = generate_song_music_video(TEMP_AUDIO, slide_paths, TEMP_VIDEO)
+    if not video_ready:
+        print("❌ वीडियो जनरेशन विफल!")
+        return False
 
-    # मेटाडेटा
+    # मेटाडेटा जनरेशन
     title, description, tags = generate_metadata(song_name, song_info)
 
-    # अपलोड (प्राइवेट/अनपब्लिश्ड)
+    # प्राइवेसी स्टेटस (डिफ़ॉल्ट Unlisted)
+    privacy_status = os.environ.get("PRIVACY_STATUS", "unlisted").lower()
+    if privacy_status not in ["unlisted", "private", "public"]:
+        privacy_status = "unlisted"
+
+    print(f"  🔒 प्राइवेसी स्टेटस: {privacy_status.upper()}")
+    print(f"  📝 टाइटल: {title}")
+
     body = {
         "snippet": {
             "title": title,
@@ -608,7 +451,7 @@ def upload_next_to_youtube():
             "defaultAudioLanguage": "hi"
         },
         "status": {
-            "privacyStatus": "private",  # फिलहाल अनपब्लिश्ड/प्राइवेट
+            "privacyStatus": privacy_status,
             "selfDeclaredMadeForKids": False,
             "embeddable": True,
             "license": "youtube"
@@ -617,22 +460,68 @@ def upload_next_to_youtube():
 
     media = MediaFileUpload(TEMP_VIDEO, mimetype="video/mp4", resumable=True)
     request = youtube.videos().insert(part="snippet,status", body=body, media_body=media)
+
     response = None
     while response is None:
         status, response = request.next_chunk()
         if status:
-            print(f"  अपलोड: {int(status.progress() * 100)}%...", flush=True)
+            print(f"  ⬆️ अपलोड प्रगति: {int(status.progress() * 100)}%...", flush=True)
 
     video_id = response.get("id")
-    print(f"🎉 अपलोड पूर्ण! https://youtube.com/watch?v={video_id} (प्राइवेट)")
+    video_url = f"https://youtube.com/watch?v={video_id}"
+    print(f"\n🎉 शानदार! नया म्यूजिक वीडियो सफलतापूर्वक अपलोड हुआ!")
+    print(f"  🔗 लिंक: {video_url} ({privacy_status.upper()})")
 
-    # URL यूज़्ड मार्क करें
-    urls = load_urls(SONG_URLS_FILE)
-    if url in urls:
-        urls.remove(url)
+    # कस्टम थंबनेल सेट करना
+    print("  🖼️ यूट्यूब पर कस्टम थंबनेल अपलोड किया जा रहा है...")
+    try:
+        youtube.thumbnails().set(
+            videoId=video_id,
+            media_body=MediaFileUpload(thumb_path, mimetype="image/jpeg")
+        ).execute()
+        print("  ✅ कस्टम थंबनेल सफलतापूर्वक सेट हो गया!")
+    except Exception as e:
+        print(f"  ⚠️ थंबनेल अपलोड चेतावनी: {e}")
+
+    # पुराने वीडियो (यदि हो) को Unlisted करना व थंबनेल बदलना
+    fix_id = os.environ.get("FIX_PREV_VIDEO_ID", "jpCARdivrts")
+    if fix_id and fix_id != video_id:
+        print(f"\n🛠️ पूर्व में अपलोड वीडियो ({fix_id}) को Unlisted व थंबनेल अपडेट किया जा रहा है...")
+        try:
+            youtube.videos().update(
+                part="status",
+                body={"id": fix_id, "status": {"privacyStatus": "unlisted"}}
+            ).execute()
+            print(f"  ✅ पुराना वीडियो {fix_id} अनलिस्टेड किया गया!")
+        except Exception as e:
+            print(f"  ⚠️ स्टेटस अपडेट चेतावनी: {e}")
+
+        try:
+            youtube.thumbnails().set(
+                videoId=fix_id,
+                media_body=MediaFileUpload(thumb_path, mimetype="image/jpeg")
+            ).execute()
+            print(f"  ✅ पुराना वीडियो {fix_id} का थंबनेल अपडेट किया गया!")
+        except Exception as e:
+            print(f"  ⚠️ पुराना थंबनेल अपडेट चेतावनी: {e}")
+
+    # रजिस्ट्री व ट्रैकर अपडेट करना
+    song_info["status"] = "uploaded"
+    song_info["youtube_id"] = video_id
+    song_info["youtube_url"] = video_url
+    song_info["uploaded_at"] = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    reg[target_url] = song_info
+    save_registry(reg)
+
+    if target_url in urls:
+        urls.remove(target_url)
         save_urls(SONG_URLS_FILE, urls)
+
     with open(SONG_USED_URLS_FILE, "a", encoding="utf-8") as uf:
-        uf.write(url + "\n")
+        uf.write(target_url + "\n")
+
+    with open(SONG_TRACKER_FILE, "a", encoding="utf-8") as tf:
+        tf.write(f"{datetime.now().strftime('%Y-%m-%d %H:%M:%S')} | {song_name} | {video_url} | {privacy_status}\n")
 
     # क्लीनअप
     for f in [TEMP_AUDIO, TEMP_VIDEO]:
@@ -642,12 +531,18 @@ def upload_next_to_youtube():
             except Exception:
                 pass
 
+    return True
+
 
 def git_commit_push(msg):
     try:
         subprocess.run(["git", "config", "user.email", "actions@github.com"], check=False)
         subprocess.run(["git", "config", "user.name", "Krishna Vibez Bot"], check=False)
         subprocess.run(["git", "add", "."], cwd=BASE_DIR, check=False)
+        diff = subprocess.run(["git", "diff", "--staged", "--quiet"], cwd=BASE_DIR)
+        if diff.returncode == 0:
+            print("ℹ️ कोई नया बदलाव कमिट करने के लिए नहीं है।")
+            return
         subprocess.run(["git", "commit", "-m", msg], cwd=BASE_DIR, check=False)
         for _ in range(3):
             subprocess.run(["git", "pull", "--rebase", "origin", "master"], cwd=BASE_DIR, check=False)
@@ -656,42 +551,37 @@ def git_commit_push(msg):
             if res.returncode == 0:
                 print("✅ गिटहब पुश पूर्ण")
                 return
-            time.sleep(5)
+            time.sleep(4)
     except Exception as e:
         print(f"गिट पुश सूचना: {e}")
 
 
 def main():
-    import sys
     args = sys.argv[1:] if len(sys.argv) > 1 else []
-    mode = args[0] if args else "process"
+    mode = args[0] if args else "upload"
 
     if mode == "process":
         process_all_pending_songs()
         git_commit_push("Auto-processed new songs & updated queues [skip ci]")
 
     elif mode == "upload":
-        # कोई दैनिक सीमा नहीं - मैनुअल रन कभी भी काम करेगा
-        # रविवार को schedule से भी चलेगा
-        upload_next_to_youtube()
+        success = upload_next_to_youtube()
+        if success:
+            ist_now = datetime.now(timezone.utc) + timedelta(hours=5, minutes=30)
+            today_str = ist_now.strftime("%Y-%m-%d")
+            data = {}
+            if os.path.exists(SONG_DAILY_TRACKER):
+                try:
+                    with open(SONG_DAILY_TRACKER, "r", encoding="utf-8") as f:
+                        data = json.load(f)
+                except Exception:
+                    pass
+            data["last_upload_date"] = today_str
+            data["last_upload_timestamp"] = int(time.time())
+            with open(SONG_DAILY_TRACKER, "w", encoding="utf-8") as f:
+                json.dump(data, f, indent=2)
 
-        # ट्रैकर रिकॉर्ड करें (केवल जब अपलोड हुआ हो)
-        ist_now = datetime.now(timezone.utc) + timedelta(hours=5, minutes=30)
-        today_str = ist_now.strftime("%Y-%m-%d")
-        tracker_file = SONG_DAILY_TRACKER
-        data = {}
-        if os.path.exists(tracker_file):
-            try:
-                with open(tracker_file, "r", encoding="utf-8") as f:
-                    data = json.load(f)
-            except Exception:
-                pass
-        data["last_upload_date"] = today_str
-        data["last_upload_timestamp"] = int(time.time())
-        with open(tracker_file, "w", encoding="utf-8") as f:
-            json.dump(data, f, indent=2)
-
-        git_commit_push("Auto-uploaded song to YouTube [skip ci]")
+            git_commit_push("Auto-uploaded 1080p song video to YouTube [skip ci]")
 
 
 if __name__ == "__main__":

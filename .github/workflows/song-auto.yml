@@ -1,7 +1,16 @@
 name: Auto Song Pipeline (Every Sunday 9 AM IST)
 
 on:
-  workflow_dispatch: # मैनुअल रन - कभी भी काम करेगा
+  workflow_dispatch: # मैनुअल ट्रिगर - कभी भी चलाएं
+    inputs:
+      privacy_status:
+        description: 'YouTube Privacy Status (unlisted / private / public)'
+        required: false
+        default: 'unlisted'
+      fix_prev_video_id:
+        description: 'Fix previous video thumbnail and set unlisted'
+        required: false
+        default: 'jpCARdivrts'
   repository_dispatch:
     types: [process_song, upload_song, run_song_pipeline]
   schedule:
@@ -25,34 +34,36 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@v4
         with:
-          python-version: '3.10'
+          python-version: '3.11'
 
-      - name: Install System Dependencies (ffmpeg)
+      - name: Install System Dependencies (ffmpeg & fonts)
         run: |
           sudo apt-get update -o Acquire::Retries=3 -qq || true
-          sudo apt-get install -y --no-install-recommends ffmpeg || true
+          sudo apt-get install -y --no-install-recommends ffmpeg fonts-deva fonts-noto-core || true
 
       - name: Install Python dependencies
-        run: pip install -r requirements.txt google-api-python-client google-auth-oauthlib google-auth pillow
+        run: pip install -r requirements.txt google-api-python-client google-auth-oauthlib google-auth pillow requests
 
       - name: Process new songs from Songs/inbox/ (Add to YouTube queue)
         run: python -u song_full_pipeline.py process
         env:
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
 
-      - name: Upload next song to YouTube (Private)
+      - name: Upload next song to YouTube (Unlisted 1080p Animated Video)
         run: python -u song_full_pipeline.py upload
         env:
           YOUTUBE_CLIENT_ID: ${{ secrets.YOUTUBE_CLIENT_ID }}
           YOUTUBE_CLIENT_SECRET: ${{ secrets.YOUTUBE_CLIENT_SECRET }}
           YOUTUBE_REFRESH_TOKEN: ${{ secrets.YOUTUBE_REFRESH_TOKEN }}
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          PRIVACY_STATUS: ${{ github.event.inputs.privacy_status || 'unlisted' }}
+          FIX_PREV_VIDEO_ID: ${{ github.event.inputs.fix_prev_video_id || 'jpCARdivrts' }}
 
       - name: Commit Updated Song Queues to Git
         run: |
           git config user.name "Krishna Vibez Song Bot"
           git config user.email "bot@krishnavibez.in"
-          git add song_urls.txt song_urls_backup.txt song_used_urls.txt song_uploaded_tracker.txt song_tracks_registry.json song_daily_tracker.json song_thumbnails_tracker.txt || true
+          git add song_urls.txt song_urls_backup.txt song_used_urls.txt song_uploaded_tracker.txt song_tracks_registry.json song_daily_tracker.json song_images/ song_thumbnails/ || true
           git diff --staged --quiet || git commit -m "Auto song pipeline: processed & uploaded [skip ci]"
           for i in 1 2 3 4 5; do
             git pull --rebase origin master || true
