@@ -244,7 +244,7 @@ def find_slide_images(song_name, song_info=None):
     return []
 
 
-def generate_metadata(song_name, song_info, audio_file=None):
+def generate_metadata(song_name, song_info, audio_file=None, lyrics_text=None):
     """
     ऑडियो को सुनकर और उसके भाव/मूड को पहचानकर AI (Gemini) द्वारा
     आकर्षक टाइटल (Clickable Hook Title), विस्तृत भक्तिपूर्ण डिस्क्रिप्शन (Chapters, Benefits, Social Links)
@@ -258,6 +258,17 @@ def generate_metadata(song_name, song_info, audio_file=None):
             analysis = analyze_audio_mood(audio_file)
     except Exception as e:
         print(f"  ⚠️ ऑडियो विश्लेषण सूचना: {e}")
+
+    # लिरिक्स प्राप्त करना (यदि पैरामीटर में, रजिस्ट्री में या लोकल फाइल में हो)
+    lyrics = lyrics_text or song_info.get("lyrics") or ""
+    if not lyrics:
+        local_lrc = os.path.join(BASE_DIR, "Songs", f"{song_name}.txt")
+        if os.path.exists(local_lrc):
+            try:
+                with open(local_lrc, "r", encoding="utf-8") as lf:
+                    lyrics = lf.read()
+            except Exception:
+                pass
 
     mood = song_info.get("mood", "Balanced Bhakti")
     mood_hi = song_info.get("mood_hi", "संतुलित भक्ति संगीत")
@@ -677,7 +688,7 @@ def upload_next_to_youtube():
         return False
 
     # मेटाडेटा जनरेशन (AI द्वारा ऑडियो का भाव समझकर टाइटल व विस्तृत विवरण)
-    title, description, tags = generate_metadata(song_name, song_info, TEMP_AUDIO)
+    title, description, tags = generate_metadata(song_name, song_info, TEMP_AUDIO, lyrics_text=lyrics_cand)
 
     # प्राइवेसी स्टेटस (डिफ़ॉल्ट Unlisted)
     privacy_status = os.environ.get("PRIVACY_STATUS", "unlisted").lower()
