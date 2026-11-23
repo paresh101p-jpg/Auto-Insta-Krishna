@@ -194,13 +194,22 @@ def find_thumbnail(song_name):
 
 
 def find_animations():
-    """एनिमेशन इमेज खोजना (max 3)"""
+    """सभी एनिमेशन इमेज खोजना (50+ में से हर गाने के लिए रैंडम 3 चुने जाएंगे)"""
     anims = []
     if os.path.exists(ANIMATIONS_DIR):
         for f in sorted(os.listdir(ANIMATIONS_DIR)):
             if f.lower().endswith(IMAGE_EXTS):
                 anims.append(os.path.join(ANIMATIONS_DIR, f))
-    return anims[:3]
+    return anims  # सभी लौटाएंगे, रैंडम 3 चुनना caller पर
+
+
+def pick_random_3_animations(all_anims):
+    """हर गाने के लिए अलग-अलग 3 एनिमेशन रैंडम चुनना"""
+    if not all_anims:
+        return []
+    if len(all_anims) <= 3:
+        return all_anims.copy()
+    return random.sample(all_anims, 3)
 
 
 def analyze_audio(file_path):
@@ -412,12 +421,15 @@ def process_all_pending_songs():
         else:
             print(f"  ⚠️ कोई थंबनेल नहीं मिला")
 
-        # 7. एनिमेशन खोजना
-        anim_paths = find_animations()
+        # 7. एनिमेशन खोजना - हर गाने के लिए अलग-अलग 3 रैंडम
+        all_anims = find_animations()
+        anim_paths = pick_random_3_animations(all_anims)
         if anim_paths:
-            print(f"  🎨 एनिमेशन मिले: {len(anim_paths)} फाइलें")
+            print(f"  🎨 एनिमेशन चुने गए: {len(anim_paths)} (50+ में से रैंडम, इस गाने के लिए यूनिक)")
+            for a in anim_paths:
+                print(f"     → {os.path.basename(a)}")
         else:
-            print(f"  ⚠️ कोई एनिमेशन फाइल नहीं")
+            print(f"  ⚠️ कोई एनिमेशन फाइल नहीं मिली animations/ फोल्डर में")
 
         # 8. ट्रैकर में दर्ज (डुप्लीकेट रोकता है)
         with open(SONG_TRACKER_FILE, "a", encoding="utf-8") as tf:
@@ -530,8 +542,13 @@ def upload_next_to_youtube():
                  "-i", "color=c=0B0E14:size=1280x720",
                  "-frames:v", "1", thumb_path])
 
-    # एनिमेशन खोजना
-    anim_paths = find_animations()
+    # एनिमेशन खोजना - हर गाने के लिए अलग-अलग 3 रैंडम
+    all_anims = find_animations()
+    anim_paths = pick_random_3_animations(all_anims)
+    if anim_paths:
+        print(f"  🎨 एनिमेशन चुने गए: {len(anim_paths)} (हर गाने के लिए यूनिक कॉम्बिनेशन)")
+    else:
+        print(f"  ⚠️ कोई एनिमेशन फाइल नहीं मिली animations/ फोल्डर में")
 
     # वीडियो बनाना
     if not create_video_with_animations(TEMP_AUDIO, thumb_path, anim_paths, TEMP_VIDEO):
