@@ -1,22 +1,22 @@
-name: Auto Upload Krishna Song (Every Sunday 9 AM IST)
+name: Auto Song Pipeline (Every Sunday 9 AM IST)
 
 on:
-  workflow_dispatch: # Allows manual trigger from GitHub UI anytime
-  repository_dispatch: # Allows external triggers from cron-job.org
-    types: [post_song, post_song_sunday, sunday_song_upload]
+  workflow_dispatch: # मैनुअल ट्रिगर गिटहब UI से
+  repository_dispatch: # बाहरी ट्रिगर
+    types: [process_song, upload_song, run_song_pipeline]
   schedule:
-    # EVERY SUNDAY at 9:00 AM IST = 3:30 AM UTC
+    # हर रविवार सुबह 9:00 AM IST = 3:30 AM UTC
     - cron: '30 3 * * 0'
 
 concurrency:
-  group: sunday-song-upload
+  group: song-pipeline
   cancel-in-progress: false
 
 jobs:
-  upload-sunday-song:
+  song-pipeline:
     runs-on: ubuntu-latest
     permissions:
-      contents: write # Permission to update song_urls.txt, song_used_urls.txt
+      contents: write
 
     steps:
       - name: Checkout repository
@@ -35,26 +35,25 @@ jobs:
       - name: Install Python dependencies
         run: pip install -r requirements.txt google-api-python-client google-auth-oauthlib google-auth opencv-python-headless pillow
 
-      - name: Process any new songs from Songs/inbox/ to Catbox
-        run: python -u process_songs.py || true
+      - name: Process new songs from Songs/inbox/ (Add to YouTube queue)
+        run: python -u song_full_pipeline.py process
+        env:
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
 
-      - name: Pre-generate thumbnails for all songs
-        run: python -u create_song_thumbnails.py || true
-
-      - name: Upload Song to YouTube (Sunday 9 AM IST)
+      - name: Upload next song to YouTube (Sunday 9 AM IST - Private)
+        run: python -u song_full_pipeline.py upload
         env:
           YOUTUBE_CLIENT_ID: ${{ secrets.YOUTUBE_CLIENT_ID }}
           YOUTUBE_CLIENT_SECRET: ${{ secrets.YOUTUBE_CLIENT_SECRET }}
           YOUTUBE_REFRESH_TOKEN: ${{ secrets.YOUTUBE_REFRESH_TOKEN }}
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
-        run: python -u song_youtube_uploader.py
 
       - name: Commit Updated Song Queues to Git
         run: |
           git config user.name "Krishna Vibez Song Bot"
           git config user.email "bot@krishnavibez.in"
-          git add song_urls.txt song_urls_backup.txt song_used_urls.txt song_uploaded_tracker.txt song_thumbnails_tracker.txt song_tracks_registry.json song_daily_tracker.json || true
-          git diff --staged --quiet || git commit -m "Auto-uploaded Sunday song to YouTube & updated queues [skip ci]"
+          git add song_urls.txt song_urls_backup.txt song_used_urls.txt song_uploaded_tracker.txt song_tracks_registry.json song_daily_tracker.json song_thumbnails_tracker.txt || true
+          git diff --staged --quiet || git commit -m "Auto song pipeline: processed & uploaded [skip ci]"
           for i in 1 2 3 4 5; do
             git pull --rebase origin master || true
             git push origin master && break || sleep 3
