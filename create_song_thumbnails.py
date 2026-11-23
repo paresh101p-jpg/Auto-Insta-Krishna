@@ -116,6 +116,48 @@ def get_fallback_bg():
     return None
 
 
+def get_mood_colors(mood):
+    """मूड के हिसाब से थंबनेल के ग्रेडिएंट रंग"""
+    color_map = {
+        "Peaceful Meditative": {
+            "bg1": "#0B0E14",
+            "bg2": "#1A2332",
+            "accent": "#4FC3F7",
+            "text_main": "#FFE600",
+            "text_sub": "#BBDEFB",
+        },
+        "Energetic Devotional": {
+            "bg1": "#1B0B0E",
+            "bg2": "#4A1414",
+            "accent": "#FF5252",
+            "text_main": "#FFD700",
+            "text_sub": "#FFCDD2",
+        },
+        "Romantic Soft": {
+            "bg1": "#140B1B",
+            "bg2": "#3D1B4A",
+            "accent": "#CE93D8",
+            "text_main": "#F8BBE0",
+            "text_sub": "#F3E5F5",
+        },
+        "Short Devotional": {
+            "bg1": "#0B1E0B",
+            "bg2": "#1B4A1B",
+            "accent": "#69F0AE",
+            "text_main": "#A5D6A7",
+            "text_sub": "#C8E6C9",
+        },
+        "Balanced Bhakti": {
+            "bg1": "#0B0E14",
+            "bg2": "#1A2332",
+            "accent": "#FFD700",
+            "text_main": "#FFE600",
+            "text_sub": "#BBDEFB",
+        },
+    }
+    return color_map.get(mood, color_map["Balanced Bhakti"])
+
+
 def generate_waveform_bg(audio_path, output_path):
     """
     गाने की ऑडियो वेवफॉर्म से बैकग्राउंड इमेज बनाना (फ्री)
@@ -125,8 +167,8 @@ def generate_waveform_bg(audio_path, output_path):
         cmd = [
             FFMPEG_EXE, "-y", "-i", audio_path,
             "-filter_complex",
-            "[0:a]showwavespic=s=1280x720:colors=#FFD700@0.6:scale=sqrt:mode=average[v]",
-            "-map", "[v]", "-frames:v", "1",
+            "[0:a]showwavespic=s=1280x720:colors=#FFD700@0.6[v]",
+            "-map", "[v]", "-frames:v", "1", "-update", "1",
             output_path
         ]
         subprocess.run(cmd, cwd=BASE_DIR, check=True,
@@ -171,43 +213,69 @@ def create_song_thumbnail(song_name, audio_path=None, output_path=None,
             bg_input = fb
             vf_start = "scale=1280x720:force_original_aspect_ratio=increase,crop=1280x720,"
 
-    # टेक्स्ट फाइलें (UTF-8)
-    badge_txt = os.path.join(BASE_DIR, "temp_song_badge.txt")
-    main_txt = os.path.join(BASE_DIR, "temp_song_main.txt")
-    sub_txt = os.path.join(BASE_DIR, "temp_song_sub.txt")
+    # फॉन्ट पाथ को ffmpeg के लिए एस्केप करना (विंडोज ड्राइव लेटर हैंडलिंग)
+    def ffmpeg_path(p):
+        p = os.path.abspath(p)
+        if sys.platform == "win32":
+            p = p.replace("\\", "/").replace(":", "\\:")
+        return p
 
-    with open(badge_txt, "w", encoding="utf-8") as f:
-        f.write("KRISHNA VIBEZ")
-    with open(main_txt, "w", encoding="utf-8") as f:
-        f.write(song_name)
-    with open(sub_txt, "w", encoding="utf-8") as f:
-        f.write(f"{mood_hi} • श्री कृष्ण भक्ति")
+    hindi_arg = ffmpeg_path(hindi_font)
+    english_arg = ffmpeg_path(english_font)
+    bg_arg = ffmpeg_path(bg_input) if bg_input else ""
 
-    badge_arg = os.path.abspath(badge_txt).replace("\\", "/").replace(":", "\\:")
-    main_arg = os.path.abspath(main_txt).replace("\\", "/").replace(":", "\\:")
-    sub_arg = os.path.abspath(sub_txt).replace("\\", "/").replace(":", "\\:")
-    hindi_arg = os.path.abspath(hindi_font).replace("\\", "/").replace(":", "\\:")
-    english_arg = os.path.abspath(english_font).replace("\\", "/").replace(":", "\\:")
+    # हुक टेक्स्ट जनरेट करना (क्लिक करवाने वाली लाइन)
+    try:
+        from audio_analyzer import generate_hook_text
+        hook_text = generate_hook_text(song_name, mood, "God", "भगवान के लिए")
+    except Exception:
+        hook_text = "श्री कृष्ण के लिए 🙏 | संतुलित भक्ति संगीत ✨"
+
+    # ड्रॉटेक्स्ट पैरामीटर्स (डायरेक्ट टेक्स्ट, बिना textfile के)
+    badge_draw = (
+        f"drawtext=fontfile='{english_arg}':text='KRISHNA VIBEZ':"
+        f"fontcolor={colors['accent']}:fontsize=40:x=50:y=35:borderw=3:bordercolor=black"
+    )
+    main_draw = (
+        f"drawtext=fontfile='{hindi_arg}':text='{song_name}':"
+        f"fontcolor={colors['text_main']}:fontsize=64:x=60:y=320:borderw=6:bordercolor=black"
+    )
+    sub_draw = (
+        f"drawtext=fontfile='{hindi_arg}':text='{mood_hi} • श्री कृष्ण भक्ति':"
+        f"fontcolor={colors['text_sub']}:fontsize=36:x=60:y=500:borderw=4:bordercolor=black"
+    )
+    hook_draw = (
+        f"drawtext=fontfile='{english_arg}':text='{hook_text}':"
+        f"fontcolor={colors['text_main']}:fontsize=34:x=60:y=580:borderw=3:bordercolor=black"
+    )
+    brand_draw = (
+        f"drawtext=fontfile='{english_arg}':text='Krishna Vibez':"
+        f"fontcolor={colors['accent']}:fontsize=32:x=900:y=640:borderw=3:bordercolor=black"
+    )
 
     vf = (
         f"{vf_start}"
         f"drawbox=y=0:h=100:color=black@0.5:t=fill,"
-        f"drawbox=x=60:y=310:w=1160:h=5:color={colors['accent']}@0.9:t=fill,"
-        f"drawbox=x=60:y=460:w=1160:h=5:color={colors['accent']}@0.9:t=fill,"
-        f"drawtext=fontfile='{english_font}':textfile='{badge_arg}':fontcolor={colors['accent']}:fontsize=40:x=50:y=35:borderw=3:bordercolor=black,"
-        f"drawtext=fontfile='{hindi_font}':textfile='{main_arg}':fontcolor={colors['text_main']}:fontsize=72:x=60:y=340:borderw=8:bordercolor=black:text_shaping=1,"
-        f"drawtext=fontfile='{hindi_font}':textfile='{sub_arg}':fontcolor={colors['text_sub']}:fontsize=40:x=60:y=520:borderw=5:bordercolor=black:text_shaping=1,"
-        f"drawtext=fontfile='{english_font}':text='Krishna Vibez':fontcolor={colors['accent']}:fontsize=36:x=920:y=660:borderw=3:bordercolor=black"
+        f"drawbox=x=60:y=290:w=1160:h=4:color={colors['accent']}@0.9:t=fill,"
+        f"drawbox=x=60:y=540:w=1160:h=4:color={colors['accent']}@0.9:t=fill,"
+        f"{badge_draw},"
+        f"{main_draw},"
+        f"{sub_draw},"
+        f"{hook_draw},"
+        f"{brand_draw}"
     )
 
-    cmd = [FFMPEG_EXE, "-y", "-update", "1", "-q:v", "2"]
+    cmd = [FFMPEG_EXE, "-y"]
     if bg_input:
         cmd += ["-i", bg_input]
-    cmd += ["-vf", vf, "-frames:v", "1", output_path]
+    cmd += ["-vf", vf, "-frames:v", "1", "-q:v", "2", output_path]
 
     try:
-        subprocess.run(cmd, cwd=BASE_DIR, check=True,
-                       stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        result = subprocess.run(cmd, cwd=BASE_DIR, capture_output=True, text=True, timeout=120)
+        if result.returncode != 0:
+            err_msg = result.stderr[-300:] if result.stderr else str(result.returncode)
+            print(f"  ❌ Thumbnail FFmpeg failed for '{song_name}': {err_msg}")
+            return False
         # अस्थायी वेवफॉर्म हटाना
         if audio_path and os.path.exists(os.path.join(BASE_DIR, "temp_song_waveform.jpg")):
             try:
@@ -215,17 +283,9 @@ def create_song_thumbnail(song_name, audio_path=None, output_path=None,
             except Exception:
                 pass
         return True
-    except subprocess.CalledProcessError as e:
-        err_msg = e.stderr.decode()[:200] if e.stderr else str(e)
-        print(f"  ❌ Thumbnail FFmpeg failed for '{song_name}': {err_msg}")
+    except Exception as e:
+        print(f"  ❌ Thumbnail exception for '{song_name}': {e}")
         return False
-    finally:
-        for tf in [badge_txt, main_txt, sub_txt]:
-            if os.path.exists(tf):
-                try:
-                    os.remove(tf)
-                except Exception:
-                    pass
 
 
 def generate_thumbnails_for_all_songs():
