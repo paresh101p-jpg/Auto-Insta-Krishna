@@ -342,9 +342,77 @@ class SlideParticle:
         target_img[y1:y2, x1:x2] = (fg_rgb * alpha + bg_rgb * (1.0 - alpha)).astype(np.uint8)
 
 
+def remove_flow_watermark(img):
+    """
+    Universal Google Flow Star Watermark Remover:
+    Automatically locates and completely erases the 4-pointed Flow watermark
+    from the bottom-right corner without cropping or distorting the image.
+    Works dynamically for any 16:9 or custom resolution image.
+    """
+    import cv2
+    if img is None:
+        return img
+    h, w = img.shape[:2]
+
+    # Coordinates of Flow watermark: 77% to 96% Y, 86% to 100% X
+    y1 = int(h * 0.77)
+    y2 = int(h * 0.96)
+    x1 = int(w * 0.86)
+    x2 = w
+
+    corner = img[y1:y2, x1:x2]
+    gray = cv2.cvtColor(corner, cv2.COLOR_BGR2GRAY)
+
+    # 1. Target the star brightness
+    _, thresh = cv2.threshold(gray, 70, 255, cv2.THRESH_BINARY)
+    kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (9, 9))
+    dilated = cv2.dilate(thresh, kernel, iterations=2)
+
+    # 2. Targeted circular inpaint core for Flow star
+    ch, cw = corner.shape[:2]
+    cv2.circle(dilated, (int(cw * 0.65), int(ch * 0.5)), int(min(cw, ch) * 0.35), 255, -1)
+
+    # 3. Create full frame mask
+    full_mask = np.zeros((h, w), dtype=np.uint8)
+    full_mask[y1:y2, x1:x2] = dilated
+
+    # 4. Telea Inpaint (Fills seamlessly using surrounding natural pixels)
+    cleaned = cv2.inpaint(img, full_mask, inpaintRadius=7, flags=cv2.INPAINT_TELEA)
+    return cleaned
+
+
+def clean_and_save_thumbnail(src_path, dst_path=None):
+    """
+    Cleans Google Flow watermark from a thumbnail image without cropping,
+    resizes to standard 1280x720 (16:9 HD), and saves it as high quality JPEG.
+    """
+    import cv2
+    if not src_path or not os.path.exists(src_path):
+        return src_path
+    if dst_path is None:
+        dst_path = src_path
+
+    img = cv2.imread(src_path)
+    if img is None:
+        return src_path
+
+    # Remove watermark seamlessly
+    cleaned = remove_flow_watermark(img)
+
+    # Resize cleanly to 1280x720 if not already 16:9
+    h, w = cleaned.shape[:2]
+    if (w, h) != (1280, 720):
+        # Resize maintaining 16:9
+        cleaned = cv2.resize(cleaned, (1280, 720), interpolation=cv2.INTER_LANCZOS4)
+
+    cv2.imwrite(dst_path, cleaned, [cv2.IMWRITE_JPEG_QUALITY, 95])
+    return dst_path
+
+
 def prepare_slide_image(img_path):
     """
     Ensures any user-provided image fits 1920x1080 perfectly:
+    - Automatically removes Google Flow watermark using Telea Inpaint without cropping
     - If 16:9, resizes smoothly with Lanczos
     - If portrait or other ratio, centers it with elegant blurred background fill
     """
@@ -357,6 +425,9 @@ def prepare_slide_image(img_path):
             val = int(25 + (y / 1080.0) * 45)
             canvas[y, :] = (val // 2, val, val * 2)
         return canvas
+
+    # Erase Google Flow watermark if present without cropping
+    src = remove_flow_watermark(src)
 
     h, w = src.shape[:2]
     target_aspect = 1920.0 / 1080.0

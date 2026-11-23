@@ -159,34 +159,52 @@ def save_urls(filepath, urls):
 
 def find_thumbnail(song_name, song_info=None):
     """गाने के लिए सही थंबनेल खोजना (रजिस्ट्री, लोकल फोल्डर या कैटबॉक्स डाउनलोड)"""
+    found = None
     # 1. यदि रजिस्ट्री में thumb_url मौजूद है
     if song_info and song_info.get("thumb_url"):
         thumb_url = song_info["thumb_url"]
         local_thumb = os.path.join(SONG_THUMB_DIR, f"{song_name}.jpg")
         if os.path.exists(local_thumb) and os.path.getsize(local_thumb) > 5000:
-            return local_thumb
-        if download_file(thumb_url, local_thumb):
+            found = local_thumb
+        elif download_file(thumb_url, local_thumb):
             print(f"  🖼️ थंबनेल CDN से डाउनलोड किया: {local_thumb}")
-            return local_thumb
+            found = local_thumb
 
     # 2. लोकल song_thumbnails फोल्डर में खोजें
-    safe = re.sub(r'[<>:"/\\|?*]', '_', song_name).strip('_')
-    for ext in IMAGE_EXTS:
-        candidates = [
-            os.path.join(SONG_THUMB_DIR, f"{song_name}{ext}"),
-            os.path.join(SONG_THUMB_DIR, f"{safe}{ext}"),
-        ]
-        for c in candidates:
-            if os.path.exists(c) and os.path.getsize(c) > 5000:
-                return c
+    if not found:
+        safe = re.sub(r'[<>:"/\\|?*]', '_', song_name).strip('_')
+        for ext in IMAGE_EXTS:
+            candidates = [
+                os.path.join(SONG_THUMB_DIR, f"{song_name}{ext}"),
+                os.path.join(SONG_THUMB_DIR, f"{safe}{ext}"),
+            ]
+            for c in candidates:
+                if os.path.exists(c) and os.path.getsize(c) > 5000:
+                    found = c
+                    break
+            if found:
+                break
 
     # 3. यदि कोई भी थंबनेल फाइल मौजूद है
-    if os.path.exists(SONG_THUMB_DIR):
+    if not found and os.path.exists(SONG_THUMB_DIR):
         for f in os.listdir(SONG_THUMB_DIR):
             if f.lower().endswith(IMAGE_EXTS):
                 fp = os.path.join(SONG_THUMB_DIR, f)
                 if os.path.getsize(fp) > 5000:
-                    return fp
+                    found = fp
+                    break
+
+    if found:
+        # थंबनेल से फ्लो का वाटरमार्क हटाएं बिना क्रॉप किए (Telea Inpaint)
+        try:
+            from song_video_generator import clean_and_save_thumbnail
+            cleaned_thumb = os.path.join(BASE_DIR, "temp_cleaned_thumbnail.jpg")
+            clean_and_save_thumbnail(found, cleaned_thumb)
+            if os.path.exists(cleaned_thumb) and os.path.getsize(cleaned_thumb) > 5000:
+                return cleaned_thumb
+        except Exception as e:
+            print(f"  ⚠️ थंबनेल क्लीनिंग सूचना: {e}")
+        return found
 
     return None
 
@@ -226,38 +244,167 @@ def find_slide_images(song_name, song_info=None):
     return []
 
 
-def generate_metadata(song_name, song_info):
-    """मूड-बेस्ड टाइटल और विस्तृत भक्ति विवरण"""
+def generate_metadata(song_name, song_info, audio_file=None):
+    """
+    ऑडियो को सुनकर और उसके भाव/मूड को पहचानकर AI (Gemini) द्वारा
+    आकर्षक टाइटल (Clickable Hook Title), विस्तृत भक्तिपूर्ण डिस्क्रिप्शन (Chapters, Benefits, Social Links)
+    और ट्रेंडिंग YouTube SEO टैग्स जनरेट करना।
+    """
+    # 1. ऑडियो विश्लेषण (टेम्पो, वॉल्यूम, भाव, अवधि)
+    analysis = None
+    try:
+        from audio_analyzer import analyze_audio_mood
+        if audio_file and os.path.exists(audio_file):
+            analysis = analyze_audio_mood(audio_file)
+    except Exception as e:
+        print(f"  ⚠️ ऑडियो विश्लेषण सूचना: {e}")
+
+    mood = song_info.get("mood", "Balanced Bhakti")
     mood_hi = song_info.get("mood_hi", "संतुलित भक्ति संगीत")
     target_hi = song_info.get("target_audience_hi", "भगवान के लिए")
+    dur_min = song_info.get("duration_min", 3.0)
 
-    title = f"{song_name} | श्री कृष्ण अमृत संगीत | Krishna Vibez"
+    if analysis:
+        mood = analysis.get("mood", mood)
+        mood_hi = analysis.get("mood_hi", mood_hi)
+        dur_min = analysis.get("duration_min", dur_min)
+        if analysis.get("target_audience_hi"):
+            target_hi = analysis.get("target_audience_hi")
+
+    # 2. जेमिनी AI से टाइटल और डिस्क्रिप्शन जनरेशन
+    gemini_key = os.environ.get("GEMINI_API_KEY")
+    ai_title = None
+    ai_desc_meaning = None
+    ai_hook = None
+    ai_tags = []
+
+    if gemini_key:
+        try:
+            from google import genai
+            client = genai.Client(api_key=gemini_key)
+
+            prompt = (
+                f"You are a master YouTube music producer & SEO strategist for 'Krishna Vibez'.\n"
+                f"We are releasing a divine Lord Krishna song & music video on YouTube.\n"
+                f"Audio Details:\n"
+                f"- Raw Track Hint: '{song_name}'\n"
+                f"- Musical Mood: {mood} ({mood_hi})\n"
+                f"- Target Audience: {target_hi}\n"
+                f"- Track Duration: {dur_min} minutes\n\n"
+                f"RULES:\n"
+                f"1. DO NOT simply use the raw filename '{song_name}' as the title! Instead, craft a deeply emotional, viral, spiritual YouTube title.\n"
+                f"   - Format: [Soulful Hindi Devotional Hook] | [English Meditation / Flute / Kirtan Hook] | Krishna Vibez\n"
+                f"   - Keep title under 75 characters total so it doesn't truncate on mobile.\n"
+                f"   - Examples: 'मन को मोह लेगी यह बाँसुरी | Vrindavan Flute Meditation | Krishna Vibez' or 'साँवरिया की पावन धुन | Peaceful Krishna Kirtan | Krishna Vibez'\n"
+                f"2. Write a captivating, spiritual 2-3 paragraph explanation in pure devotional Hindi & English detailing how listening to this specific melody brings peace, removes stress, purifies the soul, and awakens Krishna bhakti.\n"
+                f"3. Provide 15 highly searched devotional YouTube tags.\n\n"
+                f"Return JSON strictly with keys:\n"
+                f"{{\n"
+                f'  "title": "...",\n'
+                f'  "spiritual_meaning": "...",\n'
+                f'  "tags": ["..."]\n'
+                f"}}"
+            )
+
+            models_to_try = ["gemini-3.8-flash", "gemini-3.7-flash", "gemini-2.0-flash"]
+            response = None
+            for m in models_to_try:
+                try:
+                    response = client.models.generate_content(
+                        model=m,
+                        contents=prompt
+                    )
+                    if response and response.text:
+                        break
+                except Exception as me:
+                    print(f"  ⚠️ Gemini model {m} notice: {me}")
+
+            if response and response.text:
+                txt = response.text.strip()
+                if "```json" in txt:
+                    txt = txt.split("```json")[1].split("```")[0].strip()
+                elif "```" in txt:
+                    txt = txt.split("```")[1].split("```")[0].strip()
+                data = json.loads(txt)
+                ai_title = data.get("title")
+                ai_desc_meaning = data.get("spiritual_meaning")
+                ai_tags = data.get("tags", [])
+        except Exception as e:
+            print(f"  ⚠️ Gemini AI मेटाडेटा निर्माण सूचना: {e}")
+
+    # टाइटल फॉलबैक
+    if not ai_title:
+        clean_hint = re.sub(r'[-_]', ' ', song_name)
+        clean_hint = re.sub(r'\b(Treblo|Official|Audio|Song|Wav|Mp3)\b', '', clean_hint, flags=re.I).strip()
+        ai_title = f"{clean_hint} | श्री कृष्ण अमृत बाँसुरी एवं कीर्तन | Krishna Vibez"
+
+    if len(ai_title) > 95:
+        ai_title = ai_title[:92] + "..."
+
+    # विस्तृत, भव्य और संपूर्ण यूट्यूब डिस्क्रिप्शन
+    meaning_block = ai_desc_meaning if ai_desc_meaning else (
+        "भगवान श्री कृष्ण के पावन चरणों में समर्पित यह दिव्य संगीत मन के समस्त तनाव, चिंता और "
+        "नकारात्मकता को समाप्त कर अंतरात्मा को असीम शांति, आनंद और सकारात्मक ऊर्जा से भर देता है। "
+        "यह मधुर धुन ध्यान (Meditation), पूजा एवं गहरी एकाग्रता के लिए सर्वोत्तम है।"
+    )
 
     description = (
-        f"🎵 {song_name}\n"
-        "━━━━━━━━━━━━━━━━━━━━━━━━━━\n"
-        "🪷 दिव्य भक्ति संगीत | Divine Krishna Music Video\n"
-        f"🎭 भाव: {mood_hi}\n"
+        f"🌸 स्वागत है Krishna Vibez के पावन संगीत संसार में 🌸\n\n"
+        f"Experience profound inner peace, deep tranquility, and divine healing with this sacred "
+        f"Lord Krishna Devotional & Flute Meditation music video.\n\n"
+        f"🌿 आज का पावन प्रसंग: {ai_title}\n"
+        f"🎭 संगीत भाव: {mood_hi} ({mood})\n"
         f"👥 समर्पण: {target_hi}\n\n"
-        "📖 भावार्थ:\n"
-        "श्री कृष्ण के पावन चरणों में समर्पित दिव्य भजन व बाँसुरी संगीत। "
-        "यह मधुर धुन मन को शांति, एकाग्रता और भक्ति का दिव्य आनंद प्रदान करती है।\n\n"
-        "✨ Divine Meditation & Bhakti Song dedicated to Lord Krishna.\n\n"
+        f"📖 पावन भावार्थ (Spiritual Meaning):\n"
+        f"{meaning_block}\n\n"
+        "✨ पावन संगीत का महत्व (Spiritual Peace & Mind Healing):\n"
+        "यह संगीत मन को शांत करने वाली सकारात्मक तरंगों पर आधारित है। यह मधुर धुन मस्तिष्क की अल्फा तरंगों (Alpha Waves) को "
+        "सक्रिय करती है, मानसिक तनाव व अनिद्रा को दूर करती है, हृदय स्पंदन को शांत करती है और आत्मिक सुकून प्रदान करती है।\n\n"
+        "🧘 इस पावन संगीत के सर्वोत्तम उपयोग (Ideal For):\n"
+        "• ध्यान, योग और दैनिक साधना (Deep Meditation, Dhyan & Daily Yoga)\n"
+        "• तनाव, चिंता और अधिक सोचने (Overthinking) से मुक्ति (Stress Relief & Mental Peace)\n"
+        "• गहरी और सुकून भरी नींद (Deep Sleep & Restorative Rest)\n"
+        "• प्रातःकालीन पूजा, आरती और घर में सकारात्मक ऊर्जा (Morning Pooja & Positive Home Vibes)\n"
+        "• पढ़ाई और कार्य में एकाग्रता (Deep Study & Work Focus)\n\n"
+        "⏱️ समय सारणी (Chapters / Timestamps):\n"
+        "00:00 🪷 दिव्य मंगलाचरण एवं बाँसुरी प्रवेश (Divine Awakening)\n"
+        "01:00 🪶 वृंदावन अमृत प्रवाह (Sacred Flow)\n"
+        "02:00 🌊 आत्मिक शांति और गहन ध्यान (Deep Meditation Flow)\n"
+        "02:30 ✨ असीम शांति एवं समापन विश्राम (Closing Shanti & Gratitude)\n\n"
+        "━━━━━━━━━━━━━━━━━━━━━━━━━━\n\n"
+        "🕊️ कृष्ण वाइब्स के आध्यात्मिक परिवार से जुड़ें:\n"
+        "🌐 आधिकारिक वेबसाइट: https://krishnavibez.in/\n"
+        "▶️ आधिकारिक YouTube: https://www.youtube.com/@KrishnaVibezMusic\n"
+        "📲 WhatsApp चैनल: https://whatsapp.com/channel/0029VbDxJHk30LKNtj4Er62J\n"
+        "📢 Telegram चैनल: https://t.me/krishnavibezz\n"
+        "📸 Instagram: https://www.instagram.com/krishnavibez/\n"
+        "🧵 Threads: https://www.threads.net/@krishnavibez\n"
+        "📘 Facebook पेज: https://www.facebook.com/1808917602588221\n"
+        "📌 Pinterest: https://in.pinterest.com/MojiloMart/\n\n"
         "━━━━━━━━━━━━━━━━━━━━━━━━━━\n"
-        "🕊️ आधिकारिक संपर्क व दर्शन:\n"
-        "🌐 वेबसाइट: https://krishnavibez.in/\n"
-        "▶️ यूट्यूब: https://www.youtube.com/@KrishnaVibezMusic\n"
-        "📲 व्हाट्सएप: https://whatsapp.com/channel/0029VbDxJHk30LKNtj4Er62J\n"
-        "🕊️ टेलीग्राम: https://t.me/krishnavibezz\n"
-        "📸 इंस्टाग्राम: https://www.instagram.com/krishnavibez/\n\n"
+        "🛍️ Divine Recommendations (Amazon Storefront):\n"
+        "👉 Explore our Amazon Store: https://www.amazon.in/shop/myhappybirthday\n"
+        "(Disclaimer: Krishna Vibez earns from qualifying purchases at no extra cost to you.)\n\n"
+        "━━━━━━━━━━━━━━━━━━━━━━━━━━\n"
+        "⚖️ आधिकारिक कॉपीराइट एवं संगीत अस्वीकरण (Copyright & Music Disclaimer):\n"
+        "• संगीत एवं ऑडियो (Music & Audio): यह संगीत 100% मूल (Original) एवं कृष्ण वाइब्स (Krishna Vibez) द्वारा एक्सक्लूसिव रूप से निर्मित है। All compositions are copyright-safe and owned/mastered by Krishna Vibez.\n"
+        "• दृश्य एवं वीडियो (Visuals & Art): सभी 16:9 सिनेमैटिक विजुअल्स एवं कलाकृतियां कृष्ण वाइब्स की मूल संपत्ति हैं।\n"
+        "• उद्देश्य (Purpose): यह पावन संगीत केवल मानसिक शांति, ध्यान, योग, तनाव मुक्ति और अनिद्रा से राहत के आध्यात्मिक कल्याण हेतु निर्मित है।\n"
+        "• सुरक्षा सूचना (Safety Notice): कृपया वाहन चलाते समय या भारी मशीनरी चलाते समय ध्यान/नींद संगीत न सुनें।\n"
+        "• कॉपीराइट सूचना (Copyright Notice): इस चैनल के किसी भी ऑडियो या वीडियो को पुनः अपलोड (re-upload) करना पूर्णतः प्रतिबंधित है। All Rights Reserved © 2026 Krishna Vibez.\n\n"
+        "━━━━━━━━━━━━━━━━━━━━━━━━━━\n"
+        "🙏 यदि इस संगीत ने आपके मन को शांति और सुकून दिया हो, तो वीडियो को लाइक करें, अपने परिजनों के साथ साझा करें और चैनल को सब्सक्राइब अवश्य करें।\n\n"
         "जय श्री राधे कृष्ण! 🪷✨\n\n"
-        "#KrishnaVibez #KrishnaSong #VrindavanKirtan #Bhakti #Bansuri #RadheKrishna #FluteMeditation"
+        "#Krishna #Flute #Bansuri #MeditationMusic #KrishnaMusic #DivineMusic #RadhaKrishna #RelaxingMusic #InnerPeace #DeepSleep #BansuriTabla #KrishnaVibez #DailyMeditation #Bhakti"
     )
-    tags = [
-        "Krishna Vibez", "Krishna Song", "Vrindavan Kirtan", "Bansuri Se Bula Le",
-        "Krishna Bhajan", "Radhe Krishna", "Bhakti Song", "Flute Meditation", "Spiritual Music"
-    ]
-    return title, description, tags
+
+    tags = list(dict.fromkeys(ai_tags + [
+        "Krishna Vibez", "Krishna Song", "Krishna Flute", "Bansuri Dhun", "Vrindavan Kirtan",
+        "Bansuri Se Bula Le", "Krishna Bhajan", "Radhe Krishna", "Bhakti Song",
+        "Flute Meditation", "Spiritual Music", "Deep Sleep Music", "Relaxing Music", "Peaceful Instrumental"
+    ]))
+
+    return ai_title, description, tags
 
 
 def process_all_pending_songs():
@@ -430,8 +577,8 @@ def upload_next_to_youtube():
         print("❌ वीडियो जनरेशन विफल!")
         return False
 
-    # मेटाडेटा जनरेशन
-    title, description, tags = generate_metadata(song_name, song_info)
+    # मेटाडेटा जनरेशन (AI द्वारा ऑडियो का भाव समझकर टाइटल व विस्तृत विवरण)
+    title, description, tags = generate_metadata(song_name, song_info, TEMP_AUDIO)
 
     # प्राइवेसी स्टेटस (डिफ़ॉल्ट Unlisted)
     privacy_status = os.environ.get("PRIVACY_STATUS", "unlisted").lower()
@@ -483,27 +630,40 @@ def upload_next_to_youtube():
     except Exception as e:
         print(f"  ⚠️ थंबनेल अपलोड चेतावनी: {e}")
 
-    # पुराने वीडियो (यदि हो) को Unlisted करना व थंबनेल बदलना
+    # पुराने वीडियो (यदि हो) को Unlisted करना व थंबनेल और AI मेटाडेटा अपडेट करना
     fix_id = os.environ.get("FIX_PREV_VIDEO_ID", "jpCARdivrts")
-    if fix_id and fix_id != video_id:
-        print(f"\n🛠️ पूर्व में अपलोड वीडियो ({fix_id}) को Unlisted व थंबनेल अपडेट किया जा रहा है...")
+    if fix_id:
+        # अगर fix_id वर्तमान वीडियो id ही है, तो भी उसका टाइटल व डिस्क्रिप्शन अपडेट करें
+        target_fix_id = fix_id if fix_id != video_id else video_id
+        print(f"\n🛠️ वीडियो ({target_fix_id}) को Unlisted, थंबनेल व AI मेटाडेटा से अपडेट किया जा रहा है...")
         try:
             youtube.videos().update(
-                part="status",
-                body={"id": fix_id, "status": {"privacyStatus": "unlisted"}}
+                part="snippet,status",
+                body={
+                    "id": target_fix_id,
+                    "snippet": {
+                        "title": title,
+                        "description": description,
+                        "tags": tags,
+                        "categoryId": "10",
+                        "defaultLanguage": "hi",
+                        "defaultAudioLanguage": "hi"
+                    },
+                    "status": {"privacyStatus": "unlisted"}
+                }
             ).execute()
-            print(f"  ✅ पुराना वीडियो {fix_id} अनलिस्टेड किया गया!")
+            print(f"  ✅ वीडियो {target_fix_id} का AI टाइटल, विस्तृत विवरण व अनलिस्टेड स्टेटस अपडेट हुआ!")
         except Exception as e:
-            print(f"  ⚠️ स्टेटस अपडेट चेतावनी: {e}")
+            print(f"  ⚠️ वीडियो मेटाडेटा अपडेट चेतावनी: {e}")
 
         try:
             youtube.thumbnails().set(
-                videoId=fix_id,
+                videoId=target_fix_id,
                 media_body=MediaFileUpload(thumb_path, mimetype="image/jpeg")
             ).execute()
-            print(f"  ✅ पुराना वीडियो {fix_id} का थंबनेल अपडेट किया गया!")
+            print(f"  ✅ वीडियो {target_fix_id} का वॉटरमार्क-मुक्त थंबनेल अपडेट किया गया!")
         except Exception as e:
-            print(f"  ⚠️ पुराना थंबनेल अपडेट चेतावनी: {e}")
+            print(f"  ⚠️ थंबनेल अपडेट चेतावनी: {e}")
 
     # रजिस्ट्री व ट्रैकर अपडेट करना
     song_info["status"] = "uploaded"
