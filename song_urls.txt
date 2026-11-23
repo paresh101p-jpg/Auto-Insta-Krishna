@@ -5,3 +5,6 @@ SLIDE_URL: https://files.catbox.moe/6o1c2v.png
 AUDIO_URL: https://files.catbox.moe/9bmaeo.wav
 THUMBNAIL_URL: https://files.catbox.moe/uu7vmb.jpg
 SLIDE_URL: https://files.catbox.moe/ngd92q.jpg
+AUDIO_URL: https://files.catbox.moe/qssw3f.mp3
+THUMBNAIL_URL: https://files.catbox.moe/0dxe4e.jpg
+SLIDE_URL: https://files.catbox.moe/0dxe4e.jpg
