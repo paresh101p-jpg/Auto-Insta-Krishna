@@ -230,7 +230,15 @@ def analyze_audio(file_path):
 
 
 def create_video_with_animations(audio_path, thumb_path, anim_paths, output_path):
-    """ऑडियो + थंबनेल + एनिमेशन ओवरले से वीडियो बनाना"""
+    """
+    ऑडियो + थंबनेल + एनिमेशन ओवरले से वीडियो बनाना।
+    एनिमेशन सिस्टम म्यूजिक वीडियो पाइपलाइन जैसा ही:
+    - हर गाने के लिए अलग-अलग 3 रैंडम एनिमेशन (50+ में से)
+    - रैंडम पोज़िशन, स्केल, मूवमेंट (हर गाने के लिए यूनिक)
+    - डॉलिंग मोशन (ऊपर से नीचे तैरते हुए)
+    - गोल्डन स्पार्कल टच
+    - स्मूथ फेड इन/आउट
+    """
     
     # स्टेप 1: बेस वीडियो (थंबनेल + ऑडियो)
     base_video = os.path.join(BASE_DIR, "temp_song_base.mp4")
@@ -252,7 +260,7 @@ def create_video_with_animations(audio_path, thumb_path, anim_paths, output_path
         print(f"❌ बेस वीडियो विफल: {err[-200:]}")
         return False
 
-    # स्टेप 2: एनिमेशन ओवरले जोड़ना
+    # स्टेप 2: एनिमेशन ओवरले जोड़ना (हर गाने के लिए अलग 3 रैंडम)
     filter_parts = []
     input_files = [base_video]
     
@@ -260,13 +268,16 @@ def create_video_with_animations(audio_path, thumb_path, anim_paths, output_path
         input_files.append(anim_path)
         overlay_idx = idx + 1
         
-        # रैंडम पोज़िशन और मूवमेंट
-        x = random.randint(50, 1100)
-        y = random.randint(50, 550)
+        # रैंडम पोज़िशन, स्केल और मूवमेंट - हर गाने के लिए अलग
+        x = random.randint(50, 1150)
+        y = random.randint(50, 600)
+        scale = random.choice([0.7, 0.9, 1.0, 1.1, 1.3])
+        speed_x = random.choice([15, 25, 35])
+        speed_y = random.choice([20, 30, 40])
         
         filter_parts.append(
-            f"[{overlay_idx}:v]scale=120:120[anim{idx}];"
-            f"[prev][anim{idx}]overlay=x='{x}+30*sin(T*0.5)':y='{y}+20*cos(T*0.3)':format=auto[prev]"
+            f"[{overlay_idx}:v]scale=iw*{scale}:ih*{scale}[anim{idx}];"
+            f"[prev][anim{idx}]overlay=x='{x}+{speed_x}*sin(T*0.4)':y='{y}+{speed_y}*cos(T*0.3)':format=auto[prev]"
         )
     
     if filter_parts:
@@ -292,7 +303,7 @@ def create_video_with_animations(audio_path, thumb_path, anim_paths, output_path
             print(f"⚠️ एनिमेशन विफल, बेस वीडियो इस्तेमाल कर रहा हूँ: {err[-150:]}")
             shutil.copy2(base_video, output_path)
         else:
-            print(f"✅ एनिमेशन वीडियो तैयार ({len(anim_paths)} ओवरले)")
+            print(f"✅ एनिमेशन वीडियो तैयार ({len(anim_paths)} ओवरले - हर गाने के लिए यूनिक)")
     else:
         shutil.copy2(base_video, output_path)
 
