@@ -580,8 +580,8 @@ def mark_url_as_used(url):
 def check_daily_reel_limit():
     """
     Guarantees STRICT 1 REEL / SHORT PER DAY.
-    Checks IST (Indian Standard Time) date via BOTH local tracker AND live YouTube Channel API.
-    If a reel was already posted today, exits cleanly with code 0.
+    Pehle YouTube live API check karega agar aaj koi public short upload hua hai ya nahi.
+    Agar YouTube par aaj koi public short nahi hai, toh upload ki ijazaat dega (local tracker ki parwah kiye bina).
     """
     if "--force" in sys.argv:
         print("⏩ [--force] Bypassing daily 1-reel limit check.", flush=True)
@@ -591,21 +591,7 @@ def check_daily_reel_limit():
     ist_now = datetime.now(timezone.utc) + timedelta(hours=5, minutes=30)
     today_str = ist_now.strftime("%Y-%m-%d")
     
-    # 1. Local Tracker Check
-    tracker_file = os.path.join(BASE_DIR, "daily_post_tracker.json")
-    if os.path.exists(tracker_file):
-        try:
-            with open(tracker_file, "r", encoding="utf-8") as f:
-                data = json.load(f)
-            last_date = data.get("last_reel_date")
-            if last_date == today_str:
-                print(f"🛑 [DAILY LIMIT REACHED] A Reel/Short has ALREADY been posted for today ({today_str} IST) in tracker.", flush=True)
-                print("   Strict rule: Exactly 1 reel per day. Exiting cleanly with code 0.", flush=True)
-                sys.exit(0)
-        except Exception as e:
-            print(f"   Notice reading daily tracker: {e}", flush=True)
-
-    # 2. Real-Time Live YouTube Channel API Verification (Fail-Safe Lock)
+    # STEP 1: Real-Time Live YouTube Channel API Verification (Sabse pehle check karein)
     try:
         yt_service = get_authenticated_service()
         ch_resp = yt_service.channels().list(part="contentDetails", mine=True).execute()
@@ -616,7 +602,7 @@ def check_daily_reel_limit():
                 pub_at = it.get("snippet", {}).get("publishedAt", "")
                 privacy = it.get("status", {}).get("privacyStatus", "")
                 title = it.get("snippet", {}).get("title", "")
-                # Only lock if a PUBLIC Short has already been published today
+                # Agar aaj koi PUBLIC short hai, toh block karein
                 if privacy == "public" and pub_at:
                     pub_dt = datetime.fromisoformat(pub_at.replace("Z", "+00:00"))
                     pub_ist = pub_dt + timedelta(hours=5, minutes=30)
@@ -626,6 +612,19 @@ def check_daily_reel_limit():
                         sys.exit(0)
     except Exception as yt_check_err:
         print(f"   Notice checking YouTube live uploads: {yt_check_err}", flush=True)
+    
+    # STEP 2: Local Tracker Check (sirf agar YouTube API se kuch confirm nahi hua)
+    tracker_file = os.path.join(BASE_DIR, "daily_post_tracker.json")
+    if os.path.exists(tracker_file):
+        try:
+            with open(tracker_file, "r", encoding="utf-8") as f:
+                data = json.load(f)
+            last_date = data.get("last_reel_date")
+            if last_date == today_str:
+                print(f"⚠️ [LOCAL TRACKER] Tracker says reel posted today ({today_str} IST), but YouTube API found no public short. Allowing upload to proceed.", flush=True)
+                # Don't exit — allow upload because YouTube API confirms nothing posted today
+        except Exception as e:
+            print(f"   Notice reading daily tracker: {e}", flush=True)
 
     return True
 

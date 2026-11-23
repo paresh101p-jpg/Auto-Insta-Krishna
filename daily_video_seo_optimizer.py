@@ -8,10 +8,10 @@ from youtube_auth_manager import get_authenticated_service
 import google.generativeai as genai
 
 # Configuration
-CHANNEL_ID = os.environ.get("YOUTUBE_CHANNEL_ID", "UC_x5XG1OV2P6uZZ5FSM9Ttw") # Krishna Vibez Default
+CHANNEL_ID = os.environ.get("YOUTUBE_CHANNEL_ID", "UC_x5XG1OV2P6uZZ5FSM9Ttw")
 GEMINI_API_KEY = os.environ.get("GEMINI_API_KEY")
 
-# Initialize Gemini
+# Initialize Gemini (sirf SEO suggestions ke liye)
 if GEMINI_API_KEY:
     genai.configure(api_key=GEMINI_API_KEY)
     model = genai.GenerativeModel('gemini-2.0-flash-exp')
@@ -19,12 +19,10 @@ else:
     model = None
 
 def get_channel_videos(youtube, max_results=50):
-    """Fetch the latest videos from the channel."""
-    # Get the uploads playlist ID
+    """Fetch latest videos from channel uploads playlist."""
     res = youtube.channels().list(part="contentDetails", id=CHANNEL_ID).execute()
     uploads_playlist_id = res["items"][0]["contentDetails"]["relatedPlaylists"]["uploads"]
     
-    # Fetch videos from the playlist
     videos = []
     request = youtube.playlistItems().list(
         part="snippet,contentDetails",
@@ -45,7 +43,7 @@ def get_channel_videos(youtube, max_results=50):
     return videos
 
 def get_video_stats(youtube, video_ids):
-    """Fetch statistics for a batch of videos."""
+    """Fetch statistics for videos."""
     stats = {}
     for i in range(0, len(video_ids), 50):
         batch = video_ids[i:i+50]
@@ -64,34 +62,31 @@ def get_video_stats(youtube, video_ids):
     return stats
 
 def suggest_new_seo(old_title, old_description, views):
-    """Use Gemini to suggest better SEO if available."""
+    """Gemini se SEO title suggestion lein (sirf title, description URLs nahi chhuhenge)."""
     if not model:
-        # Fallback basic optimization
-        if "Krishna" not in old_title:
-            return f"Lord Krishna | {old_title} | Krishna Vibez", old_description
-        return old_title, old_description
+        if "Krishna" not in old_title and "krishna" not in old_title.lower():
+            return f"Lord Krishna | {old_title} | Krishna Vibez"
+        return old_title
 
     prompt = f"""
-    Analyze this YouTube video for a Krishna devotional channel called 'Krishna Vibez'.
+    You are a YouTube SEO expert for 'Krishna Vibez' devotional channel.
     Current Title: {old_title}
     Views: {views}
     
-    The video is performing low. Suggest a high-CTR, SEO-optimized Title (max 90 chars) 
-    and a short enriched Description (first 2 lines only).
-    Focus on keywords like: Krishna Bhajan, Radha Krishna, Meditation, Peace, Bhakti.
-    Return ONLY a JSON object: {{"new_title": "...", "new_description_snippet": "..."}}
+    Suggest ONE high-CTR, SEO-optimized title (max 90 characters).
+    Add keywords like: Krishna Bhajan, Radha Krishna, Meditation, Peace, Bhakti, Devotional.
+    Return ONLY valid JSON: {{"new_title": "..."}}
     """
     try:
         response = model.generate_content(prompt)
         text = response.text.strip()
-        # Clean potential markdown
         if "```json" in text:
             text = text.split("```json")[1].split("```")[0].strip()
         data = json.loads(text)
-        return data.get("new_title", old_title), data.get("new_description_snippet", "")
+        return data.get("new_title", old_title)
     except Exception as e:
         print(f"Gemini error: {e}")
-        return old_title, ""
+        return old_title
 
 def main():
     print(f"--- Starting Daily SEO Optimization at {datetime.now()} ---")
@@ -108,45 +103,43 @@ def main():
     video_ids = [v["id"] for v in videos]
     stats = get_video_stats(youtube, video_ids)
     
-    # Calculate average views to find outliers
     all_views = [s["views"] for s in stats.values()]
     avg_views = sum(all_views) / len(all_views) if all_views else 0
-    print(f"Average Views: {avg_views}")
+    print(f"Average Views: {avg_views:.0f}")
 
     updated_count = 0
-    max_updates = 3 # Safety limit: don't change too many at once
+    max_updates = 3
 
     for vid, data in stats.items():
         if updated_count >= max_updates:
             break
         
-        # Criteria: Less than 30% of average views AND at least 3 days old
-        # (Assuming videos are newest first, we check published_at from 'videos' list)
         v_info = next(v for v in videos if v["id"] == vid)
         pub_date = datetime.strptime(v_info["published_at"], "%Y-%m-%dT%H:%M:%SZ")
         if (datetime.utcnow() - pub_date).days < 3:
             continue
 
+        # Sirf kam views wale videos ko update karein (Average se 60% kam)
         if data["views"] < avg_views * 0.4:
-            print(f"Optimizing low-performer: {data['title']} (Views: {data['views']})")
-            new_title, new_desc_snippet = suggest_new_seo(data["title"], data["description"], data["views"])
+            print(f"Optimizing: {data['title']} (Views: {data['views']})")
+            new_title = suggest_new_seo(data["title"], data["description"], data["views"])
             
             if new_title != data["title"]:
                 try:
-                    # Update Title and append snippet to description
-                    full_desc = f"{new_desc_snippet}\n\n{data['description']}"[:4500]
+                    # SIRF TITLE change karein, description ya URLs nahi chhuhenge
                     youtube.videos().update(
                         part="snippet",
                         body={
                             "id": vid,
                             "snippet": {
                                 "title": new_title,
-                                "description": full_desc,
-                                "categoryId": "10" # Music
+                                "description": data["description"],  # Original description (links intact)
+                                "categoryId": "10",
+                                "tags": data.get("tags", [])
                             }
                         }
                     ).execute()
-                    print(f"✅ Updated: {new_title}")
+                    print(f"✅ Title Updated: {new_title}")
                     updated_count += 1
                 except Exception as e:
                     print(f"Update failed for {vid}: {e}")
