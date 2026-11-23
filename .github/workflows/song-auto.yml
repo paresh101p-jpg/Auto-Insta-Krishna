@@ -1,8 +1,14 @@
 name: Auto Song Pipeline (Every Sunday 9 AM IST)
 
 on:
-  workflow_dispatch: # मैनुअल ट्रिगर गिटहब UI से
-  repository_dispatch: # बाहरी ट्रिगर
+  workflow_dispatch:
+    inputs:
+      force:
+        description: 'फोर्स अपलोड (रविवार न हो तब भी)'
+        required: false
+        default: 'false'
+        type: boolean
+  repository_dispatch:
     types: [process_song, upload_song, run_song_pipeline]
   schedule:
     # हर रविवार सुबह 9:00 AM IST = 3:30 AM UTC
@@ -33,15 +39,20 @@ jobs:
           sudo apt-get install -y --no-install-recommends ffmpeg || true
 
       - name: Install Python dependencies
-        run: pip install -r requirements.txt google-api-python-client google-auth-oauthlib google-auth opencv-python-headless pillow
+        run: pip install -r requirements.txt google-api-python-client google-auth-oauthlib google-auth pillow
 
       - name: Process new songs from Songs/inbox/ (Add to YouTube queue)
         run: python -u song_full_pipeline.py process
         env:
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
 
-      - name: Upload next song to YouTube (Sunday 9 AM IST - Private)
-        run: python -u song_full_pipeline.py upload
+      - name: Upload next song to YouTube (Private)
+        run: |
+          if [ "${{ inputs.force }}" = "true" ]; then
+            python -u song_full_pipeline.py upload --force
+          else
+            python -u song_full_pipeline.py upload
+          fi
         env:
           YOUTUBE_CLIENT_ID: ${{ secrets.YOUTUBE_CLIENT_ID }}
           YOUTUBE_CLIENT_SECRET: ${{ secrets.YOUTUBE_CLIENT_SECRET }}
