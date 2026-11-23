@@ -263,9 +263,12 @@ def create_video_with_animations(audio_path, thumb_path, anim_paths, output_path
     filter_parts = []
     input_files = [base_video]
     
+    prev_label = "[0:v]"
+    
     for idx, anim_path in enumerate(anim_paths):
         input_files.append(anim_path)
-        overlay_idx = idx + 1
+        anim_input_label = f"[{idx + 1}:v]"
+        out_label = f"[v{idx}]"
         
         # रैंडम पोज़िशन और मूवमेंट - हर गाने के लिए अलग
         x = random.randint(50, 1150)
@@ -273,17 +276,15 @@ def create_video_with_animations(audio_path, thumb_path, anim_paths, output_path
         speed_x = random.choice([15, 25, 35])
         speed_y = random.choice([20, 30, 40])
         
-        # सरल स्केल और ओवरले - FFmpeg कम्पैटिबल
+        # एनिमेशन इमेज को स्केल करना और बेस वीडियो पर ओवरले करना
         filter_parts.append(
-            f"[{overlay_idx}:v]scale=120:120[anim{idx}];"
-            f"[prev][anim{idx}]overlay=x='{x}+{speed_x}*sin(T*0.4)':y='{y}+{speed_y}*cos(T*0.3)':format=auto[prev]"
+            f"{anim_input_label}scale=120:120[anim{idx}];"
+            f"{prev_label}[anim{idx}]overlay=x='{x}+{speed_x}*sin(T*0.4)':y='{y}+{speed_y}*cos(T*0.3)':format=auto{out_label}"
         )
+        
+        prev_label = out_label
     
     if filter_parts:
-        filter_parts[0] = filter_parts[0].replace("[prev]", "[0:v]")
-        for i in range(1, len(filter_parts)):
-            filter_parts[i] = filter_parts[i].replace("[prev]", "[prev]")
-        
         full_filter = ";".join(filter_parts)
         
         cmd_anim = [FFMPEG_EXE, "-y"]
