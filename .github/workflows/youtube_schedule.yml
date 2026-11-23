@@ -1,12 +1,14 @@
-name: Auto Post YouTube Shorts / Reels (Alternate Mornings: Mon, Wed, Fri)
+name: YouTube Shorts / Reels (3 AM Unlisted -> 8 AM Policy Check & Public)
 
 on:
   workflow_dispatch:
   repository_dispatch:
-    types: [post_youtube_reel, post_reel, daily_reel]
+    types: [reel_3am_upload, reel_8am_publish]
   schedule:
-    # ALTERNATE DAYS IN MORNING:
-    # सोमवार, बुधवार, शुक्रवार सुबह 8:00 AM IST (02:30 UTC)
+    # ALTERNATE DAYS (सोमवार, बुधवार, शुक्रवार):
+    # 1. रात 3:00 AM IST = 21:30 UTC Previous Day (Render & Upload Unlisted)
+    - cron: '30 21 * * 0,2,4'
+    # 2. सुबह 8:00 AM IST = 02:30 UTC (Policy Check & Publish Public)
     - cron: '30 2 * * 1,3,5'
 
 concurrency:
@@ -14,7 +16,7 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
-  upload-youtube-short:
+  reel-pipeline:
     runs-on: ubuntu-latest
     permissions:
       contents: write
@@ -38,9 +40,18 @@ jobs:
           sudo apt-get install -y --no-install-recommends ffmpeg fonts-deva fonts-noto-core fonts-lohit-deva || true
 
       - name: Install Python dependencies
-        run: pip install -r requirements.txt edge-tts
+        run: pip install -r requirements.txt edge-tts google-api-python-client google-auth-oauthlib google-auth
 
-      - name: Upload Reel to YouTube Shorts & Syndicate Multi-Platform
+      - name: Check UTC Hour
+        id: time_check
+        run: |
+          UTC_HOUR=$(date -u +%H)
+          echo "utc_hour=$UTC_HOUR" >> $GITHUB_OUTPUT
+          echo "Current UTC Hour: $UTC_HOUR"
+
+      # --- 3:00 AM IST STEP: UPLOAD REEL AS UNLISTED ---
+      - name: 3:00 AM IST - Upload Reel as Unlisted
+        if: steps.time_check.outputs.utc_hour == '21' || github.event_name == 'workflow_dispatch'
         env:
           YOUTUBE_CLIENT_ID: ${{ secrets.YOUTUBE_CLIENT_ID }}
           YOUTUBE_CLIENT_SECRET: ${{ secrets.YOUTUBE_CLIENT_SECRET }}
@@ -61,29 +72,22 @@ jobs:
           PINTEREST_BOARD_ID: ${{ secrets.PINTEREST_BOARD_ID }}
         run: python -u youtube_uploader.py
 
-      - name: Auto-Publish Clean Videos (>24h Quarantine)
+      # --- 8:00 AM IST STEP: POLICY/STRIKE CHECK & PUBLISH PUBLIC ---
+      - name: 8:00 AM IST - Policy/Strike Check & Publish Reel Public
+        if: steps.time_check.outputs.utc_hour == '02' || github.event_name == 'workflow_dispatch'
         env:
           YOUTUBE_CLIENT_ID: ${{ secrets.YOUTUBE_CLIENT_ID }}
           YOUTUBE_CLIENT_SECRET: ${{ secrets.YOUTUBE_CLIENT_SECRET }}
           YOUTUBE_REFRESH_TOKEN: ${{ secrets.YOUTUBE_REFRESH_TOKEN }}
-        run: python -u auto_publish_entire_channel.py || true
+        run: python -u quarantine_publish_content.py reel
 
-      - name: Commit Updated Website Data & YouTube Queue to Git
+      - name: Commit Updated YouTube Queue to Git
         run: |
           git config user.name "Krishna Vibez YouTube Bot"
           git config user.email "bot@krishnavibez.in"
           git add website/ quotes.txt used_quotes.txt used_kinetic_images.txt used_kinetic_music.txt youtube_reels_urls.txt youtube_used_urls.txt youtube_quarantine_queue.json youtube_quarantine_audit.log daily_post_tracker.json || true
-          git diff --staged --quiet || git commit -m "Auto-posted Kinetic Reel [skip ci]"
+          git diff --staged --quiet || git commit -m "Auto-processed Reel schedule [skip ci]"
           for i in 1 2 3 4 5; do
             git pull --rebase origin master || true
             git push origin master && break || sleep 3
           done
-
-      - name: Deploy to Firebase Hosting
-        env:
-          FIREBASE_TOKEN: ${{ secrets.FIREBASE_TOKEN }}
-        if: env.FIREBASE_TOKEN != ''
-        run: |
-          npm install -g firebase-tools
-          firebase deploy --only hosting --token "$FIREBASE_TOKEN"
-        working-directory: website

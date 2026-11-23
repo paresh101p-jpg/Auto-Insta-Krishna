@@ -1,12 +1,14 @@
-name: Krishna AI Music Video (Alternate Evenings: Tue, Thu, Sat)
+name: Krishna AI Music Video (1 PM Unlisted -> 7 PM Policy Check & Public)
 
 on:
   workflow_dispatch:
   repository_dispatch:
-    types: [generate_music_video, daily_music_video]
+    types: [music_video_1pm_upload, music_video_7pm_publish]
   schedule:
-    # ALTERNATE DAYS IN EVENING:
-    # मंगलवार, गुरुवार, शनिवार शाम 7:00 PM IST (13:30 UTC)
+    # ALTERNATE DAYS (मंगलवार, गुरुवार, शनिवार):
+    # 1. दोपहर 1:00 PM IST = 07:30 UTC (Render & Upload Unlisted)
+    - cron: '30 7 * * 2,4,6'
+    # 2. शाम 7:00 PM IST = 13:30 UTC (Policy Check & Publish Public)
     - cron: '30 13 * * 2,4,6'
 
 concurrency:
@@ -14,7 +16,7 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
-  generate-and-upload-music-video:
+  music-video-pipeline:
     runs-on: ubuntu-latest
     permissions:
       contents: write
@@ -28,7 +30,7 @@ jobs:
         with:
           python-version: '3.11'
 
-      - name: Install System Dependencies (FFmpeg & Hindi Devanagari Fonts)
+      - name: Install System Dependencies (FFmpeg & Hindi Fonts)
         run: |
           sudo apt-get update -o Acquire::Retries=3 -qq || true
           sudo apt-get install -y --no-install-recommends ffmpeg fonts-deva fonts-noto-core fonts-lohit-deva || true
@@ -38,21 +40,34 @@ jobs:
           pip install -r requirements.txt || true
           pip install google-genai pillow requests google-api-python-client google-auth-oauthlib google-auth
 
-      - name: Generate and Upload 15-Min Golden Theme Music Video
+      - name: Check UTC Hour
+        id: time_check
+        run: |
+          UTC_HOUR=$(date -u +%H)
+          echo "utc_hour=$UTC_HOUR" >> $GITHUB_OUTPUT
+          echo "Current UTC Hour: $UTC_HOUR"
+
+      # --- 1:00 PM IST STEP: RENDER & UPLOAD MUSIC VIDEO AS UNLISTED ---
+      - name: 1:00 PM IST - Render & Upload 15-Min Music Video as Unlisted
+        if: steps.time_check.outputs.utc_hour == '07' || github.event_name == 'workflow_dispatch'
         env:
           YOUTUBE_CLIENT_ID: ${{ secrets.YOUTUBE_CLIENT_ID }}
           YOUTUBE_CLIENT_SECRET: ${{ secrets.YOUTUBE_CLIENT_SECRET }}
           YOUTUBE_REFRESH_TOKEN: ${{ secrets.YOUTUBE_REFRESH_TOKEN }}
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          PRIVACY_STATUS: 'unlisted'
         run: |
           python -u auto_music_video_pipeline.py
 
-      - name: Auto-Publish Clean Videos (>24h Quarantine)
+      # --- 7:00 PM IST STEP: POLICY/STRIKE CHECK & PUBLISH PUBLIC ---
+      - name: 7:00 PM IST - Policy/Strike Check & Publish Music Video Public
+        if: steps.time_check.outputs.utc_hour == '13' || github.event_name == 'workflow_dispatch'
         env:
           YOUTUBE_CLIENT_ID: ${{ secrets.YOUTUBE_CLIENT_ID }}
           YOUTUBE_CLIENT_SECRET: ${{ secrets.YOUTUBE_CLIENT_SECRET }}
           YOUTUBE_REFRESH_TOKEN: ${{ secrets.YOUTUBE_REFRESH_TOKEN }}
-        run: python -u auto_publish_entire_channel.py || true
+        run: |
+          python -u quarantine_publish_content.py music_video
 
       - name: Auto-Cleanup Old Temporary Music Video Media
         run: |
@@ -63,7 +78,7 @@ jobs:
           git config user.name "paresh101p-jpg"
           git config user.email "paresh101p@gmail.com"
           git add . || true
-          git diff --staged --quiet || git commit -m "Auto-posted 15-min Music Video [skip ci]"
+          git diff --staged --quiet || git commit -m "Auto-processed Music Video schedule [skip ci]"
           for i in 1 2 3 4 5; do
             git pull --rebase origin master -X theirs || true
             git push origin master && break || sleep 10
