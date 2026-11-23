@@ -536,6 +536,57 @@ def upload_next_to_youtube():
     if not target_url and urls:
         target_url = urls[0]
 
+    fix_id = os.environ.get("FIX_PREV_VIDEO_ID")
+    if not target_url and fix_id:
+        print(f"[INFO] कोई नया गाना क्यू में नहीं है, लेकिन FIX_PREV_VIDEO_ID={fix_id} दिया गया है।")
+        print("  🛠️ पुराने वीडियो का वाटरमार्क-मुक्त थंबनेल और AI मेटाडेटा अपडेट किया जा रहा है...")
+        # रजिस्ट्री से अंतिम गाना या डिफ़ॉल्ट गाना लें
+        last_url = list(reg.keys())[-1] if reg else "https://files.catbox.moe/752c43.mp3"
+        s_info = reg.get(last_url, {
+            "name": "Vrindavan Maha Kirtan - Bansuri Se Bula Le - Treblo",
+            "mood": "Balanced Bhakti", "mood_hi": "संतुलित भक्ति संगीत",
+            "target_audience": "God", "target_audience_hi": "भगवान के लिए"
+        })
+        s_name = s_info.get("name", "Vrindavan Maha Kirtan - Bansuri Se Bula Le")
+        
+        # ऑडियो डाउनलोड करके विश्लेषण
+        if not os.path.exists(TEMP_AUDIO) and last_url.startswith("http"):
+            download_file(last_url, TEMP_AUDIO)
+
+        t_title, t_desc, t_tags = generate_metadata(s_name, s_info, TEMP_AUDIO if os.path.exists(TEMP_AUDIO) else None)
+        t_thumb = find_thumbnail(s_name, s_info)
+
+        try:
+            youtube.videos().update(
+                part="snippet,status",
+                body={
+                    "id": fix_id,
+                    "snippet": {
+                        "title": t_title,
+                        "description": t_desc,
+                        "tags": t_tags,
+                        "categoryId": "10",
+                        "defaultLanguage": "hi",
+                        "defaultAudioLanguage": "hi"
+                    },
+                    "status": {"privacyStatus": "unlisted"}
+                }
+            ).execute()
+            print(f"  ✅ वीडियो {fix_id} का AI टाइटल और विस्तृत विवरण अपडेट हुआ:\n  📝 {t_title}")
+        except Exception as e:
+            print(f"  ⚠️ वीडियो अपडेट त्रुटि: {e}")
+
+        if t_thumb and os.path.exists(t_thumb):
+            try:
+                youtube.thumbnails().set(
+                    videoId=fix_id,
+                    media_body=MediaFileUpload(t_thumb, mimetype="image/jpeg")
+                ).execute()
+                print(f"  ✅ वीडियो {fix_id} का वाटरमार्क-मुक्त थंबनेल अपडेट हुआ!")
+            except Exception as e:
+                print(f"  ⚠️ थंबनेल अपडेट त्रुटि: {e}")
+        return True
+
     if not target_url:
         print("[INFO] क्यू खाली है। अपलोड करने के लिए कोई पेंडिंग गाना नहीं।")
         return False
