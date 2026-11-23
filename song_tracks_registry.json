@@ -18,11 +18,23 @@
   },
   "https://files.catbox.moe/lar4jm.wav": {
     "name": "Vrindavan Maha Kirtan - Murali Wale - Treblo",
-    "thumb_url": "https://files.catbox.moe/3jk3fy.png",
+    "thumb_url": "https://files.catbox.moe/uu7vmb.jpg",
     "image_urls": [
-      "https://files.catbox.moe/6o1c2v.png"
+      "https://files.catbox.moe/ngd92q.jpg",
+      "https://files.catbox.moe/nglm1x.jpg"
     ],
-    "lyrics": "Mann mera tujhko pukaare\nMurali wale aa jaare\nAankhein teri raah nihaare\nMurli ki awaaz mein\nKho jaana hai mujhe\nMurali wale aa jaare",
+    "lyrics": "",
+    "added_at": "2026-11-23 21:50:00",
+    "status": "pending"
+  },
+  "https://files.catbox.moe/9bmaeo.wav": {
+    "name": "Vrindavan Maha Kirtan - Ram Naam Ki Mahima - Treblo",
+    "thumb_url": "https://files.catbox.moe/uu7vmb.jpg",
+    "image_urls": [
+      "https://files.catbox.moe/ngd92q.jpg",
+      "https://files.catbox.moe/nglm1x.jpg"
+    ],
+    "lyrics": "",
     "added_at": "2026-11-23 21:50:00",
     "status": "pending"
   }

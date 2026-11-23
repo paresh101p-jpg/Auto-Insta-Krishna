@@ -3,3 +3,9 @@ AUDIO_URL: https://files.catbox.moe/lar4jm.wav
 THUMBNAIL_URL: https://files.catbox.moe/3jk3fy.png
 SLIDE_URL: https://files.catbox.moe/6o1c2v.png
 THUMBNAIL_URL: https://files.catbox.moe/ngd92q.jpg
+AUDIO_URL: https://files.catbox.moe/9bmaeo.wav
+AUDIO_URL: https://files.catbox.moe/9bmaeo.wav
+AUDIO_URL: https://files.catbox.moe/lar4jm.wav
+THUMBNAIL_URL: https://files.catbox.moe/uu7vmb.jpg
+SLIDE_URL: https://files.catbox.moe/ngd92q.jpg
+SLIDE_URL: https://files.catbox.moe/nglm1x.jpg
