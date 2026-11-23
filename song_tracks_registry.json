@@ -28,12 +28,26 @@
     "status": "pending"
   },
   "https://files.catbox.moe/9bmaeo.wav": {
-    "name": "Shri Ram Naam Jap - Man Mandir Mein Deep Jalaun",
-    "thumb_url": "https://files.catbox.moe/uu7vmb.jpg",
+    "name": "Vrindavan Maha Kirtan - Ram Naam Ki Mahima - Treblo",
+    "thumb_url": "https://files.catbox.moe/fmvhzq.jpg",
     "image_urls": [
+      "https://files.catbox.moe/cxiort.jpg",
+      "https://files.catbox.moe/uu7vmb.jpg",
       "https://files.catbox.moe/ngd92q.jpg"
     ],
-    "lyrics": "Man mandir mein deep jalaun\nTera naam japu main raat din\nParbhu teri mahima gaun\nCharan tere mein aashray mile\nTu hai sahara\nTu hai kinara\nTere bina kuch bhi nahi\nRam Ram Ram japu\nRam Ram Ram japu\nSukh dukh sab tere hawaale\nRam Ram Ram japu\nJai Jai Ram\nJai Jai Ram\nJai Jai Ram bolo",
+    "lyrics": "",
+    "added_at": "2026-11-23 21:50:00",
+    "status": "pending"
+  },
+  "https://files.catbox.moe/qsuvy5.wav": {
+    "name": "Vrindavan Maha Kirtan - Ram Naam Ki Bhakti - Treblo (1)",
+    "thumb_url": "https://files.catbox.moe/fmvhzq.jpg",
+    "image_urls": [
+      "https://files.catbox.moe/cxiort.jpg",
+      "https://files.catbox.moe/uu7vmb.jpg",
+      "https://files.catbox.moe/ngd92q.jpg"
+    ],
+    "lyrics": "",
     "added_at": "2026-11-23 21:50:00",
     "status": "pending"
   }

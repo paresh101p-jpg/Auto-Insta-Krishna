@@ -10,3 +10,10 @@ THUMBNAIL_URL: https://files.catbox.moe/uu7vmb.jpg
 SLIDE_URL: https://files.catbox.moe/ngd92q.jpg
 SLIDE_URL: https://files.catbox.moe/nglm1x.jpg
 THUMBNAIL_URL: https://files.catbox.moe/ngd92q.jpg
+AUDIO_URL: https://files.catbox.moe/qsuvy5.wav
+AUDIO_URL: https://files.catbox.moe/9bmaeo.wav
+AUDIO_URL: https://files.catbox.moe/9bmaeo.wav
+THUMBNAIL_URL: https://files.catbox.moe/fmvhzq.jpg
+SLIDE_URL: https://files.catbox.moe/cxiort.jpg
+SLIDE_URL: https://files.catbox.moe/uu7vmb.jpg
+SLIDE_URL: https://files.catbox.moe/ngd92q.jpg
