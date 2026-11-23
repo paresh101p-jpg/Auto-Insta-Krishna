@@ -267,15 +267,15 @@ def create_video_with_animations(audio_path, thumb_path, anim_paths, output_path
         input_files.append(anim_path)
         overlay_idx = idx + 1
         
-        # रैंडम पोज़िशन, स्केल और मूवमेंट - हर गाने के लिए अलग
+        # रैंडम पोज़िशन और मूवमेंट - हर गाने के लिए अलग
         x = random.randint(50, 1150)
         y = random.randint(50, 600)
-        scale = random.choice([0.7, 0.9, 1.0, 1.1, 1.3])
         speed_x = random.choice([15, 25, 35])
         speed_y = random.choice([20, 30, 40])
         
+        # सरल स्केल और ओवरले - FFmpeg कम्पैटिबल
         filter_parts.append(
-            f"[{overlay_idx}:v]scale=iw*{scale}:ih*{scale}[anim{idx}];"
+            f"[{overlay_idx}:v]scale=120:120[anim{idx}];"
             f"[prev][anim{idx}]overlay=x='{x}+{speed_x}*sin(T*0.4)':y='{y}+{speed_y}*cos(T*0.3)':format=auto[prev]"
         )
     
@@ -324,10 +324,11 @@ def generate_metadata(song_name, song_info):
     target = song_info.get("target_audience", "General")
     target_hi = song_info.get("target_audience_hi", "सभी के लिए")
 
+    # टाइटल बिना इमोजी - YouTube स्पेशल कैरेक्टर्स को रिजेक्ट कर सकता है
     if duration_min > 0:
-        title = f"{song_name} | {mood_hi} | {duration_min} मिनट | Krishna Vibez 🪷"
+        title = f"{song_name} | {mood_hi} | {duration_min} मिनट | Krishna Vibez"
     else:
-        title = f"{song_name} | {mood_hi} | Krishna Vibez 🪷"
+        title = f"{song_name} | {mood_hi} | Krishna Vibez"
 
     description = (
         f"🎵 {song_name}\n"
