@@ -454,13 +454,76 @@ def prepare_slide_image(img_path):
     return bg
 
 
-def generate_song_music_video(audio_path, slide_image_paths, output_video_path, fps=25):
+def clean_lyrics_text(text):
+    """
+    यूज़र द्वारा दिए गए लिरिक्स में से [Intro], [Chorus], [Verse] आदि [ ] के अंदर
+    का सारा टेक्स्ट हटाता है और साफ पंक्तियाँ लौटाता है।
+    """
+    if not text:
+        return ""
+    # [ ] के अंदर का सारा टेक्स्ट (ब्रैकेट्स सहित) हटाएं
+    cleaned = re.sub(r'\[.*?\]', '', text)
+    # मल्टीपल खाली लाइन्स हटाएं
+    lines = [l.strip() for l in cleaned.splitlines() if l.strip()]
+    return "\n".join(lines)
+
+
+def create_lyric_badge(text, font_path=None, font_size=38):
+    """
+    निचले हिस्से (Bottom Center) के लिए सुंदर ग्लासमोर्फिक लिरिक बैज (Pill):
+    - ट्रांसलूसेंट डार्क बैकग्राउंड + गोल्डन बॉर्डर
+    - देवनागरी फोंट और क्लियर शैडो
+    """
+    from PIL import Image, ImageDraw, ImageFont
+    if not font_path or not os.path.exists(font_path):
+        cand = os.path.join(BASE_DIR, "NotoSansDevanagari-Bold.ttf")
+        font_path = cand if os.path.exists(cand) else None
+
+    try:
+        font = ImageFont.truetype(font_path, font_size) if font_path else ImageFont.load_default()
+    except Exception:
+        font = ImageFont.load_default()
+
+    dummy = Image.new("RGBA", (1, 1))
+    draw_d = ImageDraw.Draw(dummy)
+    bbox = draw_d.textbbox((0, 0), text, font=font)
+    tw = bbox[2] - bbox[0]
+    th = bbox[3] - bbox[1]
+
+    pad_x = 32
+    pad_y = 14
+    bw = tw + pad_x * 2
+    bh = th + pad_y * 2
+
+    badge = Image.new("RGBA", (bw, bh), (0, 0, 0, 0))
+    bdraw = ImageDraw.Draw(badge)
+
+    # 1. Glassmorphic Pill Background
+    bdraw.rounded_rectangle(
+        [(0, 0), (bw - 1, bh - 1)],
+        radius=bh // 2,
+        fill=(12, 10, 8, 195),
+        outline=(255, 215, 0, 180),
+        width=2
+    )
+
+    # 2. Text with soft drop shadow
+    tx = pad_x - bbox[0]
+    ty = pad_y - bbox[1]
+    bdraw.text((tx + 2, ty + 2), text, font=font, fill=(0, 0, 0, 220))
+    bdraw.text((tx, ty), text, font=font, fill=(255, 255, 255, 255))
+
+    return np.array(badge)
+
+
+def generate_song_music_video(audio_path, slide_image_paths, output_video_path, fps=25, lyrics_file_or_text=None):
     """
     Renders full HD 1080p animated music video with:
     - Dynamic Ken Burns motion
     - 3 Unique random flora particles selected per song
     - Golden sparkling stars
     - Corner luxury logo
+    - Synchronized Bottom-Center Lyric Badges ([ ] tags automatically removed)
     - Seamless audio multiplexing
     """
     import cv2
@@ -491,6 +554,62 @@ def generate_song_music_video(audio_path, slide_image_paths, output_video_path, 
         GOLDEN_SPARKLE_PALETTE["gold_bgr"],
         GOLDEN_SPARKLE_PALETTE["core_bgr"]
     )
+
+    # लिरिक्स प्रोसेस करना (SRT या सादा टेक्स्ट) और टाइमस्टैम्प्स तैयार करना
+    subtitles = []
+    if lyrics_file_or_text:
+        raw_lyric_str = ""
+        if os.path.exists(str(lyrics_file_or_text)):
+            try:
+                with open(lyrics_file_or_text, "r", encoding="utf-8") as lf:
+                    raw_lyric_str = lf.read()
+            except Exception:
+                pass
+        else:
+            raw_lyric_str = str(lyrics_file_or_text)
+
+        if raw_lyric_str:
+            # 1. यदि SRT फॉर्मेट है
+            if "-->" in raw_lyric_str:
+                blocks = re.split(r'\n\s*\n', raw_lyric_str.strip())
+                for b in blocks:
+                    lines = [l.strip() for l in b.splitlines() if l.strip()]
+                    if len(lines) >= 2:
+                        time_line = lines[1] if '-->' in lines[1] else lines[0]
+                        if '-->' in time_line:
+                            pts = time_line.split('-->')
+                            def to_sec(t):
+                                t = t.strip().replace(',', '.')
+                                parts = t.split(':')
+                                return float(parts[0])*3600 + float(parts[1])*60 + float(parts[2])
+                            try:
+                                start_sec = to_sec(pts[0])
+                                end_sec = to_sec(pts[1])
+                                t_idx = 2 if '-->' in lines[1] else 1
+                                txt = ' '.join(lines[t_idx:])
+                                txt = re.sub(r'\[.*?\]', '', txt).strip()
+                                if txt:
+                                    subtitles.append((start_sec, end_sec, txt))
+                            except Exception:
+                                pass
+            else:
+                # 2. सादा टेक्स्ट: [ ] हटाकर पंक्तियों को पूरे गाने पर समान रूप से बांटें
+                clean_txt = clean_lyrics_text(raw_lyric_str)
+                lines = [l.strip() for l in clean_txt.splitlines() if l.strip()]
+                if lines:
+                    line_dur = total_duration / float(len(lines))
+                    for idx, line in enumerate(lines):
+                        s_time = idx * line_dur
+                        e_time = (idx + 1) * line_dur
+                        subtitles.append((s_time, e_time, line))
+
+    # लिरिक बैजेस को प्री-रेंडर (Cache) करना ताकि वीडियो रेंडरिंग सुपर फास्ट रहे
+    lyric_badges = {}
+    if subtitles:
+        print(f"  📝 {len(subtitles)} लिरिक पंक्तियाँ लोड हुईं ([ ] ब्रैकेट्स हटाए गए)")
+        for (s_sec, e_sec, l_text) in subtitles:
+            if l_text not in lyric_badges:
+                lyric_badges[l_text] = create_lyric_badge(l_text)
 
     # Prepare slides
     prepared_slides = [prepare_slide_image(p) for p in slide_image_paths]
@@ -588,6 +707,16 @@ def generate_song_music_video(audio_path, slide_image_paths, output_video_path, 
             # Corner Luxury Logo Badge
             if logo_badge is not None:
                 overlay_rgba(frame, logo_badge, center_x=95, center_y=95, scale=1.0, angle_deg=0)
+
+            # Bottom Center Synchronized Lyric Badge
+            if subtitles:
+                for (s_sec, e_sec, l_text) in subtitles:
+                    if s_sec <= global_time <= e_sec:
+                        badge_img = lyric_badges.get(l_text)
+                        if badge_img is not None:
+                            # 1920 / 2 = 960 (Center X), Y = 965 (Bottom Center safe zone)
+                            overlay_rgba(frame, badge_img, center_x=960, center_y=965, scale=1.0, angle_deg=0)
+                        break
 
             # Fade In on start of video / Fade Out at end
             if s_idx == 0 and f_idx < fade_frames:

@@ -657,10 +657,21 @@ def upload_next_to_youtube():
         slide_paths = [thumb_path]
     print(f"  🎨 वीडियो स्लाइड्स संख्या: {len(slide_paths)}")
 
+    # लिरिक्स जांचना (यदि रजिस्ट्री में या फाइल में मौजूद हो)
+    lyrics_cand = song_info.get("lyrics") or song_info.get("lyrics_url")
+    if not lyrics_cand:
+        local_lrc = os.path.join(BASE_DIR, "Songs", f"{song_name}.txt")
+        if os.path.exists(local_lrc):
+            try:
+                with open(local_lrc, "r", encoding="utf-8") as lf:
+                    lyrics_cand = lf.read()
+            except Exception:
+                pass
+
     # 1080p एनिमेटेड वीडियो जनरेशन
-    print("\n🎬 1080p एनिमेटेड म्यूजिक वीडियो तैयार हो रहा है (Ken Burns + Flora Particles + Sparkles)...")
+    print("\n🎬 1080p एनिमेटेड म्यूजिक वीडियो तैयार हो रहा है (Ken Burns + Flora Particles + Sparkles + Synced Lyrics)...")
     from song_video_generator import generate_song_music_video
-    video_ready = generate_song_music_video(TEMP_AUDIO, slide_paths, TEMP_VIDEO)
+    video_ready = generate_song_music_video(TEMP_AUDIO, slide_paths, TEMP_VIDEO, lyrics_file_or_text=lyrics_cand)
     if not video_ready:
         print("❌ वीडियो जनरेशन विफल!")
         return False
