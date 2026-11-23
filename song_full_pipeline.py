@@ -32,7 +32,6 @@ import re
 import shutil
 import subprocess
 import random
-import cv2
 from datetime import datetime, timezone, timedelta
 
 if sys.platform == "win32":
