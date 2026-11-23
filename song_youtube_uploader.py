@@ -327,7 +327,7 @@ def upload_song_to_youtube(video_path, title, description, tags):
             "defaultAudioLanguage": "hi"
         },
         "status": {
-            "privacyStatus": "public",
+            "privacyStatus": "private",  # फिलहाल अनपब्लिश्ड/प्राइवेट रखना है
             "selfDeclaredMadeForKids": False,
             "embeddable": True,
             "license": "youtube"
