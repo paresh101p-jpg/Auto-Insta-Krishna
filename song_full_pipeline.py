@@ -275,7 +275,7 @@ def generate_metadata(song_name, song_info, audio_file=None):
     gemini_key = os.environ.get("GEMINI_API_KEY")
     ai_title = None
     ai_desc_meaning = None
-    ai_hook = None
+    ai_lyrics_hook = None
     ai_tags = []
 
     if gemini_key:
@@ -283,28 +283,48 @@ def generate_metadata(song_name, song_info, audio_file=None):
             from google import genai
             client = genai.Client(api_key=gemini_key)
 
+            uploaded_audio_ref = None
+            if audio_file and os.path.exists(audio_file) and os.path.getsize(audio_file) > 1000:
+                try:
+                    print(f"  🎧 Gemini AI ऑडियो सुन रहा है: {audio_file}...")
+                    uploaded_audio_ref = client.files.upload(file=audio_file)
+                except Exception as up_err:
+                    print(f"  ⚠️ ऑडियो अपलोड सूचना (टेक्स्ट मोड में जारी): {up_err}")
+
             prompt = (
-                f"You are a master YouTube music producer & SEO strategist for 'Krishna Vibez'.\n"
-                f"We are releasing a divine Lord Krishna song & music video on YouTube.\n"
-                f"Audio Details:\n"
-                f"- Raw Track Hint: '{song_name}'\n"
-                f"- Musical Mood: {mood} ({mood_hi})\n"
-                f"- Target Audience: {target_hi}\n"
-                f"- Track Duration: {dur_min} minutes\n\n"
-                f"RULES:\n"
-                f"1. DO NOT simply use the raw filename '{song_name}' as the title! Instead, craft a deeply emotional, viral, spiritual YouTube title.\n"
-                f"   - Format: [Soulful Hindi Devotional Hook] | [English Meditation / Flute / Kirtan Hook] | Krishna Vibez\n"
-                f"   - Keep title under 75 characters total so it doesn't truncate on mobile.\n"
-                f"   - Examples: 'मन को मोह लेगी यह बाँसुरी | Vrindavan Flute Meditation | Krishna Vibez' or 'साँवरिया की पावन धुन | Peaceful Krishna Kirtan | Krishna Vibez'\n"
-                f"2. Write a captivating, spiritual 2-3 paragraph explanation in pure devotional Hindi & English detailing how listening to this specific melody brings peace, removes stress, purifies the soul, and awakens Krishna bhakti.\n"
-                f"3. Provide 15 highly searched devotional YouTube tags.\n\n"
-                f"Return JSON strictly with keys:\n"
-                f"{{\n"
-                f'  "title": "...",\n'
-                f'  "spiritual_meaning": "...",\n'
-                f'  "tags": ["..."]\n'
-                f"}}"
+                "You are an elite music director, lyricist, and viral YouTube strategist for 'Krishna Vibez'.\n"
+                "Listen deeply to this entire audio track (or analyze its musical context).\n\n"
+                "YOUR CRITICAL MISSION:\n"
+                "1. LISTEN TO THE LYRICS / VOCALS / INSTRUMENTS:\n"
+                "   - Carefully identify what is being sung or played: Is it a Bhajan, Aarti, Mantra, Dhun, Shloka, Cinematic Devotional Song (like a movie song), or a Meditative Instrumental/Flute?\n"
+                "   - Transcribe the core catchphrase, main lyrics hook, or key sacred words heard in the song (e.g. 'बाँसुरी से बुला ले', 'साँवरिया', 'राधे राधे', 'गोविंद बोलो', 'महामंत्र', etc.).\n\n"
+                "2. CRAFT THE ULTIMATE CLICKABLE YOUTUBE TITLE (Under 75 characters):\n"
+                "   - DO NOT USE RAW FILENAMES!\n"
+                "   - Craft a catchy, deeply emotive, viral title using the best words from the song/lyrics.\n"
+                "   - Structure: [Best Lyric Hook / Viral Emotional Devotional Words in Hindi] | [English Genre Hook: Bhajan / Flute / Kirtan / Devotional Song] | Krishna Vibez\n"
+                "   - Examples:\n"
+                "     * If Bhajan: 'बाँसुरी से बुला ले सांवरे | Vrindavan Radha Krishna Bhajan | Krishna Vibez'\n"
+                "     * If Mantra/Chant: 'मन को शांत कर देगा यह महामंत्र | Sacred Krishna Meditation Chant | Krishna Vibez'\n"
+                "     * If Movie/Lyrical Song: 'तेरी मुरली की मधुर तान | Soulful Krishna Devotional Song | Krishna Vibez'\n\n"
+                "3. WRITE A RICH, SOUL-TOUCHING SPIRITUAL DESCRIPTION:\n"
+                "   - Write 2-3 deep, poetic paragraphs in soulful Hindi explaining the divine essence and meaning of the lyrics/words in this specific song.\n"
+                "   - Include the transcribed lyrics hook or core spiritual verse in Hindi.\n"
+                "   - Detail the peace, joy, anxiety relief, and inner awakening experienced while listening.\n\n"
+                "4. 15 HIGHLY SEARCHED TAGS:\n"
+                "   - Generate 15 precise search tags including the lyrics words, song genre, and spiritual keywords.\n\n"
+                "Return JSON STRICTLY in this format:\n"
+                "{\n"
+                '  "title": "...",\n'
+                '  "lyrics_hook": "...",\n'
+                '  "spiritual_meaning": "...",\n'
+                '  "song_type": "Bhajan / Mantra / Flute / Devotional Song",\n'
+                '  "tags": ["...", "..."]\n'
+                "}"
             )
+
+            contents = [prompt]
+            if uploaded_audio_ref:
+                contents = [uploaded_audio_ref, prompt]
 
             models_to_try = ["gemini-3.8-flash", "gemini-3.7-flash", "gemini-2.0-flash"]
             response = None
@@ -312,7 +332,7 @@ def generate_metadata(song_name, song_info, audio_file=None):
                 try:
                     response = client.models.generate_content(
                         model=m,
-                        contents=prompt
+                        contents=contents
                     )
                     if response and response.text:
                         break
@@ -328,6 +348,7 @@ def generate_metadata(song_name, song_info, audio_file=None):
                 data = json.loads(txt)
                 ai_title = data.get("title")
                 ai_desc_meaning = data.get("spiritual_meaning")
+                ai_lyrics_hook = data.get("lyrics_hook")
                 ai_tags = data.get("tags", [])
         except Exception as e:
             print(f"  ⚠️ Gemini AI मेटाडेटा निर्माण सूचना: {e}")
@@ -348,13 +369,16 @@ def generate_metadata(song_name, song_info, audio_file=None):
         "यह मधुर धुन ध्यान (Meditation), पूजा एवं गहरी एकाग्रता के लिए सर्वोत्तम है।"
     )
 
+    lyrics_hook_block = f"🪷 मुख्य बोल / बोल भाव:\n\"{ai_lyrics_hook}\"\n\n" if ai_lyrics_hook else ""
+
     description = (
         f"🌸 स्वागत है Krishna Vibez के पावन संगीत संसार में 🌸\n\n"
         f"Experience profound inner peace, deep tranquility, and divine healing with this sacred "
-        f"Lord Krishna Devotional & Flute Meditation music video.\n\n"
+        f"Lord Krishna Devotional music video.\n\n"
         f"🌿 आज का पावन प्रसंग: {ai_title}\n"
         f"🎭 संगीत भाव: {mood_hi} ({mood})\n"
         f"👥 समर्पण: {target_hi}\n\n"
+        f"{lyrics_hook_block}"
         f"📖 पावन भावार्थ (Spiritual Meaning):\n"
         f"{meaning_block}\n\n"
         "✨ पावन संगीत का महत्व (Spiritual Peace & Mind Healing):\n"
