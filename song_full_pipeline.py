@@ -636,31 +636,20 @@ def main():
     import sys
     args = sys.argv[1:] if len(sys.argv) > 1 else []
     mode = args[0] if args else "process"
-    force = "--force" in args
 
     if mode == "process":
         process_all_pending_songs()
         git_commit_push("Auto-processed new songs & updated queues [skip ci]")
 
     elif mode == "upload":
-        # रविवार चेक हटाया - मैनुअल रन कभी भी काम करेगा
+        # कोई दैनिक सीमा नहीं - मैनुअल रन कभी भी काम करेगा
         # रविवार को schedule से भी चलेगा
-        tracker_file = SONG_DAILY_TRACKER
-        today_str = datetime.now(timezone.utc) + timedelta(hours=5, minutes=30)
-        today_str = today_str.strftime("%Y-%m-%d")
-        if not force and os.path.exists(tracker_file):
-            try:
-                with open(tracker_file, "r", encoding="utf-8") as f:
-                    data = json.load(f)
-                if data.get("last_upload_date") == today_str:
-                    print("[SKIP] आज गाना पहले ही अपलोड हो चुका है।")
-                    return
-            except Exception:
-                pass
-
         upload_next_to_youtube()
 
-        # ट्रैकर रिकॉर्ड करें
+        # ट्रैकर रिकॉर्ड करें (केवल जब अपलोड हुआ हो)
+        ist_now = datetime.now(timezone.utc) + timedelta(hours=5, minutes=30)
+        today_str = ist_now.strftime("%Y-%m-%d")
+        tracker_file = SONG_DAILY_TRACKER
         data = {}
         if os.path.exists(tracker_file):
             try:
