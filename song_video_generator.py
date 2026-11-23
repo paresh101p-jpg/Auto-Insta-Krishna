@@ -208,7 +208,7 @@ def prebuild_sparkle_sprites(adapted_gold, core_col_base=None):
 
         def draw_layer(rad_mult, alpha_val, col):
             r = rad * rad_mult
-            col_scaled = col.astype(np.float32) * alpha_val
+            col_scaled = tuple(float(x) for x in (col.astype(np.float32) * alpha_val))
             pts_h = np.array([[cx - r * 3.5, cy], [cx, cy - r * 0.4], [cx + r * 3.5, cy], [cx, cy + r * 0.4]], dtype=np.int32)
             pts_v = np.array([[cx - r * 0.4, cy], [cx, cy - r * 3.5], [cx + r * 0.4, cy], [cx, cy + r * 3.5]], dtype=np.int32)
             cv2.fillConvexPoly(sp_img, pts_h, col_scaled)
@@ -251,7 +251,7 @@ def fast_draw_sparkle(target, cx, cy, rad, is_star, brightness, sprites):
 
     sp_crop = sp_img[fy1:fy2, fx1:fx2]
     if brightness != 1.0:
-        sp_crop = cv2.multiply(sp_crop, (brightness, brightness, brightness, 1.0))
+        sp_crop = (sp_crop.astype(np.float32) * float(brightness)).astype(np.uint8)
     target[cy1:cy2, cx1:cx2] = cv2.add(target[cy1:cy2, cx1:cx2], sp_crop)
 
 
