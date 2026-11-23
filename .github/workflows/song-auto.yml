@@ -1,28 +1,26 @@
-name: Auto Song Pipeline (Every Sunday 9 AM IST)
+name: Sunday Song Video (6 AM Render & Upload -> 9 AM Policy Check & Public)
 
 on:
-  workflow_dispatch: # मैनुअल ट्रिगर - कभी भी चलाएं
+  workflow_dispatch:
     inputs:
-      privacy_status:
-        description: 'YouTube Privacy Status (unlisted / private / public)'
+      action:
+        description: 'Action: upload (6 AM) or publish_check (9 AM)'
         required: false
-        default: 'unlisted'
-      fix_prev_video_id:
-        description: 'Fix previous video thumbnail and set unlisted'
-        required: false
-        default: 'jpCARdivrts'
+        default: 'all'
   repository_dispatch:
-    types: [process_song, upload_song, run_song_pipeline]
+    types: [upload_song_6am, check_song_9am, run_sunday_song]
   schedule:
-    # हर रविवार सुबह 9:00 AM IST = 3:30 AM UTC
+    # 1. रविवार सुबह 6:00 AM IST = 12:30 AM UTC (Upload as Unlisted)
+    - cron: '30 0 * * 0'
+    # 2. रविवार सुबह 9:00 AM IST = 3:30 AM UTC (Audit Policy/Strike & Publish Public)
     - cron: '30 3 * * 0'
 
 concurrency:
-  group: song-pipeline
+  group: sunday-song-pipeline
   cancel-in-progress: false
 
 jobs:
-  song-pipeline:
+  sunday-song-job:
     runs-on: ubuntu-latest
     permissions:
       contents: write
@@ -43,27 +41,42 @@ jobs:
       - name: Install Python dependencies
         run: pip install -r requirements.txt google-api-python-client google-auth-oauthlib google-auth pillow requests
 
-      - name: Process new songs from Songs/inbox/ (Add to YouTube queue)
-        run: python -u song_full_pipeline.py process
-        env:
-          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+      - name: Check Current IST Time / Hour
+        id: time_check
+        run: |
+          # UTC hour: 0 = 5:30/6:00 AM IST, 3 = 8:30/9:00 AM IST
+          UTC_HOUR=$(date -u +%H)
+          echo "utc_hour=$UTC_HOUR" >> $GITHUB_OUTPUT
+          echo "Current UTC Hour: $UTC_HOUR"
 
-      - name: Upload next song to YouTube (Unlisted 1080p Animated Video)
-        run: python -u song_full_pipeline.py upload
+      # --- 6:00 AM IST STEP: RENDER & UPLOAD AS UNLISTED ---
+      - name: 6:00 AM IST - Render 1080p Video & Upload as Unlisted
+        if: github.event.inputs.action == 'upload' || github.event.inputs.action == 'all' || steps.time_check.outputs.utc_hour == '00'
         env:
           YOUTUBE_CLIENT_ID: ${{ secrets.YOUTUBE_CLIENT_ID }}
           YOUTUBE_CLIENT_SECRET: ${{ secrets.YOUTUBE_CLIENT_SECRET }}
           YOUTUBE_REFRESH_TOKEN: ${{ secrets.YOUTUBE_REFRESH_TOKEN }}
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
-          PRIVACY_STATUS: ${{ github.event.inputs.privacy_status || 'unlisted' }}
-          FIX_PREV_VIDEO_ID: ${{ github.event.inputs.fix_prev_video_id || 'jpCARdivrts' }}
+          PRIVACY_STATUS: 'unlisted'
+        run: |
+          python -u song_full_pipeline.py upload
 
-      - name: Commit Updated Song Queues to Git
+      # --- 9:00 AM IST STEP: POLICY/STRIKE CHECK & PUBLISH PUBLIC ---
+      - name: 9:00 AM IST - Check Policy / Strike / Content ID & Publish Public
+        if: github.event.inputs.action == 'publish_check' || github.event.inputs.action == 'all' || steps.time_check.outputs.utc_hour == '03'
+        env:
+          YOUTUBE_CLIENT_ID: ${{ secrets.YOUTUBE_CLIENT_ID }}
+          YOUTUBE_CLIENT_SECRET: ${{ secrets.YOUTUBE_CLIENT_SECRET }}
+          YOUTUBE_REFRESH_TOKEN: ${{ secrets.YOUTUBE_REFRESH_TOKEN }}
+        run: |
+          python -u quarantine_publish_song.py
+
+      - name: Commit Updated Queues to Git
         run: |
           git config user.name "Krishna Vibez Song Bot"
           git config user.email "bot@krishnavibez.in"
-          git add song_urls.txt song_urls_backup.txt song_used_urls.txt song_uploaded_tracker.txt song_tracks_registry.json song_daily_tracker.json song_images/ song_thumbnails/ || true
-          git diff --staged --quiet || git commit -m "Auto song pipeline: processed & uploaded [skip ci]"
+          git add song_urls.txt song_urls_backup.txt song_used_urls.txt song_uploaded_tracker.txt song_tracks_registry.json song_daily_tracker.json || true
+          git diff --staged --quiet || git commit -m "Sunday song pipeline update [skip ci]"
           for i in 1 2 3 4 5; do
             git pull --rebase origin master || true
             git push origin master && break || sleep 3
