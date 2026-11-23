@@ -332,18 +332,25 @@ def generate_metadata(song_name, song_info, audio_file=None):
             if audio_part:
                 contents = [audio_part, prompt]
 
-            models_to_try = ["gemini-3.8-flash", "gemini-3.7-flash", "gemini-2.0-flash"]
+            models_to_try = [
+                "gemini-3.8-flash", "gemini-3.7-flash", "gemini-flash-latest",
+                "gemini-3.8-pro", "gemini-2.5-flash-latest"
+            ]
             response = None
             for m in models_to_try:
-                try:
-                    response = client.models.generate_content(
-                        model=m,
-                        contents=contents
-                    )
-                    if response and response.text:
-                        break
-                except Exception as me:
-                    print(f"  ⚠️ Gemini model {m} notice: {me}")
+                for attempt in range(2):
+                    try:
+                        response = client.models.generate_content(
+                            model=m,
+                            contents=contents
+                        )
+                        if response and response.text:
+                            break
+                    except Exception as me:
+                        print(f"  ⚠️ Gemini model {m} notice: {me}")
+                        time.sleep(2)
+                if response and response.text:
+                    break
 
             if response and response.text:
                 txt = response.text.strip()
