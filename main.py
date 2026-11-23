@@ -63,8 +63,6 @@ def record_daily_image_done():
     except Exception as e:
         print(f"Notice saving tracker: {e}", flush=True)
 
-check_daily_image_limit()
-
 # Secrets from GitHub Actions
 GEMINI_API_KEY = os.environ.get("GEMINI_API_KEY")
 FB_ACCESS_TOKEN = os.environ.get("FB_ACCESS_TOKEN")
@@ -91,7 +89,7 @@ if FB_PAGE_ID == "YAHAN_APNA_NAYA_PAGE_ID_DALNA_HAI":
 
 client = genai.Client(api_key=GEMINI_API_KEY)
 IMAGES_FOLDER = "images"
-GEMINI_MODELS = ["gemini-3.8-flash", "gemini-3.8-pro", "gemini-3.7-flash"]
+GEMINI_MODELS = ["gemini-2.5-flash", "gemini-2.0-flash", "gemini-1.5-flash", "gemini-flash-latest"]
 # Yahan naye repo ka naam aayega (e.g., Auto-Insta-Krishna)
 GITHUB_REPO_RAW_URL = "https://raw.githubusercontent.com/paresh101p-jpg/Auto-Insta-Krishna/master/"
 
@@ -582,7 +580,7 @@ Like 👍 | Comment 💬 | Share 🚀 | Save 📌
 
 def get_ig_account_id():
     url = f"https://graph.facebook.com/v20.0/{FB_PAGE_ID}?fields=instagram_business_account&access_token={FB_ACCESS_TOKEN}"
-    res = requests.get(url).json()
+    res = requests.get(url, timeout=20).json()
     if 'instagram_business_account' in res:
         return res['instagram_business_account']['id']
     else:
@@ -597,12 +595,12 @@ def post_fb_feed(caption, image_url):
         'message': caption,
         'access_token': FB_ACCESS_TOKEN
     }
-    res = requests.post(url, data=payload).json()
+    res = requests.post(url, data=payload, timeout=30).json()
     if 'id' in res:
-        print(f"âœ… FB Feed Success (ID: {res['id']})")
+        print(f"✅ FB Feed Success (ID: {res['id']})")
         return True
     else:
-        print(f"âŒ FB Feed Failed: {res}")
+        print(f"❌ FB Feed Failed: {res}")
         return False
 
 def post_fb_video(caption, local_file):
@@ -689,7 +687,7 @@ def post_fb_video_story(local_file):
             'access_token': FB_ACCESS_TOKEN,
             'file_size': file_size
         }
-        res_start = requests.post(url, data=start_payload).json()
+        res_start = requests.post(url, data=start_payload, timeout=30).json()
         print(f"FB Video Story Start response: {res_start}")
         if 'video_id' not in res_start:
             print(f"❌ FB Video Story Start Failed: {res_start}")
@@ -707,7 +705,7 @@ def post_fb_video_story(local_file):
             'offset': '0',
             'file_size': str(file_size)
         }
-        res_up = requests.post(upload_url, data=video_data, headers=upload_headers)
+        res_up = requests.post(upload_url, data=video_data, headers=upload_headers, timeout=90)
         print(f"FB Video Story Upload response: {res_up.status_code} - {res_up.text[:200]}")
             
         # Give Meta's servers time to process the uploaded chunk!
@@ -720,7 +718,7 @@ def post_fb_video_story(local_file):
             'access_token': FB_ACCESS_TOKEN,
             'video_id': video_id
         }
-        res_finish = requests.post(url, data=finish_payload).json()
+        res_finish = requests.post(url, data=finish_payload, timeout=30).json()
         print(f"FB Video Story Finish response: {res_finish}")
         if res_finish.get('success'):
             print(f"✅ FB Video Story Success (ID: {video_id})")
@@ -740,7 +738,7 @@ def post_fb_story(image_url):
         'published': 'false',
         'access_token': FB_ACCESS_TOKEN
     }
-    upload_res = requests.post(upload_url, data=upload_payload).json()
+    upload_res = requests.post(upload_url, data=upload_payload, timeout=30).json()
     photo_id = upload_res.get('id')
     if not photo_id:
         print(f"âŒ FB Story Failed (photo upload step): {upload_res}")
@@ -751,7 +749,7 @@ def post_fb_story(image_url):
         'photo_id': photo_id,
         'access_token': FB_ACCESS_TOKEN
     }
-    story_res = requests.post(story_url, data=story_payload).json()
+    story_res = requests.post(story_url, data=story_payload, timeout=30).json()
     if story_res.get('success') or 'post_id' in story_res or 'id' in story_res:
         print(f"✅ FB Story Success: {story_res}")
         return True
@@ -967,6 +965,9 @@ def retry_post(func, *args, **kwargs):
 
 if __name__ == "__main__":
     try:
+        # Daily limit check: Strict 1 evening thought image post per day
+        check_daily_image_limit()
+
         # Double-post safety lock: Prevent duplicate posts within 45 minutes
         last_post_time_file = "last_posted_timestamp.txt"
         min_interval_seconds = 45 * 60  # 45 minutes
@@ -1140,6 +1141,8 @@ if __name__ == "__main__":
                 handle_failure(media_info)
             else:
                 print("All posts failed.")
+            print("❌ No channel succeeded. Exiting with error code 1 so GitHub Actions marks the job as failed.")
+            exit(1)
             
         if os.path.exists(TEMP_VIDEO):
             os.remove(TEMP_VIDEO)
