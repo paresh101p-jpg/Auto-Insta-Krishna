@@ -1,2 +1,4 @@
 AUDIO_URL: https://files.catbox.moe/lar4jm.wav
 AUDIO_URL: https://files.catbox.moe/lar4jm.wav
+THUMBNAIL_URL: https://files.catbox.moe/3jk3fy.png
+SLIDE_URL: https://files.catbox.moe/6o1c2v.png
