@@ -634,22 +634,24 @@ def git_commit_push(msg):
 
 def main():
     import sys
-    mode = sys.argv[1] if len(sys.argv) > 1 else "process"
+    args = sys.argv[1:] if len(sys.argv) > 1 else []
+    mode = args[0] if args else "process"
+    force = "--force" in args
 
     if mode == "process":
         process_all_pending_songs()
         git_commit_push("Auto-processed new songs & updated queues [skip ci]")
 
     elif mode == "upload":
-        # रविवार चेक
+        # रविवार चेक (फोर्स मोड में स्किप)
         ist_now = datetime.now(timezone.utc) + timedelta(hours=5, minutes=30)
-        if ist_now.strftime("%A") != "Sunday":
-            print("[SKIP] आज रविवार नहीं है।")
+        if not force and ist_now.strftime("%A") != "Sunday":
+            print("[SKIP] आज रविवार नहीं है। फोर्स अपलोड के लिए --force लगाएं।")
             return
 
         tracker_file = SONG_DAILY_TRACKER
         today_str = ist_now.strftime("%Y-%m-%d")
-        if os.path.exists(tracker_file):
+        if not force and os.path.exists(tracker_file):
             try:
                 with open(tracker_file, "r", encoding="utf-8") as f:
                     data = json.load(f)
