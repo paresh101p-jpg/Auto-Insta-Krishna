@@ -643,14 +643,11 @@ def main():
         git_commit_push("Auto-processed new songs & updated queues [skip ci]")
 
     elif mode == "upload":
-        # रविवार चेक (फोर्स मोड में स्किप)
-        ist_now = datetime.now(timezone.utc) + timedelta(hours=5, minutes=30)
-        if not force and ist_now.strftime("%A") != "Sunday":
-            print("[SKIP] आज रविवार नहीं है। फोर्स अपलोड के लिए --force लगाएं।")
-            return
-
+        # रविवार चेक हटाया - मैनुअल रन कभी भी काम करेगा
+        # रविवार को schedule से भी चलेगा
         tracker_file = SONG_DAILY_TRACKER
-        today_str = ist_now.strftime("%Y-%m-%d")
+        today_str = datetime.now(timezone.utc) + timedelta(hours=5, minutes=30)
+        today_str = today_str.strftime("%Y-%m-%d")
         if not force and os.path.exists(tracker_file):
             try:
                 with open(tracker_file, "r", encoding="utf-8") as f:
@@ -676,7 +673,7 @@ def main():
         with open(tracker_file, "w", encoding="utf-8") as f:
             json.dump(data, f, indent=2)
 
-        git_commit_push("Auto-uploaded Sunday song to YouTube [skip ci]")
+        git_commit_push("Auto-uploaded song to YouTube [skip ci]")
 
 
 if __name__ == "__main__":

@@ -1,13 +1,7 @@
 name: Auto Song Pipeline (Every Sunday 9 AM IST)
 
 on:
-  workflow_dispatch:
-    inputs:
-      force:
-        description: 'फोर्स अपलोड (रविवार न हो तब भी)'
-        required: false
-        default: 'false'
-        type: boolean
+  workflow_dispatch: # मैनुअल रन - कभी भी काम करेगा
   repository_dispatch:
     types: [process_song, upload_song, run_song_pipeline]
   schedule:
@@ -47,12 +41,7 @@ jobs:
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
 
       - name: Upload next song to YouTube (Private)
-        run: |
-          if [ "${{ inputs.force }}" = "true" ]; then
-            python -u song_full_pipeline.py upload --force
-          else
-            python -u song_full_pipeline.py upload
-          fi
+        run: python -u song_full_pipeline.py upload
         env:
           YOUTUBE_CLIENT_ID: ${{ secrets.YOUTUBE_CLIENT_ID }}
           YOUTUBE_CLIENT_SECRET: ${{ secrets.YOUTUBE_CLIENT_SECRET }}
