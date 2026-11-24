@@ -61,5 +61,15 @@
     "lyrics": "",
     "added_at": "2026-11-24 11:16:19",
     "status": "pending"
+  },
+  "https://files.catbox.moe/j44adr.mp3": {
+    "name": "Hanuman Ji - Sankat Mochan Hey Hanuman - Treblo",
+    "thumb_url": "https://files.catbox.moe/wb2eer.png",
+    "image_urls": [
+      "https://files.catbox.moe/r55plj.png"
+    ],
+    "lyrics": "",
+    "added_at": "2026-11-24 12:41:55",
+    "status": "pending"
   }
 }

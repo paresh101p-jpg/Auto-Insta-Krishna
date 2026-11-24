@@ -22,3 +22,6 @@ AUDIO_URL: https://files.catbox.moe/lqr2zr.mp3
 THUMBNAIL_URL: https://files.catbox.moe/3gmijn.png
 SLIDE_URL: https://files.catbox.moe/o6iulu.png
 SLIDE_URL: https://files.catbox.moe/fiwk1l.png
+AUDIO_URL: https://files.catbox.moe/j44adr.mp3
+THUMBNAIL_URL: https://files.catbox.moe/wb2eer.png
+SLIDE_URL: https://files.catbox.moe/r55plj.png
