@@ -14,6 +14,7 @@ import os
 import sys
 import re
 import json
+import time
 import random
 import requests
 from datetime import datetime, timezone, timedelta
@@ -89,23 +90,70 @@ def get_existing_slugs():
 
 def call_gemini(prompt, system_instruction=""):
     client = genai.Client(api_key=GEMINI_API_KEY)
-    models = ["gemini-3.1-flash-lite", "gemini-3.7-flash", "gemini-3.8-flash"]
+    # Priority ordered models: tested high-availability models first, then fallbacks
+    models = [
+        "gemini-3.5-flash",
+        "gemini-3.5-flash-lite",
+        "gemini-3.6-flash",
+        "gemini-3.1-flash-lite",
+        "gemini-3.7-flash",
+        "gemini-3.8-flash"
+    ]
+    last_err = None
     for m in models:
-        try:
-            config = {}
-            if system_instruction:
-                config["system_instruction"] = system_instruction
-            res = client.models.generate_content(
-                model=m,
-                contents=prompt,
-                config=config if config else None
-            )
-            if res and res.text:
-                return res.text.strip()
-        except Exception as e:
-            print(f"   [Model Notice] {m} failed: {e}. Trying fallback...")
-            continue
-    raise RuntimeError("All Gemini models failed to generate content.")
+        for attempt in range(1, 4):
+            try:
+                config = {}
+                if system_instruction:
+                    config["system_instruction"] = system_instruction
+                res = client.models.generate_content(
+                    model=m,
+                    contents=prompt,
+                    config=config if config else None
+                )
+                if res and res.text:
+                    return res.text.strip()
+            except Exception as e:
+                last_err = e
+                err_str = str(e)
+                print(f"   [Model Notice] {m} (attempt {attempt}/3) failed: {e}")
+                if "503" in err_str or "UNAVAILABLE" in err_str or "429" in err_str or "RESOURCE_EXHAUSTED" in err_str:
+                    sleep_sec = 2 * attempt
+                    print(f"   [Backoff] Waiting {sleep_sec}s before retry...")
+                    time.sleep(sleep_sec)
+                else:
+                    break
+    raise RuntimeError(f"All Gemini models failed to generate content. Last error: {last_err}")
+
+EMERGENCY_FALLBACK_TOPICS = [
+    {
+        "slug": "bhagavad-gita-overthinking-and-mental-peace",
+        "title": "भगवद्गीता और मानसिक शांति: अनचाहे विचारों और ओवरथिंकिंग से हमेशा के लिए मुक्ति",
+        "category": "जीवन प्रबंधन",
+        "meta_desc": "क्या लगातार विचार आपका चैन छीन रहे हैं? जानिए भगवद्गीता के वे 5 दिव्य सूत्र जो अशांत मन को एकाग्र और शांत बनाते हैं।",
+        "keywords": "भगवद्गीता मानसिक शांति, overthinking solution gita, shri krishna mind control, तनाव मुक्ति गीता",
+        "hook": "चंचलं हि मनः कृष्ण प्रमाथि बलवद्दृढम् — मन हवा की तरह चंचल है, पर अभ्यास और वैराग्य से वश में होता है।",
+        "theme_outline": "भगवद्गीता अध्याय 6 के अनुसार मन की चंचलता, ओवरथिंकिंग, और अशांति को नियंत्रित करने के व्यावहारिक आध्यात्मिक सूत्र।"
+    },
+    {
+        "slug": "karma-yoga-modern-career-growth-guide",
+        "title": "कर्मण्येवाधिकारस्ते: कॉर्पोरेट जीवन और आधुनिक करियर में निष्काम कर्म का जादू",
+        "category": "कर्म योग",
+        "meta_desc": "काम का तनाव और परिणाम की चिंता छोड़िए। जानिए कर्म योग के वो रहस्य जो आपकी उत्पादकता और मन की शांति को दोगुना कर देंगे।",
+        "keywords": "कर्म योग, bhagavad gita karma yoga, corporate stress gita, shri krishna work life balance",
+        "hook": "कर्म पर तुम्हारा अधिकार है, फल पर कभी नहीं — यही परम सफलता और आंतरिक आनंद का मार्ग है।",
+        "theme_outline": "आधुनिक ऑफिस, करियर और व्यवसाय में निष्काम कर्म योग का मनोवैज्ञानिक और व्यावहारिक विश्लेषण।"
+    },
+    {
+        "slug": "krishna-wisdom-anger-management-secrets",
+        "title": "क्रोध से विनाश या संयम से विजय: जानिए क्रोध को नियंत्रित करने का गीता रहस्य",
+        "category": "जीवन प्रबंधन",
+        "meta_desc": "क्रोध में लिया गया निर्णय हमेशा पछतावा देता है। जानिए भगवान श्री कृष्ण ने अर्जुन को क्रोध पर विजय पाने का क्या गुप्त मार्ग बताया।",
+        "keywords": "क्रोध नियंत्रण गीता, anger management krishna, gita shlok krodh, शांति और संयम",
+        "hook": "क्रोधाद्भवति संमोहः संमोहात्स्मृतिविभ्रमः — क्रोध से सम्मोहन और स्मृति का नाश होता है।",
+        "theme_outline": "क्रोध की उत्पत्ति, इसके विनाशकारी परिणाम, और गीता के श्लोकों के आधार पर शांत रहने के 10 व्यावहारिक नियम।"
+    }
+]
 
 def determine_today_topic():
     now_ist = datetime.now(_IST)
@@ -134,12 +182,22 @@ Output STRICTLY a JSON object with this exact structure and nothing else:
   "theme_outline": "A short summary of the core thesis and practical lessons covered"
 }}
 """
-    raw = call_gemini(prompt)
-    clean_json = re.sub(r"^```json\s*", "", raw.strip(), flags=re.MULTILINE)
-    clean_json = re.sub(r"\s*```$", "", clean_json.strip(), flags=re.MULTILINE)
-    data = json.loads(clean_json)
-    data["slug"] = re.sub(r"[^a-z0-9\-]", "-", data["slug"].lower()).strip("-")
-    return data
+    try:
+        raw = call_gemini(prompt)
+        clean_json = re.sub(r"^```json\s*", "", raw.strip(), flags=re.MULTILINE)
+        clean_json = re.sub(r"\s*```$", "", clean_json.strip(), flags=re.MULTILINE)
+        data = json.loads(clean_json)
+        data["slug"] = re.sub(r"[^a-z0-9\-]", "-", data["slug"].lower()).strip("-")
+        return data
+    except Exception as e:
+        print(f"   [Topic Warning] Dynamic topic research encountered error: {e}. Selecting fresh topic from emergency pool...")
+        for fallback in EMERGENCY_FALLBACK_TOPICS:
+            if fallback["slug"] not in existing_slugs:
+                return fallback
+        # If all fallback slugs were used, generate unique slug with date suffix
+        f = dict(EMERGENCY_FALLBACK_TOPICS[0])
+        f["slug"] = f"{f['slug']}-{now_ist.strftime('%d%m%Y')}"
+        return f
 
 def generate_full_article_content(topic_meta):
     prompt = f"""You are a master Vedic scholar, philosopher, and senior editor for Krishna Vibez.
