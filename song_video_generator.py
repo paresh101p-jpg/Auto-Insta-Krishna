@@ -739,8 +739,9 @@ def generate_song_music_video(audio_path, slide_image_paths, output_video_path, 
         "-i", temp_raw_video,
         "-i", audio_path,
         "-c:v", "copy",
+        "-map_metadata", "-1",
         "-c:a", "aac",
-        "-b:a", "192k",
+        "-b:a", "320k",
         "-shortest",
         output_video_path
     ]
