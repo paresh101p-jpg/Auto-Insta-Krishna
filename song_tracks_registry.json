@@ -72,5 +72,16 @@
     "lyrics": "",
     "added_at": "2026-11-24 12:42:29",
     "status": "pending"
+  },
+  "https://files.catbox.moe/087dwy.mp3": {
+    "name": "Hanuman Ji - Bajrangi Mere Bajrangi - Treblo",
+    "thumb_url": "https://files.catbox.moe/huhs3o.png",
+    "image_urls": [
+      "https://files.catbox.moe/ntohhe.png",
+      "https://files.catbox.moe/m5eydt.jpg"
+    ],
+    "lyrics": "",
+    "added_at": "2026-11-24 13:32:16",
+    "status": "pending"
   }
 }
