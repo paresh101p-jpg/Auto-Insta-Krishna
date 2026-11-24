@@ -33,3 +33,6 @@ AUDIO_URL: https://files.catbox.moe/087dwy.mp3
 THUMBNAIL_URL: https://files.catbox.moe/huhs3o.png
 SLIDE_URL: https://files.catbox.moe/ntohhe.png
 SLIDE_URL: https://files.catbox.moe/m5eydt.jpg
+AUDIO_URL: https://files.catbox.moe/1h27ej.mp3
+THUMBNAIL_URL: https://files.catbox.moe/23kxs0.jpg
+SLIDE_URL: https://files.catbox.moe/23kxs0.jpg
