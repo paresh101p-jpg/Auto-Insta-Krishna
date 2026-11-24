@@ -40,3 +40,4 @@ AUDIO_URL: https://files.catbox.moe/1h27ej.mp3
 THUMBNAIL_URL: https://files.catbox.moe/gi62a6.jpg
 SLIDE_URL: https://files.catbox.moe/tmt2i9.png
 SLIDE_URL: https://files.catbox.moe/pd6g80.png
+AUDIO_URL: https://files.catbox.moe/1h27ej.mp3

@@ -86,13 +86,10 @@
   },
   "https://files.catbox.moe/1h27ej.mp3": {
     "name": "Mere Ghar Ram Padhare Hain - कुटिया में उजाला - Treblo",
-    "thumb_url": "https://files.catbox.moe/gi62a6.jpg",
-    "image_urls": [
-      "https://files.catbox.moe/tmt2i9.png",
-      "https://files.catbox.moe/pd6g80.png"
-    ],
+    "thumb_url": null,
+    "image_urls": [],
     "lyrics": "",
-    "added_at": "2026-11-24 14:28:29",
+    "added_at": "2026-11-24 14:28:45",
     "status": "pending"
   }
 }
