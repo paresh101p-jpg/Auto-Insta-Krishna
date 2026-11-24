@@ -14,3 +14,7 @@ SLIDE_URL: https://files.catbox.moe/js8nno.png
 AUDIO_URL: https://files.catbox.moe/lqr2zr.mp3
 THUMBNAIL_URL: https://files.catbox.moe/1mhm2l.png
 SLIDE_URL: https://files.catbox.moe/qppl3g.png
+AUDIO_URL: https://files.catbox.moe/1fg4a9.mp3
+THUMBNAIL_URL: https://files.catbox.moe/azmkd3.png
+SLIDE_URL: https://files.catbox.moe/szpuog.png
+SLIDE_URL: https://files.catbox.moe/c3k7e3.jpg
