@@ -8,3 +8,6 @@ SLIDE_URL: https://files.catbox.moe/ngd92q.jpg
 AUDIO_URL: https://files.catbox.moe/qssw3f.mp3
 THUMBNAIL_URL: https://files.catbox.moe/0dxe4e.jpg
 SLIDE_URL: https://files.catbox.moe/0dxe4e.jpg
+AUDIO_URL: https://files.catbox.moe/lqr2zr.mp3
+THUMBNAIL_URL: https://files.catbox.moe/n6qo8o.png
+SLIDE_URL: https://files.catbox.moe/js8nno.png
