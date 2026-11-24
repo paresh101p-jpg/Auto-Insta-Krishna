@@ -586,25 +586,52 @@ function toggleFeedLike(postId, event) {
   }
 }
 
-// Category Icons Mapping
+// Category Icons Mapping (Expanded for All 33+ Spiritual Categories)
 const CATEGORY_ICONS = {
+  'all': '🌸',
   'दिव्य रील्स (Reels)': '🎬',
   'भगवद्गीता ज्ञान': '📖',
+  'भगवद्गीता सार (Gita Essence)': '📜',
   'दैनिक दर्शन': '🪷',
   'राधे कृष्ण प्रेम': '💖',
+  'राधे कृष्ण प्रेम (Divine Love)': '💖',
   'प्रेरणादायक सीख': '✨',
   'विद्यार्थी प्रेरणा (Study)': '📚',
+  'विद्यार्थी प्रेरणा (Youth & Students)': '📚',
   'युवा प्रेरणा (Motivation)': '🔥',
+  'युवा मार्गदर्शन (Youth & Career)': '🚀',
   'सफलता के सूत्र': '🏆',
   'लक्ष्य एवं एकाग्रता': '🎯',
   'श्री कृष्ण लीला': '🦚',
   'भक्ति रस': '📿',
+  'भक्ति योग (Bhakti Yoga)': '📿',
+  'भक्ति एवं शरणागति (Surrender & Grace)': '🙏',
+  'भक्ति एवं विश्वास (Faith & Devotion)': '🌺',
   'सुप्रभात दर्शन': '🌄',
   'कर्म योग': '⚖️',
-  'शांति एवं ध्यान': '🧘'
+  'कर्म योग (Karma Yoga)': '⚖️',
+  'कर्म फल सिद्धांत (Law of Karma)': '🪐',
+  'शांति एवं ध्यान': '🧘',
+  'मानसिक शांति (Mind Control)': '🧘',
+  'ध्यान योग (Meditation Yoga)': '🧘',
+  'आत्म-संयम (Self-Discipline)': '🛡️',
+  'स्थितप्रज्ञ दर्शन (Mastery of Mind)': '💎',
+  'आध्यात्मिक ज्ञान (Spiritual Purpose)': '🌌',
+  'ब्रह्म ज्ञान (Higher Wisdom)': '☀️',
+  'धर्म एवं कर्तव्य (Dharma & Duty)': '🏹',
+  'विश्वरूप दर्शन (Cosmic Vision & Time)': '👁️',
+  'प्रकृति के तीन गुण (Three Gunas)': '🌿',
+  'चरित्र एवं गुण (Virtues & Character)': '🌟',
+  'मित्रता एवं संबंध (Friendship & Relationships)': '🤝',
+  'आहार एवं जीवनशैली (Food & Lifestyle)': '🍃',
+  'समत्व योग (Equanimity & Balance)': '☯️',
+  'आत्मा का ज्ञान (Soul & Immortality)': '✨',
+  'अवसाद मुक्ति (Stress & Depression Relief)': '🕊️',
+  'अहंकार मुक्ति (Ego Freedom)': '🍃',
+  'क्रोध नियंत्रण (Anger Management)': '💧'
 };
 
-// 2. Dynamic Category Pills Generator
+// 2. Dynamic Category Ribbon & Modal Generator
 function initCategoryFilters() {
   const container = document.getElementById('categoryFilterWrap');
   if (!container) return;
@@ -618,12 +645,25 @@ function initCategoryFilters() {
     categoryCounts[cat] = (categoryCounts[cat] || 0) + 1;
   });
 
-  const uniqueCategories = Object.keys(categoryCounts);
+  // Sort categories descending by post count (Most popular first)
+  const uniqueCategories = Object.keys(categoryCounts).sort((a, b) => categoryCounts[b] - categoryCounts[a]);
 
-  // Generate HTML for pills
+  // Update total count badges
+  const totalCountEl = document.getElementById('catTotalCount');
+  if (totalCountEl) {
+    totalCountEl.textContent = `${uniqueCategories.length}+`;
+  }
+  const modalSubEl = document.getElementById('catModalSubtitle');
+  if (modalSubEl) {
+    modalSubEl.textContent = `${uniqueCategories.length} विशेष श्रेणियाँ · तुरंत खोजें व चुनें`;
+  }
+
+  // Generate HTML for Horizontal Ribbon Pills
   let pillsHtml = `
-    <button class="cat-pill ${activeCategory === 'all' ? 'active' : ''}" data-cat="all">
-      🌸 सभी दर्शन (${allPosts.length})
+    <button class="cat-pill ${activeCategory === 'all' ? 'active' : ''}" data-cat="all" onclick="selectCategory('all', this)">
+      <span class="cat-pill-icon">🌸</span>
+      <span class="cat-pill-label">सभी दर्शन</span>
+      <span class="cat-pill-count">${allPosts.length}</span>
     </button>
   `;
 
@@ -632,28 +672,157 @@ function initCategoryFilters() {
     const isActive = activeCategory === cat ? 'active' : '';
     const count = categoryCounts[cat];
     pillsHtml += `
-      <button class="cat-pill ${isActive}" data-cat="${escapeHtml(cat)}">
-        ${icon} ${escapeHtml(cat)} (${count})
+      <button class="cat-pill ${isActive}" data-cat="${escapeHtml(cat)}" onclick="selectCategory('${escapeHtml(cat)}', this)">
+        <span class="cat-pill-icon">${icon}</span>
+        <span class="cat-pill-label">${escapeHtml(cat)}</span>
+        <span class="cat-pill-count">${count}</span>
       </button>
     `;
   });
 
   container.innerHTML = pillsHtml;
 
-  // Attach event listeners to all newly created pills
-  const pills = container.querySelectorAll('.cat-pill');
-  pills.forEach(pill => {
-    pill.addEventListener('click', (e) => {
-      if (e) e.preventDefault();
-      pills.forEach(p => p.classList.remove('active'));
-      pill.classList.add('active');
-      activeCategory = pill.getAttribute('data-cat') || 'all';
-      renderFilteredPosts(window.KRISHNA_POSTS || []);
-      const label = pill.textContent.trim().replace(/\(\d+\)/, '').trim();
-      showToast(`✨ श्रेणी: ${label}`);
+  // Generate HTML for Modal Grid Tiles
+  const modalGrid = document.getElementById('catModalGrid');
+  if (modalGrid) {
+    let modalHtml = `
+      <div class="cat-modal-card ${activeCategory === 'all' ? 'active' : ''}" data-cat="all" onclick="selectCategory('all', null, true)">
+        <span class="cat-modal-card-icon">🌸</span>
+        <div class="cat-modal-card-info">
+          <div class="cat-modal-card-name">सभी दर्शन (All)</div>
+          <div class="cat-modal-card-count">${allPosts.length} संपूर्ण दर्शन संग्रह</div>
+        </div>
+        <span class="cat-modal-check">✓</span>
+      </div>
+    `;
+
+    uniqueCategories.forEach(cat => {
+      const icon = CATEGORY_ICONS[cat] || '🪷';
+      const isActive = activeCategory === cat ? 'active' : '';
+      const count = categoryCounts[cat];
+      modalHtml += `
+        <div class="cat-modal-card ${isActive}" data-cat="${escapeHtml(cat)}" onclick="selectCategory('${escapeHtml(cat)}', null, true)">
+          <span class="cat-modal-card-icon">${icon}</span>
+          <div class="cat-modal-card-info">
+            <div class="cat-modal-card-name">${escapeHtml(cat)}</div>
+            <div class="cat-modal-card-count">${count} दर्शन पोस्ट</div>
+          </div>
+          <span class="cat-modal-check">✓</span>
+        </div>
+      `;
     });
-  });
+
+    modalGrid.innerHTML = modalHtml;
+  }
+
+  // Setup scroll listeners for navigation chevrons
+  container.addEventListener('scroll', updateRibbonNavButtons, { passive: true });
+  setTimeout(updateRibbonNavButtons, 200);
 }
+
+// Ribbon Scroll Handler (Smooth left/right scroll)
+window.scrollCatRibbon = function(direction) {
+  const track = document.getElementById('categoryFilterWrap');
+  if (!track) return;
+  const amount = (track.clientWidth * 0.65) || 300;
+  track.scrollBy({ left: direction * amount, behavior: 'smooth' });
+};
+
+// Ribbon Chevrons Visibility Helper
+window.updateRibbonNavButtons = function() {
+  const track = document.getElementById('categoryFilterWrap');
+  const prevBtn = document.getElementById('catNavPrev');
+  const nextBtn = document.getElementById('catNavNext');
+  if (!track || !prevBtn || !nextBtn) return;
+
+  const atStart = track.scrollLeft <= 5;
+  const atEnd = track.scrollLeft + track.clientWidth >= track.scrollWidth - 5;
+
+  prevBtn.disabled = atStart;
+  prevBtn.style.opacity = atStart ? '0.2' : '1';
+  prevBtn.style.pointerEvents = atStart ? 'none' : 'auto';
+
+  nextBtn.disabled = atEnd;
+  nextBtn.style.opacity = atEnd ? '0.2' : '1';
+  nextBtn.style.pointerEvents = atEnd ? 'none' : 'auto';
+};
+
+// Open All Categories Modal
+window.openCategoryModal = function() {
+  const modal = document.getElementById('catModalOverlay');
+  if (modal) {
+    modal.classList.add('open');
+    document.body.classList.add('cat-modal-lock');
+    const inp = document.getElementById('catModalSearchInput');
+    if (inp) {
+      inp.value = '';
+      filterModalCategories('');
+      setTimeout(() => inp.focus(), 150);
+    }
+  }
+};
+
+// Close All Categories Modal
+window.closeCategoryModal = function(e) {
+  if (e && e.target && e.target.closest('.cat-modal') && !e.target.closest('.cat-modal-close')) {
+    return;
+  }
+  const modal = document.getElementById('catModalOverlay');
+  if (modal) {
+    modal.classList.remove('open');
+    document.body.classList.remove('cat-modal-lock');
+  }
+};
+
+// Filter Categories in Modal via Live Search
+window.filterModalCategories = function(query) {
+  const q = (query || '').toLowerCase().trim();
+  const cards = document.querySelectorAll('#catModalGrid .cat-modal-card');
+  cards.forEach(card => {
+    const name = (card.querySelector('.cat-modal-card-name')?.textContent || '').toLowerCase();
+    const matches = !q || name.includes(q);
+    card.style.display = matches ? 'flex' : 'none';
+  });
+};
+
+// Unified Category Selection Handler
+window.selectCategory = function(cat, pillEl, fromModal = false) {
+  activeCategory = cat || 'all';
+
+  // Sync ribbon pills
+  document.querySelectorAll('#categoryFilterWrap .cat-pill').forEach(p => {
+    if (p.getAttribute('data-cat') === activeCategory) {
+      p.classList.add('active');
+      p.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' });
+    } else {
+      p.classList.remove('active');
+    }
+  });
+
+  // Sync modal cards
+  document.querySelectorAll('#catModalGrid .cat-modal-card').forEach(c => {
+    if (c.getAttribute('data-cat') === activeCategory) {
+      c.classList.add('active');
+    } else {
+      c.classList.remove('active');
+    }
+  });
+
+  if (fromModal) {
+    closeCategoryModal();
+  }
+
+  // Render filtered posts
+  renderFilteredPosts(window.KRISHNA_POSTS || []);
+
+  const label = activeCategory === 'all' ? 'सभी दर्शन' : activeCategory;
+  showToast(`✨ श्रेणी: ${label}`);
+};
+
+// Close modal with Escape key
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'Escape') closeCategoryModal();
+});
 
 // 3. Search Bar Handler
 function initSearch() {
