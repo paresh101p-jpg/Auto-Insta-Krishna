@@ -19,6 +19,7 @@ stunning 1080p music video with the exact visual identity of Krishna Vibez:
 
 import os
 import sys
+import re
 import math
 import random
 import glob
