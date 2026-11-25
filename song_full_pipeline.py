@@ -400,8 +400,9 @@ def generate_metadata(song_name, song_info, audio_file=None, lyrics_text=None):
                 "     * If Romantic / Love Song: 'तेरे बिन जिया लागे ना | Soulful Love Song | Krishna Vibez'\n"
                 "     * If Mantra/Chant: 'मन को शांत कर देगा यह महामंत्र | Sacred Krishna Meditation Chant | Krishna Vibez'\n"
                 "     * If Movie/Lyrical Song: 'तेरी मुरली की मधुर तान | Soulful Krishna Devotional Song | Krishna Vibez'\n\n"
-                "3. WRITE ABOUT THIS DEVOTIONAL SONG (गीत का परिचय, भावार्थ व मुख्य बोल):\n"
-                "   - song_meaning: Write a soulful, concise 2-3 sentence Hindi explanation of what this specific song is about, the devotion and emotion expressed, and who it is dedicated to (Shri Ram, Hanuman Ji, Radha Krishna, Shiv Mahadev, etc.).\n"
+                "3. WRITE ABOUT THIS DEVOTIONAL SONG IN BOTH HINDI & ENGLISH:\n"
+                "   - song_meaning_hi: Soulful 2-3 sentence Hindi explanation of what this specific song is about, the devotion and emotion expressed, and who it is dedicated to (Shri Ram, Hanuman Ji, Radha Krishna, Shiv Mahadev, etc.).\n"
+                "   - song_meaning_en: Rich 2-3 sentence English summary explaining the divine essence, deity, and devotional emotions of this song.\n"
                 "   - lyrics_highlights: 4-6 key lyrical lines from this song in Hindi.\n"
                 "   - CRITICAL: ABSOLUTELY ZERO generic meditation, sleep, alpha waves, deep dhyan, or shanti boilerplate! Focus 100% on the devotional song, deity, devotion, melody, and bhakti.\n\n"
                 "4. 15 HIGHLY SEARCHED DEVOTIONAL TAGS:\n"
@@ -409,7 +410,8 @@ def generate_metadata(song_name, song_info, audio_file=None, lyrics_text=None):
                 "Return JSON STRICTLY in this format:\n"
                 "{\n"
                 '  "title": "...",\n'
-                '  "song_meaning": "...",\n'
+                '  "song_meaning_hi": "...",\n'
+                '  "song_meaning_en": "...",\n'
                 '  "lyrics_highlights": "...",\n'
                 '  "deity": "...",\n'
                 '  "tags": ["...", "..."]\n'
@@ -448,7 +450,8 @@ def generate_metadata(song_name, song_info, audio_file=None, lyrics_text=None):
                     txt = txt.split("```")[1].split("```")[0].strip()
                 data = json.loads(txt)
                 ai_title = data.get("title")
-                ai_desc_meaning = data.get("song_meaning") or data.get("spiritual_meaning")
+                ai_desc_meaning_hi = data.get("song_meaning_hi") or data.get("song_meaning") or data.get("spiritual_meaning")
+                ai_desc_meaning_en = data.get("song_meaning_en")
                 ai_lyrics_hook = data.get("lyrics_highlights") or data.get("lyrics_hook")
                 ai_tags = data.get("tags", [])
         except Exception as e:
@@ -483,29 +486,55 @@ def generate_metadata(song_name, song_info, audio_file=None, lyrics_text=None):
     else:
         lyrics_block = ""
 
-    # गीत का भावार्थ (Song Meaning & Essence - No generic meditation/sleep boilerplate)
+    # गीत का भावार्थ (Bilingual Song Meaning & Essence)
     name_lower = (song_name + " " + str(ai_title)).lower()
-    if ai_desc_meaning:
-        meaning_block = ai_desc_meaning.strip()
+    
+    # 1. Hindi Meaning
+    if 'ai_desc_meaning_hi' in locals() and ai_desc_meaning_hi:
+        meaning_hi = ai_desc_meaning_hi.strip()
     elif "ram" in name_lower or "सियाराम" in name_lower or "अयोध्या" in name_lower:
-        meaning_block = (
+        meaning_hi = (
             "यह पावन भजन मर्यादा पुरुषोत्तम भगवान श्री राम के पावन चरणों में समर्पित है। "
             "इसके मधुर शब्द प्रभु के आगमन के आनंद, अटूट विश्वास और अनन्य भक्ति रस से हृदय को भर देते हैं।"
         )
     elif "hanuman" in name_lower or "बजरंग" in name_lower or "अंजनी" in name_lower or "संकट मोचन" in name_lower:
-        meaning_block = (
+        meaning_hi = (
             "यह पावन भक्ति गीत संकट मोचन श्री हनुमान जी के चरणों में समर्पित है। "
             "यह गीत भक्तों के समस्त संकटों, भयों और कष्टों का निवारण कर जीवन में असीम साहस, सुरक्षा और आत्मिक संबल प्रदान करता है।"
         )
     elif "shiv" in name_lower or "महादेव" in name_lower or "शंभू" in name_lower or "भोले" in name_lower:
-        meaning_block = (
+        meaning_hi = (
             "यह पावन स्तुति देवों के देव महादेव भगवान शिव के चरणों में समर्पित है। "
             "इसके दिव्य स्वर मन के सभी विकारों को शांत कर अंतरात्मा को महादेव के पावन ध्यान और भक्ति रस में लीन कर देते हैं।"
         )
     else:
-        meaning_block = (
+        meaning_hi = (
             "यह पावन भक्ति गीत पूर्ण श्रद्धा और प्रेम रस से ओत-प्रोत है। "
             "इसके शब्द और धुन मन को प्रभु के पावन चरणों से जोड़ते हैं और अंतरात्मा को दिव्य भक्ति रस में लीन कर देते हैं।"
+        )
+
+    # 2. English Meaning & Reflection
+    if 'ai_desc_meaning_en' in locals() and ai_desc_meaning_en:
+        meaning_en = ai_desc_meaning_en.strip()
+    elif "ram" in name_lower or "सियाराम" in name_lower or "अयोध्या" in name_lower:
+        meaning_en = (
+            "This sacred devotional song is dedicated to Lord Shri Ram, celebrating the supreme joy, faith, "
+            "and boundless love of welcoming the divine into our hearts and homes. It invokes eternal peace, auspiciousness, and spiritual bliss."
+        )
+    elif "hanuman" in name_lower or "बजरंग" in name_lower or "अंजनी" in name_lower or "संकट मोचन" in name_lower:
+        meaning_en = (
+            "This powerful devotional hymn is dedicated to Sankat Mochan Lord Hanuman, the eternal protector and dispeller of all fears and troubles. "
+            "Listening with faith fills the soul with strength, unshakable courage, and divine grace."
+        )
+    elif "shiv" in name_lower or "महादेव" in name_lower or "शंभू" in name_lower or "भोले" in name_lower:
+        meaning_en = (
+            "This sacred devotional chant honors Lord Shiva (Mahadev), the supreme yogi and ocean of divine compassion. "
+            "Its sacred vibrations calm the wandering mind, purify inner thoughts, and awaken profound spiritual consciousness."
+        )
+    else:
+        meaning_en = (
+            "This soul-stirring devotional melody is crafted with deep reverence and sacred love. "
+            "It connects the listener directly to the divine presence, bringing profound spiritual joy, peace, and devotional bliss."
         )
 
     # देवता और भक्ति के अनुरूप हैशटैग्स
@@ -520,39 +549,48 @@ def generate_metadata(song_name, song_info, audio_file=None, lyrics_text=None):
 
     hashtags_str = f"{deity_hashtags} #BhaktiSong #HindiBhajan #DevotionalSong #KrishnaVibez #Bhajan"
 
-    # विस्तृत, समर्पित भक्ति गीत विवरण (बिना किसी generic meditation/sleep boilerplate के)
+    # विस्तृत, संपूर्ण द्विभाषी (Bilingual Hindi & English) यूट्यूब विवरण
     description = (
-        f"🌸 स्वागत है Krishna Vibez में 🌸\n\n"
-        f"🎵 आज का पावन भक्ति गीत: {ai_title}\n"
-        f"🎭 भाव रस: {mood_hi} ({mood})\n"
-        f"🙏 समर्पण: {target_hi}\n\n"
+        f"🌸 स्वागत है Krishna Vibez में | Welcome to Krishna Vibez 🌸\n\n"
+        f"🎵 Today's Sacred Bhajan / आज का पावन भजन: {ai_title}\n"
+        f"🎭 Mood / भाव रस: {mood_hi} ({mood})\n"
+        f"🙏 Divine Dedication / समर्पण: {target_hi}\n\n"
         f"━━━━━━━━━━━━━━━━━━━━━━━━━━\n\n"
-        f"📖 गीत का भावार्थ (About the Song & Meaning):\n"
-        f"{meaning_block}\n\n"
+        f"📖 गीत का भावार्थ (About The Song & Spiritual Meaning):\n"
+        f"{meaning_hi}\n\n"
+        f"✨ English Summary & Divine Essence:\n"
+        f"{meaning_en}\n\n"
         f"{lyrics_block}"
         f"━━━━━━━━━━━━━━━━━━━━━━━━━━\n\n"
-        "🕊️ कृष्ण वाइब्स के आध्यात्मिक परिवार से जुड़ें:\n"
-        "🌐 आधिकारिक वेबसाइट: https://krishnavibez.in/\n"
-        "▶️ आधिकारिक YouTube: https://www.youtube.com/@KrishnaVibezMusic\n"
-        "📲 WhatsApp चैनल: https://whatsapp.com/channel/0029VbDxJHk30LKNtj4Er62J\n"
-        "📢 Telegram चैनल: https://t.me/krishnavibezz\n"
-        "📸 Instagram: https://www.instagram.com/krishnavibez/\n"
-        "🧵 Threads: https://www.threads.net/@krishnavibez\n"
-        "📘 Facebook पेज: https://www.facebook.com/1808917602588221\n"
-        "📌 Pinterest: https://in.pinterest.com/MojiloMart/\n\n"
-        "━━━━━━━━━━━━━━━━━━━━━━━━━━\n\n"
-        "🛍️ Divine Recommendations (Amazon Storefront):\n"
-        "👉 Explore our Amazon Store: https://www.amazon.in/shop/myhappybirthday\n"
-        "(Disclaimer: Krishna Vibez earns from qualifying purchases at no extra cost to you.)\n\n"
-        "━━━━━━━━━━━━━━━━━━━━━━━━━━\n\n"
-        "⚖️ आधिकारिक कॉपीराइट एवं संगीत अस्वीकरण (Copyright & Music Disclaimer):\n"
-        "• संगीत एवं ऑडियो (Music & Audio): यह संगीत 100% मूल (Original) एवं कृष्ण वाइब्स (Krishna Vibez) द्वारा एक्सक्लूसिव रूप से निर्मित है। All compositions are copyright-safe and owned/mastered by Krishna Vibez.\n"
-        "• दृश्य एवं वीडियो (Visuals & Art): सभी 16:9 सिनेमैटिक विजुअल्स एवं कलाकृतियां कृष्ण वाइब्स की मूल संपत्ति हैं।\n"
-        "• उद्देश्य (Purpose): यह पावन भक्ति संगीत जन-जन में ईश्वर के प्रति श्रद्धा, सकारात्मकता और आध्यात्मिक चेतना जागृत करने हेतु निर्मित है।\n"
-        "• कॉपीराइट सूचना (Copyright Notice): इस चैनल के किसी भी ऑडियो या वीडियो को पुनः अपलोड (re-upload) करना पूर्णतः प्रतिबंधित है। All Rights Reserved © 2026 Krishna Vibez.\n\n"
-        "━━━━━━━━━━━━━━━━━━━━━━━━━━\n\n"
-        "🙏 यदि यह भक्ति गीत आपके हृदय को स्पर्श करे, तो वीडियो को लाइक करें, अपने परिजनों व मित्रों के साथ साझा करें और चैनल को सब्सक्राइब अवश्य करें।\n\n"
-        "जय श्री राधे कृष्ण! 🙏✨\n\n"
+        f"📜 चैनल नियम एवं दिशानिर्देश (Community Guidelines & Rules):\n"
+        f"1. Sacred Atmosphere: Please maintain devotion, mutual respect, and positive vibrations in the comment section.\n"
+        f"2. Zero Tolerance for Negativity: Any hateful comments, spam, offensive remarks, or unauthorized promotions will be removed immediately.\n"
+        f"3. Share the Blessings: Feel free to share this divine bhajan with your family, loved ones, and spiritual community on WhatsApp and social media.\n\n"
+        f"━━━━━━━━━━━━━━━━━━━━━━━━━━\n\n"
+        f"🛍️ Divine Recommendations (Amazon Storefront):\n"
+        f"👉 Explore our Amazon Store: https://www.amazon.in/shop/myhappybirthday\n"
+        f"(Affiliate Disclosure: As an Amazon Associate, Krishna Vibez earns from qualifying purchases at zero additional cost to you.)\n\n"
+        f"━━━━━━━━━━━━━━━━━━━━━━━━━━\n\n"
+        f"🕊️ हमसे जुड़ें | Official Social & Community Links:\n"
+        f"🌐 आधिकारिक वेबसाइट (Website): https://krishnavibez.in/\n"
+        f"▶️ आधिकारिक YouTube: https://www.youtube.com/@KrishnaVibezMusic\n"
+        f"📲 WhatsApp चैनल (Channel): https://whatsapp.com/channel/0029VbDxJHk30LKNtj4Er62J\n"
+        f"📢 Telegram चैनल: https://t.me/krishnavibezz\n"
+        f"📸 Instagram: https://www.instagram.com/krishnavibez/\n"
+        f"🧵 Threads: https://www.threads.net/@krishnavibez\n"
+        f"📘 Facebook पेज: https://www.facebook.com/1808917602588221\n"
+        f"📌 Pinterest: https://in.pinterest.com/MojiloMart/\n\n"
+        f"━━━━━━━━━━━━━━━━━━━━━━━━━━\n\n"
+        f"⚖️ आधिकारिक कॉपीराइट एवं अस्वीकरण (Copyright & Legal Disclaimers):\n"
+        f"• Original Audio Composition: The musical composition and audio are 100% original, copyright-safe, and exclusively owned/mastered by Krishna Vibez.\n"
+        f"• Visual Art & Production: All 16:9 cinematic visuals, motion design, and background art are proprietary creations of Krishna Vibez.\n"
+        f"• Devotional Purpose: This video is dedicated purely to spiritual elevation, divine devotion, and cultural enrichment for devotees worldwide.\n"
+        f"• Affiliate Disclosure: Some links may be affiliate links. When you make a purchase through them, we may earn an affiliate commission that supports our channel.\n"
+        f"• Copyright Protection: Re-uploading, sampling, copying, or redistributing this audio or video content on YouTube or any other digital platform without explicit written authorization is strictly prohibited. All Rights Reserved © 2026 Krishna Vibez.\n\n"
+        f"━━━━━━━━━━━━━━━━━━━━━━━━━━\n\n"
+        f"🙏 यदि यह भजन आपके हृदय को स्पर्श करे, तो कृपया Like, Share और Subscribe अवश्य करें!\n"
+        f"If this sacred bhajan touched your soul, please Like, Share, and Subscribe to Krishna Vibez!\n\n"
+        f"जय श्री राधे कृष्ण! | Jai Shri Radhe Krishna! 🪷✨\n\n"
         f"{hashtags_str}"
     )
 
