@@ -1,41 +1,8 @@
-THUMBNAIL_URL: https://files.catbox.moe/3jk3fy.png
-SLIDE_URL: https://files.catbox.moe/6o1c2v.png
-AUDIO_URL: https://files.catbox.moe/9bmaeo.wav
-THUMBNAIL_URL: https://files.catbox.moe/uu7vmb.jpg
-SLIDE_URL: https://files.catbox.moe/ngd92q.jpg
-AUDIO_URL: https://files.catbox.moe/qssw3f.mp3
-THUMBNAIL_URL: https://files.catbox.moe/0dxe4e.jpg
-SLIDE_URL: https://files.catbox.moe/0dxe4e.jpg
-AUDIO_URL: https://files.catbox.moe/lqr2zr.mp3
-THUMBNAIL_URL: https://files.catbox.moe/n6qo8o.png
-SLIDE_URL: https://files.catbox.moe/js8nno.png
-AUDIO_URL: https://files.catbox.moe/lqr2zr.mp3
-THUMBNAIL_URL: https://files.catbox.moe/1mhm2l.png
-SLIDE_URL: https://files.catbox.moe/qppl3g.png
-AUDIO_URL: https://files.catbox.moe/1fg4a9.mp3
-THUMBNAIL_URL: https://files.catbox.moe/azmkd3.png
-SLIDE_URL: https://files.catbox.moe/szpuog.png
-SLIDE_URL: https://files.catbox.moe/c3k7e3.jpg
-AUDIO_URL: https://files.catbox.moe/lqr2zr.mp3
-THUMBNAIL_URL: https://files.catbox.moe/3gmijn.png
-SLIDE_URL: https://files.catbox.moe/o6iulu.png
-SLIDE_URL: https://files.catbox.moe/fiwk1l.png
-AUDIO_URL: https://files.catbox.moe/j44adr.mp3
-THUMBNAIL_URL: https://files.catbox.moe/wb2eer.png
-SLIDE_URL: https://files.catbox.moe/r55plj.png
-AUDIO_URL: https://files.catbox.moe/j44adr.mp3
-THUMBNAIL_URL: https://files.catbox.moe/jmnpca.png
-SLIDE_URL: https://files.catbox.moe/elaax5.png
-SLIDE_URL: https://files.catbox.moe/x0yvwj.jpg
-AUDIO_URL: https://files.catbox.moe/087dwy.mp3
-THUMBNAIL_URL: https://files.catbox.moe/huhs3o.png
-SLIDE_URL: https://files.catbox.moe/ntohhe.png
-SLIDE_URL: https://files.catbox.moe/m5eydt.jpg
-AUDIO_URL: https://files.catbox.moe/1h27ej.mp3
-THUMBNAIL_URL: https://files.catbox.moe/23kxs0.jpg
-SLIDE_URL: https://files.catbox.moe/23kxs0.jpg
-AUDIO_URL: https://files.catbox.moe/1h27ej.mp3
-THUMBNAIL_URL: https://files.catbox.moe/gi62a6.jpg
-SLIDE_URL: https://files.catbox.moe/tmt2i9.png
-SLIDE_URL: https://files.catbox.moe/pd6g80.png
-AUDIO_URL: https://files.catbox.moe/1h27ej.mp3
+https://files.catbox.moe/lar4jm.wav
+https://files.catbox.moe/9bmaeo.wav
+https://files.catbox.moe/qssw3f.mp3
+https://files.catbox.moe/lqr2zr.mp3
+https://files.catbox.moe/1fg4a9.mp3
+https://files.catbox.moe/j44adr.mp3
+https://files.catbox.moe/087dwy.mp3
+https://files.catbox.moe/1h27ej.mp3

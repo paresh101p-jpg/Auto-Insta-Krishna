@@ -193,8 +193,22 @@ def save_registry(reg):
 def load_urls(filepath):
     if not os.path.exists(filepath):
         return []
+    audio_urls = []
     with open(filepath, "r", encoding="utf-8") as f:
-        return [line.strip() for line in f if line.strip() and not line.startswith("#")]
+        for line in f:
+            line = line.strip()
+            if not line or line.startswith("#"):
+                continue
+            # If line is explicitly a thumbnail or slide, skip it
+            if line.startswith("THUMBNAIL_URL:") or line.startswith("SLIDE_URL:"):
+                continue
+            m = re.search(r"https?://files\.catbox\.moe/[^\s]+", line)
+            if m:
+                u = m.group(0)
+                if u.endswith((".wav", ".mp3", ".m4a", ".ogg", ".flac", ".aac")) or line.startswith("AUDIO_URL:"):
+                    if u not in audio_urls:
+                        audio_urls.append(u)
+    return audio_urls
 
 
 def save_urls(filepath, urls):
@@ -641,21 +655,22 @@ def upload_next_to_youtube():
                 target_url = u
                 break
 
-    if not target_url and urls:
-        target_url = urls[0]
+    if not target_url:
+        for k, v in reg.items():
+            if k.startswith("http") and not k.startswith("AUDIO_URL:") and v.get("status") != "uploaded":
+                target_url = k
+                break
 
     fix_id = os.environ.get("FIX_PREV_VIDEO_ID")
     if not target_url and fix_id:
         print(f"[INFO] कोई नया गाना क्यू में नहीं है, लेकिन FIX_PREV_VIDEO_ID={fix_id} दिया गया है।")
         print("  🛠️ पुराने वीडियो का वाटरमार्क-मुक्त थंबनेल और AI मेटाडेटा अपडेट किया जा रहा है...")
-        # रजिस्ट्री से अंतिम गाना या डिफ़ॉल्ट गाना लें
-        last_url = list(reg.keys())[-1] if reg else "https://files.catbox.moe/752c43.mp3"
-        s_info = reg.get(last_url, {
-            "name": "Vrindavan Maha Kirtan - Bansuri Se Bula Le - Treblo",
-            "mood": "Balanced Bhakti", "mood_hi": "संतुलित भक्ति संगीत",
-            "target_audience": "God", "target_audience_hi": "भगवान के लिए"
-        })
-        s_name = s_info.get("name", "Vrindavan Maha Kirtan - Bansuri Se Bula Le")
+        # रजिस्ट्री से अंतिम गाना लें
+        last_url = list(reg.keys())[-1] if reg else None
+        if not last_url:
+            return False
+        s_info = reg.get(last_url, {})
+        s_name = s_info.get("name", "Vrindavan Maha Kirtan")
         
         # ऑडियो डाउनलोड करके विश्लेषण
         if not os.path.exists(TEMP_AUDIO) and last_url.startswith("http"):
@@ -699,21 +714,23 @@ def upload_next_to_youtube():
         print("[INFO] क्यू खाली है। अपलोड करने के लिए कोई पेंडिंग गाना नहीं।")
         return False
 
-    song_info = reg.get(target_url, {})
-    song_name = song_info.get("name", "Vrindavan Maha Kirtan - Bansuri Se Bula Le - Treblo")
+    song_info = reg.get(target_url)
+    if not song_info:
+        print(f"❌ '{target_url}' के लिए रजिस्ट्री में कोई डेटा नहीं मिला!")
+        return False
+    song_name = song_info.get("name")
+    if not song_name:
+        print(f"❌ '{target_url}' का कोई नाम नहीं मिला!")
+        return False
+
     print(f"\n🎵 यूट्यूब अपलोड प्रारंभ: {song_name}")
     print(f"  🔗 ऑडियो स्रोत: {target_url}")
 
-    # ऑडियो प्राप्त करना (लोकल या डाउनलोड)
-    local_audio_cand = os.path.join(SONGS_UPLOADED, f"{song_name}.wav")
-    if os.path.exists(local_audio_cand):
-        shutil.copy2(local_audio_cand, TEMP_AUDIO)
-        print(f"  📁 लोकल ऑडियो प्रयुक्त: {local_audio_cand}")
-    else:
-        print("  📥 Catbox से ऑडियो डाउनलोड हो रहा है...")
-        if not download_file(target_url, TEMP_AUDIO):
-            print("❌ ऑडियो डाउनलोड विफल!")
-            return False
+    # ऑडियो प्राप्त करना (हमेशा ताज़ा CDN डाउनलोड ताकि पुराना गाना रिपीट न हो)
+    print("  📥 Catbox CDN से नया ऑडियो डाउनलोड हो रहा है...")
+    if not download_file(target_url, TEMP_AUDIO):
+        print("❌ ऑडियो डाउनलोड विफल!")
+        return False
 
     # 100% Unique Audio Fingerprint & Anti-Copyright Shield
     print("  🛡️ ऑडियो फ़िंगरप्रिंट शील्ड सक्रिय: मेटाडेटा स्ट्रिप, 1.5% वेवफ़ॉर्म मॉड्युलेशन व 432Hz हारमोनिक EQ...")
@@ -808,7 +825,7 @@ def upload_next_to_youtube():
         print(f"  ⚠️ थंबनेल अपलोड चेतावनी: {e}")
 
     # पुराने वीडियो (यदि हो) को Unlisted करना व थंबनेल और AI मेटाडेटा अपडेट करना
-    fix_id = os.environ.get("FIX_PREV_VIDEO_ID", "jpCARdivrts")
+    fix_id = os.environ.get("FIX_PREV_VIDEO_ID", "")
     if fix_id:
         # अगर fix_id वर्तमान वीडियो id ही है, तो भी उसका टाइटल व डिस्क्रिप्शन अपडेट करें
         target_fix_id = fix_id if fix_id != video_id else video_id
