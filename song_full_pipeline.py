@@ -123,13 +123,14 @@ def apply_audio_fingerprint_shield(input_path, output_path=None):
         output_path = input_path + ".shielded.mp3"
 
     filter_str = (
-        "silenceremove=start_periods=1:start_duration=0.5:start_threshold=-50dB:detection=peak,"
-        "silenceremove=stop_periods=1:stop_duration=1.0:stop_threshold=-50dB:detection=peak,"
+        "silenceremove=start_periods=1:start_duration=0.3:start_threshold=-50dB:detection=peak,"
+        "silenceremove=stop_periods=1:stop_duration=0.8:stop_threshold=-50dB:detection=peak,"
         "atempo=1.015,"
-        "equalizer=f=432:t=q:w=1.2:g=2,"
-        "equalizer=f=3200:t=q:w=1.5:g=1.2,"
-        "volume=1.04,"
-        "loudnorm=I=-16:TP=-1.5:LRA=11"
+        "equalizer=f=220:t=q:w=1.2:g=2.5,"
+        "equalizer=f=3200:t=q:w=1.2:g=2.0,"
+        "aecho=0.75:0.5:28:0.10,"
+        "extrastereo=m=1.15,"
+        "loudnorm=I=-14:TP=-1.0:LRA=11"
     )
     cmd = [
         FFMPEG_EXE, "-y",
@@ -152,13 +153,14 @@ def apply_audio_fingerprint_shield(input_path, output_path=None):
 def clean_audio(input_path, output_path):
     """ऑडियो को साफ करना, साइलेंस हटाना, फ़िंगरप्रिंट शील्ड लगाना व 320k MP3 में बदलना"""
     filter_str = (
-        "silenceremove=start_periods=1:start_duration=0.5:start_threshold=-50dB:detection=peak,"
-        "silenceremove=stop_periods=1:stop_duration=1.0:stop_threshold=-50dB:detection=peak,"
+        "silenceremove=start_periods=1:start_duration=0.3:start_threshold=-50dB:detection=peak,"
+        "silenceremove=stop_periods=1:stop_duration=0.8:stop_threshold=-50dB:detection=peak,"
         "atempo=1.015,"
-        "equalizer=f=432:t=q:w=1.2:g=2,"
-        "equalizer=f=3200:t=q:w=1.5:g=1.2,"
-        "volume=1.04,"
-        "loudnorm=I=-16:TP=-1.5:LRA=11"
+        "equalizer=f=220:t=q:w=1.2:g=2.5,"
+        "equalizer=f=3200:t=q:w=1.2:g=2.0,"
+        "aecho=0.75:0.5:28:0.10,"
+        "extrastereo=m=1.15,"
+        "loudnorm=I=-14:TP=-1.0:LRA=11"
     )
     cmd = [
         FFMPEG_EXE, "-y",
@@ -789,13 +791,15 @@ def upload_next_to_youtube():
     # लिरिक्स जांचना (यदि रजिस्ट्री में या फाइल में मौजूद हो)
     lyrics_cand = song_info.get("lyrics") or song_info.get("lyrics_url")
     if not lyrics_cand:
-        local_lrc = os.path.join(BASE_DIR, "Songs", f"{song_name}.txt")
-        if os.path.exists(local_lrc):
-            try:
-                with open(local_lrc, "r", encoding="utf-8") as lf:
-                    lyrics_cand = lf.read()
-            except Exception:
-                pass
+        for ext in [".srt", ".txt", ".lrc"]:
+            local_lrc = os.path.join(BASE_DIR, "Songs", f"{song_name}{ext}")
+            if os.path.exists(local_lrc):
+                try:
+                    with open(local_lrc, "r", encoding="utf-8") as lf:
+                        lyrics_cand = lf.read()
+                        break
+                except Exception:
+                    pass
 
     # 1080p एनिमेटेड वीडियो जनरेशन
     print("\n🎬 1080p एनिमेटेड म्यूजिक वीडियो तैयार हो रहा है (Ken Burns + Flora Particles + Sparkles + Synced Lyrics)...")
