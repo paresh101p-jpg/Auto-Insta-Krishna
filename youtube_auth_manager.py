@@ -105,6 +105,63 @@ def get_active_youtube_service():
 
     raise Exception("No valid YouTube tokens found!")
 
+def get_authenticated_service():
+    """
+    Returns an authenticated Google API YouTube v3 service instance.
+    Seamlessly works with:
+    1. GitHub Actions Environment Variables (YOUTUBE_CLIENT_ID, YOUTUBE_CLIENT_SECRET, YOUTUBE_REFRESH_TOKEN)
+    2. Local Multi-Engine Auto-Failover (Engine 1, Engine 2, youtube_token.json)
+    """
+    client_id = os.environ.get("YOUTUBE_CLIENT_ID")
+    client_secret = os.environ.get("YOUTUBE_CLIENT_SECRET")
+    refresh_token = os.environ.get("YOUTUBE_REFRESH_TOKEN")
+
+    if client_id and client_secret and refresh_token:
+        try:
+            creds = Credentials(
+                token=None,
+                refresh_token=refresh_token,
+                token_uri="https://oauth2.googleapis.com/token",
+                client_id=client_id,
+                client_secret=client_secret,
+                scopes=["https://www.googleapis.com/auth/youtube"]
+            )
+            return build("youtube", "v3", credentials=creds)
+        except Exception as e:
+            print(f"[youtube_auth_manager] Notice authenticating with env credentials: {e}")
+
+    # Fallback to local multi-engine token files
+    try:
+        service, engine_name = get_active_youtube_service()
+        print(f"[youtube_auth_manager] Authenticated via {engine_name}")
+        return service
+    except Exception as e:
+        print(f"[youtube_auth_manager] Local engine tokens unavailable: {e}")
+
+    # Fallback to single youtube_token.json if exists
+    if os.path.exists(ACTIVE_TOKEN):
+        try:
+            with open(ACTIVE_TOKEN, "r", encoding="utf-8") as f:
+                data = json.load(f)
+                c_id = data.get("client_id")
+                c_sec = data.get("client_secret")
+                r_tok = data.get("refresh_token")
+                if c_id and c_sec and r_tok:
+                    creds = Credentials(
+                        token=None,
+                        refresh_token=r_tok,
+                        token_uri="https://oauth2.googleapis.com/token",
+                        client_id=c_id,
+                        client_secret=c_sec,
+                        scopes=["https://www.googleapis.com/auth/youtube"]
+                    )
+                    return build("youtube", "v3", credentials=creds)
+        except Exception as e:
+            print(f"[youtube_auth_manager] Notice reading ACTIVE_TOKEN: {e}")
+
+    print("[youtube_auth_manager] Error: No valid YouTube authentication credentials found.")
+    return None
+
 if __name__ == "__main__":
     service, engine = get_active_youtube_service()
     print(f"SUCCESS: Active YouTube Engine: {engine}")
