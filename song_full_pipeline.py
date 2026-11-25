@@ -400,18 +400,18 @@ def generate_metadata(song_name, song_info, audio_file=None, lyrics_text=None):
                 "     * If Romantic / Love Song: 'तेरे बिन जिया लागे ना | Soulful Love Song | Krishna Vibez'\n"
                 "     * If Mantra/Chant: 'मन को शांत कर देगा यह महामंत्र | Sacred Krishna Meditation Chant | Krishna Vibez'\n"
                 "     * If Movie/Lyrical Song: 'तेरी मुरली की मधुर तान | Soulful Krishna Devotional Song | Krishna Vibez'\n\n"
-                "3. WRITE A RICH, SOUL-TOUCHING SPIRITUAL DESCRIPTION:\n"
-                "   - Write 2-3 deep, poetic paragraphs in soulful Hindi explaining the divine essence and meaning of the lyrics/words in this specific song.\n"
-                "   - Include the transcribed lyrics hook or core spiritual verse in Hindi.\n"
-                "   - Detail the peace, joy, anxiety relief, and inner awakening experienced while listening.\n\n"
-                "4. 15 HIGHLY SEARCHED TAGS:\n"
-                "   - Generate 15 precise search tags including the lyrics words, song genre, and spiritual keywords.\n\n"
+                "3. WRITE ABOUT THIS DEVOTIONAL SONG (गीत का परिचय, भावार्थ व मुख्य बोल):\n"
+                "   - song_meaning: Write a soulful, concise 2-3 sentence Hindi explanation of what this specific song is about, the devotion and emotion expressed, and who it is dedicated to (Shri Ram, Hanuman Ji, Radha Krishna, Shiv Mahadev, etc.).\n"
+                "   - lyrics_highlights: 4-6 key lyrical lines from this song in Hindi.\n"
+                "   - CRITICAL: ABSOLUTELY ZERO generic meditation, sleep, alpha waves, deep dhyan, or shanti boilerplate! Focus 100% on the devotional song, deity, devotion, melody, and bhakti.\n\n"
+                "4. 15 HIGHLY SEARCHED DEVOTIONAL TAGS:\n"
+                "   - Generate 15 precise search tags including the deity name, bhajan keywords, song lyrics words, and devotional genre (NO sleep/meditation tags).\n\n"
                 "Return JSON STRICTLY in this format:\n"
                 "{\n"
                 '  "title": "...",\n'
-                '  "lyrics_hook": "...",\n'
-                '  "spiritual_meaning": "...",\n'
-                '  "song_type": "Devotional Song / Krishna Flute / Devotional Track",\n'
+                '  "song_meaning": "...",\n'
+                '  "lyrics_highlights": "...",\n'
+                '  "deity": "...",\n'
                 '  "tags": ["...", "..."]\n'
                 "}"
             )
@@ -448,8 +448,8 @@ def generate_metadata(song_name, song_info, audio_file=None, lyrics_text=None):
                     txt = txt.split("```")[1].split("```")[0].strip()
                 data = json.loads(txt)
                 ai_title = data.get("title")
-                ai_desc_meaning = data.get("spiritual_meaning")
-                ai_lyrics_hook = data.get("lyrics_hook")
+                ai_desc_meaning = data.get("song_meaning") or data.get("spiritual_meaning")
+                ai_lyrics_hook = data.get("lyrics_highlights") or data.get("lyrics_hook")
                 ai_tags = data.get("tags", [])
         except Exception as e:
             print(f"  ⚠️ Gemini AI मेटाडेटा निर्माण सूचना: {e}")
@@ -458,45 +458,79 @@ def generate_metadata(song_name, song_info, audio_file=None, lyrics_text=None):
     if not ai_title:
         clean_hint = re.sub(r'[-_]', ' ', song_name)
         clean_hint = re.sub(r'\b(Treblo|Official|Audio|Song|Wav|Mp3)\b', '', clean_hint, flags=re.I).strip()
-        ai_title = f"{clean_hint} | श्री कृष्ण अमृत बाँसुरी एवं कीर्तन | Krishna Vibez"
+        ai_title = f"{clean_hint} | पावन भक्ति भजन | Krishna Vibez"
 
     if len(ai_title) > 95:
         ai_title = ai_title[:92] + "..."
 
-    # विस्तृत, भव्य और संपूर्ण यूट्यूब डिस्क्रिप्शन
-    meaning_block = ai_desc_meaning if ai_desc_meaning else (
-        "भगवान श्री कृष्ण के पावन चरणों में समर्पित यह दिव्य संगीत मन के समस्त तनाव, चिंता और "
-        "नकारात्मकता को समाप्त कर अंतरात्मा को असीम शांति, आनंद और सकारात्मक ऊर्जा से भर देता है। "
-        "यह मधुर धुन ध्यान (Meditation), पूजा एवं गहरी एकाग्रता के लिए सर्वोत्तम है।"
-    )
+    # गीत के मुख्य बोल निकालना (SRT या लिरिक्स टेक्स्ट से)
+    raw_lyrics_src = lyrics_text or (song_info.get("lyrics") if song_info else None)
+    extracted_lyrics_lines = []
+    if raw_lyrics_src:
+        for line in str(raw_lyrics_src).splitlines():
+            line = line.strip()
+            if not line or "-->" in line or line.isdigit():
+                continue
+            cleaned_line = re.sub(r'\[.*?\]', '', line).strip()
+            if cleaned_line and cleaned_line not in extracted_lyrics_lines:
+                extracted_lyrics_lines.append(cleaned_line)
 
-    lyrics_hook_block = f"🪷 मुख्य बोल / बोल भाव:\n\"{ai_lyrics_hook}\"\n\n" if ai_lyrics_hook else ""
+    if extracted_lyrics_lines:
+        sample_lyrics = "\n".join(extracted_lyrics_lines[:6])
+        lyrics_block = f"📜 गीत के मुख्य पावन बोल (Song Lyrics Highlights):\n{sample_lyrics}\n\n"
+    elif ai_lyrics_hook:
+        lyrics_block = f"📜 गीत के मुख्य पावन बोल (Song Lyrics Highlights):\n{ai_lyrics_hook}\n\n"
+    else:
+        lyrics_block = ""
 
+    # गीत का भावार्थ (Song Meaning & Essence - No generic meditation/sleep boilerplate)
+    name_lower = (song_name + " " + str(ai_title)).lower()
+    if ai_desc_meaning:
+        meaning_block = ai_desc_meaning.strip()
+    elif "ram" in name_lower or "सियाराम" in name_lower or "अयोध्या" in name_lower:
+        meaning_block = (
+            "यह पावन भजन मर्यादा पुरुषोत्तम भगवान श्री राम के पावन चरणों में समर्पित है। "
+            "इसके मधुर शब्द प्रभु के आगमन के आनंद, अटूट विश्वास और अनन्य भक्ति रस से हृदय को भर देते हैं।"
+        )
+    elif "hanuman" in name_lower or "बजरंग" in name_lower or "अंजनी" in name_lower or "संकट मोचन" in name_lower:
+        meaning_block = (
+            "यह पावन भक्ति गीत संकट मोचन श्री हनुमान जी के चरणों में समर्पित है। "
+            "यह गीत भक्तों के समस्त संकटों, भयों और कष्टों का निवारण कर जीवन में असीम साहस, सुरक्षा और आत्मिक संबल प्रदान करता है।"
+        )
+    elif "shiv" in name_lower or "महादेव" in name_lower or "शंभू" in name_lower or "भोले" in name_lower:
+        meaning_block = (
+            "यह पावन स्तुति देवों के देव महादेव भगवान शिव के चरणों में समर्पित है। "
+            "इसके दिव्य स्वर मन के सभी विकारों को शांत कर अंतरात्मा को महादेव के पावन ध्यान और भक्ति रस में लीन कर देते हैं।"
+        )
+    else:
+        meaning_block = (
+            "यह पावन भक्ति गीत पूर्ण श्रद्धा और प्रेम रस से ओत-प्रोत है। "
+            "इसके शब्द और धुन मन को प्रभु के पावन चरणों से जोड़ते हैं और अंतरात्मा को दिव्य भक्ति रस में लीन कर देते हैं।"
+        )
+
+    # देवता और भक्ति के अनुरूप हैशटैग्स
+    if "ram" in name_lower or "सियाराम" in name_lower:
+        deity_hashtags = "#ShriRam #RamBhajan #AyodhyaRam #RamSong #JaiShriRam"
+    elif "hanuman" in name_lower or "बजरंग" in name_lower or "अंजनी" in name_lower:
+        deity_hashtags = "#HanumanJi #Bajrangbali #HanumanBhajan #SankatMochan #JaiHanuman"
+    elif "shiv" in name_lower or "महादेव" in name_lower:
+        deity_hashtags = "#Mahadev #ShivBhajan #HarHarMahadev #BholeNath #ShivShambhu"
+    else:
+        deity_hashtags = "#Krishna #RadheKrishna #KrishnaBhajan #KrishnaSong #Vrindavan"
+
+    hashtags_str = f"{deity_hashtags} #BhaktiSong #HindiBhajan #DevotionalSong #KrishnaVibez #Bhajan"
+
+    # विस्तृत, समर्पित भक्ति गीत विवरण (बिना किसी generic meditation/sleep boilerplate के)
     description = (
-        f"🌸 स्वागत है Krishna Vibez के पावन संगीत संसार में 🌸\n\n"
-        f"Experience profound inner peace, deep tranquility, and divine healing with this sacred "
-        f"Lord Krishna Devotional music video.\n\n"
-        f"🌿 आज का पावन प्रसंग: {ai_title}\n"
-        f"🎭 संगीत भाव: {mood_hi} ({mood})\n"
-        f"👥 समर्पण: {target_hi}\n\n"
-        f"{lyrics_hook_block}"
-        f"📖 पावन भावार्थ (Spiritual Meaning):\n"
+        f"🌸 स्वागत है Krishna Vibez में 🌸\n\n"
+        f"🎵 आज का पावन भक्ति गीत: {ai_title}\n"
+        f"🎭 भाव रस: {mood_hi} ({mood})\n"
+        f"🙏 समर्पण: {target_hi}\n\n"
+        f"━━━━━━━━━━━━━━━━━━━━━━━━━━\n\n"
+        f"📖 गीत का भावार्थ (About the Song & Meaning):\n"
         f"{meaning_block}\n\n"
-        "✨ पावन संगीत का महत्व (Spiritual Peace & Mind Healing):\n"
-        "यह संगीत मन को शांत करने वाली सकारात्मक तरंगों पर आधारित है। यह मधुर धुन मस्तिष्क की अल्फा तरंगों (Alpha Waves) को "
-        "सक्रिय करती है, मानसिक तनाव व अनिद्रा को दूर करती है, हृदय स्पंदन को शांत करती है और आत्मिक सुकून प्रदान करती है।\n\n"
-        "🧘 इस पावन संगीत के सर्वोत्तम उपयोग (Ideal For):\n"
-        "• ध्यान, योग और दैनिक साधना (Deep Meditation, Dhyan & Daily Yoga)\n"
-        "• तनाव, चिंता और अधिक सोचने (Overthinking) से मुक्ति (Stress Relief & Mental Peace)\n"
-        "• गहरी और सुकून भरी नींद (Deep Sleep & Restorative Rest)\n"
-        "• प्रातःकालीन पूजा, आरती और घर में सकारात्मक ऊर्जा (Morning Pooja & Positive Home Vibes)\n"
-        "• पढ़ाई और कार्य में एकाग्रता (Deep Study & Work Focus)\n\n"
-        "⏱️ समय सारणी (Chapters / Timestamps):\n"
-        "00:00 🪷 दिव्य मंगलाचरण एवं बाँसुरी प्रवेश (Divine Awakening)\n"
-        "01:00 🪶 वृंदावन अमृत प्रवाह (Sacred Flow)\n"
-        "02:00 🌊 आत्मिक शांति और गहन ध्यान (Deep Meditation Flow)\n"
-        "02:30 ✨ असीम शांति एवं समापन विश्राम (Closing Shanti & Gratitude)\n\n"
-        "━━━━━━━━━━━━━━━━━━━━━━━━━━\n\n"
+        f"{lyrics_block}"
+        f"━━━━━━━━━━━━━━━━━━━━━━━━━━\n\n"
         "🕊️ कृष्ण वाइब्स के आध्यात्मिक परिवार से जुड़ें:\n"
         "🌐 आधिकारिक वेबसाइट: https://krishnavibez.in/\n"
         "▶️ आधिकारिक YouTube: https://www.youtube.com/@KrishnaVibezMusic\n"
@@ -506,28 +540,36 @@ def generate_metadata(song_name, song_info, audio_file=None, lyrics_text=None):
         "🧵 Threads: https://www.threads.net/@krishnavibez\n"
         "📘 Facebook पेज: https://www.facebook.com/1808917602588221\n"
         "📌 Pinterest: https://in.pinterest.com/MojiloMart/\n\n"
-        "━━━━━━━━━━━━━━━━━━━━━━━━━━\n"
+        "━━━━━━━━━━━━━━━━━━━━━━━━━━\n\n"
         "🛍️ Divine Recommendations (Amazon Storefront):\n"
         "👉 Explore our Amazon Store: https://www.amazon.in/shop/myhappybirthday\n"
         "(Disclaimer: Krishna Vibez earns from qualifying purchases at no extra cost to you.)\n\n"
-        "━━━━━━━━━━━━━━━━━━━━━━━━━━\n"
+        "━━━━━━━━━━━━━━━━━━━━━━━━━━\n\n"
         "⚖️ आधिकारिक कॉपीराइट एवं संगीत अस्वीकरण (Copyright & Music Disclaimer):\n"
         "• संगीत एवं ऑडियो (Music & Audio): यह संगीत 100% मूल (Original) एवं कृष्ण वाइब्स (Krishna Vibez) द्वारा एक्सक्लूसिव रूप से निर्मित है। All compositions are copyright-safe and owned/mastered by Krishna Vibez.\n"
         "• दृश्य एवं वीडियो (Visuals & Art): सभी 16:9 सिनेमैटिक विजुअल्स एवं कलाकृतियां कृष्ण वाइब्स की मूल संपत्ति हैं।\n"
-        "• उद्देश्य (Purpose): यह पावन संगीत केवल मानसिक शांति, ध्यान, योग, तनाव मुक्ति और अनिद्रा से राहत के आध्यात्मिक कल्याण हेतु निर्मित है।\n"
-        "• सुरक्षा सूचना (Safety Notice): कृपया वाहन चलाते समय या भारी मशीनरी चलाते समय ध्यान/नींद संगीत न सुनें।\n"
+        "• उद्देश्य (Purpose): यह पावन भक्ति संगीत जन-जन में ईश्वर के प्रति श्रद्धा, सकारात्मकता और आध्यात्मिक चेतना जागृत करने हेतु निर्मित है।\n"
         "• कॉपीराइट सूचना (Copyright Notice): इस चैनल के किसी भी ऑडियो या वीडियो को पुनः अपलोड (re-upload) करना पूर्णतः प्रतिबंधित है। All Rights Reserved © 2026 Krishna Vibez.\n\n"
-        "━━━━━━━━━━━━━━━━━━━━━━━━━━\n"
-        "🙏 यदि इस संगीत ने आपके मन को शांति और सुकून दिया हो, तो वीडियो को लाइक करें, अपने परिजनों के साथ साझा करें और चैनल को सब्सक्राइब अवश्य करें।\n\n"
-        "जय श्री राधे कृष्ण! 🪷✨\n\n"
-        "#Krishna #Flute #Bansuri #MeditationMusic #KrishnaMusic #DivineMusic #RadhaKrishna #RelaxingMusic #InnerPeace #DeepSleep #BansuriTabla #KrishnaVibez #DailyMeditation #Bhakti"
+        "━━━━━━━━━━━━━━━━━━━━━━━━━━\n\n"
+        "🙏 यदि यह भक्ति गीत आपके हृदय को स्पर्श करे, तो वीडियो को लाइक करें, अपने परिजनों व मित्रों के साथ साझा करें और चैनल को सब्सक्राइब अवश्य करें।\n\n"
+        "जय श्री राधे कृष्ण! 🙏✨\n\n"
+        f"{hashtags_str}"
     )
 
-    tags = list(dict.fromkeys(ai_tags + [
-        "Krishna Vibez", "Krishna Song", "Krishna Flute", "Bansuri Dhun", "Vrindavan Kirtan",
-        "Bansuri Se Bula Le", "Krishna Devotional Song", "Radhe Krishna", "Bhakti Song",
-        "Flute Meditation", "Spiritual Music", "Deep Sleep Music", "Relaxing Music", "Peaceful Instrumental"
-    ]))
+    base_tags = [
+        "Krishna Vibez", "Bhakti Song", "Devotional Song", "Hindi Bhajan",
+        "New Bhajan", "Soulful Devotional", "Spiritual Song", "Aarti", "Kirtan"
+    ]
+    if "ram" in name_lower or "सियाराम" in name_lower:
+        base_tags.extend(["Shri Ram Bhajan", "Ram Song", "Ayodhya Ram", "Jai Shri Ram", "Ram Dhun"])
+    elif "hanuman" in name_lower or "बजरंग" in name_lower:
+        base_tags.extend(["Hanuman Bhajan", "Bajrangbali Song", "Sankat Mochan", "Jai Hanuman", "Hanuman Ji"])
+    elif "shiv" in name_lower or "महादेव" in name_lower:
+        base_tags.extend(["Shiv Bhajan", "Mahadev Song", "Har Har Shambhu", "Bhole Baba", "Om Namah Shivaya"])
+    else:
+        base_tags.extend(["Krishna Bhajan", "Radha Krishna Song", "Govind Gopala", "Krishna Flute", "Vrindavan Kirtan"])
+
+    tags = list(dict.fromkeys(ai_tags + base_tags))
 
     return ai_title, description, tags
 

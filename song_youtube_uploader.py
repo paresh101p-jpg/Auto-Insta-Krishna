@@ -278,14 +278,29 @@ def generate_song_metadata(song_info):
     if is_vocal:
         vocal_note = "इस गीत में मधुर स्वर और भावपूर्ण गायन है।"
 
+    lyrics_block = ""
+    raw_lyrics = song_info.get("lyrics", "")
+    if raw_lyrics:
+        extracted = []
+        for l in str(raw_lyrics).splitlines():
+            l = l.strip()
+            if not l or "-->" in l or l.isdigit():
+                continue
+            l = re.sub(r'\[.*?\]', '', l).strip()
+            if l and l not in extracted:
+                extracted.append(l)
+        if extracted:
+            lyrics_block = "📜 गीत के मुख्य पावन बोल (Song Lyrics Highlights):\n" + "\n".join(extracted[:6]) + "\n\n"
+
     description = (
         f"🎵 {song_name}\n"
         "━━━━━━━━━━━━━━━━━━━━━━━━━━\n"
-        "🪷 दिव्य भक्ति संगीत | Divine Krishna Song\n"
+        "🪷 दिव्य भक्ति संगीत | Divine Devotional Song\n"
         f"🎭 मूड: {mood_hi}\n"
         f"🎙️ {vocal_note}\n\n"
-        "📖 भावार्थ:\n"
+        "📖 भावार्थ (Song Meaning):\n"
         f"{meaning}\n\n"
+        f"{lyrics_block}"
         "✨ English Summary:\n"
         "A divine Krishna bhakti song dedicated to Lord Krishna. "
         "Listen for peace, devotion, and spiritual bliss.\n\n"
