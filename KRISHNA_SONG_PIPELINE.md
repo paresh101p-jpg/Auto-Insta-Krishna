@@ -56,9 +56,8 @@
 
 | # | Deity | Song Name | Audio URL | Thumbnail (With Text) | Clean Slide (No Text) |
 | :--- | :--- | :--- | :--- | :--- | :--- |
-| **1** | Lord Krishna | *Mere Shyam - मेरे हर गीत में तू* | `https://files.catbox.moe/lqr2zr.mp3` | `https://files.catbox.moe/n6qo8o.png` | `https://files.catbox.moe/js8nno.png` |
-| **2** | Lord Krishna | *Krishna Sada Sahayate - Govind Damodar* | `https://files.catbox.moe/1fg4a9.mp3` | `https://files.catbox.moe/azmkd3.png` | `https://files.catbox.moe/szpuog.png` |
-| **3** | Lord Krishna | *Chhoti Chhoti Gaiya - Madan Gopal* | `https://files.catbox.moe/9bmaeo.wav` | `https://files.catbox.moe/uu7vmb.jpg` | `https://files.catbox.moe/ngd92q.jpg` |
-| **4** | Lord Hanuman | *Hanuman Ji - Sankat Mochan Hey Anjanilala* | `https://files.catbox.moe/j44adr.mp3` | `https://files.catbox.moe/wb2eer.png` | `https://files.catbox.moe/r55plj.png` |
-| **5** | Lord Hanuman | *Hanuman Ji - Bajrangi Mere Bajrangi* | `https://files.catbox.moe/087dwy.mp3` | `https://files.catbox.moe/huhs3o.png` | `https://files.catbox.moe/ntohhe.png` |
-| **6** | Lord Ram | *Mere Ghar Ram Padhare Hain - कुटिया में उजाला* | `https://files.catbox.moe/1h27ej.mp3` | `https://files.catbox.moe/pz4uxc.jpg` | `https://files.catbox.moe/tj3yi9.jpg` |
+| **1** | Lord Krishna | *Mere Shyam - मेरे हर गीत में तू* | `https://files.catbox.moe/lqr2zr.mp3` | `https://files.catbox.moe/js8nno.png` | `https://files.catbox.moe/n6qo8o.png` |
+| **2** | Lord Krishna | *Krishna Sada Sahayate - Govind Damodar* | `https://files.catbox.moe/1fg4a9.mp3` | `https://files.catbox.moe/szpuog.png` | `https://files.catbox.moe/azmkd3.png` |
+| **3** | Lord Hanuman | *Hanuman Ji - Sankat Mochan Hey Anjanilala* | `https://files.catbox.moe/j44adr.mp3` | `https://files.catbox.moe/r55plj.png` | `https://files.catbox.moe/wb2eer.png` |
+| **4** | Lord Hanuman | *Hanuman Ji - Bajrangi Mere Bajrangi* | `https://files.catbox.moe/087dwy.mp3` | `https://files.catbox.moe/ntohhe.png` | `https://files.catbox.moe/huhs3o.png` |
+| **5** | Lord Ram | *Mere Ghar Ram Padhare Hain - कुटिया में उजाला* | `https://files.catbox.moe/1h27ej.mp3` | `https://files.catbox.moe/pz4uxc.jpg` | `https://files.catbox.moe/tj3yi9.jpg` |
