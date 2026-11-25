@@ -1,3 +1,19 @@
+# ABSOLUTE MANDATORY: KRISHNA & DEVOTIONAL SONG VIDEO 2-PIPELINE ARCHITECTURE (100% GITHUB ACTIONS & ZERO-PC)
+**STRICT UNBREAKABLE RULE FOR ALL AGENTS / ASSISTANTS**:
+1. **ZERO LOCAL PC RELIANCE**: PC se kabhi koi live streaming ya rendering nahi hogi. Sab kuch 100% GitHub Actions aur Cloud (Catbox CDN / YouTube Data API) par chalega.
+2. **TWO ISOLATED PIPELINES**:
+   - **Pipeline 1 (Ingestion & Registration - `song_ingest_pipeline.py` / `.github/workflows/song-ingest.yml`)**:
+     - Song ko sunna (Gemini Audio AI), voice-matched second-to-second SRT subtitles nikalna (`Songs/<Song Name>.srt`).
+     - Image Pair Guarantee: 16:9 Thumbnail (with 3D Devanagari typography/badges) + 16:9 Clean Inside Slide (the EXACT same scene 100% text-free/watermark-free).
+     - Upload assets to Catbox CDN, register in `song_tracks_registry.json`, queue in `song_urls.txt`, and push to GitHub `master`.
+   - **Pipeline 2 (Render & YouTube Upload - `song_full_pipeline.py` / `.github/workflows/song-auto.yml`)**:
+     - Runs on GitHub Actions runner (`ubuntu-latest`).
+     - Downloads assets from Catbox CDN (Zero local cache mismatch).
+     - Applies Anti-Copyright Audio Shield & Studio Mastering: metadata strip `-map_metadata -1`, 1.5% micro-tempo `atempo=1.015`, warm vocal EQ `equalizer=f=220:g=2.5,equalizer=f=3200:g=2.0`, divine temple ambiance `aecho=0.75:0.5:28:0.10`, stereo expansion `extrastereo=m=1.15`, and -14 LUFS loudness standard.
+     - Renders 1080p video with gentle Ken Burns slow zoom (1.00 -> 1.08x) on clean slide + drifting flora petals + star sparkles, and voice-synced `.srt` subtitles in a bottom-center golden glassmorphic pill badge.
+     - Uploads to YouTube Unlisted with AI SEO metadata and sets custom thumbnail.
+     - Moves URL to `song_used_urls.txt`, updates tracker, and commits back to repository.
+
 # MANDATORY 100% EXCLUSIVE GOOGLE GEMINI / NANO BANANA IMAGE GENERATION RULE
 1. **STRICT ZERO POLLINATIONS / ZERO 3RD-PARTY INFERIOR AI**:
    - Pollinations AI and any other low-quality AI image services are PERMANENTLY BANNED and PROHIBITED.

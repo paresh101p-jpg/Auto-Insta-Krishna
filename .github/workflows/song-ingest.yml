@@ -1,0 +1,50 @@
+name: Pipeline 1 - Ingest, Voice-Sync & Register Song (100% Zero-PC)
+
+on:
+  workflow_dispatch:
+    inputs:
+      audio_url:
+        description: 'Catbox Audio URL (e.g. https://files.catbox.moe/abc.mp3)'
+        required: true
+      thumb_url:
+        description: '16:9 Thumbnail Image URL (with Devanagari typography/badges)'
+        required: false
+      slide_url:
+        description: '16:9 Clean Inside Slide Image URL (zero text, for Ken Burns zoom)'
+        required: false
+      lyrics_text:
+        description: 'Reference lyrics text (optional, Gemini Audio AI will listen & time-sync)'
+        required: false
+      song_name:
+        description: 'Song Title / Name (optional)'
+        required: false
+
+jobs:
+  ingest-song-job:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: |
+          pip install requests pillow
+
+      - name: Run Pipeline 1 Ingestion Engine
+        env:
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+        run: |
+          python song_ingest_pipeline.py \
+            --audio "${{ github.event.inputs.audio_url }}" \
+            --thumb "${{ github.event.inputs.thumb_url }}" \
+            --slide "${{ github.event.inputs.slide_url }}" \
+            --lyrics "${{ github.event.inputs.lyrics_text }}" \
+            --name "${{ github.event.inputs.song_name }}"
