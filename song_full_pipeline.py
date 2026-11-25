@@ -641,25 +641,57 @@ def upload_next_to_youtube():
     reg = load_registry()
     urls = load_urls(SONG_URLS_FILE)
 
+    from song_video_generator import get_audio_duration
+
     # फोर्स यूआरएल चेक (एनवायरनमेंट से)
     force_url = os.environ.get("FORCE_SONG_URL")
-    target_url = None
+    candidates = []
 
     if force_url and force_url in reg:
-        target_url = force_url
+        candidates.append(force_url)
     else:
-        # पेंडिंग गाना खोजें जिसका स्टेटस uploaded न हो
+        # पेंडिंग गाने खोजें जिनका स्टेटस uploaded या corrupted न हो
         for u in urls:
             info = reg.get(u, {})
-            if info.get("status") != "uploaded":
-                target_url = u
-                break
-
-    if not target_url:
+            if info.get("status") not in ["uploaded", "corrupted"]:
+                candidates.append(u)
         for k, v in reg.items():
-            if k.startswith("http") and not k.startswith("AUDIO_URL:") and v.get("status") != "uploaded":
-                target_url = k
-                break
+            if k.startswith("http") and not k.startswith("AUDIO_URL:") and v.get("status") not in ["uploaded", "corrupted"]:
+                if k not in candidates:
+                    candidates.append(k)
+
+    target_url = None
+    song_info = None
+    song_name = None
+
+    for cand_url in candidates:
+        cand_info = reg.get(cand_url, {})
+        cand_name = cand_info.get("name")
+        if not cand_name:
+            continue
+        print(f"\n🎵 ऑडियो उम्मीदवार जांच रहे हैं: {cand_name}")
+        print(f"  🔗 URL: {cand_url}")
+        if os.path.exists(TEMP_AUDIO):
+            try:
+                os.remove(TEMP_AUDIO)
+            except Exception:
+                pass
+        if not download_file(cand_url, TEMP_AUDIO):
+            print(f"  ❌ ऑडियो डाउनलोड विफल: {cand_url}")
+            continue
+        dur = get_audio_duration(TEMP_AUDIO)
+        if dur < 25.0:
+            print(f"  ⚠️ ऑडियो अमान्य या बहुत छोटा है (अवधि केवल {dur:.2f}s)! इस गाने को छोड़ रहे हैं...")
+            cand_info["status"] = "corrupted"
+            cand_info["corrupted_reason"] = f"Audio duration too short: {dur:.2f}s"
+            reg[cand_url] = cand_info
+            save_registry(reg)
+            continue
+        target_url = cand_url
+        song_info = cand_info
+        song_name = cand_name
+        print(f"  ✅ वैध ऑडियो फ़ाइल स्वीकृत (अवधि: {dur:.1f}s / {dur/60:.2f} मिनट)")
+        break
 
     fix_id = os.environ.get("FIX_PREV_VIDEO_ID")
     if not target_url and fix_id:
@@ -726,11 +758,12 @@ def upload_next_to_youtube():
     print(f"\n🎵 यूट्यूब अपलोड प्रारंभ: {song_name}")
     print(f"  🔗 ऑडियो स्रोत: {target_url}")
 
-    # ऑडियो प्राप्त करना (हमेशा ताज़ा CDN डाउनलोड ताकि पुराना गाना रिपीट न हो)
-    print("  📥 Catbox CDN से नया ऑडियो डाउनलोड हो रहा है...")
-    if not download_file(target_url, TEMP_AUDIO):
-        print("❌ ऑडियो डाउनलोड विफल!")
-        return False
+    # ऑडियो प्राप्त करना (यदि पहले से डाउनलोड नहीं है)
+    if not os.path.exists(TEMP_AUDIO) or os.path.getsize(TEMP_AUDIO) < 10000:
+        print("  📥 Catbox CDN से नया ऑडियो डाउनलोड हो रहा है...")
+        if not download_file(target_url, TEMP_AUDIO):
+            print("❌ ऑडियो डाउनलोड विफल!")
+            return False
 
     # 100% Unique Audio Fingerprint & Anti-Copyright Shield
     print("  🛡️ ऑडियो फ़िंगरप्रिंट शील्ड सक्रिय: मेटाडेटा स्ट्रिप, 1.5% वेवफ़ॉर्म मॉड्युलेशन व 432Hz हारमोनिक EQ...")
