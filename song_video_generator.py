@@ -145,9 +145,11 @@ def create_corner_logo_badge(size=120):
     return badge
 
 
-def overlay_rgba(bg_img, fg_rgba, center_x, center_y, scale=1.0, angle_deg=0.0):
-    """Fast, boundary-checked alpha compositing of RGBA sprite onto BGR frame."""
+def overlay_rgba(bg_img, fg_rgba, center_x, center_y, scale=1.0, angle_deg=0.0, opacity=1.0):
+    """Fast, boundary-checked alpha compositing of RGBA sprite onto BGR frame with optional opacity."""
     import cv2
+    if opacity <= 0.01:
+        return
     fh, fw = fg_rgba.shape[:2]
     new_w = int(fw * scale)
     new_h = int(fh * scale)
@@ -187,7 +189,7 @@ def overlay_rgba(bg_img, fg_rgba, center_x, center_y, scale=1.0, angle_deg=0.0):
     fy2 = fy1 + (cy2 - cy1)
 
     fg_crop = rotated[fy1:fy2, fx1:fx2]
-    alpha = fg_crop[:, :, 3:].astype(np.float32) / 255.0
+    alpha = (fg_crop[:, :, 3:].astype(np.float32) / 255.0) * float(opacity)
     bg_crop = bg_img[cy1:cy2, cx1:cx2].astype(np.float32)
     blended = fg_crop[:, :, :3].astype(np.float32) * alpha + bg_crop * (1.0 - alpha)
     bg_img[cy1:cy2, cx1:cx2] = blended.astype(np.uint8)
@@ -469,13 +471,82 @@ def clean_lyrics_text(text):
     return "\n".join(lines)
 
 
-def create_lyric_badge(text, font_path=None, font_size=38):
+# 6 Luxury Devotional UI Themes for Synchronized Lyric Badges (Auto-rotating per song)
+LYRIC_THEMES = {
+    "royal_gold": {
+        "name": "राजसी स्वर्ण (Royal 24k Gold)",
+        "bg_fill": (14, 10, 6, 215),        # Deep obsidian amber
+        "border_col": (255, 215, 0, 240),   # Radiant 24k Gold
+        "border_width": 2,
+        "glow_col": (255, 215, 0, 160),     # Golden rim halo
+        "glow_width": 4,
+        "text_col": (255, 255, 255, 255),   # Pure crisp white
+        "shadow_col": (0, 0, 0, 240),       # Deep drop shadow
+    },
+    "celestial_silver": {
+        "name": "दिव्य रजत (Celestial Platinum Silver)",
+        "bg_fill": (10, 14, 22, 215),       # Midnight deep sapphire
+        "border_col": (220, 235, 255, 240), # Platinum Silver
+        "border_width": 2,
+        "glow_col": (180, 220, 255, 160),   # Soft icy blue silver glow
+        "glow_width": 4,
+        "text_col": (255, 255, 255, 255),
+        "shadow_col": (0, 0, 0, 240),
+    },
+    "sacred_saffron": {
+        "name": "पवित्र केसरिया (Sacred Saffron Amber)",
+        "bg_fill": (18, 10, 6, 215),        # Deep saffron dusk
+        "border_col": (255, 155, 30, 245),  # Pure kesari amber
+        "border_width": 2,
+        "glow_col": (255, 130, 15, 165),    # Warm sunset kesari glow
+        "glow_width": 4,
+        "text_col": (255, 252, 238, 255),   # Warm ivory
+        "shadow_col": (0, 0, 0, 240),
+    },
+    "vaikuntha_emerald": {
+        "name": "वैकुंठ मरकत (Vaikuntha Emerald Jade)",
+        "bg_fill": (6, 16, 12, 215),        # Forest emerald deep
+        "border_col": (110, 235, 170, 240), # Vivid mint jade
+        "border_width": 2,
+        "glow_col": (60, 210, 130, 160),    # Emerald aura glow
+        "glow_width": 4,
+        "text_col": (255, 255, 255, 255),
+        "shadow_col": (0, 0, 0, 240),
+    },
+    "vrindavan_rose": {
+        "name": "वृंदावन कमल (Vrindavan Lotus Rose)",
+        "bg_fill": (18, 8, 14, 215),        # Deep lotus night
+        "border_col": (255, 175, 205, 240), # Soft magenta rose
+        "border_width": 2,
+        "glow_col": (255, 120, 175, 160),   # Lotus petal glow
+        "glow_width": 4,
+        "text_col": (255, 255, 255, 255),
+        "shadow_col": (0, 0, 0, 240),
+    },
+    "kailash_amethyst": {
+        "name": "कैलाश नीलम (Kailash Mystic Amethyst)",
+        "bg_fill": (14, 10, 22, 215),       # Mystic indigo violet
+        "border_col": (205, 165, 255, 240), # Lavender amethyst
+        "border_width": 2,
+        "glow_col": (175, 120, 255, 160),   # Cosmic violet aura
+        "glow_width": 4,
+        "text_col": (255, 255, 255, 255),
+        "shadow_col": (0, 0, 0, 240),
+    }
+}
+
+
+def create_lyric_badge(text, theme=None, font_path=None, font_size=52):
     """
     निचले हिस्से (Bottom Center) के लिए सुंदर ग्लासमोर्फिक लिरिक बैज (Pill):
-    - ट्रांसलूसेंट डार्क बैकग्राउंड + गोल्डन बॉर्डर
-    - देवनागरी फोंट और क्लियर शैडो
+    - ट्रांसलूसेंट डार्क बैकग्राउंड + डायनामिक लक्ज़री थीम बॉर्डर व आभामंडल (Glow)
+    - देवनागरी फोंट और मल्टी-लेयर ड्रॉप शैडो
+    - बड़ा फ़ॉन्ट (52px) जो मोबाइल और टीवी पर बेहद स्पष्ट और सुंदर दिखता है
     """
     from PIL import Image, ImageDraw, ImageFont
+    if theme is None:
+        theme = LYRIC_THEMES["royal_gold"]
+
     if not font_path or not os.path.exists(font_path):
         cand = os.path.join(BASE_DIR, "NotoSansDevanagari-Bold.ttf")
         font_path = cand if os.path.exists(cand) else None
@@ -491,30 +562,67 @@ def create_lyric_badge(text, font_path=None, font_size=38):
     tw = bbox[2] - bbox[0]
     th = bbox[3] - bbox[1]
 
-    pad_x = 32
-    pad_y = 14
+    pad_x = 45
+    pad_y = 18
     bw = tw + pad_x * 2
     bh = th + pad_y * 2
 
-    badge = Image.new("RGBA", (bw, bh), (0, 0, 0, 0))
-    bdraw = ImageDraw.Draw(badge)
+    # Canvas with padding for outer glow
+    glow_margin = 8
+    cw = bw + glow_margin * 2
+    ch = bh + glow_margin * 2
 
-    # 1. Glassmorphic Pill Background
-    bdraw.rounded_rectangle(
-        [(0, 0), (bw - 1, bh - 1)],
-        radius=bh // 2,
-        fill=(12, 10, 8, 195),
-        outline=(255, 215, 0, 180),
-        width=2
+    canvas = Image.new("RGBA", (cw, ch), (0, 0, 0, 0))
+    cdraw = ImageDraw.Draw(canvas)
+
+    rx0, ry0 = glow_margin, glow_margin
+    rx1, ry1 = rx0 + bw - 1, ry0 + bh - 1
+    radius = bh // 2
+
+    # 1. Subtle Outer Glow Layer
+    glow_col = theme.get("glow_col", (255, 215, 0, 100))
+    glow_w = theme.get("glow_width", 3)
+    cdraw.rounded_rectangle(
+        [(rx0 - glow_w, ry0 - glow_w), (rx1 + glow_w, ry1 + glow_w)],
+        radius=radius + glow_w,
+        outline=glow_col,
+        width=glow_w
     )
 
-    # 2. Text with soft drop shadow
-    tx = pad_x - bbox[0]
-    ty = pad_y - bbox[1]
-    bdraw.text((tx + 2, ty + 2), text, font=font, fill=(0, 0, 0, 220))
-    bdraw.text((tx, ty), text, font=font, fill=(255, 255, 255, 255))
+    # 2. Glassmorphic Pill Background Fill
+    bg_fill = theme.get("bg_fill", (14, 10, 6, 215))
+    border_col = theme.get("border_col", (255, 215, 0, 230))
+    border_width = theme.get("border_width", 2)
+    cdraw.rounded_rectangle(
+        [(rx0, ry0), (rx1, ry1)],
+        radius=radius,
+        fill=bg_fill,
+        outline=border_col,
+        width=border_width
+    )
 
-    return np.array(badge)
+    # 3. Inner accent highlight line (top delicate rim)
+    inner_rim_col = (255, 255, 255, 45)
+    cdraw.arc(
+        [(rx0 + 2, ry0 + 2), (rx1 - 2, ry1 - 2)],
+        start=190, end=350,
+        fill=inner_rim_col,
+        width=1
+    )
+
+    # 4. Text with multi-layer shadow and crisp text color
+    tx = rx0 + pad_x - bbox[0]
+    ty = ry0 + pad_y - bbox[1]
+    shadow_col = theme.get("shadow_col", (0, 0, 0, 240))
+    text_col = theme.get("text_col", (255, 255, 255, 255))
+
+    # Multi-directional drop shadow for 100% legibility on any background
+    for ox, oy in [(-1, 0), (1, 0), (0, -1), (0, 1), (2, 2)]:
+        cdraw.text((tx + ox, ty + oy), text, font=font, fill=shadow_col)
+
+    cdraw.text((tx, ty), text, font=font, fill=text_col)
+
+    return np.array(canvas)
 
 
 def generate_song_music_video(audio_path, slide_image_paths, output_video_path, fps=25, lyrics_file_or_text=None):
@@ -556,6 +664,14 @@ def generate_song_music_video(audio_path, slide_image_paths, output_video_path, 
         GOLDEN_SPARKLE_PALETTE["core_bgr"]
     )
 
+    # प्रत्येक गाने के लिए स्वतः लक्ज़री लिरिक थीम चुनना (Gold, Silver, Saffron, Emerald, Rose, Amethyst)
+    theme_keys = list(LYRIC_THEMES.keys())
+    song_seed_str = os.path.basename(audio_path)
+    hash_val = sum(ord(c) for c in song_seed_str)
+    selected_theme_key = theme_keys[hash_val % len(theme_keys)]
+    selected_theme = LYRIC_THEMES[selected_theme_key]
+    print(f"  🎨 लिरिक स्टाइल चुना गया: {selected_theme['name']}")
+
     # लिरिक्स प्रोसेस करना (SRT या सादा टेक्स्ट) और टाइमस्टैम्प्स तैयार करना
     subtitles = []
     if lyrics_file_or_text:
@@ -572,6 +688,7 @@ def generate_song_music_video(audio_path, slide_image_paths, output_video_path, 
         if raw_lyric_str:
             # 1. यदि SRT फॉर्मेट है
             if "-->" in raw_lyric_str:
+                raw_subs = []
                 blocks = re.split(r'\n\s*\n', raw_lyric_str.strip())
                 for b in blocks:
                     lines = [l.strip() for l in b.splitlines() if l.strip()]
@@ -584,15 +701,28 @@ def generate_song_music_video(audio_path, slide_image_paths, output_video_path, 
                                 parts = t.split(':')
                                 return float(parts[0])*3600 + float(parts[1])*60 + float(parts[2])
                             try:
-                                start_sec = to_sec(pts[0])
-                                end_sec = to_sec(pts[1])
+                                orig_start = to_sec(pts[0])
+                                orig_end = to_sec(pts[1])
                                 t_idx = 2 if '-->' in lines[1] else 1
                                 txt = ' '.join(lines[t_idx:])
                                 txt = re.sub(r'\[.*?\]', '', txt).strip()
                                 if txt:
-                                    subtitles.append((start_sec, end_sec, txt))
+                                    # 2.5 सेकंड लीड-इन ऑफसेट: आवाज आने से 2-3 सेकंड पहले या ठीक आवाज के साथ लिरिक्स आना सुनिश्चित करता है
+                                    LEAD_IN_OFFSET = 2.5
+                                    s_time = max(0.0, orig_start - LEAD_IN_OFFSET)
+                                    e_time = max(s_time + 1.2, orig_end - 1.5)
+                                    raw_subs.append((s_time, e_time, txt))
                             except Exception:
                                 pass
+
+                # Pass 2: अगली पंक्ति के आरंभ समय के साथ सुगम सामंजस्य (Zero Clashing)
+                for i in range(len(raw_subs)):
+                    s_sec, e_sec, txt = raw_subs[i]
+                    if i + 1 < len(raw_subs):
+                        next_s = raw_subs[i + 1][0]
+                        if e_sec > next_s:
+                            e_sec = max(s_sec + 0.8, next_s - 0.1)
+                    subtitles.append((s_sec, e_sec, txt))
             else:
                 # 2. सादा टेक्स्ट: [ ] हटाकर पंक्तियों को पूरे गाने पर समान रूप से बांटें
                 clean_txt = clean_lyrics_text(raw_lyric_str)
@@ -604,13 +734,13 @@ def generate_song_music_video(audio_path, slide_image_paths, output_video_path, 
                         e_time = (idx + 1) * line_dur
                         subtitles.append((s_time, e_time, line))
 
-    # लिरिक बैजेस को प्री-रेंडर (Cache) करना ताकि वीडियो रेंडरिंग सुपर फास्ट रहे
+    # लिरिक बैजेस को प्री-रेंडर (Cache) करना चयनित थीम और बड़े फ़ॉन्ट (52px) के साथ
     lyric_badges = {}
     if subtitles:
-        print(f"  📝 {len(subtitles)} लिरिक पंक्तियाँ लोड हुईं ([ ] ब्रैकेट्स हटाए गए)")
+        print(f"  📝 {len(subtitles)} लिरिक पंक्तियाँ लोड हुईं (फ़ॉन्ट साइज़ 52, 2.5s लीड-इन सिंक, [ ] ब्रैकेट्स हटाए गए)")
         for (s_sec, e_sec, l_text) in subtitles:
             if l_text not in lyric_badges:
-                lyric_badges[l_text] = create_lyric_badge(l_text)
+                lyric_badges[l_text] = create_lyric_badge(l_text, theme=selected_theme, font_size=52)
 
     # Prepare slides
     prepared_slides = [prepare_slide_image(p) for p in slide_image_paths]
@@ -709,14 +839,25 @@ def generate_song_music_video(audio_path, slide_image_paths, output_video_path, 
             if logo_badge is not None:
                 overlay_rgba(frame, logo_badge, center_x=95, center_y=95, scale=1.0, angle_deg=0)
 
-            # Bottom Center Synchronized Lyric Badge
+            # Bottom Center Synchronized Lyric Badge with Smooth Dynamic Fade
             if subtitles:
                 for (s_sec, e_sec, l_text) in subtitles:
                     if s_sec <= global_time <= e_sec:
                         badge_img = lyric_badges.get(l_text)
                         if badge_img is not None:
-                            # 1920 / 2 = 960 (Center X), Y = 965 (Bottom Center safe zone)
-                            overlay_rgba(frame, badge_img, center_x=960, center_y=965, scale=1.0, angle_deg=0)
+                            # 0.25s Smooth Fade In / Fade Out
+                            dur = e_sec - s_sec
+                            fade_time = min(0.25, dur * 0.2)
+                            time_in = global_time - s_sec
+                            time_out = e_sec - global_time
+                            opacity = 1.0
+                            if time_in < fade_time:
+                                opacity = max(0.05, min(1.0, time_in / fade_time))
+                            elif time_out < fade_time:
+                                opacity = max(0.05, min(1.0, time_out / fade_time))
+                            
+                            # 1920 / 2 = 960 (Center X), Y = 955 (Bottom Center safe zone with 52px font)
+                            overlay_rgba(frame, badge_img, center_x=960, center_y=955, scale=1.0, angle_deg=0, opacity=opacity)
                         break
 
             # Fade In on start of video / Fade Out at end
