@@ -220,14 +220,14 @@ def save_urls(filepath, urls):
 def find_thumbnail(song_name, song_info=None):
     """गाने के लिए सही थंबनेल खोजना (रजिस्ट्री, लोकल फोल्डर या कैटबॉक्स डाउनलोड)"""
     found = None
-    # 1. यदि रजिस्ट्री में thumb_url मौजूद है
+    # 1. यदि रजिस्ट्री में thumb_url मौजूद है, हमेशा ताज़ा डाउनलोड करें (स्टेल कैशिंग रोकने के लिए)
     if song_info and song_info.get("thumb_url"):
         thumb_url = song_info["thumb_url"]
         local_thumb = os.path.join(SONG_THUMB_DIR, f"{song_name}.jpg")
-        if os.path.exists(local_thumb) and os.path.getsize(local_thumb) > 5000:
+        if download_file(thumb_url, local_thumb):
+            print(f"  🖼️ थंबनेल CDN से ताज़ा डाउनलोड किया: {local_thumb}")
             found = local_thumb
-        elif download_file(thumb_url, local_thumb):
-            print(f"  🖼️ थंबनेल CDN से डाउनलोड किया: {local_thumb}")
+        elif os.path.exists(local_thumb) and os.path.getsize(local_thumb) > 5000:
             found = local_thumb
 
     # 2. लोकल song_thumbnails फोल्डर में खोजें
@@ -273,13 +273,14 @@ def find_slide_images(song_name, song_info=None):
     """वीडियो में दिखाने के लिए यूज़र द्वारा दी गई इमेज(स्लाइड्स) खोजना"""
     slides = []
 
-    # 1. यदि रजिस्ट्री में image_urls हैं, उन्हें डाउनलोड करें
+    # 1. यदि रजिस्ट्री में image_urls हैं, उन्हें हमेशा ताज़ा डाउनलोड करें
     if song_info and song_info.get("image_urls"):
         for idx, url in enumerate(song_info["image_urls"]):
             slide_path = os.path.join(SONG_IMAGES_DIR, f"{song_name}_slide{idx+1}.jpg")
-            if os.path.exists(slide_path) and os.path.getsize(slide_path) > 5000:
+            if download_file(url, slide_path):
+                print(f"  🖼️ स्लाइड {idx+1} CDN से ताज़ा डाउनलोड की: {slide_path}")
                 slides.append(slide_path)
-            elif download_file(url, slide_path):
+            elif os.path.exists(slide_path) and os.path.getsize(slide_path) > 5000:
                 slides.append(slide_path)
 
     if slides:

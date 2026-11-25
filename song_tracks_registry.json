@@ -18,7 +18,29 @@
     ],
     "lyrics": "Mann mera tujhko pukaare\nMurali वाले aa jaare\nAankhein teri raah nihaare\nMurli ki awaaz mein\nKho jaana hai mujhe\nMurali वाले aa jaare",
     "status": "corrupted",
+    "corrupted_reason": "Catbox audio file was truncated to 4KB (0.02s)",
     "added_at": "2026-11-23 21:50:00"
+  },
+  "https://files.catbox.moe/lqr2zr.mp3": {
+    "name": "Mere Shyam - मेरे हर गीत में तू - Treblo",
+    "thumb_url": "https://files.catbox.moe/1mhm2l.png",
+    "image_urls": [
+      "https://files.catbox.moe/qppl3g.png"
+    ],
+    "lyrics": "",
+    "status": "pending",
+    "added_at": "2026-11-24 11:16:51"
+  },
+  "https://files.catbox.moe/1fg4a9.mp3": {
+    "name": "Mere Shyam - Mere Man Me Hai Kaana - Treblo",
+    "thumb_url": "https://files.catbox.moe/azmkd3.png",
+    "image_urls": [
+      "https://files.catbox.moe/szpuog.png",
+      "https://files.catbox.moe/c3k7e3.jpg"
+    ],
+    "lyrics": "",
+    "status": "pending",
+    "added_at": "2026-11-24 11:16:19"
   },
   "https://files.catbox.moe/9bmaeo.wav": {
     "name": "Ram Ram Ram Japu - Man Mandir Mein Deep Jalaun",
@@ -40,59 +62,36 @@
     "status": "pending",
     "added_at": "2026-11-24 00:26:34"
   },
-  "https://files.catbox.moe/lqr2zr.mp3": {
-    "name": "Mere Shyam - मेरे हर गीत में तू - Treblo",
-    "thumb_url": "https://files.catbox.moe/3gmijn.png",
-    "image_urls": [
-      "https://files.catbox.moe/o6iulu.png",
-      "https://files.catbox.moe/fiwk1l.png"
-    ],
-    "lyrics": "",
-    "added_at": "2026-11-24 11:16:51",
-    "status": "uploaded",
-    "youtube_id": "WNm9yHpvY84",
-    "youtube_url": "https://youtube.com/watch?v=WNm9yHpvY84",
-    "uploaded_at": "2026-11-25 12:16:15"
-  },
-  "https://files.catbox.moe/1fg4a9.mp3": {
-    "name": "Mere Shyam - Mere Man Me Hai Kaana - Treblo",
-    "thumb_url": "https://files.catbox.moe/azmkd3.png",
-    "image_urls": [
-      "https://files.catbox.moe/szpuog.png",
-      "https://files.catbox.moe/c3k7e3.jpg"
-    ],
-    "lyrics": "",
-    "added_at": "2026-11-24 11:16:19",
-    "status": "pending"
-  },
   "https://files.catbox.moe/j44adr.mp3": {
     "name": "Hanuman Ji - Sankat Mochan Hey Hanuman - Treblo",
-    "thumb_url": "https://files.catbox.moe/jmnpca.png",
+    "thumb_url": "https://files.catbox.moe/wb2eer.png",
     "image_urls": [
       "https://files.catbox.moe/elaax5.png",
-      "https://files.catbox.moe/x0yvwj.jpg"
+      "https://files.catbox.moe/r55plj.png"
     ],
     "lyrics": "",
-    "added_at": "2026-11-24 12:42:29",
-    "status": "pending"
+    "status": "pending",
+    "added_at": "2026-11-24 12:42:29"
   },
   "https://files.catbox.moe/087dwy.mp3": {
     "name": "Hanuman Ji - Bajrangi Mere Bajrangi - Treblo",
     "thumb_url": "https://files.catbox.moe/huhs3o.png",
     "image_urls": [
-      "https://files.catbox.moe/ntohhe.png",
-      "https://files.catbox.moe/m5eydt.jpg"
+      "https://files.catbox.moe/ntohhe.png"
     ],
     "lyrics": "",
-    "added_at": "2026-11-24 13:32:16",
-    "status": "pending"
+    "status": "pending",
+    "added_at": "2026-11-24 13:32:16"
   },
   "https://files.catbox.moe/1h27ej.mp3": {
     "name": "Mere Ghar Ram Padhare Hain - कुटिया में उजाला - Treblo",
-    "thumb_url": null,
-    "image_urls": [],
+    "thumb_url": "https://files.catbox.moe/23kxs0.jpg",
+    "image_urls": [
+      "https://files.catbox.moe/tmt2i9.png",
+      "https://files.catbox.moe/pd6g80.png"
+    ],
     "lyrics": "",
-    "added_at": "2026-11-24 14:28:45",
-    "status": "pending"
+    "status": "pending",
+    "added_at": "2026-11-24 14:28:45"
   }
 }
