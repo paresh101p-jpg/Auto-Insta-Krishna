@@ -2725,6 +2725,295 @@ img, video, iframe {
   max-width: 100% !important;
 }
 
+/* 3. Featured Articles Section & Cards (Google AdSense High-Value Content) */
+.home-editorial-section {
+  max-width: 1200px;
+  margin: 28px auto 16px;
+  padding: 0 16px;
+  width: 100%;
+}
+
+.section-header {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  margin-bottom: 20px;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.section-title-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.section-subtitle {
+  font-size: 0.88rem;
+  color: var(--text-muted);
+  margin: 0;
+  line-height: 1.5;
+}
+
+.editorial-badge {
+  background: linear-gradient(135deg, #f5c542, #e5a922) !important;
+  color: #0c0f17 !important;
+  font-weight: 800 !important;
+  padding: 3px 10px !important;
+  border-radius: 6px !important;
+  font-size: 0.72rem !important;
+  letter-spacing: 0.5px;
+}
+
+.section-more-link {
+  color: var(--gold-primary);
+  font-size: 0.9rem;
+  font-weight: 700;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 14px;
+  border: 1px solid rgba(245, 197, 66, 0.35);
+  border-radius: 20px;
+  background: rgba(245, 197, 66, 0.08);
+  transition: all 0.2s ease;
+}
+
+.section-more-link:hover {
+  background: var(--gold-gradient);
+  color: #0c0f17;
+  border-color: var(--gold-primary);
+  transform: translateX(2px);
+}
+
+.home-articles-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+  gap: 20px;
+}
+
+.home-article-card {
+  background: var(--bg-surface);
+  border: 1px solid var(--border-subtle);
+  border-radius: 16px;
+  padding: 22px;
+  display: flex;
+  flex-direction: column;
+  transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.25s, box-shadow 0.25s;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.25);
+  position: relative;
+  overflow: hidden;
+}
+
+.home-article-card:hover {
+  transform: translateY(-4px);
+  border-color: var(--border-gold);
+  box-shadow: 0 12px 35px rgba(0, 0, 0, 0.45);
+}
+
+.home-article-card.featured-glow {
+  border: 1.5px solid rgba(245, 197, 66, 0.5);
+  background: linear-gradient(135deg, rgba(245, 197, 66, 0.06), var(--bg-surface));
+}
+
+.home-article-badge-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+
+.home-article-tag {
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: var(--gold-primary);
+  background: rgba(245, 197, 66, 0.12);
+  border: 1px solid rgba(245, 197, 66, 0.3);
+  padding: 3px 10px;
+  border-radius: 8px;
+  letter-spacing: 0.3px;
+}
+
+.home-article-tag.gold {
+  background: var(--gold-gradient);
+  color: #0c0f17;
+  border: none;
+  font-weight: 800;
+}
+
+.home-article-time {
+  font-size: 0.75rem;
+  color: var(--text-dim);
+}
+
+.home-article-title {
+  font-size: 1.08rem;
+  font-weight: 700;
+  line-height: 1.5;
+  margin-bottom: 10px;
+  color: var(--text-main);
+  font-family: var(--font-title);
+}
+
+.home-article-title a {
+  color: inherit;
+  text-decoration: none;
+  transition: color 0.2s;
+}
+
+.home-article-title a:hover {
+  color: var(--gold-light);
+}
+
+.home-article-excerpt {
+  font-size: 0.88rem;
+  color: var(--text-muted);
+  line-height: 1.65;
+  margin-bottom: 18px;
+  flex-grow: 1;
+}
+
+.home-article-meta-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-top: 1px solid rgba(255, 255, 255, 0.06);
+  padding-top: 14px;
+  margin-top: auto;
+  font-size: 0.78rem;
+}
+
+.home-article-author {
+  color: var(--text-dim);
+}
+
+.home-article-read-btn {
+  color: var(--gold-primary);
+  font-weight: 700;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  transition: transform 0.2s, color 0.2s;
+}
+
+.home-article-read-btn:hover {
+  color: var(--gold-light);
+  transform: translateX(3px);
+}
+
+/* In-Depth Editorial Mission Section (E-E-A-T & Quality Signals) */
+.editorial-mission-section {
+  max-width: 1200px;
+  margin: 40px auto 20px;
+  padding: 0 16px;
+  width: 100%;
+}
+
+.editorial-mission-card {
+  background: linear-gradient(135deg, rgba(20, 28, 45, 0.85), rgba(12, 17, 28, 0.95));
+  border: 1.5px solid rgba(245, 197, 66, 0.3);
+  border-radius: 20px;
+  padding: 32px 36px;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.4);
+}
+
+.editorial-header-row {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  margin-bottom: 22px;
+  border-bottom: 1px solid rgba(245, 197, 66, 0.2);
+  padding-bottom: 18px;
+}
+
+.editorial-stamp img {
+  border-radius: 50%;
+  box-shadow: 0 0 15px rgba(245, 197, 66, 0.4);
+}
+
+.editorial-mission-title {
+  font-size: 1.35rem;
+  font-weight: 800;
+  color: var(--gold-primary);
+  font-family: var(--font-title);
+  margin-bottom: 4px;
+  line-height: 1.3;
+}
+
+.editorial-mission-sub {
+  font-size: 0.8rem;
+  color: var(--text-dim);
+  display: block;
+}
+
+.editorial-mission-body {
+  font-size: 0.92rem;
+  color: var(--text-muted);
+  line-height: 1.8;
+}
+
+.mission-pillars-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 20px;
+  margin: 24px 0;
+}
+
+.mission-pillar-item {
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 12px;
+  padding: 16px 18px;
+}
+
+.mission-pillar-item h4 {
+  font-size: 0.95rem;
+  color: var(--text-main);
+  margin-bottom: 8px;
+  font-family: var(--font-title);
+}
+
+.mission-pillar-item p {
+  font-size: 0.84rem;
+  color: var(--text-dim);
+  line-height: 1.6;
+  margin: 0;
+}
+
+.editorial-signoff-strip {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 20px;
+  margin-top: 24px;
+  padding-top: 18px;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  font-size: 0.82rem;
+  color: var(--text-dim);
+}
+
+.editorial-signoff-item strong {
+  color: var(--text-main);
+}
+
+@media (max-width: 768px) {
+  .editorial-mission-card {
+    padding: 22px 18px;
+  }
+  .editorial-header-row {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+  }
+  .editorial-mission-title {
+    font-size: 1.15rem;
+  }
+  .home-articles-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
 /* 3. Featured Articles Banner (Fluid & Mobile Optimized) */
 .featured-articles-banner-wrap {
   max-width: 1200px;
