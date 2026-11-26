@@ -1,0 +1,53 @@
+name: Daily 300-Day Old Article Refresher (krishnavibez.in)
+
+on:
+  schedule:
+    # Runs once every 24 hours at 04:30 UTC = 10:00 AM IST
+    - cron: '30 4 * * *'
+  workflow_dispatch:
+
+concurrency:
+  group: krishnavibez-article-refresher
+  cancel-in-progress: false
+
+jobs:
+  refresh-article:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.10'
+
+      - name: Find & Refresh Oldest 300-Day Article
+        run: python -u refresh_oldest_article.py
+
+      - name: Commit & Push Refreshed Article to GitHub
+        run: |
+          git config --local user.email "action@github.com"
+          git config --local user.name "KrishnaVibez Auto Refresher"
+          git add website/public/articles/*.html website/public/articles-sitemap.xml
+          git commit -m "chore(seo): auto-refresh 300-day oldest article & update sitemap [skip ci]" || true
+          git pull --rebase origin master || true
+          git push origin master || true
+
+      - name: Set up Node.js for Firebase
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Deploy to Firebase Hosting
+        uses: FirebaseExtended/action-hosting-deploy@v0
+        with:
+          repoToken: '${{ secrets.GITHUB_TOKEN }}'
+          firebaseServiceAccount: '${{ secrets.FIREBASE_SERVICE_ACCOUNT_KRISHNA_VIBEZ }}'
+          channelId: live
+          projectId: krishna-vibez
+          target: krishna-vibez
+        continue-on-error: true
