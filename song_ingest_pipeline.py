@@ -87,25 +87,48 @@ def listen_and_generate_synced_srt(audio_path, song_name, lyrics_text=""):
         print("  ⚠️ No Gemini API key found. Skipping AI voice sync.")
         return ""
     
-    size = os.path.getsize(audio_path)
-    with open(audio_path, "rb") as f:
-        audio_bytes = f.read(min(8 * 1024 * 1024, size))
+    # WAV या भारी फ़ाइल को 128k MP3 में बदलें ताकि पूरा 3 मिनट का गाना एक बार में AI को जाए (Zero Cutting)
+    target_audio = audio_path
+    temp_conv_mp3 = None
+    if not audio_path.lower().endswith(".mp3") or os.path.getsize(audio_path) > 8 * 1024 * 1024:
+        temp_conv_mp3 = os.path.join(BASE_DIR, f"temp_sync_{int(time.time())}.mp3")
+        cmd = ["ffmpeg", "-y", "-i", audio_path, "-b:a", "128k", temp_conv_mp3]
+        res = subprocess.run(cmd, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+        if res.returncode == 0 and os.path.exists(temp_conv_mp3):
+            target_audio = temp_conv_mp3
+
+    with open(target_audio, "rb") as f:
+        audio_bytes = f.read()
+
+    if temp_conv_mp3 and os.path.exists(temp_conv_mp3):
+        try: os.remove(temp_conv_mp3)
+        except Exception: pass
     
-    mime = "audio/mpeg" if audio_path.endswith(".mp3") else "audio/wav"
+    mime = "audio/mpeg" if target_audio.endswith(".mp3") else "audio/wav"
     b64 = base64.b64encode(audio_bytes).decode("utf-8")
     
     extra = f"\nUse these provided lyrics as reference for spelling and words:\n{lyrics_text.strip()}" if lyrics_text else ""
     prompt = f"""
-Listen carefully to this devotional song ({song_name}).
-Transcribe the COMPLETE singing lyrics in Hindi (देवनागरी लिपि) with accurate singing timestamps.
+Listen carefully to this complete devotional song ({song_name}) from 00:00 to the very end.
+Transcribe the COMPLETE singing lyrics in Hindi (देवनागरी लिपि) with 100% accurate singing timestamps.
 {extra}
+
+CRITICAL RULES:
+1. TIMESTAMPS MUST BE 100% PRECISE to when each line is ACTUALLY SUNG by the singer.
+   - Start timestamp must be the EXACT second the singer utters the first word. Do NOT start early.
+   - End timestamp must be when the singer completes that line.
+2. Transcribe ALL verses from start to finish. Do not stop halfway.
+3. Skip pure instrumental intros/solos/breaks.
 
 Output strictly in standard SRT subtitle format:
 1
-00:00:10,200 --> 00:00:17,500
+00:00:07,500 --> 00:00:10,200
 [Hindi lyrics line]
 
-Make sure timestamps precisely match the singer's voice timing. Skip instrumental intro/breaks.
+2
+00:00:10,200 --> 00:00:13,000
+[Next Hindi line]
+
 Return ONLY valid SRT subtitle text without conversational chatter.
 """
     payload = {
@@ -114,10 +137,13 @@ Return ONLY valid SRT subtitle text without conversational chatter.
                 {"inline_data": {"mime_type": mime, "data": b64}},
                 {"text": prompt}
             ]
-        }]
+        }],
+        "generationConfig": {
+            "temperature": 0.1
+        }
     }
     
-    models_to_try = ["gemini-3.5-flash", "gemini-3.6-flash", "gemini-3-flash-preview"]
+    models_to_try = ["gemini-3.1-flash-lite", "gemini-3.5-flash", "gemini-flash-latest"]
     for model in models_to_try:
         url = f"https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent?key={api_key}"
         try:

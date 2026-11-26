@@ -707,10 +707,9 @@ def generate_song_music_video(audio_path, slide_image_paths, output_video_path, 
                                 txt = ' '.join(lines[t_idx:])
                                 txt = re.sub(r'\[.*?\]', '', txt).strip()
                                 if txt:
-                                    # 2.5 सेकंड लीड-इन ऑफसेट: आवाज आने से 2-3 सेकंड पहले या ठीक आवाज के साथ लिरिक्स आना सुनिश्चित करता है
-                                    LEAD_IN_OFFSET = 2.5
-                                    s_time = max(0.0, orig_start - LEAD_IN_OFFSET)
-                                    e_time = max(s_time + 1.2, orig_end - 1.5)
+                                    # 100% सटीक आवाज सिंक: जिस क्षण गायक गाना शुरू करे, ठीक उसी क्षण लिरिक्स स्क्रीन पर दिखे
+                                    s_time = orig_start
+                                    e_time = orig_end
                                     raw_subs.append((s_time, e_time, txt))
                             except Exception:
                                 pass
@@ -721,7 +720,7 @@ def generate_song_music_video(audio_path, slide_image_paths, output_video_path, 
                     if i + 1 < len(raw_subs):
                         next_s = raw_subs[i + 1][0]
                         if e_sec > next_s:
-                            e_sec = max(s_sec + 0.8, next_s - 0.1)
+                            e_sec = max(s_sec + 0.5, next_s - 0.05)
                     subtitles.append((s_sec, e_sec, txt))
             else:
                 # 2. सादा टेक्स्ट: [ ] हटाकर पंक्तियों को पूरे गाने पर समान रूप से बांटें
