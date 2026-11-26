@@ -1,3 +1,5 @@
+
+# STRICT EVERGREEN SEO DIRECTIVE: NEVER include year numbers (e.g., 2025, 2026, 2027) in article URL slugs.
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
