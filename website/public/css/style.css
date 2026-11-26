@@ -1903,7 +1903,25 @@ body.cat-modal-lock {
     letter-spacing: 1.2px;
   }
   .nav-center {
-    display: none !important;
+    display: flex !important;
+    gap: 8px;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    white-space: nowrap;
+    scrollbar-width: none;
+    padding: 4px 0;
+    max-width: 60vw;
+  }
+  .nav-center::-webkit-scrollbar {
+    display: none;
+  }
+  .nav-center .nav-link {
+    font-size: 0.78rem;
+    padding: 4px 8px;
+    border-radius: 6px;
+    background: rgba(255, 255, 255, 0.05);
+    white-space: nowrap;
+    flex-shrink: 0;
   }
   .nav-actions {
     gap: 8px;
