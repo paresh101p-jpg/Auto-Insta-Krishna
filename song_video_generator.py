@@ -347,41 +347,10 @@ class SlideParticle:
 
 def remove_flow_watermark(img):
     """
-    Universal Google Flow Star Watermark Remover:
-    Automatically locates and completely erases the 4-pointed Flow watermark
-    from the bottom-right corner without cropping or distorting the image.
-    Works dynamically for any 16:9 or custom resolution image.
+    Bypassed: Song images and thumbnails are clean original artworks and NOT from Google Flow.
+    Retains all edges and bottom-right corner 100% original, crisp, and unblurred.
     """
-    import cv2
-    if img is None:
-        return img
-    h, w = img.shape[:2]
-
-    # Coordinates of Flow watermark: 77% to 96% Y, 86% to 100% X
-    y1 = int(h * 0.77)
-    y2 = int(h * 0.96)
-    x1 = int(w * 0.86)
-    x2 = w
-
-    corner = img[y1:y2, x1:x2]
-    gray = cv2.cvtColor(corner, cv2.COLOR_BGR2GRAY)
-
-    # 1. Target the star brightness
-    _, thresh = cv2.threshold(gray, 70, 255, cv2.THRESH_BINARY)
-    kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (9, 9))
-    dilated = cv2.dilate(thresh, kernel, iterations=2)
-
-    # 2. Targeted circular inpaint core for Flow star
-    ch, cw = corner.shape[:2]
-    cv2.circle(dilated, (int(cw * 0.65), int(ch * 0.5)), int(min(cw, ch) * 0.35), 255, -1)
-
-    # 3. Create full frame mask
-    full_mask = np.zeros((h, w), dtype=np.uint8)
-    full_mask[y1:y2, x1:x2] = dilated
-
-    # 4. Telea Inpaint (Fills seamlessly using surrounding natural pixels)
-    cleaned = cv2.inpaint(img, full_mask, inpaintRadius=7, flags=cv2.INPAINT_TELEA)
-    return cleaned
+    return img
 
 
 def clean_and_save_thumbnail(src_path, dst_path=None):
@@ -471,81 +440,146 @@ def clean_lyrics_text(text):
     return "\n".join(lines)
 
 
-# 6 Luxury Devotional UI Themes for Synchronized Lyric Badges (Auto-rotating per song)
+# 10 Luxury Devotional UI Themes with 5 Distinct Layout Styles (Rotating per song)
 LYRIC_THEMES = {
     "royal_gold": {
-        "name": "राजसी स्वर्ण (Royal 24k Gold)",
-        "bg_fill": (14, 10, 6, 215),        # Deep obsidian amber
-        "border_col": (255, 215, 0, 240),   # Radiant 24k Gold
+        "name": "राजसी स्वर्ण (Royal 24k Gold Pill)",
+        "layout_style": "pill",
+        "bg_fill": (14, 10, 6, 220),
+        "border_col": (255, 215, 0, 245),
         "border_width": 2,
-        "glow_col": (255, 215, 0, 160),     # Golden rim halo
+        "glow_col": (255, 215, 0, 160),
         "glow_width": 4,
-        "text_col": (255, 255, 255, 255),   # Pure crisp white
-        "shadow_col": (0, 0, 0, 240),       # Deep drop shadow
+        "text_col": (255, 255, 255, 255),
+        "shadow_col": (0, 0, 0, 245),
+        "font_size": 52,
     },
     "celestial_silver": {
-        "name": "दिव्य रजत (Celestial Platinum Silver)",
-        "bg_fill": (10, 14, 22, 215),       # Midnight deep sapphire
-        "border_col": (220, 235, 255, 240), # Platinum Silver
+        "name": "दिव्य रजत (Celestial Platinum Card)",
+        "layout_style": "chamfer_card",
+        "bg_fill": (10, 14, 22, 220),
+        "border_col": (220, 235, 255, 245),
         "border_width": 2,
-        "glow_col": (180, 220, 255, 160),   # Soft icy blue silver glow
+        "glow_col": (180, 220, 255, 160),
         "glow_width": 4,
         "text_col": (255, 255, 255, 255),
-        "shadow_col": (0, 0, 0, 240),
+        "shadow_col": (0, 0, 0, 245),
+        "font_size": 52,
     },
     "sacred_saffron": {
-        "name": "पवित्र केसरिया (Sacred Saffron Amber)",
-        "bg_fill": (18, 10, 6, 215),        # Deep saffron dusk
-        "border_col": (255, 155, 30, 245),  # Pure kesari amber
+        "name": "पवित्र केसरिया (Sacred Saffron Banner)",
+        "layout_style": "ornate_banner",
+        "bg_fill": (22, 12, 6, 220),
+        "border_col": (255, 160, 30, 250),
         "border_width": 2,
-        "glow_col": (255, 130, 15, 165),    # Warm sunset kesari glow
+        "glow_col": (255, 130, 15, 170),
         "glow_width": 4,
-        "text_col": (255, 252, 238, 255),   # Warm ivory
-        "shadow_col": (0, 0, 0, 240),
+        "text_col": (255, 252, 238, 255),
+        "shadow_col": (0, 0, 0, 245),
+        "font_size": 52,
     },
     "vaikuntha_emerald": {
-        "name": "वैकुंठ मरकत (Vaikuntha Emerald Jade)",
-        "bg_fill": (6, 16, 12, 215),        # Forest emerald deep
-        "border_col": (110, 235, 170, 240), # Vivid mint jade
+        "name": "वैकुंठ मरकत (Vaikuntha Emerald Pill)",
+        "layout_style": "pill",
+        "bg_fill": (6, 16, 12, 220),
+        "border_col": (110, 235, 170, 245),
         "border_width": 2,
-        "glow_col": (60, 210, 130, 160),    # Emerald aura glow
+        "glow_col": (60, 210, 130, 160),
         "glow_width": 4,
         "text_col": (255, 255, 255, 255),
-        "shadow_col": (0, 0, 0, 240),
+        "shadow_col": (0, 0, 0, 245),
+        "font_size": 52,
     },
     "vrindavan_rose": {
-        "name": "वृंदावन कमल (Vrindavan Lotus Rose)",
-        "bg_fill": (18, 8, 14, 215),        # Deep lotus night
-        "border_col": (255, 175, 205, 240), # Soft magenta rose
+        "name": "वृंदावन कमल (Vrindavan Lotus Card)",
+        "layout_style": "chamfer_card",
+        "bg_fill": (18, 8, 14, 220),
+        "border_col": (255, 175, 205, 245),
         "border_width": 2,
-        "glow_col": (255, 120, 175, 160),   # Lotus petal glow
+        "glow_col": (255, 120, 175, 160),
         "glow_width": 4,
         "text_col": (255, 255, 255, 255),
-        "shadow_col": (0, 0, 0, 240),
+        "shadow_col": (0, 0, 0, 245),
+        "font_size": 52,
     },
     "kailash_amethyst": {
-        "name": "कैलाश नीलम (Kailash Mystic Amethyst)",
-        "bg_fill": (14, 10, 22, 215),       # Mystic indigo violet
-        "border_col": (205, 165, 255, 240), # Lavender amethyst
+        "name": "कैलाश नीलम (Kailash Floating Halo)",
+        "layout_style": "cinematic_floating",
+        "bg_fill": (14, 10, 24, 200),
+        "border_col": (210, 170, 255, 245),
         "border_width": 2,
-        "glow_col": (175, 120, 255, 160),   # Cosmic violet aura
+        "glow_col": (180, 125, 255, 170),
+        "glow_width": 5,
+        "text_col": (255, 255, 255, 255),
+        "shadow_col": (0, 0, 0, 250),
+        "font_size": 54,
+    },
+    "yamuna_azure": {
+        "name": "यमुना मयूर (Yamuna Peacock Verse)",
+        "layout_style": "underlined_verse",
+        "bg_fill": (6, 12, 22, 220),
+        "border_col": (0, 220, 255, 245),
+        "border_width": 2,
+        "glow_col": (0, 180, 255, 160),
         "glow_width": 4,
         "text_col": (255, 255, 255, 255),
-        "shadow_col": (0, 0, 0, 240),
+        "shadow_col": (0, 0, 0, 245),
+        "font_size": 52,
+    },
+    "surya_bronze": {
+        "name": "सूर्य ताम्र (Sunlit Temple Banner)",
+        "layout_style": "ornate_banner",
+        "bg_fill": (22, 12, 6, 220),
+        "border_col": (255, 185, 90, 245),
+        "border_width": 2,
+        "glow_col": (230, 130, 40, 160),
+        "glow_width": 4,
+        "text_col": (255, 250, 240, 255),
+        "shadow_col": (0, 0, 0, 245),
+        "font_size": 52,
+    },
+    "divine_pearl": {
+        "name": "श्वेत मुक्ता (Divine Moonlit Pill)",
+        "layout_style": "pill",
+        "bg_fill": (12, 14, 20, 215),
+        "border_col": (240, 245, 255, 245),
+        "border_width": 2,
+        "glow_col": (200, 220, 255, 150),
+        "glow_width": 4,
+        "text_col": (255, 255, 255, 255),
+        "shadow_col": (0, 0, 0, 245),
+        "font_size": 52,
+    },
+    "kashi_vermillion": {
+        "name": "काशी सिंदूर (Kashi Sacred Verse)",
+        "layout_style": "underlined_verse",
+        "bg_fill": (24, 8, 8, 220),
+        "border_col": (255, 110, 85, 245),
+        "border_width": 2,
+        "glow_col": (235, 65, 45, 165),
+        "glow_width": 4,
+        "text_col": (255, 255, 255, 255),
+        "shadow_col": (0, 0, 0, 245),
+        "font_size": 52,
     }
 }
 
 
-def create_lyric_badge(text, theme=None, font_path=None, font_size=52):
+def create_lyric_badge(text, theme=None, font_path=None, font_size=None):
     """
-    निचले हिस्से (Bottom Center) के लिए सुंदर ग्लासमोर्फिक लिरिक बैज (Pill):
-    - ट्रांसलूसेंट डार्क बैकग्राउंड + डायनामिक लक्ज़री थीम बॉर्डर व आभामंडल (Glow)
-    - देवनागरी फोंट और मल्टी-लेयर ड्रॉप शैडो
-    - बड़ा फ़ॉन्ट (52px) जो मोबाइल और टीवी पर बेहद स्पष्ट और सुंदर दिखता है
+    निचले हिस्से (Bottom Center) के लिए 5 अलग-अलग शैलियों में लिरिक बैज:
+    - 1. 'pill': गोल ग्लासमोर्फिक कैप्सूल + ग्लोइंग आभामंडल
+    - 2. 'chamfer_card': शाही कॉर्नर कार्ड + डबल बॉर्डर फ्रेम
+    - 3. 'ornate_banner': भव्य मंदिर बैनर + साइड अलंकृत रत्न ❖
+    - 4. 'cinematic_floating': न्यूनतम सिनेमैटिक फ्लोटिंग ग्लो (बिना भारी बॉक्स)
+    - 5. 'underlined_verse': आधुनिक कार्ड + नीचे प्रकाशमान डिवाइन अंडरलाइन बार
     """
     from PIL import Image, ImageDraw, ImageFont
     if theme is None:
         theme = LYRIC_THEMES["royal_gold"]
+
+    if font_size is None:
+        font_size = theme.get("font_size", 52)
 
     if not font_path or not os.path.exists(font_path):
         cand = os.path.join(BASE_DIR, "NotoSansDevanagari-Bold.ttf")
@@ -567,8 +601,7 @@ def create_lyric_badge(text, theme=None, font_path=None, font_size=52):
     bw = tw + pad_x * 2
     bh = th + pad_y * 2
 
-    # Canvas with padding for outer glow
-    glow_margin = 8
+    glow_margin = 10
     cw = bw + glow_margin * 2
     ch = bh + glow_margin * 2
 
@@ -577,49 +610,67 @@ def create_lyric_badge(text, theme=None, font_path=None, font_size=52):
 
     rx0, ry0 = glow_margin, glow_margin
     rx1, ry1 = rx0 + bw - 1, ry0 + bh - 1
-    radius = bh // 2
 
-    # 1. Subtle Outer Glow Layer
-    glow_col = theme.get("glow_col", (255, 215, 0, 100))
-    glow_w = theme.get("glow_width", 3)
-    cdraw.rounded_rectangle(
-        [(rx0 - glow_w, ry0 - glow_w), (rx1 + glow_w, ry1 + glow_w)],
-        radius=radius + glow_w,
-        outline=glow_col,
-        width=glow_w
-    )
-
-    # 2. Glassmorphic Pill Background Fill
-    bg_fill = theme.get("bg_fill", (14, 10, 6, 215))
-    border_col = theme.get("border_col", (255, 215, 0, 230))
+    layout = theme.get("layout_style", "pill")
+    bg_fill = theme.get("bg_fill", (14, 10, 6, 220))
+    border_col = theme.get("border_col", (255, 215, 0, 245))
     border_width = theme.get("border_width", 2)
-    cdraw.rounded_rectangle(
-        [(rx0, ry0), (rx1, ry1)],
-        radius=radius,
-        fill=bg_fill,
-        outline=border_col,
-        width=border_width
-    )
-
-    # 3. Inner accent highlight line (top delicate rim)
-    inner_rim_col = (255, 255, 255, 45)
-    cdraw.arc(
-        [(rx0 + 2, ry0 + 2), (rx1 - 2, ry1 - 2)],
-        start=190, end=350,
-        fill=inner_rim_col,
-        width=1
-    )
-
-    # 4. Text with multi-layer shadow and crisp text color
-    tx = rx0 + pad_x - bbox[0]
-    ty = ry0 + pad_y - bbox[1]
-    shadow_col = theme.get("shadow_col", (0, 0, 0, 240))
+    glow_col = theme.get("glow_col", (255, 215, 0, 160))
+    glow_w = theme.get("glow_width", 4)
+    shadow_col = theme.get("shadow_col", (0, 0, 0, 245))
     text_col = theme.get("text_col", (255, 255, 255, 255))
 
+    if layout == "pill":
+        radius = bh // 2
+        # Glow
+        cdraw.rounded_rectangle([(rx0 - glow_w, ry0 - glow_w), (rx1 + glow_w, ry1 + glow_w)], radius=radius + glow_w, outline=glow_col, width=glow_w)
+        # Background
+        cdraw.rounded_rectangle([(rx0, ry0), (rx1, ry1)], radius=radius, fill=bg_fill, outline=border_col, width=border_width)
+        # Delicate arc highlight
+        cdraw.arc([(rx0 + 2, ry0 + 2), (rx1 - 2, ry1 - 2)], start=190, end=350, fill=(255, 255, 255, 50), width=1)
+
+    elif layout == "chamfer_card":
+        radius = 14
+        # Outer soft glow
+        cdraw.rounded_rectangle([(rx0 - glow_w, ry0 - glow_w), (rx1 + glow_w, ry1 + glow_w)], radius=radius + glow_w, outline=glow_col, width=glow_w)
+        # Main Card
+        cdraw.rounded_rectangle([(rx0, ry0), (rx1, ry1)], radius=radius, fill=bg_fill, outline=border_col, width=border_width)
+        # Inner hairline border
+        cdraw.rounded_rectangle([(rx0 + 4, ry0 + 4), (rx1 - 4, ry1 - 4)], radius=radius - 3, outline=(border_col[0], border_col[1], border_col[2], 100), width=1)
+
+    elif layout == "ornate_banner":
+        radius = 10
+        # Main Banner Box
+        cdraw.rounded_rectangle([(rx0, ry0), (rx1, ry1)], radius=radius, fill=bg_fill, outline=border_col, width=border_width)
+        # Top & Bottom accent lines
+        cdraw.line([(rx0 + 15, ry0 + 2), (rx1 - 15, ry0 + 2)], fill=glow_col, width=2)
+        cdraw.line([(rx0 + 15, ry1 - 2), (rx1 - 15, ry1 - 2)], fill=glow_col, width=2)
+        # Side decorative gem dots
+        cdraw.ellipse([(rx0 + 12, ry0 + bh // 2 - 3), (rx0 + 18, ry0 + bh // 2 + 3)], fill=border_col)
+        cdraw.ellipse([(rx1 - 18, ry0 + bh // 2 - 3), (rx1 - 12, ry0 + bh // 2 + 3)], fill=border_col)
+
+    elif layout == "cinematic_floating":
+        # Minimalist soft dark radial glow without a heavy box
+        cdraw.ellipse([(rx0 - 20, ry0 - 10), (rx1 + 20, ry1 + 10)], fill=(0, 0, 0, 190))
+        cdraw.ellipse([(rx0, ry0), (rx1, ry1)], fill=bg_fill)
+
+    elif layout == "underlined_verse":
+        radius = 12
+        # Translucent pill base
+        cdraw.rounded_rectangle([(rx0, ry0), (rx1, ry1)], radius=radius, fill=bg_fill, outline=(border_col[0], border_col[1], border_col[2], 120), width=1)
+        # Glowing radiant bottom underline
+        cdraw.line([(rx0 + 25, ry1), (rx1 - 25, ry1)], fill=border_col, width=3)
+        # Central diamond jewel accent
+        mx = (rx0 + rx1) // 2
+        cdraw.polygon([(mx, ry1 - 4), (mx + 4, ry1), (mx, ry1 + 4), (mx - 4, ry1)], fill=glow_col)
+
     # Multi-directional drop shadow for 100% legibility on any background
-    for ox, oy in [(-1, 0), (1, 0), (0, -1), (0, 1), (2, 2)]:
+    tx = rx0 + pad_x - bbox[0]
+    ty = ry0 + pad_y - bbox[1]
+    for ox, oy in [(-2, 0), (2, 0), (0, -2), (0, 2), (-1, -1), (1, 1), (2, 2)]:
         cdraw.text((tx + ox, ty + oy), text, font=font, fill=shadow_col)
 
+    # Crisp typography
     cdraw.text((tx, ty), text, font=font, fill=text_col)
 
     return np.array(canvas)
