@@ -1084,3 +1084,42 @@ function getSeoAltText(post, isVideo) {
   return `श्री कृष्ण 4K HD वॉलपेपर — ${post.title} — "${cleanQuote}" | Krishna Vibez Wallpaper`;
 }
 
+// 10. Universal Hash Router & Smooth Feed Scroll
+function handleHashScroll() {
+  const hash = (window.location.hash || '').toLowerCase();
+  if (hash === '#feed') {
+    const feed = document.getElementById('feed');
+    if (feed) {
+      setTimeout(() => {
+        feed.scrollIntoView({ behavior: 'smooth' });
+      }, 150);
+    }
+  } else if (hash === '#latest' || hash === '#views' || hash === '#likes' || hash === '#reels') {
+    const sortKey = hash.replace('#', '');
+    if (typeof handleSortChange === 'function') {
+      handleSortChange(sortKey);
+    }
+    const feed = document.getElementById('feed');
+    if (feed) {
+      setTimeout(() => {
+        feed.scrollIntoView({ behavior: 'smooth' });
+      }, 150);
+    }
+  }
+}
+
+window.addEventListener('DOMContentLoaded', handleHashScroll);
+window.addEventListener('hashchange', handleHashScroll);
+
+document.addEventListener('click', (e) => {
+  const a = e.target.closest('a[href="/#feed"], a[href="#feed"]');
+  if (a && (window.location.pathname === '/' || window.location.pathname === '/index.html')) {
+    e.preventDefault();
+    const feed = document.getElementById('feed');
+    if (feed) {
+      feed.scrollIntoView({ behavior: 'smooth' });
+      history.pushState(null, '', '/#feed');
+    }
+  }
+});
+
