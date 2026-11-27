@@ -3,48 +3,54 @@
   <!-- Core Static Pages -->
   <url>
     <loc>https://krishnavibez.in/</loc>
-    <lastmod>2026-11-26</lastmod>
+    <lastmod>2026-11-27</lastmod>
     <changefreq>daily</changefreq>
     <priority>1.0</priority>
   </url>
   <url>
     <loc>https://krishnavibez.in/articles.html</loc>
-    <lastmod>2026-11-26</lastmod>
+    <lastmod>2026-11-27</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.9</priority>
   </url>
   <url>
     <loc>https://krishnavibez.in/about.html</loc>
-    <lastmod>2026-11-26</lastmod>
+    <lastmod>2026-11-27</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
     <loc>https://krishnavibez.in/contact.html</loc>
-    <lastmod>2026-11-26</lastmod>
+    <lastmod>2026-11-27</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
     <loc>https://krishnavibez.in/privacy-policy.html</loc>
-    <lastmod>2026-11-26</lastmod>
+    <lastmod>2026-11-27</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
     <loc>https://krishnavibez.in/terms.html</loc>
-    <lastmod>2026-11-26</lastmod>
+    <lastmod>2026-11-27</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
     <loc>https://krishnavibez.in/disclaimer.html</loc>
-    <lastmod>2026-11-26</lastmod>
+    <lastmod>2026-11-27</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
 
   <!-- Clean Canonical Devotional Articles & 4K Posts (Pre-Rendered SSG) -->
+  <url>
+    <loc>https://krishnavibez.in/post/krishna-20261127-222051</loc>
+    <lastmod>2026-11-27</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.9</priority>
+  </url>
   <url>
     <loc>https://krishnavibez.in/post/krishna-20261126-223601</loc>
     <lastmod>2026-11-26</lastmod>
@@ -934,15 +940,9 @@
     <priority>0.9</priority>
   </url>
   <url>
-    <loc>https://krishnavibez.in/post/krishna-20261126-223601</loc>
-    <lastmod>2026-11-26</lastmod>
-    <changefreq>daily</changefreq>
-    <priority>0.9</priority>
-  </url>
-  <url>
-    <loc>https://krishnavibez.in/articles/achhe-logo-ke-saath-bura-kyon-hota-hai-karma-fal-krishna-upadesh.html</loc>
+    <loc>https://krishnavibez.in/post/krishna-20261127-222051</loc>
     <lastmod>2026-11-27</lastmod>
-    <changefreq>weekly</changefreq>
+    <changefreq>daily</changefreq>
     <priority>0.9</priority>
   </url>
 </urlset>
