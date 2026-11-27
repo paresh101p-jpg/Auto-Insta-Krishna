@@ -245,6 +245,71 @@
         transition-duration: 0.01ms !important;
       }
     }
+  
+    /* --- ENHANCED LUXURY DESKTOP & MOBILE RESPONSIVE UI --- */
+    .articles-hero {
+      position: relative;
+      background: radial-gradient(circle at 50% 20%, rgba(255, 170, 0, 0.08) 0%, transparent 70%);
+      padding: 70px 24px 36px;
+    }
+    .articles-hero h1 {
+      letter-spacing: -0.5px;
+      text-shadow: 0 4px 20px rgba(0, 0, 0, 0.6);
+    }
+    .articles-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+      gap: 28px;
+      max-width: 1240px;
+      margin: 0 auto 60px;
+      padding: 0 20px;
+    }
+    @media (min-width: 1024px) {
+      .articles-grid {
+        grid-template-columns: repeat(3, 1fr);
+        gap: 32px;
+      }
+    }
+    .article-card {
+      background: linear-gradient(180deg, rgba(20, 24, 38, 0.95) 0%, rgba(12, 15, 26, 0.98) 100%);
+      border: 1px solid rgba(255, 215, 0, 0.14);
+      border-radius: 18px;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
+      transition: transform 0.35s cubic-bezier(0.165, 0.84, 0.44, 1), 
+                  box-shadow 0.35s cubic-bezier(0.165, 0.84, 0.44, 1), 
+                  border-color 0.35s ease;
+    }
+    .article-card:hover {
+      transform: translateY(-6px);
+      border-color: rgba(255, 200, 50, 0.45);
+      box-shadow: 0 16px 40px rgba(0, 0, 0, 0.5), 0 0 24px rgba(255, 170, 0, 0.15);
+    }
+    .article-card.featured-festival {
+      border: 1.5px solid rgba(255, 180, 0, 0.5);
+      background: linear-gradient(180deg, rgba(28, 25, 45, 0.96) 0%, rgba(15, 14, 28, 0.98) 100%);
+      box-shadow: 0 8px 30px rgba(255, 170, 0, 0.12);
+    }
+    .article-thumb-wrap {
+      margin: -24px -24px 18px -24px;
+      overflow: hidden;
+      border-radius: 16px 16px 0 0;
+      position: relative;
+    }
+    .article-thumb-wrap img {
+      transition: transform 0.45s ease;
+    }
+    .article-card:hover .article-thumb-wrap img {
+      transform: scale(1.04);
+    }
+    .read-more-btn {
+      transition: transform 0.2s ease, box-shadow 0.2s ease, filter 0.2s ease;
+    }
+    .read-more-btn:hover {
+      filter: brightness(1.1);
+      box-shadow: 0 4px 15px rgba(255, 170, 0, 0.35);
+      transform: translateY(-2px);
+    }
+
   </style>
 </head>
 <body>
