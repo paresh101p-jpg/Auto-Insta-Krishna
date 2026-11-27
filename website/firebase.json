@@ -31,10 +31,6 @@
         "source": "**",
         "headers": [
           {
-            "key": "X-Frame-Options",
-            "value": "SAMEORIGIN"
-          },
-          {
             "key": "X-Content-Type-Options",
             "value": "nosniff"
           },
@@ -52,7 +48,7 @@
           },
           {
             "key": "Content-Security-Policy",
-            "value": "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://pagead2.googlesyndication.com https://*.googlesyndication.com https://adservice.google.com https://*.google.com https://www.googletagmanager.com https://*.google-analytics.com https://cdn.onesignal.com https://*.onesignal.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com data:; img-src 'self' data: blob: https://files.catbox.moe https://*.ytimg.com https://i.ytimg.com https://img.youtube.com https://*.youtube.com https://*.githubusercontent.com https://*.google.com https://*.doubleclick.net https://*.googlesyndication.com https://pagead2.googlesyndication.com https://*.google-analytics.com https://*.googletagmanager.com https://*.googleusercontent.com https://*.onesignal.com; media-src 'self' blob: https://files.catbox.moe https://*.youtube.com https://*.googlevideo.com; connect-src 'self' blob: data: https://files.catbox.moe https://*.google.com https://*.doubleclick.net https://*.googlesyndication.com https://*.google-analytics.com https://*.analytics.google.com https://*.googletagmanager.com https://*.onesignal.com https://onesignal.com https://formsubmit.co; frame-src 'self' https://*.youtube.com https://www.youtube.com https://youtube.com https://googleads.g.doubleclick.net https://*.doubleclick.net https://*.googlesyndication.com https://*.google.com https://*.onesignal.com; worker-src 'self' blob: https://cdn.onesignal.com; object-src 'none'; base-uri 'self';"
+            "value": "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://pagead2.googlesyndication.com https://*.googlesyndication.com https://adservice.google.com https://*.google.com https://www.googletagmanager.com https://*.google-analytics.com https://cdn.onesignal.com https://*.onesignal.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com data:; img-src 'self' data: blob: https://files.catbox.moe https://*.ytimg.com https://i.ytimg.com https://img.youtube.com https://*.youtube.com https://*.githubusercontent.com https://*.google.com https://*.doubleclick.net https://*.googlesyndication.com https://pagead2.googlesyndication.com https://*.google-analytics.com https://*.googletagmanager.com https://*.googleusercontent.com https://*.onesignal.com; media-src 'self' blob: https://files.catbox.moe https://*.youtube.com https://*.googlevideo.com; connect-src 'self' blob: data: https://files.catbox.moe https://*.google.com https://*.doubleclick.net https://*.googlesyndication.com https://*.google-analytics.com https://*.analytics.google.com https://*.googletagmanager.com https://*.onesignal.com https://onesignal.com https://formsubmit.co; frame-src 'self' https://*.youtube.com https://www.youtube.com https://youtube.com https://googleads.g.doubleclick.net https://*.doubleclick.net https://*.googlesyndication.com https://*.google.com https://*.onesignal.com; frame-ancestors 'self' https://*.google.com https://*.doubleclick.net https://*.googleadservices.com; worker-src 'self' blob: https://cdn.onesignal.com; object-src 'none'; base-uri 'self';"
           }
         ]
       },
