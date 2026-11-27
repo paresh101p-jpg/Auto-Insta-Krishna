@@ -1,0 +1,151 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+
+html_content = """<!DOCTYPE html>
+<html lang="hi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>कर्मण्येवाधिकारस्ते: जब मेहनत का फल न मिले तो श्रीकृष्ण की ये 3 बातें याद रखें | Krishna Vibez</title>
+  <meta name="description" content="क्या दिन-रात परिश्रम के बाद भी असफलता और निराशा मिल रही है? जानिए श्रीमद्भगवद्गीता के कर्मयोग का गुप्त रहस्य और भगवान श्रीकृष्ण की 3 दिव्य नीतियां जो जीवन बदल देंगी।">
+  <link rel="canonical" href="https://krishnavibez.in/articles/karmanye-vadhikaraste-mehnat-fal-krishna-gita-upay">
+  <meta property="og:title" content="कर्मण्येवाधिकारस्ते: जब मेहनत का फल न मिले तो श्रीकृष्ण की ये 3 बातें याद रखें">
+  <meta property="og:description" content="श्रीमद्भगवद्गीता के अमर श्लोक कर्मण्येवाधिकारस्ते मा फलेषु कदाचन का वास्तविक अर्थ और जीवन में तनावमुक्त सफलता पाने के 3 अचूक सूत्र।">
+  <meta property="og:image" content="https://krishnavibez.in/images/articles/karmanye-vadhikaraste-krishna-viral-hero.jpg">
+  <meta property="og:url" content="https://krishnavibez.in/articles/karmanye-vadhikaraste-mehnat-fal-krishna-gita-upay">
+  <meta property="og:type" content="article">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:image" content="https://krishnavibez.in/images/articles/karmanye-vadhikaraste-krishna-viral-hero.jpg">
+  
+  <link rel="stylesheet" href="/css/style.css">
+  <link rel="stylesheet" href="/css/article-hallmark.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700;800;900&family=Rozha+One&family=Yatra+One&display=swap" rel="stylesheet">
+</head>
+<body class="luxury-dark">
+  <header class="header">
+    <div class="nav-container">
+      <a href="/" class="logo">
+        <img src="/assets/logo.png" alt="Krishna Vibez" width="40" height="40">
+        <span>Krishna Vibez</span>
+      </a>
+      <nav class="nav-center">
+        <a href="/" class="nav-link">होम</a>
+        <a href="/articles" class="nav-link active">आध्यात्मिक लेख</a>
+        <a href="/videos" class="nav-link">वीडियो</a>
+        <a href="/contact" class="nav-link">संपर्क</a>
+      </nav>
+    </div>
+  </header>
+
+  <main class="article-page-wrap">
+    <article class="article-main-card">
+      <div class="article-breadcrumb">
+        <a href="/">होम</a> &gt; <a href="/articles">लेख</a> &gt; <span>कर्मयोग रहस्य</span>
+      </div>
+
+      <h1 class="article-hero-title">कर्मण्येवाधिकारस्ते: जब कठिन परिश्रम के बाद भी फल न मिले, तो भगवान श्रीकृष्ण की ये 3 बातें याद रखें</h1>
+      
+      <div class="article-meta-strip">
+        <span class="meta-item">✍️ वैदिक शोध एवं संपादकीय मंडल</span>
+        <span class="meta-item">⏱️ 8 मिनट पठन</span>
+        <span class="meta-item">📅 दैनिक अमृत वाणी</span>
+      </div>
+
+      <div class="article-featured-media">
+        <img src="/images/articles/karmanye-vadhikaraste-krishna-viral-hero.jpg" alt="कर्मण्येवाधिकारस्ते मा फलेषु कदाचन: भगवान श्रीकृष्ण का दिव्य कर्मयोग उपदेश - Krishna Vibez" class="article-featured-img" width="1200" height="675">
+        <p class="img-caption">रणक्षेत्र कुरुक्षेत्र में योगेश्वर श्रीकृष्ण द्वारा अर्जुन को निष्काम कर्मयोग का सार्वकालिक अमर उपदेश</p>
+      </div>
+
+      <div class="article-intro-box">
+        <p>क्या आपने कभी जीवन में ऐसा महसूस किया है कि आपने अपनी पूरी ऊर्जा, दिन-रात की नींद और पसीना किसी लक्ष्य को पाने में झोंक दिया, लेकिन परिणाम में केवल निराशा, असफलता या उपेक्षा मिली? वर्तमान युग में हर दूसरा युवा, गृहस्थ और कर्मठ व्यक्ति इसी मानसिक द्वंद्व और हताशा से जूझ रहा है। जब उम्मीदें टूटती हैं, तो मन में पहला प्रश्न उठता है—<strong>"अगर मेहनत का फल ही नहीं मिलना, तो इतनी तपस्या का क्या लाभ?"</strong></p>
+        <p>ठीक यही प्रश्न 5100 वर्ष पूर्व कुरुक्षेत्र की रणभूमि में महाबली धनुर्धर अर्जुन के मस्तिष्क में गूंज रहा था। तब जगद्गुरु भगवान श्रीकृष्ण ने संसार का सबसे महान मनोवैज्ञानिक और आध्यात्मिक सूत्र दिया था जिसे हम <strong>'कर्मयोग'</strong> कहते हैं।</p>
+      </div>
+
+      <!-- Sanskrit Shlok Box -->
+      <div class="shlok-card-gold">
+        <div class="shlok-tag">श्रीमद्भगवद्गीता — अध्याय 2, श्लोक 47</div>
+        <div class="shlok-sanskrit">
+          कर्मण्येवाधिकारस्ते मा फलेषु कदाचन।<br>
+          मा कर्मफलहेतुर्भूर्मा ते सङ्गोऽस्त्वकर्मणि॥
+        </div>
+        <div class="shlok-meaning">
+          <strong>सरल हिंदी अर्थ:</strong> "तुम्हारा अधिकार केवल कर्म करने में है, उसके फलों में कभी नहीं। इसलिए न तो तुम स्वयं को अपने कर्मों के फल का कारण मानो और न ही तुम्हारी कर्म न करने (आलस्य/पलायन) में आसक्ति हो।"
+        </div>
+      </div>
+
+      <h2>1. परिणाम की चिंता: मन की अशांति और असफलता का मुख्य कारण</h2>
+      <p>श्रीकृष्ण कहते हैं कि जब मनुष्य किसी कर्म को प्रारंभ करने से पहले ही उसके <strong>'फल' (Outcome)</strong> से अपनी मानसिक शांति को बांध लेता है, तो उसकी 50% से अधिक ऊर्जा केवल चिंता और भविष्य के डर में नष्ट हो जाती है। परीक्षा की तैयारी करते समय यदि मन में केवल 'फेल होने का भय' रहे, तो अध्ययन में एकाग्रता असंभव है।</p>
+
+      <div class="article-inline-media">
+        <img src="/images/articles/karmanye-vadhikaraste-krishna-1.jpg" alt="अर्जुन का गांडीव धनुष रखकर भगवान श्रीकृष्ण के उपदेश का एकाग्र श्रवण - Krishna Vibez" class="article-inline-img" width="960" height="540">
+        <p class="img-caption">गांडीवधारी अर्जुन का मोह-भंग और श्रीकृष्ण के वचनों में आत्म-समर्पण</p>
+      </div>
+
+      <h2>2. जब मेहनत व्यर्थ लगे, तो याद रखें श्रीकृष्ण की ये 3 दिव्य नीतियां</h2>
+      
+      <div class="core-point-box">
+        <h3>पहला सूत्र: "कर्म बीज है, फल वृक्ष—प्रकृति का अपना समय चक्र होता है"</h3>
+        <p>जब आप भूमि में आम की गुठली बोते हैं, तो वह अगले दिन फल नहीं देती। उसे खाद, जल, सूर्य का ताप और ऋतुओं का धैर्य चाहिए होता है। श्रीकृष्ण अर्जुन से कहते हैं कि तुम्हारा किया हुआ एक भी सात्विक प्रयास कभी नष्ट नहीं होता (<em>नेहाभिक्रमनाशोऽस्ति प्रत्यवायो न विद्यते</em>)। यदि आज आपको फल नहीं दिख रहा, तो इसका अर्थ यह नहीं कि प्रयास व्यर्थ गया; प्रकृति आपकी आंतरिक पात्रता को उस फल को संभालने योग्य बना रही है।</p>
+      </div>
+
+      <div class="core-point-box">
+        <h3>दूसरा सूत्र: "ईश्वर आपको वह नहीं देते जो आप चाहते हैं, बल्कि वह देते हैं जो आपके सर्वोच्च कल्याण के लिए उचित है"</h3>
+        <p>मनुष्य की दृष्टि सीमित है—वह केवल तात्कालिक लाभ या हानि देख पाता है। परंतु सर्वव्यापी परमात्मा की दृष्टि त्रिकालदर्शी है। कई बार किसी मनचाही नौकरी, रिश्ते या व्यापारिक सौदे का न मिलना हमें असफलता लगता है, परंतु वास्तव में वह भगवान का 'संरक्षण' (Divine Protection) होता है, ताकि आप किसी बड़ी विपत्ति से बचकर अपने वास्तविक जीवन-ध्येय की ओर बढ़ सकें।</p>
+      </div>
+
+      <div class="article-inline-media">
+        <img src="/images/articles/karmanye-vadhikaraste-krishna-2.jpg" alt="श्रीकृष्ण के श्रीचरणों में कर्मफल का संपूर्ण समर्पण - Krishna Vibez" class="article-inline-img" width="960" height="540">
+        <p class="img-caption">कर्म और परिणाम दोनों को प्रभु के चरणों में समर्पित करना ही वास्तविक निष्काम कर्म है</p>
+      </div>
+
+      <div class="core-point-box">
+        <h3>तीसरा सूत्र: "कर्तृत्व का अहंकार त्यागें—'मैं कर्ता हूँ' के भ्रम से मुक्ति"</h3>
+        <p>जब हमें सफलता मिलती है, तो हमारा अहंकार कहता है—"यह मैंने किया!" और जब असफलता मिलती है, तो मन अवसाद (Depression) में डूब जाता है। श्रीकृष्ण कहते हैं कि प्रकृति के त्रिगुण और काल का चक्र समस्त घटनाओं को चला रहा है। अपने कर्तव्य को पूरी ईमानदारी से करें, लेकिन स्वयं को परिणामों का स्वामी न समझें। जब आप परिणाम भगवान को सौंप देते हैं, तो सफलता का अहंकार नहीं होता और असफलता का दर्द आपको तोड़ नहीं पाता।</p>
+      </div>
+
+      <div class="article-inline-media">
+        <img src="/images/articles/karmanye-vadhikaraste-krishna-3.jpg" alt="यमुना तट पर ध्यानस्थ साधक - निष्काम कर्म की परम शांति - Krishna Vibez" class="article-inline-img" width="960" height="540">
+        <p class="img-caption">पवित्र यमुना तट पर निष्काम भाव से साधना करते साधक को प्राप्त होने वाला परम आत्मानंद</p>
+      </div>
+
+      <h2>3. व्यावहारिक जीवन में निष्काम कर्म कैसे अपनाएं?</h2>
+      <ul>
+        <li><strong>दैनिक कार्यों को प्रभु-पूजा बनाएं:</strong> चाहे आप कोडिंग कर रहे हों, पढ़ाई कर रहे हों, व्यापार संभाल रहे हों या घर का कार्य—उसे प्रभु को समर्पित भाव से करें।</li>
+        <li><strong>100% वर्तमान में जिएं:</strong> कर्म करते समय केवल वर्तमान क्षण और प्रयास पर ध्यान दें, कल क्या परिणाम मिलेगा उसकी गणना बंद करें।</li>
+        <li><strong>असफलता को 'फीडबैक' समझें, अंत नहीं:</strong> हर असफलता केवल यह बताती है कि प्रयास में किस दिशा में सुधार की आवश्यकता है।</li>
+      </ul>
+
+      <div class="article-conclusion-box">
+        <h3>निष्कर्ष: कर्म आपका कर्तव्य है, शांति आपका स्वभाव</h3>
+        <p>भगवान श्रीकृष्ण हमें पलायनवादी (Escapist) बनने की शिक्षा नहीं देते, बल्कि एक पराक्रमी योद्धा की तरह बिना किसी भय या लालच के कर्मक्षेत्र में डटे रहने की प्रेरणा देते हैं। जब आप 'फल की लालसा' के बोझ को प्रभु के कंधों पर छोड़ देते हैं, तो आपका कर्म अत्यंत सहज, शक्तिशाली और आनंदमय हो जाता है।</p>
+        <p style="text-align: center; font-weight: 700; color: #ffaa00; margin-top: 15px; font-size: 1.2rem;">
+          ॥ यतो धर्मस्ततो जयः ॥<br>
+          हरे कृष्ण हरे कृष्ण, कृष्ण कृष्ण हरे हरे। हरे राम हरे राम, राम राम हरे हरे॥
+        </p>
+      </div>
+
+      <div class="article-share-strip">
+        <span>📢 इस अमृत ज्ञान को अपने परिजनों और मित्रों के साथ साझा करें:</span>
+        <div class="share-buttons">
+          <a href="https://api.whatsapp.com/send?text=कर्मण्येवाधिकारस्ते: जब मेहनत का फल न मिले तो श्रीकृष्ण की ये 3 बातें याद रखें https://krishnavibez.in/articles/karmanye-vadhikaraste-mehnat-fal-krishna-gita-upay" target="_blank" class="share-btn whatsapp">WhatsApp</a>
+          <a href="https://t.me/share/url?url=https://krishnavibez.in/articles/karmanye-vadhikaraste-mehnat-fal-krishna-gita-upay&text=कर्मण्येवाधिकारस्ते: जब मेहनत का फल न मिले तो श्रीकृष्ण की ये 3 बातें याद रखें" target="_blank" class="share-btn telegram">Telegram</a>
+        </div>
+      </div>
+    </article>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-container">
+      <p>© 2026 Krishna Vibez. सर्वाधिकार सुरक्षित। श्रीमद्भगवद्गीता एवं सनातन आध्यात्मिक चेतना का वैश्विक मंच।</p>
+    </div>
+  </footer>
+</body>
+</html>
+"""
+
+with open('/data/user/0/ai.antigem/files/home/projects/Auto-Insta-Krishna/website/public/articles/karmanye-vadhikaraste-mehnat-fal-krishna-gita-upay.html', 'w', encoding='utf-8') as f:
+    f.write(html_content)
+
+print("Article HTML created successfully!")
