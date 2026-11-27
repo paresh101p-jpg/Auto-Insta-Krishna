@@ -1,476 +1,65 @@
-<!DOCTYPE html>
-<html lang="hi">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>विशेष आध्यात्मिक लेख एवं गीता ज्ञान: Krishna Vibez</title>
-  <meta name="description" content="भगवान श्री कृष्ण के दिव्य उपदेश, भगवद्गीता सार, मानसिक शांति, कर्म योग, क्रोध नियंत्रण एवं जीवन प्रबंधन पर विशेष आध्यात्मिक लेख।">
-  <meta name="keywords" content="Krishna Articles, Bhagavad Gita Hindi, गीता ज्ञान, श्री कृष्ण उपदेश, कर्म योग, मानसिक शांति, Krishna Vibez">
-  <meta name="author" content="Krishna Vibez (krishnavibez.in)">
-  <link rel="canonical" href="https://krishnavibez.in/articles.html">
-
-  <!-- Open Graph -->
-  <meta property="og:site_name" content="Krishna Vibez">
-  <meta property="og:type" content="article">
-  <meta property="og:url" content="https://krishnavibez.in/articles.html">
-  <meta property="og:title" content="विशेष आध्यात्मिक लेख एवं गीता ज्ञान: Krishna Vibez">
-  <meta property="og:description" content="भगवान श्री कृष्ण के दिव्य उपदेश, भगवद्गीता सार, मानसिक शांति, कर्म योग और जीवन प्रबंधन पर ज्ञानवर्धक लेख।">
-  <meta property="og:image" content="https://krishnavibez.in/assets/logo.png">
-
-  <!-- Favicon -->
-  <link rel="icon" href="/favicon.ico" sizes="any">
-  <link rel="icon" type="image/png" sizes="192x192" href="/favicon-192.png">
-  <link rel="apple-touch-icon" href="/favicon-192.png">
-
-  <!-- Google AdSense -->
-  <meta name="google-adsense-account" content="ca-pub-4064462736581300">
-  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-4064462736581300" crossorigin="anonymous"></script>
-
-  <!-- Google Analytics -->
-  <script async src="https://www.googletagmanager.com/gtag/js?id=G-M7W6128K1Z"></script>
-  <script>
-    window.dataLayer = window.dataLayer || [];
-    function gtag(){dataLayer.push(arguments);}
-    gtag('js', new Date());
-    gtag('config', 'G-M7W6128K1Z');
-  </script>
-
-  <link rel="stylesheet" href="css/style.css?v=20261126_v2">
-    <style>
-    /* Hallmark · genre: spiritual · theme: luxury-dark · redesign: full */
-    html, body {
-      overflow-x: clip;
-    }
-    .articles-hero {
-      text-align: center;
-      padding: 60px 20px 30px;
-      max-width: 900px;
-      margin: 0 auto;
-    }
-    .articles-hero h1 {
-      font-family: var(--font-title);
-      font-size: clamp(1.8rem, 4vw, 2.8rem);
-      margin-bottom: 12px;
-      background: var(--gold-gradient);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-    }
-    .articles-hero p {
-      color: var(--text-muted);
-      font-size: 1rem;
-      line-height: 1.6;
-      max-width: 720px;
-      margin: 0 auto 20px;
-    }
-    .articles-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
-      gap: 24px;
-      max-width: 1200px;
-      margin: 0 auto 48px;
-      padding: 0 16px;
-    }
-    .article-card {
-      background: var(--navy-card-85);
-      border: 1px solid var(--border-subtle);
-      border-radius: 16px;
-      padding: 24px;
-      display: flex;
-      flex-direction: column;
-      justify-content: space-between;
-      transition: transform 0.28s ease, border-color 0.28s ease, box-shadow 0.28s ease;
-      position: relative;
-      overflow: hidden;
-    }
-    .article-card:hover {
-      transform: translateY(-4px);
-      border-color: var(--gold-45);
-      box-shadow: 0 10px 30px var(--black-60);
-    }
-    .article-card.featured-festival {
-      border: 1.5px solid var(--gold-primary);
-      background: var(--navy-surface);
-    }
-    .article-top {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      margin-bottom: 12px;
-    }
-    .article-tag {
-      font-size: 0.72rem;
-      font-weight: 700;
-      color: var(--gold-primary);
-      background: var(--gold-12);
-      border: 1px solid var(--gold-25);
-      padding: 4px 12px;
-      border-radius: 12px;
-    }
-    .article-read-time {
-      font-size: 0.72rem;
-      color: var(--text-muted);
-    }
-    .article-title {
-      font-size: 1.18rem;
-      font-weight: 700;
-      line-height: 1.4;
-      margin-bottom: 12px;
-      color: var(--text-pure);
-    }
-    .article-summary {
-      font-size: 0.88rem;
-      color: var(--text-muted);
-      line-height: 1.6;
-      margin-bottom: 16px;
-      flex-grow: 1;
-    }
-    .article-footer {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      border-top: 1px solid var(--white-06);
-      padding-top: 16px;
-      margin-top: 12px;
-    }
-    .article-author {
-      font-size: 0.78rem;
-      color: var(--text-muted);
-    }
-    .read-more-btn {
-      background: none;
-      border: none;
-      color: var(--gold-primary);
-      font-size: 0.88rem;
-      font-weight: 700;
-      cursor: pointer;
-      padding: 0;
-      display: inline-flex;
-      align-items: center;
-      text-decoration: none;
-      transition: color 0.2s ease;
-    }
-    .read-more-btn:hover {
-      color: var(--gold-light);
-    }
-    .article-modal {
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      background: var(--black-85);
-      backdrop-filter: blur(8px);
-      z-index: 99999;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      padding: 20px;
-      opacity: 0;
-      pointer-events: none;
-      transition: opacity 0.3s ease;
-    }
-    .article-modal.active {
-      opacity: 1;
-      pointer-events: all;
-    }
-    .modal-box {
-      background: var(--bg-header);
-      border: 1px solid var(--gold-35);
-      border-radius: 20px;
-      max-width: 680px;
-      width: 100%;
-      max-height: 85vh;
-      overflow-y: auto;
-      padding: 32px;
-      position: relative;
-      box-shadow: 0 20px 60px var(--black-85);
-    }
-    .modal-close {
-      position: absolute;
-      top: 16px;
-      right: 16px;
-      background: var(--white-08);
-      border: 1px solid var(--white-15);
-      color: var(--text-pure);
-      width: 36px;
-      height: 36px;
-      border-radius: 50%;
-      cursor: pointer;
-      font-size: 1.1rem;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      transition: background-color 0.2s ease, border-color 0.2s ease;
-    }
-    .modal-close:hover {
-      background: var(--gold-25);
-      border-color: var(--gold-primary);
-    }
-    .modal-content h2 {
-      font-family: var(--font-title);
-      font-size: 1.4rem;
-      color: var(--gold-primary);
-      margin-bottom: 16px;
-      line-height: 1.35;
-      padding-right: 40px;
-    }
-    .modal-content p {
-      font-size: 0.95rem;
-      color: var(--text-gray);
-      line-height: 1.8;
-      margin-bottom: 16px;
-    }
-    .modal-content blockquote {
-      background: var(--gold-08);
-      border-left: 3px solid var(--gold-primary);
-      padding: 12px 16px;
-      margin: 16px 0;
-      border-radius: 0 10px 10px 0;
-      font-style: italic;
-      color: var(--text-pure);
-      font-size: 0.95rem;
-    }
-    a:focus-visible,
-    button:focus-visible {
-      outline: 2px solid var(--gold-primary);
-      outline-offset: 2px;
-    }
-    a:active,
-    button:active {
-      transform: translateY(1px);
-    }
-    @media (prefers-reduced-motion: reduce) {
-      *, *::before, *::after {
-        animation-duration: 0.01ms !important;
-        transition-duration: 0.01ms !important;
-      }
-    }
-  </style>
-</head>
-<body>
-
-  <!-- Ambient Glow -->
-  <div class="ambient-glow-1"></div>
-  <div class="ambient-glow-2"></div>
-
-  <!-- Navigation Bar -->
-  <nav class="navbar">
-    <div class="nav-container">
-      <a href="index.html" class="brand-link">
-        <img src="assets/logo.png" alt="Krishna Vibez Logo" class="brand-logo-img">
-        <div class="brand-text-wrap">
-          <span class="brand-name">KRISHNA VIBEZ</span>
-          <span class="brand-tagline">DIVINE INSPIRATION</span>
-        </div>
-      </a>
-
-      <div class="nav-center">
-        <a href="index.html" class="nav-link">होम (Home)</a>
-        <a href="articles.html" class="nav-link active">ज्ञान लेख</a>
-        <a href="index.html#feed" class="nav-link">दैनिक दर्शन</a>
-        <a href="about.html" class="nav-link">हमारे बारे में</a>
-        <a href="contact.html" class="nav-link">संपर्क</a>
-      </div>
-
-      <div class="nav-actions">
-        <a href="https://whatsapp.com/channel/0029VbDxJHk30LKNtj4Er62J" target="_blank" rel="noopener noreferrer" class="nav-social-btn whatsapp" title="WhatsApp Channel जॉइन करें">
-          <svg aria-hidden="true" viewBox="0 0 24 24" width="16" height="16" fill="currentColor"><path d="M12.04 2c-5.46 0-9.91 4.45-9.91 9.91 0 1.75.46 3.45 1.32 4.95L2.05 22l5.25-1.38c1.45.79 3.08 1.21 4.74 1.21 5.46 0 9.91-4.45 9.91-9.91 0-2.65-1.03-5.14-2.9-7.01A9.816 9.816 0 0 0 12.04 2z"/></svg>
-          <span>WhatsApp</span>
-        </a>
-        <a href="https://t.me/krishnavibezz" target="_blank" rel="noopener noreferrer" class="nav-social-btn telegram" title="Telegram Channel जॉइन करें">
-          <svg aria-hidden="true" viewBox="0 0 24 24" width="16" height="16" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm4.64 6.8c-.15 1.58-.8 5.42-1.13 7.19-.14.75-.42 1-.68 1.03-.58.05-1.02-.38-1.58-.75-.88-.58-1.38-.94-2.23-1.5-.99-.65-.35-1.01.22-1.59.15-.15 2.71-2.48 2.76-2.69a.2.2 0 00-.05-.18c-.06-.05-.14-.03-.21-.02-.09.02-1.49.95-4.22 2.79-.4.27-.76.41-1.08.4-.36-.01-1.04-.2-1.55-.37-.63-.2-1.12-.31-1.08-.66.02-.18.27-.36.74-.55 2.92-1.27 4.86-2.11 5.83-2.51 2.78-1.16 3.35-1.36 3.73-1.36.08 0 .27.02.39.12.1.08.13.19.14.27-.01.06.01.24 0 .38z"/></svg>
-          <span>Telegram</span>
-        </a>
-        <a href="https://in.pinterest.com/MojiloMart/" target="_blank" rel="noopener noreferrer" class="nav-social-btn pinterest" title="Pinterest पर फॉलो करें">
-          <svg aria-hidden="true" viewBox="0 0 24 24" width="16" height="16" fill="currentColor"><path d="M12 0C5.373 0 0 5.372 0 12c0 5.084 3.163 9.426 7.627 11.174-.105-.949-.2-2.405.042-3.441.218-.937 1.407-5.965 1.407-5.965s-.359-.719-.359-1.782c0-1.668.967-2.914 2.171-2.914 1.023 0 1.518.769 1.518 1.69 0 1.029-.655 2.568-.994 3.995-.283 1.194.599 2.169 1.777 2.169 2.133 0 3.772-2.249 3.772-5.495 0-2.873-2.064-4.882-5.012-4.882-3.414 0-5.418 2.561-5.418 5.207 0 1.031.397 2.138.893 2.738a.36.36 0 0 1 .083.345l-.333 1.36c-.053.22-.174.267-.402.161-1.499-.698-2.436-2.889-2.436-4.649 0-3.785 2.75-7.262 7.929-7.262 4.163 0 7.398 2.967 7.398 6.931 0 4.136-2.607 7.464-6.227 7.464-1.216 0-2.359-.631-2.75-1.378l-.748 2.853c-.271 1.043-1.002 2.35-1.492 3.146C9.57 23.812 10.763 24 12 24c6.627 0 12-5.373 12-12 0-6.628-5.373-12-12-12z"/></svg>
-          <span>Pinterest</span>
-        </a>
-        <a href="https://www.instagram.com/krishnavibez/" target="_blank" rel="noopener noreferrer" class="nav-social-btn instagram" title="Instagram पर फॉलो करें: @krishnavibez">
-          <svg aria-hidden="true" viewBox="0 0 24 24"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/></svg>
-          <span>Instagram</span>
-        </a>
-        <a href="https://www.facebook.com/1808917602588221" target="_blank" rel="noopener noreferrer" class="nav-social-btn facebook" title="Facebook पर फॉलो करें: Krishna Vibez">
-          <svg aria-hidden="true" viewBox="0 0 24 24"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>
-          <span>Facebook</span>
-        </a>
-        <button class="mobile-menu-btn" id="mobileMenuBtn" aria-label="मेनू खोलें (Open Menu)" onclick="toggleMobileNav(event)">
-          <span class="bar bar-1"></span>
-          <span class="bar bar-2"></span>
-          <span class="bar bar-3"></span>
-        </button>
-      </div>
-    </div>
-  </nav>
-
-  <!-- Hero Section -->
-  <header class="articles-hero">
-    <h1>विशेष आध्यात्मिक लेख एवं गीता ज्ञान</h1>
-    <p>जीवन की हर दुविधा, तनाव, अशांति, क्रोध और कर्म के रहस्य का समाधान: भगवान श्री कृष्ण के पावन वचनों और श्रीमद्भगवद्गीता के अमर सूत्रों में।</p>
-  </header>
-
-  <!-- Articles Grid -->
-  <main class="articles-grid" id="articlesGrid">
-
-    <!-- Trending Special Article (Top Position) -->
-    <article class="article-card featured-festival" style="border: 1px solid rgba(255, 215, 0, 0.4); background: linear-gradient(135deg, rgba(20, 15, 5, 0.95), rgba(40, 30, 10, 0.85));">
-      <div class="article-top">
-        <span class="article-tag" style="background: #ffaa00; color: #000; font-weight: 700;">⭐ ट्रेंडिंग विशेष लेख (1.45L+ Search)</span>
-        <span class="article-read-time">8 मिनट पठन</span>
-      </div>
-      <div style="width: 100%; border-radius: 10px; overflow: hidden; margin: 12px 0 16px;">
-        <a href="/articles/gita-overthinking-man-ki-shanti-upay.html">
-          <img src="/images/articles/krishna-arjuna-viral-thumb-v2.jpg" alt="कलिकाल में मन की अशांति और ओवरथिंकिंग का स्थायी इलाज: भगवद गीता का गुप्त सूत्र - Krishna Vibez" style="width: 100%; height: auto; max-height: 220px; object-fit: cover; display: block; border-radius: 8px;" loading="lazy" width="600" height="338">
-        </a>
-      </div>
-      <h2 class="article-title"><a href="/articles/gita-overthinking-man-ki-shanti-upay.html" style="color: inherit; text-decoration: none;">कलिकाल में मन की अशांति और ओवरथिंकिंग का स्थायी इलाज: भगवद गीता का गुप्त सूत्र</a></h2>
-      <p class="article-summary">कलिकाल में ओवरथिंकिंग और मन की अशांति से मुक्ति कैसे पाएं? जानिए भगवद्गीता अध्याय 6 के अनुसार अभ्यास और वैराग्य के वे 5 अचूक आध्यात्मिक सूत्र जो मन को शांत करते हैं।</p>
-      <div class="article-footer">
-        <span class="article-author">लेखक: Paresh Padsala</span>
-        <a href="/articles/gita-overthinking-man-ki-shanti-upay.html" class="read-more-btn" style="background: #ffaa00; color: #000; font-weight: 700; text-decoration: none; padding: 6px 14px; border-radius: 6px;">पूरा लेख पढ़ें ➔</a>
-      </div>
-    </article>
 
 
-    <!-- Featured Margashirsha Maah 2026 Special Article (Latest) -->
-    <article class="article-card featured-festival" style="border: 1px solid rgba(255, 215, 0, 0.4); background: linear-gradient(135deg, rgba(20, 15, 5, 0.95), rgba(40, 30, 10, 0.85));">
-      <div class="article-top">
-        <span class="article-tag" style="background: #ffaa00; color: #000; font-weight: 700;">⭐ ताज़ा विशेष लेख 2026</span>
-        <span class="article-read-time">8 मिनट पठन</span>
-      </div>
-      <div style="width: 100%; border-radius: 10px; overflow: hidden; margin: 12px 0 16px;">
-        <a href="/articles/margashirsha-maah-krishna-vishesh-kripa-5-niyam.html">
-          <img src="/images/articles/margashirsha-krishna-hero.jpg" alt="मार्गशीर्ष माह में भगवान श्रीकृष्ण की विशेष कृपा: इन 5 नियमों से बदल जाएगी किस्मत - Krishna Vibez" style="width: 100%; height: auto; max-height: 220px; object-fit: cover; display: block; border-radius: 8px;" loading="lazy" width="600" height="338">
-        </a>
-      </div>
-      <h2 class="article-title"><a href="/articles/margashirsha-maah-krishna-vishesh-kripa-5-niyam.html" style="color: inherit; text-decoration: none;">मार्गशीर्ष माह में भगवान श्रीकृष्ण की विशेष कृपा: इन 5 नियमों से बदल जाएगी किस्मत</a></h2>
-      <p class="article-summary">मार्गशीर्ष (अगहन) माह में भगवान श्रीकृष्ण की असीम कृपा कैसे प्राप्त करें? जानिए गीता के अनुसार वे 5 अचूक नियम, पूजा विधि, और श्लोक जो आपके भाग्य को चमका सकते हैं।</p>
-      <div class="article-footer">
-        <span class="article-author">लेखक: Paresh Padsala</span>
-        <a href="/articles/margashirsha-maah-krishna-vishesh-kripa-5-niyam.html" class="read-more-btn" style="background: #ffaa00; color: #000; font-weight: 700; text-decoration: none; padding: 6px 14px; border-radius: 6px;">पूरा लेख पढ़ें ➔</a>
-      </div>
-    </article>
-
-
-    <!-- Featured Gita Jayanti & Mokshada Ekadashi Special Article -->
-    <article class="article-card featured-festival">
-      <div class="article-top">
-        <span class="article-tag" >महापर्व विशेषांक 2026</span>
-        <span class="article-read-time">8 मिनट पठन</span>
-      </div>
-      <h2 class="article-title" ><a href="/articles/gita-jayanti-mokshada-ekadashi-bhagavad-gita-sar.html" style="color: inherit; text-decoration: none;">गीता जयंती और मोक्षदा एकादशी: कुरुक्षेत्र में श्री कृष्ण का अमर उपदेश, सम्पूर्ण गीता सार एवं 10 दिव्य सूत्र</a></h2>
-      <p class="article-summary">कुरुक्षेत्र के रणक्षेत्र में अर्जुन को दिए गए अमर गीता ज्ञान, 18 अध्यायों का संपूर्ण सार, मोक्षदा एकादशी का महत्व और जीवन को बदलने वाले 10 व्यावहारिक सूत्र।</p>
-      <div class="article-footer">
-        <span class="article-author">लेखક: Paresh Padsala</span>
-        <a href="/articles/gita-jayanti-mokshada-ekadashi-bhagavad-gita-sar.html" class="read-more-btn" >पूरा लेख पढ़ें</a>
-      </div>
-    </article>
-
-    <!-- Article 1 -->
-    <article class="article-card" style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,215,0,0.15); border-radius: 12px; overflow: hidden; margin-bottom: 24px;">
+    <!-- 1. LATEST: कर्मण्येवाधिकारस्ते (Newest #1) -->
+    <article class="article-card" style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,215,0,0.3); border-radius: 12px; overflow: hidden; margin-bottom: 24px; box-shadow: 0 4px 20px rgba(0,0,0,0.3);">
       <div class="article-thumb-wrap">
         <a href="/articles/karmanye-vadhikaraste-mehnat-fal-krishna-gita-upay.html">
           <img src="/images/articles/karmanye-vadhikaraste-krishna-viral-hero.jpg" alt="कर्मण्येवाधिकारस्ते: जब मेहनत का फल न मिले तो श्रीकृष्ण की ये 3 बातें याद रखें - Krishna Vibez" style="width: 100%; height: auto; max-height: 240px; object-fit: cover; display: block;" loading="lazy" width="600" height="338">
         </a>
       </div>
       <div class="article-info" style="padding: 16px;">
-        <span class="category-badge" style="background: rgba(255,215,0,0.15); color: #ffaa00; font-size: 0.8rem; padding: 3px 8px; border-radius: 4px; font-weight: 600;">कर्मयोग रहस्य</span>
+        <span class="category-badge" style="background: rgba(255,215,0,0.18); color: #ffaa00; font-size: 0.8rem; padding: 4px 10px; border-radius: 4px; font-weight: 700; border: 1px solid rgba(255,215,0,0.3);">🔥 नवीनतम लेख (LATEST)</span>
         <h2 class="article-title" style="margin: 10px 0 8px;"><a href="/articles/karmanye-vadhikaraste-mehnat-fal-krishna-gita-upay.html" style="color: #fff; text-decoration: none; font-size: 1.25rem;">कर्मण्येवाधिकारस्ते: जब मेहनत का फल न मिले तो श्रीकृष्ण की ये 3 बातें याद रखें</a></h2>
         <p class="article-excerpt" style="color: rgba(255,255,255,0.7); font-size: 0.95rem; line-height: 1.5; margin-bottom: 14px;">क्या दिन-रात परिश्रम के बाद भी असफलता और निराशा मिल रही है? जानिए श्रीमद्भगवद्गीता के कर्मयोग का गुप्त रहस्य और भगवान श्रीकृष्ण की 3 दिव्य नीतियां।</p>
         <a href="/articles/karmanye-vadhikaraste-mehnat-fal-krishna-gita-upay.html" class="read-more-btn" style="background: #ffaa00; color: #000; font-weight: 700; text-decoration: none; padding: 6px 14px; border-radius: 6px; display: inline-block;">पूरा लेख पढ़ें ➔</a>
       </div>
     </article>
 
-    <article class="article-card">
-      <div class="article-top">
-        <span class="article-tag">कर्म योग</span>
-        <span class="article-read-time">4 मिनट पठन</span>
+    <!-- 2. कलिकाल में मन की अशांति और ओवरथिंकिंग (#2) -->
+    <article class="article-card" style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,215,0,0.15); border-radius: 12px; overflow: hidden; margin-bottom: 24px;">
+      <div class="article-thumb-wrap">
+        <a href="/articles/gita-overthinking-man-ki-shanti-upay.html">
+          <img src="/images/articles/krishna-arjuna-viral-thumb-v2.jpg" alt="कलिकाल में मन की अशांति और ओवरथिंकिंग का स्थायी इलाज - Krishna Vibez" style="width: 100%; height: auto; max-height: 240px; object-fit: cover; display: block;" loading="lazy" width="600" height="338">
+        </a>
       </div>
-      <h2 class="article-title">कर्मण्येवाधिकारस्ते मा फलेषु कदाचन: जीवन में इसका असली अर्थ</h2>
-      <p class="article-summary">क्यों इंसान फल की चिंता में अपने वर्तमान कर्म को बिगाड़ बैठता है? जानिए श्री कृष्ण का वह सूत्र जो आपको कर्म करते हुए भी तनावमुक्त और विजयी बनाता है।</p>
-      <div class="article-footer">
-        <span class="article-author">लेखक: Krishna Vibez</span>
-        <button class="read-more-btn" onclick="openArticleModal(1)">पूरा लेख पढ़ें</button>
-      </div>
-    </article>
-
-    <!-- Article 2 -->
-    <article class="article-card">
-      <div class="article-top">
-        <span class="article-tag">क्रोध नियंत्रण</span>
-        <span class="article-read-time">5 मिनट पठन</span>
-      </div>
-      <h2 class="article-title">क्रोध से भ्रम और बुद्धि नाश: क्रोध को शांत करने के 5 अचूक नियम</h2>
-      <p class="article-summary">क्रोधाद्भवति संमोहः संमोहात्स्मृतिविभ्रमः। जब गुस्सा आता है तो सबसे पहले अपनी ही सोचने-समझने की शक्ति क्यों खो जाती है? श्री कृष्ण का आत्म-नियंत्रण सूत्र।</p>
-      <div class="article-footer">
-        <span class="article-author">लेखक: Krishna Vibez</span>
-        <button class="read-more-btn" onclick="openArticleModal(2)">पूरा लेख पढ़ें</button>
+      <div class="article-info" style="padding: 16px;">
+        <span class="category-badge" style="background: rgba(255,215,0,0.15); color: #ffaa00; font-size: 0.8rem; padding: 3px 8px; border-radius: 4px; font-weight: 600;">मानसिक शांति</span>
+        <h2 class="article-title" style="margin: 10px 0 8px;"><a href="/articles/gita-overthinking-man-ki-shanti-upay.html" style="color: #fff; text-decoration: none; font-size: 1.25rem;">कलिकाल में मन की अशांति और ओवरथिंकिंग का स्थायी इलाज: भगवद गीता का गुप्त सूत्र</a></h2>
+        <p class="article-excerpt" style="color: rgba(255,255,255,0.7); font-size: 0.95rem; line-height: 1.5; margin-bottom: 14px;">कलियुग में मन की बेचैनी और नकारात्मक विचारों से मुक्ति के लिए श्रीकृष्ण द्वारा अर्जुन को बताए गए 5 अचूक आध्यात्मिक उपाय।</p>
+        <a href="/articles/gita-overthinking-man-ki-shanti-upay.html" class="read-more-btn" style="background: #ffaa00; color: #000; font-weight: 700; text-decoration: none; padding: 6px 14px; border-radius: 6px; display: inline-block;">पूरा लेख पढ़ें ➔</a>
       </div>
     </article>
 
-    <!-- Article 3 -->
-    <article class="article-card">
-      <div class="article-top">
-        <span class="article-tag">मानसिक शांति</span>
-        <span class="article-read-time">6 मिनट पठन</span>
+    <!-- 3. मार्गशीर्ष माह में भगवान श्रीकृष्ण की विशेष कृपा (#3) -->
+    <article class="article-card" style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,215,0,0.15); border-radius: 12px; overflow: hidden; margin-bottom: 24px;">
+      <div class="article-thumb-wrap">
+        <a href="/articles/margashirsha-maah-krishna-vishesh-kripa-5-niyam.html">
+          <img src="/images/articles/margashirsha-krishna-hero.jpg" alt="मार्गशीर्ष माह में भगवान श्रीकृष्ण की विशेष कृपा - Krishna Vibez" style="width: 100%; height: auto; max-height: 240px; object-fit: cover; display: block;" loading="lazy" width="600" height="338">
+        </a>
       </div>
-      <h2 class="article-title">मन की अशांति और ओवरथिंकिंग: दिमाग में विचारों का तूफान कैसे शांत करें?</h2>
-      <p class="article-summary">चंचलं हि मनः कृष्ण प्रमाथि बलवद्दृढम्। मन हवा की तरह चंचल है, इसे वश में करना कठिन अवश्य है लेकिन असंभव नहीं। जानिए अभ्यास और वैराग्य का व्यावहारिक रहस्य।</p>
-      <div class="article-footer">
-        <span class="article-author">लेखक: Krishna Vibez</span>
-        <button class="read-more-btn" onclick="openArticleModal(3)">पूरा लेख पढ़ें</button>
-      </div>
-    </article>
-
-    <!-- Article 4 -->
-    <article class="article-card">
-      <div class="article-top">
-        <span class="article-tag">अवसाद मुक्ति</span>
-        <span class="article-read-time">5 मिनट पठन</span>
-      </div>
-      <h2 class="article-title">अर्जुन का विषाद: जब जीवन में सब कुछ व्यर्थ लगने लगे तो क्या करें?</h2>
-      <p class="article-summary">कुरुक्षेत्र के मैदान में महान धनुर्धर अर्जुन के हाथ से गांडीव छूट गया था। कैसे श्री कृष्ण ने एक टूटे हुए इंसान को विश्व का सबसे बड़ा विजेता बनाया?</p>
-      <div class="article-footer">
-        <span class="article-author">लेखक: Krishna Vibez</span>
-        <button class="read-more-btn" onclick="openArticleModal(4)">पूरा लेख पढ़ें</button>
+      <div class="article-info" style="padding: 16px;">
+        <span class="category-badge" style="background: rgba(255,215,0,0.15); color: #ffaa00; font-size: 0.8rem; padding: 3px 8px; border-radius: 4px; font-weight: 600;">मास महिमा</span>
+        <h2 class="article-title" style="margin: 10px 0 8px;"><a href="/articles/margashirsha-maah-krishna-vishesh-kripa-5-niyam.html" style="color: #fff; text-decoration: none; font-size: 1.25rem;">मार्गशीर्ष माह में भगवान श्रीकृष्ण की विशेष कृपा: इन 5 नियमों से बदल जाएगी किस्मत</a></h2>
+        <p class="article-excerpt" style="color: rgba(255,255,255,0.7); font-size: 0.95rem; line-height: 1.5; margin-bottom: 14px;">भगवान श्रीकृष्ण ने स्वयं कहा है 'मासानां मार्गशीर्षोऽहम्'। जानिए इस पावन माह में लड्डू गोपाल और गीता पाठ से मिलने वाले फल।</p>
+        <a href="/articles/margashirsha-maah-krishna-vishesh-kripa-5-niyam.html" class="read-more-btn" style="background: #ffaa00; color: #000; font-weight: 700; text-decoration: none; padding: 6px 14px; border-radius: 6px; display: inline-block;">पूरा लेख पढ़ें ➔</a>
       </div>
     </article>
 
-    <!-- Article 5 -->
-    <article class="article-card">
-      <div class="article-top">
-        <span class="article-tag">आत्मा का ज्ञान</span>
-        <span class="article-read-time">4 मिनट पठन</span>
+    <!-- 4. गीता जयंती और मोक्षदा एकादशी (#4) -->
+    <article class="article-card" style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,215,0,0.15); border-radius: 12px; overflow: hidden; margin-bottom: 24px;">
+      <div class="article-thumb-wrap">
+        <a href="/articles/geeta-jayanti-mokshada-ekadashi-mahatmya-sar.html">
+          <img src="/images/articles/margashirsha-geeta-paath.jpg" alt="गीता जयंती और मोक्षदा एकादशी - Krishna Vibez" style="width: 100%; height: auto; max-height: 240px; object-fit: cover; display: block;" loading="lazy" width="600" height="338">
+        </a>
       </div>
-      <h2 class="article-title">मृत्यु का भय और आत्मा की अमरता: नैनं छिन्दन्ति शस्त्राणि</h2>
-      <p class="article-summary">मनुष्य जिस मृत्यु से सबसे ज्यादा डरता है, वह केवल पुराने वस्त्र बदलकर नए वस्त्र धारण करने जैसी है। जानिए आत्मा की अमरता का वह सत्य जो जीवन को निर्भय बनाता है।</p>
-      <div class="article-footer">
-        <span class="article-author">लेखक: Krishna Vibez</span>
-        <button class="read-more-btn" onclick="openArticleModal(5)">पूरा लेख पढ़ें</button>
-      </div>
-    </article>
-
-    <!-- Article 6 -->
-    <article class="article-card">
-      <div class="article-top">
-        <span class="article-tag">निस्वार्थ प्रेम</span>
-        <span class="article-read-time">5 मिनट पठन</span>
-      </div>
-      <h2 class="article-title">राधा-कृष्ण का निस्वार्थ प्रेम: अधिकार नहीं, समर्पण का नाम है प्रेम</h2>
-      <p class="article-summary">सांसारिक प्रेम में मांग और अधिकार होता है, लेकिन दिव्य प्रेम में केवल समर्पण और कल्याण होता है। जानिए राधा और कृष्ण के अटूट आध्यात्मिक संबंध की पावन सीख।</p>
-      <div class="article-footer">
-        <span class="article-author">लेखक: Krishna Vibez</span>
-        <button class="read-more-btn" onclick="openArticleModal(6)">पूरा लेख पढ़ें</button>
+      <div class="article-info" style="padding: 16px;">
+        <span class="category-badge" style="background: rgba(255,215,0,0.15); color: #ffaa00; font-size: 0.8rem; padding: 3px 8px; border-radius: 4px; font-weight: 600;">त्योहार एवं उत्सव</span>
+        <h2 class="article-title" style="margin: 10px 0 8px;"><a href="/articles/geeta-jayanti-mokshada-ekadashi-mahatmya-sar.html" style="color: #fff; text-decoration: none; font-size: 1.25rem;">गीता जयंती और मोक्षदा एकादशी: कुरुक्षेत्र में श्री कृष्ण का अमर उपदेश, सम्पूर्ण गीता सार एवं 10 दिव्य सूत्र</a></h2>
+        <p class="article-excerpt" style="color: rgba(255,255,255,0.7); font-size: 0.95rem; line-height: 1.5; margin-bottom: 14px;">मोक्षदा एकादशी पर गीता पाठ का महत्व और श्रीकृष्ण द्वारा अर्जुन को दिए गए 10 दिव्य जीवन सूत्र।</p>
+        <a href="/articles/geeta-jayanti-mokshada-ekadashi-mahatmya-sar.html" class="read-more-btn" style="background: #ffaa00; color: #000; font-weight: 700; text-decoration: none; padding: 6px 14px; border-radius: 6px; display: inline-block;">पूरा लेख पढ़ें ➔</a>
       </div>
     </article>
 
-  </main>
-
-  <!-- Modal Article Reader -->
-  <div class="article-modal" id="articleModal" onclick="closeArticleModal(event)">
-    <div class="modal-box" onclick="event.stopPropagation()">
-      <button class="modal-close" onclick="closeArticleModal()" aria-label="बंद करें">✕</button>
-      <div class="modal-content" id="modalArticleBody"></div>
-    </div>
   </div>
 
   <!-- Footer -->
