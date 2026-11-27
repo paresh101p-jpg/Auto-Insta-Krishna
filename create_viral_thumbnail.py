@@ -2,13 +2,24 @@
 # -*- coding: utf-8 -*-
 import sys
 import os
+import re
 from PIL import Image, ImageDraw, ImageFont
+
+def strip_unsupported_emojis(text: str) -> str:
+    """Removes emoji characters that lack glyphs in Devanagari fonts to prevent square boxes (tofu)."""
+    # Remove emoji characters (surrogate pairs / high unicode codepoints)
+    return re.sub(r'[\U00010000-\U0010ffff]', '', text).strip()
 
 def create_high_ctr_thumbnail(image_path, badge_text, headline_line1, headline_line2, output_path):
     """
     Overlays ULTRA-BOLD, unmissable, viral YouTube/Google Discover Hindi typography
     with thick solid borders & badges on the 16:9 thumbnail.
+    Ensures 100% clean Hindi text with ZERO square box symbols.
     """
+    badge_text = strip_unsupported_emojis(badge_text)
+    headline_line1 = strip_unsupported_emojis(headline_line1)
+    headline_line2 = strip_unsupported_emojis(headline_line2)
+
     im = Image.open(image_path).convert("RGBA")
     w, h = im.size
     
@@ -30,24 +41,34 @@ def create_high_ctr_thumbnail(image_path, badge_text, headline_line1, headline_l
     
     # Fonts
     hindi_font_paths = [
+        r"C:\Windows\Fonts\Nirmala.ttc",
+        r"C:\Windows\Fonts\arialbd.ttf",
         "/system/fonts/NotoSansDevanagari-VF.ttf",
         "/system/fonts/MiSansDevanagariVF.ttf",
         "/data/user/0/ai.antigem/files/home/extensions/.antigem-backup/2d-video-editing-studio/fonts/hindi/Baloo2-Bold.ttf",
         "/system/fonts/NotoSansDevanagariUI-VF.ttf"
     ]
     font_path = None
+    font_index = 0
     for p in hindi_font_paths:
         if os.path.exists(p):
             font_path = p
+            if p.lower().endswith(".ttc"):
+                font_index = 1
             break
             
     badge_size = int(h * 0.065)
     line1_size = int(h * 0.115)
     line2_size = int(h * 0.125)
     
-    badge_font = ImageFont.truetype(font_path, badge_size)
-    h_font1 = ImageFont.truetype(font_path, line1_size)
-    h_font2 = ImageFont.truetype(font_path, line2_size)
+    if font_path.lower().endswith(".ttc"):
+        badge_font = ImageFont.truetype(font_path, badge_size, index=font_index)
+        h_font1 = ImageFont.truetype(font_path, line1_size, index=font_index)
+        h_font2 = ImageFont.truetype(font_path, line2_size, index=font_index)
+    else:
+        badge_font = ImageFont.truetype(font_path, badge_size)
+        h_font1 = ImageFont.truetype(font_path, line1_size)
+        h_font2 = ImageFont.truetype(font_path, line2_size)
     
     # --- Top Badge ---
     bx, by = int(w * 0.04), int(h * 0.05)
@@ -76,14 +97,14 @@ def create_high_ctr_thumbnail(image_path, badge_text, headline_line1, headline_l
     
     im = im.convert("RGB")
     im.save(output_path, "JPEG", quality=95)
-    print(f"Generated ultra bold viral thumbnail: {output_path}")
+    print(f"Generated clean ultra bold viral thumbnail: {output_path}")
 
 if __name__ == "__main__":
-    src = "/data/user/0/ai.antigem/files/home/projects/Auto-Insta-Krishna/website/public/images/articles/kalikaal-overthinking-gita-upay-hero.jpg"
-    out = "/data/user/0/ai.antigem/files/home/projects/Auto-Insta-Krishna/website/public/images/articles/gita-upay-krishna-arjuna-viral-hero.jpg"
+    src = r"E:\Paresh\Auto Post\Auto-Insta-Krishna\website\public\images\articles\kalikaal-overthinking-gita-upay-hero.jpg"
+    out = r"E:\Paresh\Auto Post\Auto-Insta-Krishna\website\public\images\articles\krishna-arjuna-viral-thumb-v2.jpg"
     create_high_ctr_thumbnail(
         src,
-        "🔥 भगवद्गीता का गुप्त रहस्य",
+        "भगवद्गीता का गुप्त रहस्य",
         "मन शांत नहीं रहता?",
         "श्रीकृष्ण का 1 अचूक नियम!",
         out
