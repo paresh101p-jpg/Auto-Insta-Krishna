@@ -1,3 +1,10 @@
+
+html {
+  scroll-behavior: smooth;
+}
+#feed, .main-container {
+  scroll-margin-top: 85px !important;
+}
 /* =========================================================
    KRISHNA VIBEZ (krishnavibez.in) - MASTER DESIGN STYLESHEET
    Spiritual Luxury · Glassmorphism · Vibrant Peacock & Gold
